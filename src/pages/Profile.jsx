@@ -60,7 +60,7 @@ export default function Profile() {
         {/* Console shortcut */}
         {currentRole === 'creator' && (
           <button onClick={() => navigate('/console/creator')} className="w-full mb-5 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-violet-500/20">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
               <LayoutDashboard size={16} className="text-white" />
             </div>
             <div className="text-left">

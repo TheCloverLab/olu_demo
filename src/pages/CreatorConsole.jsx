@@ -356,7 +356,7 @@ export default function CreatorConsole() {
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
           <TrendingUp size={18} className="text-white" />
         </div>
         <div>

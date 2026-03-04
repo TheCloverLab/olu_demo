@@ -55,7 +55,7 @@ export default function TeamChat() {
     const groupId = agentId.replace('grp-', '')
     const groups = GROUP_CHATS[currentRole] || []
     const group = groups.find(g => g.id === groupId) || groups[0]
-    agent = group ? { name: group.name, icon: '👥', color: 'from-indigo-600 via-violet-600 to-purple-600', role: 'Group Chat', status: 'online' } : null
+    agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online' } : null
     conversation = group?.conversation || []
     tasks = []
   } else {
@@ -103,7 +103,7 @@ export default function TeamChat() {
           <div className="flex gap-1">
             {['chat', 'tasks'].map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-violet-600/20 text-violet-400' : 'text-olu-muted hover:text-olu-text')}>
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-[#7c3aed]/20 text-violet-400' : 'text-olu-muted hover:text-olu-text')}>
                 {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
               </button>
             ))}
@@ -136,7 +136,7 @@ export default function TeamChat() {
                   {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (
                     <p className="text-xs text-olu-muted px-1">{msg.from}</p>
                   )}
-                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line', msg.from === 'user' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line', msg.from === 'user' ? 'bg-[#7c3aed] text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
                     {msg.text}
                   </div>
                   <p className="text-olu-muted text-xs px-1">{msg.time}</p>
@@ -161,7 +161,7 @@ export default function TeamChat() {
               <button
                 onClick={sendMessage}
                 disabled={!input.trim()}
-                className="p-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
+                className="p-3 rounded-xl bg-[#7c3aed] text-white disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
               >
                 <Send size={16} />
               </button>

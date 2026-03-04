@@ -26,8 +26,8 @@ function MembershipModal({ tiers, onClose }) {
           <div className="p-4 space-y-3">
             {tiers.map((tier) => (
               <motion.button key={tier.id} whileHover={{ scale: 1.01 }} onClick={() => setSelected(tier.id)}
-                className={clsx('w-full p-4 rounded-xl border text-left transition-all relative', selected === tier.id ? 'border-violet-500 bg-violet-600/10' : 'border-olu-border hover:border-white/20')}>
-                {tier.popular && <span className="absolute top-3 right-3 text-xs bg-violet-600 text-white px-2 py-0.5 rounded-full font-medium">Popular</span>}
+                className={clsx('w-full p-4 rounded-xl border text-left transition-all relative', selected === tier.id ? 'border-violet-500 bg-[#7c3aed]/10' : 'border-olu-border hover:border-white/20')}>
+                {tier.popular && <span className="absolute top-3 right-3 text-xs bg-[#7c3aed] text-white px-2 py-0.5 rounded-full font-medium">Popular</span>}
                 <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${tier.color} text-white text-xs font-bold mb-2`}>
                   <Crown size={10} />{tier.name}
                 </div>
@@ -47,7 +47,7 @@ function MembershipModal({ tiers, onClose }) {
             ))}
           </div>
           <div className="p-4 border-t border-olu-border">
-            <button className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+            <button className="w-full py-3 rounded-xl bg-[#7c3aed] text-white font-semibold text-sm hover:opacity-90 transition-opacity">
               {selected ? `Subscribe to ${tiers.find(t => t.id === selected)?.name}` : 'Select a Plan'}
             </button>
           </div>
@@ -92,7 +92,7 @@ function IPLicenseModal({ creator, onClose }) {
           {step === 2 && (
             <div className="p-5">
               <div className="flex items-center gap-3 p-4 glass rounded-xl mb-4 border border-violet-500/30">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-lg">⚖️</div>
+                <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center text-lg">⚖️</div>
                 <div>
                   <p className="font-semibold text-sm">Lisa is reviewing your request</p>
                   <p className="text-olu-muted text-xs">IP Manager · Usually responds in minutes</p>
@@ -109,7 +109,7 @@ function IPLicenseModal({ creator, onClose }) {
               </div>
               <div className="flex gap-3 mt-4">
                 <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted hover:text-olu-text transition-colors">Cancel</button>
-                <button className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">Accept Terms</button>
+                <button className="flex-1 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-semibold hover:opacity-90 transition-opacity">Accept Terms</button>
               </div>
             </div>
           )}
@@ -158,10 +158,10 @@ export default function CreatorProfile() {
                 <FileText size={13} /> License IP
               </button>
             )}
-            <button onClick={() => setShowMembership(true)} className="px-3 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
+            <button onClick={() => setShowMembership(true)} className="px-3 py-2 rounded-xl bg-[#7c3aed] text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
               <Crown size={13} /> Subscribe
             </button>
-            <button onClick={() => setFollowing(!following)} className={clsx('p-2 rounded-xl transition-all', following ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30' : 'glass glass-hover text-olu-muted')}>
+            <button onClick={() => setFollowing(!following)} className={clsx('p-2 rounded-xl transition-all', following ? 'bg-[#7c3aed]/20 text-violet-400 border border-violet-500/30' : 'glass glass-hover text-olu-muted')}>
               {following ? <Check size={16} /> : <Users size={16} />}
             </button>
           </div>
@@ -235,7 +235,7 @@ export default function CreatorProfile() {
                     </div>
                   )}
                   {post.allowFanCreation && (
-                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-violet-600/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#7c3aed]/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
                       <Repeat2 size={10} /> Fan Create
                     </div>
                   )}
@@ -269,7 +269,7 @@ export default function CreatorProfile() {
                   <p className="text-olu-muted text-xs capitalize mb-2">{product.type}</p>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-sm">${product.price}</span>
-                    <button className="text-xs bg-violet-600 text-white px-2.5 py-1 rounded-lg hover:opacity-90 transition-opacity">Buy</button>
+                    <button className="text-xs bg-[#7c3aed] text-white px-2.5 py-1 rounded-lg hover:opacity-90 transition-opacity">Buy</button>
                   </div>
                 </div>
               </motion.div>
@@ -296,7 +296,7 @@ export default function CreatorProfile() {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => setShowMembership(true)} className={clsx('w-full py-2.5 rounded-xl text-sm font-semibold transition-all', tier.price === 0 ? 'glass glass-hover text-olu-text' : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90')}>
+                <button onClick={() => setShowMembership(true)} className={clsx('w-full py-2.5 rounded-xl text-sm font-semibold transition-all', tier.price === 0 ? 'glass glass-hover text-olu-text' : 'bg-[#7c3aed] text-white hover:opacity-90')}>
                   {tier.price === 0 ? 'Join Free' : `Subscribe for $${tier.price}/mo`}
                 </button>
               </div>

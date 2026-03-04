@@ -173,48 +173,51 @@ export default function Home() {
 
   return (
     <div className="pb-24 md:pb-6">
-      {/* Search bar — pill style like Patreon */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex items-center gap-3 bg-[#1c1c1c] rounded-full px-4 py-2.5">
-          <Search size={16} className="text-olu-muted flex-shrink-0" />
-          <input
-            placeholder="Search for creators or topics"
-            className="flex-1 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none"
-          />
+      {/* Constrained container for desktop */}
+      <div className="max-w-2xl mx-auto">
+        {/* Search bar */}
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-3 bg-[#1c1c1c] rounded-full px-4 py-2.5">
+            <Search size={16} className="text-olu-muted flex-shrink-0" />
+            <input
+              placeholder="Search for creators or topics"
+              className="flex-1 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div className="flex gap-2 px-4 pb-4 overflow-x-auto scrollbar-hide">
+          {FILTERS.map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={clsx('chip flex-shrink-0', filter === f ? 'chip-active' : 'chip-inactive')}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab switcher */}
+        <div className="flex gap-1 mx-4 mb-5 p-1 bg-[#1a1a1a] rounded-full">
+          {[
+            { key: 'discover', label: 'Discover' },
+            { key: 'following', label: 'Following' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={clsx('flex-1 py-2 rounded-full text-sm font-semibold transition-all', tab === key ? 'bg-white text-black' : 'text-olu-muted hover:text-white')}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-2 px-4 pb-4 overflow-x-auto scrollbar-hide">
-        {FILTERS.map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={clsx('chip flex-shrink-0', filter === f ? 'chip-active' : 'chip-inactive')}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab switcher */}
-      <div className="flex gap-1 mx-4 mb-5 p-1 bg-[#1a1a1a] rounded-full">
-        {[
-          { key: 'discover', label: 'Discover' },
-          { key: 'following', label: 'Following' },
-        ].map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={clsx('flex-1 py-2 rounded-full text-sm font-semibold transition-all', tab === key ? 'bg-white text-black' : 'text-olu-muted hover:text-white')}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       {tab === 'discover' ? (
-        <div>
+        <div className="max-w-2xl mx-auto">
           {/* Recently visited */}
           <div className="mb-6">
             <div className="flex items-center justify-between px-4 mb-3">
@@ -277,7 +280,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className="px-4 space-y-4">
+        <div className="max-w-2xl mx-auto px-4 space-y-4">
           {POSTS.map(post => <PostCard key={post.id} post={post} />)}
         </div>
       )}

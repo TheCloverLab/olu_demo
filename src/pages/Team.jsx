@@ -44,7 +44,7 @@ function AgentRow({ agent }) {
       </div>
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         {pendingTasks > 0 && (
-          <span className="text-xs bg-violet-600 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
+          <span className="text-xs bg-[#7c3aed] text-white rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
         )}
         <ChevronRight size={16} className="text-olu-muted" />
       </div>
@@ -61,7 +61,7 @@ function GroupRow({ group }) {
       className="w-full flex items-center gap-3 p-4 glass glass-hover rounded-2xl text-left"
     >
       <div className="relative flex-shrink-0">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
           <div className="flex -space-x-1">
             {group.icons.slice(0, 3).map((icon, i) => (
               <span key={i} className="text-sm">{icon}</span>
@@ -92,7 +92,7 @@ export default function Team() {
         <div className="w-20 h-20 rounded-2xl bg-olu-card flex items-center justify-center text-4xl mb-4">🤖</div>
         <h2 className="font-bold text-xl mb-2">No AI Agents Yet</h2>
         <p className="text-olu-muted text-sm max-w-xs mb-6">Your role doesn't have AI agents configured. Switch to Creator, Advertiser, or Supplier to see an active team.</p>
-        <button onClick={() => window.location.href = '/ai-config'} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+        <button onClick={() => window.location.href = '/ai-config'} className="px-6 py-2.5 rounded-xl bg-[#7c3aed] text-white font-semibold text-sm hover:opacity-90 transition-opacity">
           Browse AI Agent Marketplace
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function Team() {
             {agents.length} AI Agent{agents.length > 1 ? 's' : ''} · {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
           <Bot size={18} className="text-white" />
         </div>
       </div>

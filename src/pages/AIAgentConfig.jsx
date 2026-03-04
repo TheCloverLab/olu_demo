@@ -34,7 +34,7 @@ function AgentCard({ agent, onHire }) {
         <span className="text-olu-muted text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
       <p className="text-olu-muted text-xs leading-relaxed flex-1 mb-3">{agent.description}</p>
-      <button onClick={() => onHire(agent)} className="w-full py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
+      <button onClick={() => onHire(agent)} className="w-full py-2 rounded-xl bg-[#7c3aed] text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
         <Plus size={12} /> Hire Agent
       </button>
     </motion.div>
@@ -62,7 +62,7 @@ function HireModal({ agent, onClose, onConfirm }) {
             <p className="text-xs text-olu-muted mb-4">This agent will join your team as <strong>{name}</strong>, {agent.role || agent.name}. You can rename or remove them anytime.</p>
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted hover:text-olu-text transition-colors">Cancel</button>
-              <button onClick={() => onConfirm(agent, name)} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name}</button>
+              <button onClick={() => onConfirm(agent, name)} className="flex-1 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name}</button>
             </div>
           </div>
         </motion.div>
@@ -92,7 +92,7 @@ export default function AIAgentConfig() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
           <Bot size={18} className="text-white" />
         </div>
         <div>

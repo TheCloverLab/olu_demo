@@ -45,7 +45,7 @@ function CustomTooltip({ active, payload, label }) {
   )
 }
 
-function ProgressBar({ value, max, color = 'bg-violet-600' }) {
+function ProgressBar({ value, max, color = 'bg-[#7c3aed]' }) {
   const pct = Math.min(100, (value / max) * 100)
   return (
     <div className="h-2 bg-white/08 rounded-full overflow-hidden">

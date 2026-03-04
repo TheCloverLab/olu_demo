@@ -103,7 +103,7 @@ export default function AppLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-olu-border bg-olu-surface flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-[#7c3aed] flex items-center justify-center">
             <Zap size={14} className="text-white" fill="white" />
           </div>
           <span className="font-black text-lg">OLU</span>
@@ -127,7 +127,7 @@ export default function AppLayout() {
               to={to}
               end={exact}
               className={({ isActive }) => clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium',
+                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
                 isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
               )}
             >
@@ -138,7 +138,7 @@ export default function AppLayout() {
 
           <div className="pt-4">
             <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Tools</p>
-            <NavLink to="/ai-config" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
+            <NavLink to="/ai-config" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
               <Bot size={18} />AI Agents
             </NavLink>
           </div>
@@ -146,17 +146,17 @@ export default function AppLayout() {
           <div className="pt-4">
             <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Console</p>
             {currentUser.role === 'creator' && (
-              <NavLink to="/console/creator" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
+              <NavLink to="/console/creator" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
                 <LayoutDashboard size={18} />Creator Console
               </NavLink>
             )}
             {currentUser.role === 'advertiser' && (
-              <NavLink to="/console/advertiser" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
+              <NavLink to="/console/advertiser" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
                 <Megaphone size={18} />Advertiser Console
               </NavLink>
             )}
             {currentUser.role === 'supplier' && (
-              <NavLink to="/console/supplier" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
+              <NavLink to="/console/supplier" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
                 <Package size={18} />Supplier Console
               </NavLink>
             )}

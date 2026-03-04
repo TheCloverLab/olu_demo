@@ -88,7 +88,7 @@ function FanCreateModal({ post, onClose }) {
           {step === 1 && (
             <div className="p-5">
               <div className="flex items-center gap-3 p-4 glass rounded-xl border border-violet-500/30 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xl">⚖️</div>
+                <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center text-xl">⚖️</div>
                 <div>
                   <p className="font-semibold text-sm">Lisa — IP Manager</p>
                   <p className="text-xs text-olu-muted">Reviewing license request...</p>
@@ -114,7 +114,7 @@ function FanCreateModal({ post, onClose }) {
               </div>
               <div className="flex gap-3">
                 <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted">Decline</button>
-                <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold">Accept & Create</button>
+                <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-semibold">Accept & Create</button>
               </div>
             </div>
           )}
@@ -142,7 +142,7 @@ function FanCreateModal({ post, onClose }) {
                   </div>
                 </div>
               </div>
-              <button onClick={onClose} className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+              <button onClick={onClose} className="w-full mt-4 py-3 rounded-xl bg-[#7c3aed] text-white font-semibold text-sm hover:opacity-90 transition-opacity">
                 Publish Fan Creation
               </button>
             </div>
@@ -250,7 +250,7 @@ export default function ContentDetail() {
         {post.allowFanCreation && (
           <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-violet-500/25 mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center flex-shrink-0">
                 <Repeat2 size={18} className="text-white" />
               </div>
               <div className="flex-1">
@@ -266,7 +266,7 @@ export default function ContentDetail() {
         <div className="mb-6">
           <h3 className="font-bold mb-4">Comments</h3>
           <div className="flex gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs flex-shrink-0">YU</div>
+            <div className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center font-bold text-white text-xs flex-shrink-0">YU</div>
             <div className="flex-1 flex gap-2">
               <input
                 value={comment}
@@ -275,7 +275,7 @@ export default function ContentDetail() {
                 placeholder="Add a comment..."
                 className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-violet-500/50 transition-colors"
               />
-              <button onClick={submitComment} className="p-2.5 rounded-xl bg-violet-600 text-white hover:opacity-90 transition-opacity">
+              <button onClick={submitComment} className="p-2.5 rounded-xl bg-[#7c3aed] text-white hover:opacity-90 transition-opacity">
                 <Send size={14} />
               </button>
             </div>

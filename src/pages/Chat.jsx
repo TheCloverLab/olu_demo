@@ -48,7 +48,7 @@ export default function Chat() {
                 </div>
               )}
               <div className={clsx('max-w-[80%] flex flex-col gap-1', msg.from === 'user' ? 'items-end' : 'items-start')}>
-                <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-[#7c3aed] text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
                   {msg.text}
                 </div>
                 <p className="text-olu-muted text-xs px-1">{msg.time}</p>
@@ -60,7 +60,7 @@ export default function Chat() {
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder={`Message ${chat.with}...`}
             className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-olu-border focus:border-violet-500/50 transition-colors" />
-          <button onClick={sendMessage} className="p-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90 transition-opacity">
+          <button onClick={sendMessage} className="p-2.5 rounded-xl bg-[#7c3aed] text-white hover:opacity-90 transition-opacity">
             <Send size={16} />
           </button>
         </div>
@@ -84,7 +84,7 @@ export default function Chat() {
                 {chat.initials}
               </div>
               {chat.unread > 0 && (
-                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center">
+                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center">
                   <span className="text-white text-xs font-bold">{chat.unread}</span>
                 </div>
               )}

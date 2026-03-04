@@ -100,12 +100,12 @@ export default function RoleSwitcher() {
                       className={clsx(
                         'relative p-4 rounded-xl border text-left transition-all',
                         isActive
-                          ? 'border-violet-500/60 bg-violet-600/10'
+                          ? 'border-violet-500/60 bg-[#7c3aed]/10'
                           : 'border-olu-border hover:border-white/20 hover:bg-white/03'
                       )}
                     >
                       {isActive && (
-                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center">
+                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center">
                           <Check size={11} className="text-white" strokeWidth={3} />
                         </div>
                       )}

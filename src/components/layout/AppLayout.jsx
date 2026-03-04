@@ -24,6 +24,9 @@ const SIDEBAR_NAV = [
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
+  if (user.avatarImg) {
+    return <img src={user.avatarImg} alt={user.name} className={clsx('rounded-full object-cover flex-shrink-0', sz)} />
+  }
   return (
     <div className={clsx(`bg-gradient-to-br ${user.avatarColor} rounded-full flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
       {user.initials}

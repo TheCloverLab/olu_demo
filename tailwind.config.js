@@ -5,15 +5,15 @@ export default {
     extend: {
       colors: {
         olu: {
-          bg: '#07070f',
-          surface: '#0e0e1e',
-          card: '#13132a',
-          border: '#252545',
+          bg: '#000000',
+          surface: '#111111',
+          card: '#1c1c1c',
+          border: '#2e2e2e',
           primary: '#7c3aed',
           secondary: '#4f46e5',
           accent: '#a78bfa',
-          text: '#f1f5f9',
-          muted: '#8b8baa',
+          text: '#ffffff',
+          muted: '#888888',
         },
       },
       fontFamily: {

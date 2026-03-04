@@ -2,9 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Override after all Tailwind layers — pointer on all clickable elements */
-button, a, [role="button"], label, summary, [tabindex]:not([tabindex="-1"]) {
-  cursor: pointer;
+/* ─── Global cursor — outside all Tailwind layers ─── */
+button,
+a,
+[role="button"],
+label,
+summary,
+select,
+[tabindex]:not([tabindex="-1"]),
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+textarea {
+  cursor: text !important;
 }
 
 @layer base {
@@ -41,7 +57,6 @@ button, a, [role="button"], label, summary, [tabindex]:not([tabindex="-1"]) {
 }
 
 @layer utilities {
-  /* Replaces glassmorphism — solid dark card */
   .glass {
     background: #1c1c1c;
   }
@@ -54,7 +69,6 @@ button, a, [role="button"], label, summary, [tabindex]:not([tabindex="-1"]) {
     background: #242424;
   }
 
-  /* Subtle gradient text — used sparingly */
   .gradient-text {
     background: linear-gradient(135deg, #a78bfa, #818cf8);
     -webkit-background-clip: text;
@@ -75,7 +89,6 @@ button, a, [role="button"], label, summary, [tabindex]:not([tabindex="-1"]) {
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Pill chip base */
   .chip {
     display: inline-flex;
     align-items: center;

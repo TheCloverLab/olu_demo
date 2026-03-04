@@ -170,10 +170,10 @@ function FanCRM() {
     <div>
       <div className="grid grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'Total', value: FANS.length, color: 'text-olu-text' },
-          { label: 'VIP', value: FANS.filter(f => f.tier === 'vip').length, color: 'text-amber-400' },
-          { label: 'Paid', value: FANS.filter(f => f.tier !== 'free').length, color: 'text-sky-400' },
-          { label: 'Churned', value: FANS.filter(f => f.status === 'churned').length, color: 'text-red-400' },
+          { label: 'Total', value: '2.8K', color: 'text-olu-text' },
+          { label: 'VIP', value: '127', color: 'text-amber-400' },
+          { label: 'Paid', value: '890', color: 'text-sky-400' },
+          { label: 'Churned', value: '341', color: 'text-red-400' },
         ].map(s => (
           <div key={s.label} className="glass rounded-xl p-3 text-center">
             <p className={clsx('font-black text-xl', s.color)}>{s.value}</p>
@@ -194,9 +194,10 @@ function FanCRM() {
       <div className="space-y-2">
         {filtered.map((fan) => (
           <div key={fan.id} className="flex items-center gap-3 p-4 glass glass-hover rounded-2xl">
-            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${fan.color} flex items-center justify-center font-bold text-white text-sm flex-shrink-0`}>
-              {fan.initials}
-            </div>
+            {fan.avatarImg
+              ? <img src={fan.avatarImg} alt={fan.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+              : <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${fan.color} flex items-center justify-center font-bold text-white text-sm flex-shrink-0`}>{fan.initials}</div>
+            }
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="font-semibold text-sm">{fan.name}</span>

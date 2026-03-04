@@ -106,8 +106,8 @@ export default function AppLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-olu-border bg-olu-surface flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[#7c3aed] flex items-center justify-center">
-            <Zap size={14} className="text-white" fill="white" />
+          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
+            <Zap size={14} className="text-black" fill="black" />
           </div>
           <span className="font-black text-lg">OLU</span>
           {isConsole && <span className="ml-auto text-xs bg-[#2a2a2a] text-olu-muted px-2 py-0.5 rounded-full">Console</span>}

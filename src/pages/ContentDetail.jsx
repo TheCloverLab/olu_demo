@@ -87,7 +87,7 @@ function FanCreateModal({ post, onClose }) {
 
           {step === 1 && (
             <div className="p-5">
-              <div className="flex items-center gap-3 p-4 glass rounded-xl border border-violet-500/30 mb-4">
+              <div className="flex items-center gap-3 p-4 glass rounded-xl border border-white/10 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center text-xl">⚖️</div>
                 <div>
                   <p className="font-semibold text-sm">Lisa — IP Manager</p>
@@ -114,7 +114,7 @@ function FanCreateModal({ post, onClose }) {
               </div>
               <div className="flex gap-3">
                 <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted">Decline</button>
-                <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-semibold">Accept & Create</button>
+                <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-semibold">Accept & Create</button>
               </div>
             </div>
           )}
@@ -142,7 +142,7 @@ function FanCreateModal({ post, onClose }) {
                   </div>
                 </div>
               </div>
-              <button onClick={onClose} className="w-full mt-4 py-3 rounded-xl bg-[#7c3aed] text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+              <button onClick={onClose} className="w-full mt-4 py-3 rounded-xl bg-white text-black font-semibold text-sm hover:opacity-90 transition-opacity">
                 Publish Fan Creation
               </button>
             </div>
@@ -212,8 +212,8 @@ export default function ContentDetail() {
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <button onClick={() => navigate(`/creator/${post.creatorId}`)} className="font-semibold text-sm hover:text-violet-300 transition-colors">{post.creatorName}</button>
-              {post.verified && <BadgeCheck size={14} className="text-violet-400" fill="currentColor" />}
+              <button onClick={() => navigate(`/creator/${post.creatorId}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creatorName}</button>
+              {post.verified && <BadgeCheck size={14} className="text-sky-400" fill="currentColor" />}
             </div>
             <p className="text-olu-muted text-xs">{post.time}</p>
           </div>
@@ -248,7 +248,7 @@ export default function ContentDetail() {
 
         {/* Fan Creation CTA */}
         {post.allowFanCreation && (
-          <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-violet-500/25 mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
+          <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-white/10 mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center flex-shrink-0">
                 <Repeat2 size={18} className="text-white" />
@@ -257,7 +257,7 @@ export default function ContentDetail() {
                 <p className="font-semibold text-sm">Create Fan Work from this post</p>
                 <p className="text-xs text-olu-muted">Get a {Math.round(post.fanCreationFee * 100)}% revenue-share license · Handled by Lisa (IP Manager)</p>
               </div>
-              <div className="text-violet-400 text-xs font-semibold">License IP →</div>
+              <div className="text-sky-400 text-xs font-semibold">License IP →</div>
             </div>
           </motion.div>
         )}
@@ -273,9 +273,9 @@ export default function ContentDetail() {
                 onChange={e => setComment(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && submitComment()}
                 placeholder="Add a comment..."
-                className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-violet-500/50 transition-colors"
+                className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/20 transition-colors"
               />
-              <button onClick={submitComment} className="p-2.5 rounded-xl bg-[#7c3aed] text-white hover:opacity-90 transition-opacity">
+              <button onClick={submitComment} className="p-2.5 rounded-xl bg-white text-black hover:opacity-90 transition-opacity">
                 <Send size={14} />
               </button>
             </div>

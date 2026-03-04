@@ -2,13 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Override after all Tailwind layers — pointer on all clickable elements */
+button, a, [role="button"], label, summary, [tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
-  }
-
-  a, button, [role="button"] {
-    cursor: pointer;
   }
 
   body {

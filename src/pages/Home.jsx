@@ -56,7 +56,7 @@ function CreatorRow({ creator }) {
       <div className="flex-1 text-left min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <p className="font-semibold text-sm">{creator.name}</p>
-          {creator.verified && <BadgeCheck size={13} className="text-violet-400 flex-shrink-0" fill="currentColor" />}
+          {creator.verified && <BadgeCheck size={13} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
         </div>
         <p className="text-olu-muted text-xs line-clamp-1">{creator.bio}</p>
       </div>
@@ -93,7 +93,7 @@ function PostCard({ post }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <button onClick={() => navigate(`/creator/${post.creatorId}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creatorName}</button>
-            {post.verified && <BadgeCheck size={13} className="text-violet-400" fill="currentColor" />}
+            {post.verified && <BadgeCheck size={13} className="text-sky-400" fill="currentColor" />}
           </div>
           <div className="flex items-center gap-2">
             <p className="text-olu-muted text-xs">{post.time}</p>
@@ -143,7 +143,7 @@ function PostCard({ post }) {
         {post.allowFanCreation && (
           <button
             onClick={() => navigate(`/content/${post.id}`)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-violet-400 hover:text-violet-300 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-olu-muted hover:text-white transition-colors"
           >
             <Repeat2 size={15} />
             Fan Create

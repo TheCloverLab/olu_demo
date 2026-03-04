@@ -74,7 +74,7 @@ export default function RoleSwitcher() {
               <div className="p-5 border-b border-olu-border flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <Zap size={16} className="text-violet-400" fill="currentColor" />
+                    <Zap size={16} className="text-sky-400" fill="currentColor" />
                     <span className="font-bold gradient-text">OLU Demo</span>
                   </div>
                   <p className="text-olu-muted text-sm">Switch between user roles to explore the platform</p>
@@ -100,12 +100,12 @@ export default function RoleSwitcher() {
                       className={clsx(
                         'relative p-4 rounded-xl border text-left transition-all',
                         isActive
-                          ? 'border-violet-500/60 bg-[#7c3aed]/10'
+                          ? 'border-white/30 bg-white/5'
                           : 'border-olu-border hover:border-white/20 hover:bg-white/03'
                       )}
                     >
                       {isActive && (
-                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center">
+                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white flex items-center justify-center">
                           <Check size={11} className="text-white" strokeWidth={3} />
                         </div>
                       )}

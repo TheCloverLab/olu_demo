@@ -16,7 +16,7 @@ const STAGE_COLOR = {
   production: 'bg-blue-500/15 text-blue-400',
   negotiating: 'bg-amber-500/15 text-amber-400',
   outreach: 'bg-gray-500/15 text-gray-400',
-  completed: 'bg-violet-500/15 text-violet-400',
+  completed: 'bg-white/10 text-sky-400',
 }
 
 const SPEND_DATA = [
@@ -45,7 +45,7 @@ function CustomTooltip({ active, payload, label }) {
   )
 }
 
-function ProgressBar({ value, max, color = 'bg-[#7c3aed]' }) {
+function ProgressBar({ value, max, color = 'bg-white' }) {
   const pct = Math.min(100, (value / max) * 100)
   return (
     <div className="h-2 bg-white/08 rounded-full overflow-hidden">
@@ -152,7 +152,7 @@ function Campaigns() {
             <div>
               <div className="flex items-center gap-2 mb-0.5">
                 <p className="font-bold">{campaign.name}</p>
-                <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium capitalize', campaign.status === 'active' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-violet-500/15 text-violet-400')}>
+                <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium capitalize', campaign.status === 'active' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/10 text-sky-400')}>
                   {campaign.status}
                 </span>
               </div>
@@ -235,7 +235,7 @@ function CreatorCRM() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <p className="font-semibold text-sm">{c.name}</p>
-                  {c.verified && <div className="w-3 h-3 rounded-full bg-violet-500 flex items-center justify-center"><Check size={8} className="text-white" strokeWidth={3} /></div>}
+                  {c.verified && <div className="w-3 h-3 rounded-full bg-white flex items-center justify-center"><Check size={8} className="text-white" strokeWidth={3} /></div>}
                 </div>
                 <p className="text-olu-muted text-xs">{c.handle} · {formatNumber(c.followers)} followers</p>
               </div>

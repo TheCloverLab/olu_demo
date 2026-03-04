@@ -89,9 +89,10 @@ export default function TeamChat() {
         <button onClick={() => navigate('/team')} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors mr-1">
           <ArrowLeft size={18} className="text-olu-muted" />
         </button>
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-xl flex-shrink-0`}>
-          {agent.icon}
-        </div>
+        {agent.avatarImg
+          ? <img src={agent.avatarImg} alt={agent.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+          : <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-lg font-bold text-white flex-shrink-0`}>{agent.name[0]}</div>
+        }
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm">{agent.name}</p>
           <div className="flex items-center gap-1.5">
@@ -103,7 +104,7 @@ export default function TeamChat() {
           <div className="flex gap-1">
             {['chat', 'tasks'].map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-[#7c3aed]/20 text-violet-400' : 'text-olu-muted hover:text-olu-text')}>
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-white/10 text-sky-400' : 'text-olu-muted hover:text-olu-text')}>
                 {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
               </button>
             ))}
@@ -128,15 +129,15 @@ export default function TeamChat() {
                 className={clsx('flex gap-3', msg.from === 'user' ? 'flex-row-reverse' : '')}
               >
                 {msg.from !== 'user' && (
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm flex-shrink-0 mt-0.5`}>
-                    {msg.avatar || agent.icon}
-                  </div>
+                  agent.avatarImg
+                    ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
+                    : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
                 )}
                 <div className={clsx('max-w-[80%]', msg.from === 'user' ? 'items-end' : 'items-start', 'flex flex-col gap-1')}>
                   {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (
                     <p className="text-xs text-olu-muted px-1">{msg.from}</p>
                   )}
-                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line', msg.from === 'user' ? 'bg-[#7c3aed] text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
                     {msg.text}
                   </div>
                   <p className="text-olu-muted text-xs px-1">{msg.time}</p>
@@ -148,7 +149,7 @@ export default function TeamChat() {
           {/* Input */}
           <div className="p-4 border-t border-olu-border flex-shrink-0">
             <div className="flex gap-3 items-end">
-              <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-violet-500/50 transition-colors">
+              <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors">
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
@@ -161,7 +162,7 @@ export default function TeamChat() {
               <button
                 onClick={sendMessage}
                 disabled={!input.trim()}
-                className="p-3 rounded-xl bg-[#7c3aed] text-white disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
+                className="p-3 rounded-xl bg-white text-black disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
               >
                 <Send size={16} />
               </button>

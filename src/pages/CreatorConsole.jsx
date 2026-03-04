@@ -27,7 +27,7 @@ const VIOLATION_STATUS_COLOR = {
 
 const TIER_COLOR = {
   vip: 'bg-amber-500/15 text-amber-400',
-  creator_club: 'bg-violet-500/15 text-violet-400',
+  creator_club: 'bg-white/10 text-sky-400',
   free: 'bg-gray-500/15 text-gray-400',
 }
 
@@ -172,7 +172,7 @@ function FanCRM() {
         {[
           { label: 'Total', value: FANS.length, color: 'text-olu-text' },
           { label: 'VIP', value: FANS.filter(f => f.tier === 'vip').length, color: 'text-amber-400' },
-          { label: 'Paid', value: FANS.filter(f => f.tier !== 'free').length, color: 'text-violet-400' },
+          { label: 'Paid', value: FANS.filter(f => f.tier !== 'free').length, color: 'text-sky-400' },
           { label: 'Churned', value: FANS.filter(f => f.status === 'churned').length, color: 'text-red-400' },
         ].map(s => (
           <div key={s.label} className="glass rounded-xl p-3 text-center">

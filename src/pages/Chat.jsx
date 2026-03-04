@@ -30,9 +30,10 @@ export default function Chat() {
           <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors">
             <ArrowLeft size={18} className="text-olu-muted" />
           </button>
-          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white text-xs`}>
-            {chat.initials}
-          </div>
+          {chat.avatarImg
+            ? <img src={chat.avatarImg} alt={chat.with} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+            : <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white text-xs flex-shrink-0`}>{chat.initials}</div>
+          }
           <div>
             <p className="font-semibold text-sm">{chat.with}</p>
             <p className="text-olu-muted text-xs">{chat.handle}</p>
@@ -43,12 +44,12 @@ export default function Chat() {
             <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               className={clsx('flex gap-3', msg.from === 'user' ? 'flex-row-reverse' : '')}>
               {msg.from !== 'user' && (
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white text-xs flex-shrink-0`}>
-                  {chat.initials}
-                </div>
+                chat.avatarImg
+                  ? <img src={chat.avatarImg} alt={chat.with} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                  : <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white text-xs flex-shrink-0`}>{chat.initials}</div>
               )}
               <div className={clsx('max-w-[80%] flex flex-col gap-1', msg.from === 'user' ? 'items-end' : 'items-start')}>
-                <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-[#7c3aed] text-white rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
                   {msg.text}
                 </div>
                 <p className="text-olu-muted text-xs px-1">{msg.time}</p>
@@ -59,8 +60,8 @@ export default function Chat() {
         <div className="p-4 border-t border-olu-border flex gap-3 flex-shrink-0">
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder={`Message ${chat.with}...`}
-            className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-olu-border focus:border-violet-500/50 transition-colors" />
-          <button onClick={sendMessage} className="p-2.5 rounded-xl bg-[#7c3aed] text-white hover:opacity-90 transition-opacity">
+            className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-olu-border focus:border-white/20 transition-colors" />
+          <button onClick={sendMessage} className="p-2.5 rounded-xl bg-white text-black hover:opacity-90 transition-opacity">
             <Send size={16} />
           </button>
         </div>
@@ -73,19 +74,20 @@ export default function Chat() {
       <h1 className="font-black text-2xl mb-4">Messages</h1>
       <div className="relative mb-4">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-olu-muted" />
-        <input placeholder="Search messages..." className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-violet-500/40 transition-colors" />
+        <input placeholder="Search messages..." className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/15 transition-colors" />
       </div>
       <div className="space-y-2">
         {chats.map((chat) => (
           <motion.button key={chat.id} whileHover={{ x: 4 }} onClick={() => setSelected(chat.id)}
             className="w-full flex items-center gap-3 p-4 glass glass-hover rounded-2xl text-left">
             <div className="relative flex-shrink-0">
-              <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white`}>
-                {chat.initials}
-              </div>
+              {chat.avatarImg
+                ? <img src={chat.avatarImg} alt={chat.with} className="w-12 h-12 rounded-full object-cover" />
+                : <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${chat.avatarColor} flex items-center justify-center font-bold text-white`}>{chat.initials}</div>
+              }
               {chat.unread > 0 && (
-                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">{chat.unread}</span>
+                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                  <span className="text-black text-xs font-bold">{chat.unread}</span>
                 </div>
               )}
             </div>

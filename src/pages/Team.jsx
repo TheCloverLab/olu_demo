@@ -27,9 +27,10 @@ function AgentRow({ agent }) {
       className="w-full flex items-center gap-3 p-4 glass glass-hover rounded-2xl text-left"
     >
       <div className="relative flex-shrink-0">
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-2xl`}>
-          {agent.icon}
-        </div>
+        {agent.avatarImg
+          ? <img src={agent.avatarImg} alt={agent.name} className="w-12 h-12 rounded-xl object-cover" />
+          : <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-xl font-bold text-white`}>{agent.name[0]}</div>
+        }
         <div className="absolute -bottom-0.5 -right-0.5">
           <StatusDot status={agent.status} />
         </div>
@@ -44,7 +45,7 @@ function AgentRow({ agent }) {
       </div>
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         {pendingTasks > 0 && (
-          <span className="text-xs bg-[#7c3aed] text-white rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
+          <span className="text-xs bg-white text-black rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
         )}
         <ChevronRight size={16} className="text-olu-muted" />
       </div>
@@ -92,7 +93,7 @@ export default function Team() {
         <div className="w-20 h-20 rounded-2xl bg-olu-card flex items-center justify-center text-4xl mb-4">🤖</div>
         <h2 className="font-bold text-xl mb-2">No AI Agents Yet</h2>
         <p className="text-olu-muted text-sm max-w-xs mb-6">Your role doesn't have AI agents configured. Switch to Creator, Advertiser, or Supplier to see an active team.</p>
-        <button onClick={() => window.location.href = '/ai-config'} className="px-6 py-2.5 rounded-xl bg-[#7c3aed] text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+        <button onClick={() => window.location.href = '/ai-config'} className="px-6 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:opacity-90 transition-opacity">
           Browse AI Agent Marketplace
         </button>
       </div>

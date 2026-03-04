@@ -26,7 +26,7 @@ function AgentCard({ agent, onHire }) {
       </div>
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
-        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price === 'Free' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-violet-500/15 text-violet-300')}>{agent.price}</span>
+        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price === 'Free' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/10 text-olu-muted')}>{agent.price}</span>
       </div>
       <div className="flex items-center gap-1 mb-2">
         <Star size={11} className="text-amber-400" fill="currentColor" />
@@ -34,7 +34,7 @@ function AgentCard({ agent, onHire }) {
         <span className="text-olu-muted text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
       <p className="text-olu-muted text-xs leading-relaxed flex-1 mb-3">{agent.description}</p>
-      <button onClick={() => onHire(agent)} className="w-full py-2 rounded-xl bg-[#7c3aed] text-white text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
+      <button onClick={() => onHire(agent)} className="w-full py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
         <Plus size={12} /> Hire Agent
       </button>
     </motion.div>
@@ -57,12 +57,12 @@ function HireModal({ agent, onClose, onConfirm }) {
             <input
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full p-3 glass rounded-xl text-sm focus:outline-none border border-olu-border focus:border-violet-500/60 transition-colors mb-4"
+              className="w-full p-3 glass rounded-xl text-sm focus:outline-none border border-olu-border focus:border-white/30 transition-colors mb-4"
             />
             <p className="text-xs text-olu-muted mb-4">This agent will join your team as <strong>{name}</strong>, {agent.role || agent.name}. You can rename or remove them anytime.</p>
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted hover:text-olu-text transition-colors">Cancel</button>
-              <button onClick={() => onConfirm(agent, name)} className="flex-1 py-2.5 rounded-xl bg-[#7c3aed] text-white text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name}</button>
+              <button onClick={() => onConfirm(agent, name)} className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name}</button>
             </div>
           </div>
         </motion.div>

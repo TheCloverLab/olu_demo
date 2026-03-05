@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShieldAlert, ShoppingBag, UserCheck, ChevronRight, MoreHorizontal, Check, X, ArrowUpRight } from 'lucide-react'
+import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShieldAlert, ShoppingBag, UserCheck, ChevronRight, MoreHorizontal, Check, X, ArrowUpRight, MessageSquare, Send } from 'lucide-react'
 import { REVENUE_DATA, VIEWS_DATA, FANS, IP_LICENSES, IP_INFRINGEMENTS, SHOP_PRODUCTS, SUPPLIER_CREATORS, formatNumber } from '../data/mock'
 import clsx from 'clsx'
 
@@ -72,6 +72,135 @@ function CustomTooltip({ active, payload, label }) {
   )
 }
 
+const ACTION_ITEMS = [
+  { id: 'a1', title: 'Review IP license request from IndieSound Studio', type: 'IP License', urgent: true },
+  { id: 'a2', title: 'Approve hoodie product listing from ArtisanCraft Co.', type: 'Shop', urgent: false },
+  { id: 'a3', title: 'Review fan creation license application — 3 pending', type: 'Fan Creation', urgent: false },
+  { id: 'a4', title: 'Renew voice licensing terms with GameVerse Studios', type: 'IP License', urgent: true },
+]
+
+function ActionRequiredList() {
+  const [items, setItems] = useState(ACTION_ITEMS)
+  const [activeAction, setActiveAction] = useState(null) // { id, type: 'approve'|'reject' }
+  const [feedback, setFeedback] = useState('')
+
+  const handleAction = (id, type) => {
+    if (activeAction?.id === id && activeAction?.type === type) {
+      setActiveAction(null)
+      setFeedback('')
+      return
+    }
+    setActiveAction({ id, type })
+    setFeedback('')
+  }
+
+  const submitAction = (id) => {
+    setItems(prev => prev.map(item =>
+      item.id === id
+        ? { ...item, resolved: activeAction.type, feedback: feedback.trim() || null }
+        : item
+    ))
+    setActiveAction(null)
+    setFeedback('')
+  }
+
+  const unresolvedCount = items.filter(i => !i.resolved).length
+
+  return (
+    <div className="glass rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-bold">Action Required 🔔</p>
+        {unresolvedCount < items.length && (
+          <span className="text-xs text-olu-muted">{unresolvedCount} remaining</span>
+        )}
+      </div>
+      <div className="space-y-3">
+        <AnimatePresence>
+          {items.map((todo) => (
+            <motion.div
+              key={todo.id}
+              layout
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.2 }}
+              className={clsx('glass rounded-xl overflow-hidden', todo.resolved && 'opacity-60')}
+            >
+              <div className="flex items-center gap-3 p-3">
+                {!todo.resolved && todo.urgent && <div className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />}
+                {todo.resolved === 'approve' && <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><Check size={11} className="text-emerald-400" /></div>}
+                {todo.resolved === 'reject' && <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0"><X size={11} className="text-red-400" /></div>}
+                <div className="flex-1 min-w-0">
+                  <p className={clsx('text-sm font-medium line-clamp-1', todo.resolved && 'line-through text-olu-muted')}>{todo.title}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-olu-muted text-xs">{todo.type}</p>
+                    {todo.resolved && todo.feedback && (
+                      <p className="text-olu-muted text-xs italic truncate">— "{todo.feedback}"</p>
+                    )}
+                  </div>
+                </div>
+                {!todo.resolved && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAction(todo.id, 'approve')}
+                      className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
+                    >
+                      <Check size={13} />
+                    </button>
+                    <button
+                      onClick={() => handleAction(todo.id, 'reject')}
+                      className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Feedback input */}
+              <AnimatePresence>
+                {activeAction?.id === todo.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-3 pb-3">
+                      <div className={clsx('rounded-lg border p-2', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
+                        <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
+                          {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={feedback}
+                            onChange={e => setFeedback(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') submitAction(todo.id) }}
+                            placeholder={activeAction.type === 'approve' ? 'e.g. Looks good, proceed' : 'e.g. Terms too broad, counter at...'}
+                            className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => submitAction(todo.id)}
+                            className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
+                          >
+                            {activeAction.type === 'approve' ? 'Approve' : 'Reject'} <Send size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
 function Dashboard() {
   return (
     <div className="space-y-6">
@@ -132,29 +261,7 @@ function Dashboard() {
       </div>
 
       {/* Todos */}
-      <div className="glass rounded-2xl p-5">
-        <p className="font-bold mb-4">Action Required 🔔</p>
-        <div className="space-y-3">
-          {[
-            { title: 'Review IP license request from IndieSound Studio', type: 'IP License', urgent: true },
-            { title: 'Approve hoodie product listing from ArtisanCraft Co.', type: 'Shop', urgent: false },
-            { title: 'Review fan creation license application — 3 pending', type: 'Fan Creation', urgent: false },
-            { title: 'Renew voice licensing terms with GameVerse Studios', type: 'IP License', urgent: true },
-          ].map((todo, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 glass rounded-xl">
-              {todo.urgent && <div className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium line-clamp-1">{todo.title}</p>
-                <p className="text-olu-muted text-xs">{todo.type}</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"><Check size={13} /></button>
-                <button className="p-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"><X size={13} /></button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ActionRequiredList />
     </div>
   )
 }
@@ -229,9 +336,33 @@ function FanCRM() {
 }
 
 function IPLicenses() {
+  const [licenses, setLicenses] = useState(IP_LICENSES)
+  const [activeAction, setActiveAction] = useState(null)
+  const [feedback, setFeedback] = useState('')
+
+  const handleAction = (id, type) => {
+    if (activeAction?.id === id && activeAction?.type === type) {
+      setActiveAction(null)
+      setFeedback('')
+      return
+    }
+    setActiveAction({ id, type })
+    setFeedback('')
+  }
+
+  const submitAction = (id) => {
+    setLicenses(prev => prev.map(l =>
+      l.id === id
+        ? { ...l, status: activeAction.type === 'approve' ? 'approved' : 'rejected', approvedBy: 'Luna (Manual)', feedback: feedback.trim() || null }
+        : l
+    ))
+    setActiveAction(null)
+    setFeedback('')
+  }
+
   return (
     <div className="space-y-3">
-      {IP_LICENSES.map((license) => (
+      {licenses.map((license) => (
         <div key={license.id} className="p-4 glass rounded-2xl">
           <div className="flex items-start justify-between mb-2">
             <div>
@@ -247,15 +378,60 @@ function IPLicenses() {
             </div>
             <span className="text-olu-muted">{license.date}</span>
           </div>
+          {license.feedback && (
+            <p className="text-olu-muted text-xs italic mt-2">Feedback: "{license.feedback}"</p>
+          )}
           {license.status === 'negotiating' && (
-            <div className="flex gap-2 mt-3">
-              <button className="flex-1 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 transition-colors flex items-center justify-center gap-1">
-                <Check size={12} /> Approve
-              </button>
-              <button className="flex-1 py-1.5 rounded-lg bg-red-500/15 text-red-400 text-xs font-semibold hover:bg-red-500/25 transition-colors flex items-center justify-center gap-1">
-                <X size={12} /> Reject
-              </button>
-            </div>
+            <>
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => handleAction(license.id, 'approve')}
+                  className={clsx('flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1', activeAction?.id === license.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
+                >
+                  <Check size={12} /> Approve
+                </button>
+                <button
+                  onClick={() => handleAction(license.id, 'reject')}
+                  className={clsx('flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1', activeAction?.id === license.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
+                >
+                  <X size={12} /> Reject
+                </button>
+              </div>
+              <AnimatePresence>
+                {activeAction?.id === license.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="overflow-hidden"
+                  >
+                    <div className={clsx('rounded-lg border p-2 mt-3', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
+                      <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
+                        {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={feedback}
+                          onChange={e => setFeedback(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') submitAction(license.id) }}
+                          placeholder={activeAction.type === 'approve' ? 'e.g. Accepted, proceed with terms' : 'e.g. Rate too low, counter at $10K'}
+                          className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => submitAction(license.id)}
+                          className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
+                        >
+                          Confirm <Send size={10} />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
           )}
         </div>
       ))}

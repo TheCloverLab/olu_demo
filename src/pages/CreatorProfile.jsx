@@ -226,8 +226,11 @@ export default function CreatorProfile() {
             {posts.length > 0 ? posts.map((post) => (
               <motion.div key={post.id} whileHover={{ y: -2 }} onClick={() => navigate(`/content/${post.id}`)}
                 className="glass glass-hover rounded-2xl overflow-hidden cursor-pointer">
-                <div className={`h-36 bg-gradient-to-br ${post.gradientBg} flex items-center justify-center relative`}>
-                  <div className="text-6xl opacity-20">{post.emoji}</div>
+                <div className={`h-36 bg-gradient-to-br ${post.gradientBg} flex items-center justify-center relative overflow-hidden`}>
+                  {post.coverImg
+                    ? <img src={post.coverImg} alt={post.title} className="w-full h-full object-cover" />
+                    : <div className="text-6xl opacity-20">{post.emoji}</div>
+                  }
                   {post.locked && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
                       <Lock size={16} className="text-white" />

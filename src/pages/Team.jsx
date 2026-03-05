@@ -5,6 +5,15 @@ import { useApp } from '../context/AppContext'
 import { AI_AGENTS, GROUP_CHATS } from '../data/mock'
 import clsx from 'clsx'
 
+const ROLE_COLORS = {
+  'IP Manager':        'bg-violet-500/15 text-violet-400',
+  'Legal Officer':     'bg-amber-500/15 text-amber-400',
+  'Community Manager': 'bg-cyan-500/15 text-cyan-400',
+  'Growth Officer':    'bg-emerald-500/15 text-emerald-400',
+  'Data Analyst':      'bg-blue-500/15 text-blue-400',
+  'Creativity Officer':'bg-pink-500/15 text-pink-400',
+}
+
 function StatusDot({ status }) {
   return (
     <span className={clsx('w-2.5 h-2.5 rounded-full border-2 border-olu-card', {
@@ -38,7 +47,7 @@ function AgentRow({ agent }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-semibold text-sm">{agent.name}</span>
-          <span className="text-xs text-olu-muted bg-white/05 px-2 py-0.5 rounded-full">{agent.role}</span>
+          <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-olu-muted bg-white/05')}>{agent.role}</span>
         </div>
         <p className="text-olu-muted text-xs line-clamp-1 mb-1">{agent.lastMessage}</p>
         <p className="text-olu-muted text-xs">{agent.lastTime}</p>

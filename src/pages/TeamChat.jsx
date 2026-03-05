@@ -390,15 +390,22 @@ export default function TeamChat() {
                 animate={{ opacity: 1, y: 0 }}
                 className={clsx('flex gap-3', msg.from === 'user' ? 'flex-row-reverse' : '')}
               >
-                {msg.from !== 'user' && (
-                  agent.avatarImg
-                    ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
-                    : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
-                )}
+                {msg.from !== 'user' && (() => {
+                  const participant = isGroup && msg.from !== 'agent' ? allAgents.find(a => a.name === msg.from) : null
+                  const avatarSrc = participant?.avatarImg || agent.avatarImg
+                  const avatarColor = participant?.color || agent.color
+                  const avatarLabel = participant?.name?.[0] || agent.name[0]
+                  return avatarSrc
+                    ? <img src={avatarSrc} alt={participant?.name || agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
+                    : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${avatarColor} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{avatarLabel}</div>
+                })()}
                 <div className={clsx('max-w-[80%]', msg.from === 'user' ? 'items-end' : 'items-start', 'flex flex-col gap-1')}>
-                  {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (
-                    <p className="text-xs text-olu-muted px-1">{msg.from}</p>
-                  )}
+                  {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (() => {
+                    const participant = allAgents.find(a => a.name === msg.from)
+                    return (
+                      <p className="text-xs text-olu-muted px-1">{msg.from}{participant?.role ? ` · ${participant.role}` : ''}</p>
+                    )
+                  })()}
                   <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
                     {msg.from === 'agent' ? (
                       msg.text ? (

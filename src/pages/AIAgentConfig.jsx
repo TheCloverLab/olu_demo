@@ -40,7 +40,7 @@ function AgentCard({ agent, onHire }) {
 }
 
 function HireModal({ agent, onClose, onConfirm }) {
-  const [name, setName] = useState(agent.name.split(' ')[0])
+  const [name, setName] = useState('')
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/70 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -55,12 +55,13 @@ function HireModal({ agent, onClose, onConfirm }) {
             <input
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full p-3 glass rounded-xl text-sm focus:outline-none border border-olu-border focus:border-white/30 transition-colors mb-4"
+              placeholder="Give your agent a name, like Ashley, Ada, or Luca."
+              className="w-full p-3 glass rounded-xl text-sm focus:outline-none border border-olu-border focus:border-white/30 transition-colors mb-4 placeholder:text-olu-muted/60"
             />
-            <p className="text-xs text-olu-muted mb-4">This agent will join your team as <strong>{name}</strong>, {agent.role || agent.name}. You can rename or remove them anytime.</p>
+            <p className="text-xs text-olu-muted mb-4">This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role || agent.name}. You can rename or remove them anytime.</p>
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-olu-border text-sm font-medium text-olu-muted hover:text-olu-text transition-colors">Cancel</button>
-              <button onClick={() => onConfirm(agent, name)} className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name}</button>
+              <button onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity">Hire {name || agent.name}</button>
             </div>
           </div>
         </motion.div>

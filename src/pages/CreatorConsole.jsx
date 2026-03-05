@@ -418,7 +418,7 @@ function IPViolations() {
     <div className="space-y-3">
       <div className="p-3 glass rounded-xl border border-red-500/20 flex items-center gap-2 mb-4">
         <ShieldAlert size={16} className="text-red-400 flex-shrink-0" />
-        <p className="text-sm"><span className="text-red-300 font-semibold">Debian</span> is monitoring 6 platforms 24/7. <span className="text-emerald-400">75%</span> resolution rate this month.</p>
+        <p className="text-sm"><span className="text-red-300 font-semibold">Michael</span> is monitoring 6 platforms 24/7. <span className="text-emerald-400">75%</span> resolution rate this month.</p>
       </div>
       {IP_INFRINGEMENTS.map((item) => (
         <div key={item.id} className="p-4 glass rounded-2xl">
@@ -449,8 +449,8 @@ function Shop() {
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
           { label: 'Monthly Sales', value: '$25,382' },
-          { label: 'Products', value: SHOP_PRODUCTS.length },
-          { label: 'Suppliers', value: '1 active' },
+          { label: 'Products', value: '324' },
+          { label: 'Suppliers', value: '27' },
         ].map(s => (
           <div key={s.label} className="glass rounded-xl p-3 text-center">
             <p className="font-black text-lg">{s.value}</p>

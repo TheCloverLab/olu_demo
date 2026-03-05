@@ -1,10 +1,53 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Send, CheckSquare, Clock, Circle, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { AI_AGENTS, GROUP_CHATS } from '../data/mock'
 import clsx from 'clsx'
+
+const FALLBACK_BY_ROLE = {
+  'IP Manager': [
+    "I'll review the licensing request and get back to you with a recommendation.",
+    "Noted. I'll check the IP status and prepare a summary.",
+    "I'll draft the counter-proposal and send it over shortly.",
+  ],
+  'Legal Officer': [
+    "I'll monitor for any new unauthorized uses and report back.",
+    "Understood. I'll prepare the DMCA takedown and file it immediately.",
+    "I'll document the infringement and recommend next steps.",
+  ],
+  'Community Manager': [
+    "I'll reach out to the top fans and keep you updated.",
+    "On it — I'll prepare the community announcement.",
+    "I'll organize the event details and share a draft with you.",
+  ],
+  'Growth Officer': [
+    "I'll analyze the latest growth metrics and prepare a report.",
+    "Understood. I'll run the campaign and track performance.",
+    "I'll identify the best channels and draft a growth plan.",
+  ],
+  'Data Analyst': [
+    "I'll pull the analytics data and prepare a summary.",
+    "Understood. I'll run the numbers and highlight key insights.",
+    "I'll generate the report and flag any anomalies.",
+  ],
+  'Creativity Officer': [
+    "I'll brainstorm content ideas based on current trends.",
+    "Got it. I'll draft a few concepts for your review.",
+    "I'll put together a content calendar with fresh ideas.",
+  ],
+}
+const FALLBACK_DEFAULT = [
+  "Got it. I'll handle that and update you shortly.",
+  "Understood. I'm on it.",
+  "Sure, I'll take care of that now.",
+]
+const fallback = (role) => {
+  const replies = FALLBACK_BY_ROLE[role] || FALLBACK_DEFAULT
+  return replies[Math.floor(Math.random() * replies.length)]
+}
 
 const STATUS_CONFIG = {
   done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
@@ -16,6 +59,20 @@ const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
   medium: 'text-amber-400 bg-amber-400/10',
   low: 'text-olu-muted bg-white/05',
+}
+
+function preprocessMarkdown(text) {
+  // Convert inline • bullets to proper markdown list items
+  return text.replace(/([^\n])\s*•\s*/g, '$1\n- ').replace(/^\s*•\s*/gm, '- ')
+}
+
+function buildSystemPrompt(agent) {
+  return `You are ${agent.name}, an AI agent on the OLU platform — a next-gen creator economy platform.
+
+Your role: ${agent.role}
+Your specialty: ${agent.description}
+
+You are chatting with Luna Chen, a professional digital artist and creator. She is your principal. Be proactive, concise, and professional. Use brief bullet points when listing items. Don't use excessive emojis. Respond in the same language the user writes in (English or Chinese).`
 }
 
 function TaskItem({ task }) {
@@ -33,6 +90,14 @@ function TaskItem({ task }) {
           <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', PRIORITY_COLOR[task.priority])}>{task.priority}</span>
           <span className="text-olu-muted text-xs">{task.due}</span>
         </div>
+        {status === 'in_progress' && task.progress != null && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${task.progress}%` }} />
+            </div>
+            <span className="text-olu-muted text-xs flex-shrink-0">{task.progress}%</span>
+          </div>
+        )}
       </div>
       <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium mt-0.5', cfg.bg, cfg.color)}>{cfg.label}</span>
     </div>
@@ -45,35 +110,116 @@ export default function TeamChat() {
   const { currentRole } = useApp()
   const [tab, setTab] = useState('chat')
   const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [streaming, setStreaming] = useState(false)
+  const [thinking, setThinking] = useState('')
+  const bottomRef = useRef(null)
 
   const isGroup = agentId?.startsWith('grp-')
   const allAgents = AI_AGENTS[currentRole] || []
 
-  let agent, conversation, tasks
+  let agent, tasks
 
   if (isGroup) {
     const groupId = agentId.replace('grp-', '')
     const groups = GROUP_CHATS[currentRole] || []
     const group = groups.find(g => g.id === groupId) || groups[0]
-    agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online' } : null
-    conversation = group?.conversation || []
+    agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online', conversation: group?.conversation || [] } : null
     tasks = []
   } else {
     agent = allAgents.find(a => a.id === agentId) || allAgents[0]
-    conversation = agent?.conversation || []
     tasks = agent?.tasks || []
   }
 
-  const [messages, setMessages] = useState(conversation)
+  const [messages, setMessages] = useState(agent?.conversation || [])
 
-  const sendMessage = () => {
-    if (!input.trim()) return
-    setMessages([...messages, { from: 'user', text: input, time: 'Just now' }])
+  useEffect(() => {
+    const t = setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    return () => clearTimeout(t)
+  }, [messages, loading])
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return
+    const userText = input.trim()
     setInput('')
-    // Simulate agent reply
-    setTimeout(() => {
-      setMessages(prev => [...prev, { from: 'agent', text: 'Got it! I\'m on it. I\'ll update you as soon as I have progress. 🚀', time: 'Just now', replyTo: input }])
-    }, 1200)
+
+    const userMsg = { from: 'user', text: userText, time: 'Just now' }
+    const next = [...messages, userMsg]
+    setMessages(next)
+    setLoading(true)
+
+    try {
+      const apiMessages = [
+        { role: 'system', content: buildSystemPrompt(agent) },
+        ...next
+          .filter(m => m.text && m.text.trim())
+          .slice(-20) // keep last 20 messages max
+          .map(m => ({
+            role: m.from === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          })),
+      ]
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages }),
+      })
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+
+      // Add an empty agent message to stream into
+      setMessages(prev => [...prev, { from: 'agent', text: '', time: 'Just now' }])
+      setLoading(false)
+      setStreaming(true)
+
+      let buffer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() // keep incomplete line for next chunk
+
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue
+          const payload = line.slice(5).trim()
+          if (payload === '[DONE]') break
+          if (payload.startsWith('[ERROR:') || payload === '[FALLBACK]') {
+            console.error('API error payload:', payload)
+            setMessages(prev => {
+              const msgs = [...prev]
+              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: fallback(agent.role) }
+              return msgs
+            })
+            break
+          }
+          try {
+            const json = JSON.parse(payload)
+            const delta = json.choices?.[0]?.delta || {}
+            if (delta.reasoning_content) {
+              setThinking(prev => (prev + delta.reasoning_content).slice(-120))
+            }
+            const token = delta.content || ''
+            if (token) {
+              setThinking('') // clear thinking hint once content starts
+              setMessages(prev => {
+                const msgs = [...prev]
+                msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: msgs[msgs.length - 1].text + token }
+                return msgs
+              })
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (e) {
+      setMessages(prev => [...prev, { from: 'agent', text: fallback(agent.role), time: 'Just now' }])
+    } finally {
+      setLoading(false)
+      setStreaming(false)
+      setThinking('')
+    }
   }
 
   if (!agent) return (
@@ -89,15 +235,17 @@ export default function TeamChat() {
         <button onClick={() => navigate('/team')} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors mr-1">
           <ArrowLeft size={18} className="text-olu-muted" />
         </button>
-        {agent.avatarImg
-          ? <img src={agent.avatarImg} alt={agent.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
-          : <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-lg font-bold text-white flex-shrink-0`}>{agent.name[0]}</div>
-        }
+        <div className="relative flex-shrink-0">
+          {agent.avatarImg
+            ? <img src={agent.avatarImg} alt={agent.name} className="w-10 h-10 rounded-xl object-cover" />
+            : <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-lg font-bold text-white`}>{agent.name[0]}</div>
+          }
+        </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm">{agent.name}</p>
           <div className="flex items-center gap-1.5">
-            <div className={clsx('w-1.5 h-1.5 rounded-full', agent.status === 'online' ? 'bg-emerald-400' : agent.status === 'busy' ? 'bg-amber-400' : 'bg-gray-500')} />
-            <p className="text-olu-muted text-xs capitalize">{agent.status} · {agent.role}</p>
+            <div className={clsx('w-1.5 h-1.5 rounded-full', loading ? 'bg-amber-400' : agent.status === 'online' ? 'bg-emerald-400' : 'bg-gray-500')} />
+            <p className="text-olu-muted text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
           </div>
         </div>
         {!isGroup && tasks.length > 0 && (
@@ -137,16 +285,50 @@ export default function TeamChat() {
                   {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (
                     <p className="text-xs text-olu-muted px-1">{msg.from}</p>
                   )}
-                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
-                    {msg.text}
+                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                    {msg.from === 'agent' ? (
+                      msg.text ? (
+                        <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-pre:bg-white/10 prose-code:bg-white/10 prose-code:px-1 prose-code:rounded prose-headings:text-white">
+                          <ReactMarkdown>{preprocessMarkdown(msg.text)}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="flex gap-1 items-center h-4">
+                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </span>
+                      )
+                    ) : msg.text}
                   </div>
-                  <p className="text-olu-muted text-xs px-1">{msg.time}</p>
+                  {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
+                    <p className="text-olu-muted text-xs px-1">{msg.time}</p>
+                  )}
                 </div>
               </motion.div>
             ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
+                {agent.avatarImg
+                  ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
+                  : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
+                }
+                <div className="px-4 py-3 glass rounded-2xl rounded-tl-sm flex items-center gap-1.5">
+                  <Loader2 size={14} className="text-olu-muted animate-spin" />
+                  <span className="text-olu-muted text-sm">Thinking...</span>
+                </div>
+              </motion.div>
+            )}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input */}
+          {thinking && (
+            <div className="px-4 py-2 border-t border-olu-border">
+              <p className="text-olu-muted text-xs italic line-clamp-2">Thinking: {thinking}...</p>
+            </div>
+          )}
           <div className="p-4 border-t border-olu-border flex-shrink-0">
             <div className="flex gap-3 items-end">
               <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors">
@@ -161,7 +343,7 @@ export default function TeamChat() {
               </div>
               <button
                 onClick={sendMessage}
-                disabled={!input.trim()}
+                disabled={!input.trim() || loading}
                 className="p-3 rounded-xl bg-white text-black disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
               >
                 <Send size={16} />

@@ -17,13 +17,13 @@ const ROLE_OPTIONS = [
   },
   {
     key: 'fan',
-    label: 'Fan',
+    label: 'Customer',
     name: 'Alex Park',
     handle: '@alexpark',
     initials: 'AP',
     avatarColor: 'from-pink-500 to-rose-600',
     gradient: 'from-pink-600 to-rose-700',
-    description: 'Superfan of Luna Chen. Discover content, support creators, create fan works.',
+    description: 'Customer of Luna Chen. Discover content, support creators, create fan works.',
     icon: '⭐',
   },
   {
@@ -62,12 +62,13 @@ export default function RoleSwitcher() {
             className="fixed inset-0 bg-black/70 z-50 backdrop-blur-md"
             onClick={() => setShowRoleSwitcher(false)}
           />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-lg mx-auto"
+            className="w-full max-w-lg"
           >
             <div className="bg-olu-surface border border-olu-border rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
               {/* Header */}
@@ -134,6 +135,7 @@ export default function RoleSwitcher() {
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

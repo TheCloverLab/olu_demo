@@ -146,7 +146,7 @@ function PostCard({ post }) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-olu-muted hover:text-white transition-colors"
           >
             <Repeat2 size={15} />
-            Fan Create
+            Customer Create
           </button>
         )}
         <button

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { AI_AGENTS, GROUP_CHATS } from '../data/mock'
 import clsx from 'clsx'
@@ -45,7 +45,7 @@ function AgentRow({ agent }) {
       </div>
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         {pendingTasks > 0 && (
-          <span className="text-xs bg-white text-black rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
+          <span className="text-xs bg-emerald-400 text-black rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingTasks}</span>
         )}
         <ChevronRight size={16} className="text-olu-muted" />
       </div>

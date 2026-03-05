@@ -13,6 +13,7 @@ export default function Profile() {
     <div className="max-w-2xl mx-auto pb-24 md:pb-6">
       {/* Cover */}
       <div className="h-36 bg-[#1a1a1a] relative mx-4 mt-4 rounded-2xl overflow-hidden">
+        {currentUser.coverImg && <img src={currentUser.coverImg} alt="" className="w-full h-full object-cover" />}
         <div className="absolute inset-0 bg-gradient-to-t from-olu-bg/80 to-transparent" />
       </div>
 
@@ -67,7 +68,7 @@ export default function Profile() {
             </div>
             <div className="text-left">
               <p className="text-sm font-semibold">Creator Console</p>
-              <p className="text-olu-muted text-xs">View analytics, fans, IP & shop</p>
+              <p className="text-olu-muted text-xs">View analytics, customers, IP & shop</p>
             </div>
           </button>
         )}

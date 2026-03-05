@@ -7,7 +7,7 @@ import clsx from 'clsx'
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
-  { key: 'fans', label: 'Fans', icon: Users },
+  { key: 'fans', label: 'Customers', icon: Users },
   { key: 'ip_licenses', label: 'IP Licenses', icon: CheckSquare },
   { key: 'ip_violations', label: 'IP Violations', icon: ShieldAlert },
   { key: 'shop', label: 'Shop', icon: ShoppingBag },
@@ -78,7 +78,7 @@ function Dashboard() {
       {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard label="Monthly Revenue" value="$12,400" change={8.2} icon={DollarSign} color="from-violet-600 to-indigo-600" />
-        <MetricCard label="Total Fans" value="234K" change={12.4} icon={Users} color="from-emerald-600 to-teal-600" />
+        <MetricCard label="Total Customers" value="234K" change={12.4} icon={Users} color="from-emerald-600 to-teal-600" />
         <MetricCard label="Total Views" value="3.2M" change={23.1} icon={Eye} color="from-blue-600 to-cyan-600" />
         <MetricCard label="IP Licenses" value="$1,040/mo" change={45.2} icon={CheckSquare} color="from-amber-500 to-orange-600" />
       </div>
@@ -186,7 +186,7 @@ function FanCRM() {
         {filters.map(f => (
           <button key={f} onClick={() => setActiveFilter(f)}
             className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap capitalize transition-all', activeFilter === f ? 'bg-olu-surface text-olu-text' : 'text-olu-muted hover:text-olu-text')}>
-            {f === 'all' ? 'All Fans' : f.replace('_', ' ')}
+            {f === 'all' ? 'All Customers' : f.replace('_', ' ')}
           </button>
         ))}
       </div>

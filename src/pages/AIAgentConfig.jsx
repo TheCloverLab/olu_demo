@@ -6,24 +6,22 @@ import { AI_AGENTS } from '../data/mock'
 import clsx from 'clsx'
 
 const MARKETPLACE_AGENTS = [
-  { id: 'ip_manager', name: 'IP Manager', icon: '⚖️', color: 'from-violet-500 to-purple-600', category: 'Creator', price: 'Free', rating: 4.9, reviews: 1240, description: 'Manages IP licensing, authorizations, and royalty collection.' },
-  { id: 'legal', name: 'Legal Officer', icon: '🛡️', color: 'from-red-500 to-rose-600', category: 'Creator', price: 'Free', rating: 4.8, reviews: 890, description: 'Monitors unauthorized use and sends DMCA takedowns.' },
-  { id: 'community', name: 'Community Manager', icon: '🌟', color: 'from-pink-500 to-rose-500', category: 'Creator', price: 'Free', rating: 4.7, reviews: 2100, description: 'Runs community events and rewards top fans.' },
-  { id: 'growth', name: 'Growth Officer', icon: '🚀', color: 'from-emerald-500 to-teal-600', category: 'Creator', price: 'Free', rating: 4.6, reviews: 1560, description: 'Drives follower and subscriber growth across platforms.' },
-  { id: 'analyst', name: 'Data Analyst', icon: '📊', color: 'from-blue-500 to-indigo-600', category: 'Creator', price: 'Free', rating: 4.9, reviews: 3200, description: 'Deep analytics across all platforms with actionable insights.' },
-  { id: 'creativity', name: 'Creativity Officer', icon: '✨', color: 'from-orange-400 to-amber-500', category: 'Creator', price: 'Free', rating: 4.8, reviews: 2800, description: 'Content ideation based on trends and audience behavior.' },
-  { id: 'marketing', name: 'Marketing Manager', icon: '📣', color: 'from-blue-500 to-cyan-500', category: 'Advertiser', price: 'Free', rating: 4.7, reviews: 980, description: 'End-to-end influencer campaign planning and execution.' },
-  { id: 'channel', name: 'Channel Manager', icon: '🏭', color: 'from-emerald-500 to-green-600', category: 'Supplier', price: 'Free', rating: 4.5, reviews: 560, description: 'Connects creators and suppliers for merch partnerships.' },
-  { id: 'finance', name: 'Finance Officer', icon: '💰', color: 'from-yellow-500 to-amber-600', category: 'Pro', price: '$9.99/mo', rating: 4.9, reviews: 1100, description: 'Cross-border payments, invoicing, and financial reporting.' },
-  { id: 'translation', name: 'Localization Agent', icon: '🌍', color: 'from-cyan-500 to-blue-600', category: 'Pro', price: '$4.99/mo', rating: 4.6, reviews: 430, description: 'Translates and localizes content for global audiences.' },
+  { id: 'ip_manager', name: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', category: 'Creator', price: 'Free', rating: 4.9, reviews: 1240, description: 'Manages IP licensing, authorizations, and royalty collection.' },
+  { id: 'legal', name: 'Legal Officer', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', category: 'Creator', price: 'Free', rating: 4.8, reviews: 890, description: 'Monitors unauthorized use and sends DMCA takedowns.' },
+  { id: 'community', name: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', category: 'Creator', price: 'Free', rating: 4.7, reviews: 2100, description: 'Runs community events and rewards top customers.' },
+  { id: 'growth', name: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', category: 'Creator', price: 'Free', rating: 4.6, reviews: 1560, description: 'Drives follower and subscriber growth across platforms.' },
+  { id: 'analyst', name: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-indigo-600', category: 'Creator', price: 'Free', rating: 4.9, reviews: 3200, description: 'Deep analytics across all platforms with actionable insights.' },
+  { id: 'creativity', name: 'Creativity Officer', avatarImg: '/images/agents/nova.jpg', color: 'from-orange-400 to-amber-500', category: 'Creator', price: 'Free', rating: 4.8, reviews: 2800, description: 'Content ideation based on trends and audience behavior.' },
+  { id: 'marketing', name: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', category: 'Advertiser', price: 'Free', rating: 4.7, reviews: 980, description: 'End-to-end influencer campaign planning and execution.' },
+  { id: 'channel', name: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', category: 'Supplier', price: 'Free', rating: 4.5, reviews: 560, description: 'Connects creators and suppliers for merch partnerships.' },
+  { id: 'finance', name: 'Finance Officer', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', category: 'Pro', price: '$9.99/mo', rating: 4.9, reviews: 1100, description: 'Cross-border payments, invoicing, and financial reporting.' },
+  { id: 'translation', name: 'Localization Agent', avatarImg: '/images/agents/localization.jpg', color: 'from-cyan-500 to-blue-600', category: 'Pro', price: '$4.99/mo', rating: 4.6, reviews: 430, description: 'Translates and localizes content for global audiences.' },
 ]
 
 function AgentCard({ agent, onHire }) {
   return (
     <motion.div whileHover={{ y: -3 }} className="glass glass-hover rounded-2xl p-4 flex flex-col">
-      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-2xl mb-3`}>
-        {agent.icon}
-      </div>
+      <img src={agent.avatarImg} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
         <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price === 'Free' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/10 text-olu-muted')}>{agent.price}</span>
@@ -52,7 +50,7 @@ function HireModal({ agent, onClose, onConfirm }) {
             <p className="text-olu-muted text-xs mt-0.5">Give your new AI teammate a name</p>
           </div>
           <div className="p-5">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-3xl mx-auto mb-4`}>{agent.icon}</div>
+            <img src={agent.avatarImg} alt={agent.name} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4" />
             <label className="text-xs font-semibold text-olu-muted uppercase tracking-wider block mb-2">Agent Name</label>
             <input
               value={name}
@@ -119,7 +117,10 @@ export default function AIAgentConfig() {
             {activeAgents.map((agent) => (
               <div key={agent.id} className="flex items-center gap-3 p-4 glass rounded-2xl group">
                 <div className="relative flex-shrink-0">
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-xl`}>{agent.icon}</div>
+                  {agent.avatarImg
+                    ? <img src={agent.avatarImg} alt={agent.name} className="w-11 h-11 rounded-xl object-cover" />
+                    : <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-xl font-bold text-white`}>{agent.name[0]}</div>
+                  }
                   <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-olu-card', agent.status === 'online' ? 'bg-emerald-400' : 'bg-amber-400')} />
                 </div>
                 <div className="flex-1 min-w-0">

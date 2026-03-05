@@ -447,7 +447,7 @@ export default function TeamChat() {
           )}
           <div className="p-4 border-t border-olu-border flex-shrink-0">
             <div className="flex gap-3 items-end">
-              <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors relative">
+              <div className="flex-1 relative">
                 {isGroup && (
                   <MentionDropdown
                     filtered={mention.filtered}
@@ -455,6 +455,7 @@ export default function TeamChat() {
                     onSelect={p => mention.accept(input, setInput, p)}
                   />
                 )}
+                <div className="glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -470,6 +471,7 @@ export default function TeamChat() {
                   rows={1}
                   className="w-full px-4 py-3 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none resize-none"
                 />
+                </div>
               </div>
               <button
                 onClick={sendMessage}

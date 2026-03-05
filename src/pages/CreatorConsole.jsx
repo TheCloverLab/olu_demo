@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShieldAlert, ShoppingBag, UserCheck, ChevronRight, MoreHorizontal, Check, X, ArrowUpRight, MessageSquare, Send } from 'lucide-react'
+import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShieldAlert, ShoppingBag, UserCheck, ChevronRight, MoreHorizontal, Check, X, ArrowUpRight, Send } from 'lucide-react'
 import { REVENUE_DATA, VIEWS_DATA, FANS, IP_LICENSES, IP_INFRINGEMENTS, SHOP_PRODUCTS, SUPPLIER_CREATORS, formatNumber } from '../data/mock'
 import clsx from 'clsx'
 
@@ -115,87 +115,71 @@ function ActionRequiredList() {
         )}
       </div>
       <div className="space-y-3">
-        <AnimatePresence>
-          {items.map((todo) => (
-            <motion.div
-              key={todo.id}
-              layout
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              transition={{ duration: 0.2 }}
-              className={clsx('glass rounded-xl overflow-hidden', todo.resolved && 'opacity-60')}
-            >
-              <div className="flex items-center gap-3 p-3">
-                {!todo.resolved && todo.urgent && <div className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />}
-                {todo.resolved === 'approve' && <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><Check size={11} className="text-emerald-400" /></div>}
-                {todo.resolved === 'reject' && <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0"><X size={11} className="text-red-400" /></div>}
-                <div className="flex-1 min-w-0">
-                  <p className={clsx('text-sm font-medium line-clamp-1', todo.resolved && 'line-through text-olu-muted')}>{todo.title}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-olu-muted text-xs">{todo.type}</p>
-                    {todo.resolved && todo.feedback && (
-                      <p className="text-olu-muted text-xs italic truncate">— "{todo.feedback}"</p>
-                    )}
+        {items.map((todo) => (
+          <div
+            key={todo.id}
+            className={clsx('glass rounded-xl', todo.resolved && 'opacity-60')}
+          >
+            <div className="flex items-center gap-3 p-3">
+              {!todo.resolved && todo.urgent && <div className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />}
+              {todo.resolved === 'approve' && <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><Check size={11} className="text-emerald-400" /></div>}
+              {todo.resolved === 'reject' && <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0"><X size={11} className="text-red-400" /></div>}
+              <div className="flex-1 min-w-0">
+                <p className={clsx('text-sm font-medium line-clamp-1', todo.resolved && 'line-through text-olu-muted')}>{todo.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-olu-muted text-xs">{todo.type}</p>
+                  {todo.resolved && todo.feedback && (
+                    <p className="text-olu-muted text-xs italic truncate">— "{todo.feedback}"</p>
+                  )}
+                </div>
+              </div>
+              {!todo.resolved && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleAction(todo.id, 'approve')}
+                    className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
+                  >
+                    <Check size={13} />
+                  </button>
+                  <button
+                    onClick={() => handleAction(todo.id, 'reject')}
+                    className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Feedback input */}
+            {activeAction?.id === todo.id && (
+              <div className="px-3 pb-3">
+                <div className={clsx('rounded-lg border p-2', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
+                  <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
+                    {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={feedback}
+                      onChange={e => setFeedback(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') submitAction(todo.id) }}
+                      placeholder={activeAction.type === 'approve' ? 'e.g. Looks good, proceed' : 'e.g. Terms too broad, counter at...'}
+                      className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => submitAction(todo.id)}
+                      className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
+                    >
+                      {activeAction.type === 'approve' ? 'Approve' : 'Reject'} <Send size={10} />
+                    </button>
                   </div>
                 </div>
-                {!todo.resolved && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleAction(todo.id, 'approve')}
-                      className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
-                    >
-                      <Check size={13} />
-                    </button>
-                    <button
-                      onClick={() => handleAction(todo.id, 'reject')}
-                      className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-                )}
               </div>
-
-              {/* Feedback input */}
-              <AnimatePresence>
-                {activeAction?.id === todo.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-3 pb-3">
-                      <div className={clsx('rounded-lg border p-2', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
-                        <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
-                          {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={feedback}
-                            onChange={e => setFeedback(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') submitAction(todo.id) }}
-                            placeholder={activeAction.type === 'approve' ? 'e.g. Looks good, proceed' : 'e.g. Terms too broad, counter at...'}
-                            className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => submitAction(todo.id)}
-                            className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
-                          >
-                            {activeAction.type === 'approve' ? 'Approve' : 'Reject'} <Send size={10} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -397,40 +381,30 @@ function IPLicenses() {
                   <X size={12} /> Reject
                 </button>
               </div>
-              <AnimatePresence>
-                {activeAction?.id === license.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="overflow-hidden"
-                  >
-                    <div className={clsx('rounded-lg border p-2 mt-3', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
-                      <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
-                        {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
-                      </p>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={feedback}
-                          onChange={e => setFeedback(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') submitAction(license.id) }}
-                          placeholder={activeAction.type === 'approve' ? 'e.g. Accepted, proceed with terms' : 'e.g. Rate too low, counter at $10K'}
-                          className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => submitAction(license.id)}
-                          className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
-                        >
-                          Confirm <Send size={10} />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {activeAction?.id === license.id && (
+                <div className={clsx('rounded-lg border p-2 mt-3', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
+                  <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
+                    {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={feedback}
+                      onChange={e => setFeedback(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') submitAction(license.id) }}
+                      placeholder={activeAction.type === 'approve' ? 'e.g. Accepted, proceed with terms' : 'e.g. Rate too low, counter at $10K'}
+                      className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => submitAction(license.id)}
+                      className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
+                    >
+                      Confirm <Send size={10} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

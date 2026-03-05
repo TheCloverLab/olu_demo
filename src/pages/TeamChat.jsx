@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { AI_AGENTS, GROUP_CHATS } from '../data/mock'
 import clsx from 'clsx'
@@ -104,6 +104,107 @@ function TaskItem({ task }) {
   )
 }
 
+// --- @mention helpers ---
+function useMention(inputRef, participants) {
+  const [mentionQuery, setMentionQuery] = useState(null) // null = closed, string = filter
+  const [mentionIndex, setMentionIndex] = useState(0)
+  const [mentionStart, setMentionStart] = useState(-1) // cursor pos of '@'
+
+  const filtered = mentionQuery !== null
+    ? participants.filter(p => p.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+    : []
+
+  const open = mentionQuery !== null && filtered.length > 0
+
+  const detect = useCallback((value, cursorPos) => {
+    // Walk backwards from cursor to find an unmatched '@'
+    const before = value.slice(0, cursorPos)
+    const atIdx = before.lastIndexOf('@')
+    if (atIdx === -1 || (atIdx > 0 && /\S/.test(before[atIdx - 1]))) {
+      setMentionQuery(null)
+      return
+    }
+    const query = before.slice(atIdx + 1)
+    if (/\s/.test(query) && query.length > 0) {
+      setMentionQuery(null)
+      return
+    }
+    setMentionQuery(query)
+    setMentionStart(atIdx)
+    setMentionIndex(0)
+  }, [])
+
+  const accept = useCallback((input, setInput, participant) => {
+    const before = input.slice(0, mentionStart)
+    const after = input.slice(mentionStart + 1 + (mentionQuery?.length || 0))
+    setInput(before + '@' + participant.name + ' ' + after)
+    setMentionQuery(null)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }, [mentionStart, mentionQuery, inputRef])
+
+  const handleKey = useCallback((e, input, setInput) => {
+    if (!open) return false
+    if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex(i => Math.min(i + 1, filtered.length - 1)); return true }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setMentionIndex(i => Math.max(i - 1, 0)); return true }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); accept(input, setInput, filtered[mentionIndex]); return true }
+    if (e.key === 'Escape') { e.preventDefault(); setMentionQuery(null); return true }
+    return false
+  }, [open, filtered, mentionIndex, accept])
+
+  return { open, filtered, mentionIndex, detect, accept, handleKey }
+}
+
+function MentionDropdown({ filtered, mentionIndex, onSelect }) {
+  return (
+    <AnimatePresence>
+      {filtered.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          transition={{ duration: 0.12 }}
+          className="absolute bottom-full left-0 mb-2 w-56 glass border border-olu-border rounded-xl overflow-hidden shadow-lg z-50"
+        >
+          <div className="px-3 py-2 border-b border-olu-border">
+            <p className="text-olu-muted text-xs font-medium flex items-center gap-1"><AtSign size={12} /> Mention someone</p>
+          </div>
+          {filtered.map((p, i) => (
+            <button
+              key={p.id || p.name}
+              onMouseDown={e => { e.preventDefault(); onSelect(p) }}
+              className={clsx(
+                'w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
+                i === mentionIndex ? 'bg-white/10 text-white' : 'text-olu-text hover:bg-white/05'
+              )}
+            >
+              {p.avatarImg
+                ? <img src={p.avatarImg} alt={p.name} className="w-6 h-6 rounded-lg object-cover flex-shrink-0" />
+                : <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${p.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
+                    {p.icon || p.name[0]}
+                  </div>
+              }
+              <span className="font-medium truncate">{p.name}</span>
+              {p.role && <span className="text-olu-muted text-xs ml-auto flex-shrink-0">{p.role}</span>}
+            </button>
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Render text with highlighted @mentions
+function renderWithMentions(text, participantNames) {
+  if (!participantNames?.length) return text
+  const pattern = new RegExp(`(@(?:${participantNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}))`, 'g')
+  const parts = text.split(pattern)
+  return parts.map((part, i) =>
+    pattern.test(part)
+      ? <span key={i} className="text-sky-400 font-medium">{part}</span>
+      : part
+  )
+}
+
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
@@ -114,11 +215,12 @@ export default function TeamChat() {
   const [streaming, setStreaming] = useState(false)
   const [thinking, setThinking] = useState('')
   const bottomRef = useRef(null)
+  const textareaRef = useRef(null)
 
   const isGroup = agentId?.startsWith('grp-')
   const allAgents = AI_AGENTS[currentRole] || []
 
-  let agent, tasks
+  let agent, tasks, groupParticipants = []
 
   if (isGroup) {
     const groupId = agentId.replace('grp-', '')
@@ -126,10 +228,22 @@ export default function TeamChat() {
     const group = groups.find(g => g.id === groupId) || groups[0]
     agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online', conversation: group?.conversation || [] } : null
     tasks = []
+    // Build participant list from agent data
+    if (group?.participants) {
+      groupParticipants = group.participants
+        .filter(name => name !== 'Luna' && name !== 'You') // exclude self
+        .map(name => {
+          const found = allAgents.find(a => a.name === name)
+          return found || { name, id: name.toLowerCase(), role: '', color: 'from-gray-600 to-gray-500' }
+        })
+    }
   } else {
     agent = allAgents.find(a => a.id === agentId) || allAgents[0]
     tasks = agent?.tasks || []
   }
+
+  const mention = useMention(textareaRef, groupParticipants)
+  const participantNames = groupParticipants.map(p => p.name)
 
   const [messages, setMessages] = useState(agent?.conversation || [])
 
@@ -298,7 +412,9 @@ export default function TeamChat() {
                           <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '300ms' }} />
                         </span>
                       )
-                    ) : msg.text}
+                    ) : (isGroup && participantNames.length > 0)
+                      ? renderWithMentions(msg.text, participantNames)
+                      : msg.text}
                   </div>
                   {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
                     <p className="text-olu-muted text-xs px-1">{msg.time}</p>
@@ -331,12 +447,26 @@ export default function TeamChat() {
           )}
           <div className="p-4 border-t border-olu-border flex-shrink-0">
             <div className="flex gap-3 items-end">
-              <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors">
+              <div className="flex-1 glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors relative">
+                {isGroup && (
+                  <MentionDropdown
+                    filtered={mention.filtered}
+                    mentionIndex={mention.mentionIndex}
+                    onSelect={p => mention.accept(input, setInput, p)}
+                  />
+                )}
                 <textarea
+                  ref={textareaRef}
                   value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                  placeholder={`Message ${agent.name}...`}
+                  onChange={e => {
+                    setInput(e.target.value)
+                    if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
+                  }}
+                  onKeyDown={e => {
+                    if (isGroup && mention.handleKey(e, input, setInput)) return
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+                  }}
+                  placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
                   rows={1}
                   className="w-full px-4 py-3 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none resize-none"
                 />

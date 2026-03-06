@@ -13,6 +13,14 @@ function formatNumber(value: number) {
 
 const FILTERS = ['All', 'Art', 'Gaming', 'Music', 'Fashion', 'Tech', 'Coding']
 
+function SafeImage({ src, alt, className, fallback }: { src?: string; alt: string; className: string; fallback: any }) {
+  const [broken, setBroken] = useState(false)
+
+  if (!src || broken) return fallback
+
+  return <img src={src} alt={alt} className={className} onError={() => setBroken(true)} />
+}
+
 // Patreon-style: image-first card, name + tagline below
 function CreatorCard({ creator }: { creator: User }) {
   const navigate = useNavigate()
@@ -25,9 +33,12 @@ function CreatorCard({ creator }: { creator: User }) {
     >
       {/* Square image */}
       <div className={`w-full aspect-square rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} overflow-hidden relative mb-2.5`}>
-        {creator.cover_img && (
-          <img src={creator.cover_img} alt={creator.name} className="w-full h-full object-cover" />
-        )}
+        <SafeImage
+          src={creator.cover_img}
+          alt={creator.name}
+          className="w-full h-full object-cover"
+          fallback={<div className="w-full h-full" />}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <button
           onClick={e => e.stopPropagation()}
@@ -53,10 +64,12 @@ function CreatorRow({ creator }: { creator: User }) {
     >
       {/* Square thumbnail */}
       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex-shrink-0 overflow-hidden`}>
-        {creator.avatar_img
-          ? <img src={creator.avatar_img} alt={creator.name} className="w-full h-full object-cover" />
-          : <span className="w-full h-full flex items-center justify-center font-bold text-white">{creator.initials}</span>
-        }
+        <SafeImage
+          src={creator.avatar_img}
+          alt={creator.name}
+          className="w-full h-full object-cover"
+          fallback={<span className="w-full h-full flex items-center justify-center font-bold text-white">{creator.initials}</span>}
+        />
       </div>
       <div className="flex-1 text-left min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
@@ -70,7 +83,12 @@ function CreatorRow({ creator }: { creator: User }) {
       </span>
       {/* Thumbnail preview */}
       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex-shrink-0 overflow-hidden`}>
-        {creator.cover_img && <img src={creator.cover_img} alt="" className="w-full h-full object-cover opacity-80" />}
+        <SafeImage
+          src={creator.cover_img}
+          alt=""
+          className="w-full h-full object-cover opacity-80"
+          fallback={<div className="w-full h-full" />}
+        />
       </div>
     </motion.button>
   )
@@ -95,10 +113,12 @@ function PostCard({ post }: { post: any }) {
       {/* Header */}
       <div className="flex items-center gap-3 p-4 pb-3">
         <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
-          {creatorAvatar
-            ? <img src={creatorAvatar} alt={creator.name} className="w-9 h-9 rounded-full object-cover" />
-            : <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>{creator?.initials || '?'}</div>
-          }
+          <SafeImage
+            src={creatorAvatar}
+            alt={creator?.name || 'Creator'}
+            className="w-9 h-9 rounded-full object-cover"
+            fallback={<div className={`w-9 h-9 rounded-full bg-gradient-to-br ${creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>{creator?.initials || '?'}</div>}
+          />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">

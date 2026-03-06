@@ -6,10 +6,10 @@ import { useApp } from '../context/AppContext'
 
 // Mock products data
 const MOCK_PRODUCTS = [
-  { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop' },
-  { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=400&h=400&fit=crop' },
-  { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&h=400&fit=crop' },
-  { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1530325553241-4f6e7690cf36?w=400&h=400&fit=crop' },
+  { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/hoodie.jpg' },
+  { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/pins.jpg' },
+  { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/stand.jpg' },
+  { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/plushie.jpg' },
 ]
 
 function ProductCard({ product, onAddToCart, isCreator }) {

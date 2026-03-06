@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, Send, ArrowLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../context/AuthContext'
-import { getSocialChatMessages, getSocialChatsByUser } from '../services/api'
+import { addSocialChatMessage, ensureSocialChat, getSocialChatMessages, getSocialChatsByUser } from '../services/api'
 
 export default function Chat() {
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const [selected, setSelected] = useState<string | null>(null)
   const [input, setInput] = useState('')
@@ -21,8 +23,20 @@ export default function Chat() {
       }
 
       try {
+        const targetUserId = searchParams.get('with')
+        if (targetUserId && targetUserId !== user.id) {
+          await ensureSocialChat(user.id, targetUserId)
+        }
+
         const data = await getSocialChatsByUser(user.id)
         setChats(data || [])
+
+        if (targetUserId) {
+          const matched = (data || []).find((c: any) => c.with_user_id === targetUserId)
+          if (matched?.id) {
+            setSelected(matched.id)
+          }
+        }
       } catch (err) {
         console.error('Failed loading chats', err)
       } finally {
@@ -31,7 +45,7 @@ export default function Chat() {
     }
 
     loadChats()
-  }, [user?.id])
+  }, [user?.id, searchParams])
 
   useEffect(() => {
     async function loadMessages() {
@@ -60,12 +74,18 @@ export default function Chat() {
 
   const chat = useMemo(() => chats.find((c) => c.id === selected), [chats, selected])
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim() || !selected) return
     const text = input.trim()
     setMessages((prev) => [...prev, { from: 'user', text, time: 'Just now' }])
     setChats((prev) => prev.map((c) => (c.id === selected ? { ...c, last_message: text, last_time: 'Just now', unread: 0 } : c)))
     setInput('')
+
+    try {
+      await addSocialChatMessage(selected, 'user', text, 'Just now')
+    } catch (err) {
+      console.error('Failed to send message', err)
+    }
   }
 
   if (loading) {

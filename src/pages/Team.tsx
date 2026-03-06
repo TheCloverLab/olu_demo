@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getAgentsWithTasks, getGroupChatsByUser } from '../services/api'
 import type { AIAgent, AgentTask } from '../lib/supabase'
@@ -195,12 +195,16 @@ export default function Team() {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: 'Agents', value: agents.length, icon: '🤖' },
-          { label: 'Active Tasks', value: totalTasks, icon: '⚡' },
-          { label: 'Online', value: agents.filter((a) => a.status === 'online').length, icon: '🟢' },
+          { label: 'Agents', value: agents.length, icon: Bot, iconClass: 'text-sky-300', iconBg: 'bg-sky-500/15' },
+          { label: 'Active Tasks', value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15' },
+          { label: 'Online', value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15' },
         ].map((card) => (
           <div key={card.label} className="glass rounded-xl p-3 text-center">
-            <div className="text-xl mb-1">{card.icon}</div>
+            <div className="flex justify-center mb-2">
+              <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
+                <card.icon size={15} className={card.iconClass} fill={card.label === 'Online' ? 'currentColor' : 'none'} />
+              </span>
+            </div>
             <div className="font-black text-xl">{card.value}</div>
             <div className="text-olu-muted text-xs">{card.label}</div>
           </div>

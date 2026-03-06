@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeCheck, Settings, Share2, LayoutDashboard, Wallet } from 'lucide-react'
-import { useApp } from '../context/AppContext'
+import { BadgeCheck, Settings, Share2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getPostsByCreator } from '../services/api'
 import { motion } from 'framer-motion'
-import WalletModal from '../components/Wallet'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
 export default function Profile() {
-  const { currentRole, setShowRoleSwitcher } = useApp()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [myPosts, setMyPosts] = useState<any[]>([])
-  const [showWallet, setShowWallet] = useState(false)
 
   useEffect(() => {
     async function loadPosts() {
@@ -78,45 +74,6 @@ export default function Profile() {
           ))}
         </div>
 
-        <button
-          onClick={() => setShowRoleSwitcher(true)}
-          className="mb-5 flex items-center gap-2 px-4 py-2 glass rounded-full border border-olu-border text-sm font-medium hover:border-white/20 transition-all"
-        >
-          {user.avatar_img ? (
-            <img src={user.avatar_img} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
-          ) : (
-            <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${user.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xs font-bold text-white`}>
-              {(user.initials || 'U')[0]}
-            </div>
-          )}
-          <span className="capitalize">{currentRole}</span>
-          <span className="text-olu-muted text-xs ml-1">· Switch Role</span>
-        </button>
-
-        {currentRole === 'creator' && (
-          <>
-            <button onClick={() => navigate('/console/creator')} className="w-full mb-3 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-olu-border">
-              <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
-                <LayoutDashboard size={16} className="text-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold">Creator Console</p>
-                <p className="text-olu-muted text-xs">View analytics, customers, IP and shop</p>
-              </div>
-            </button>
-
-            <button onClick={() => setShowWallet(true)} className="w-full mb-5 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-olu-border">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                <Wallet size={16} className="text-emerald-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold">Wallet</p>
-                <p className="text-olu-muted text-xs">Manage earnings and withdraw funds</p>
-              </div>
-            </button>
-          </>
-        )}
-
         <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider mb-3">Posts</p>
         {myPosts.length > 0 ? (
           <div className="grid grid-cols-3 gap-2">
@@ -137,7 +94,6 @@ export default function Profile() {
         )}
       </div>
 
-      <WalletModal open={showWallet} onClose={() => setShowWallet(false)} />
     </div>
   )
 }

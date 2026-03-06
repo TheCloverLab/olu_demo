@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, DollarSign, Bitcoin, ArrowRight, X } from 'lucide-react'
+import { Wallet, DollarSign, Coins, ArrowRight, X } from 'lucide-react'
 
 interface WalletModalProps {
   open: boolean
@@ -8,7 +8,7 @@ interface WalletModalProps {
 }
 
 type Step = 'balance' | 'method' | 'amount' | 'confirm'
-type Method = 'fiat' | 'crypto' | null
+type Method = 'fiat' | 'usdc' | null
 
 export default function WalletModal({ open, onClose }: WalletModalProps) {
   const [step, setStep] = useState<Step>('balance')
@@ -17,12 +17,12 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
 
   const balances = {
     fiat: 1234.56,
-    crypto: 0.0234,
+    usdc: 846.25,
   }
 
   const handleWithdraw = () => {
     // TODO: API call
-    alert(`Withdraw ${amount} ${method === 'fiat' ? 'USD' : 'BTC'}`)
+    alert(`Withdraw ${amount} ${method === 'fiat' ? 'USD' : 'USDC'}`)
     onClose()
     setStep('balance')
     setAmount('')
@@ -69,7 +69,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 {/* Balance Cards */}
                 <div className="glass rounded-xl p-4">
                   <p className="text-olu-muted text-xs mb-1">Total Balance</p>
-                  <p className="font-black text-2xl">${(balances.fiat + balances.crypto * 45000).toFixed(2)}</p>
+                  <p className="font-black text-2xl">${(balances.fiat + balances.usdc).toFixed(2)}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -83,10 +83,10 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
 
                   <div className="glass rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Bitcoin size={16} className="text-orange-400" />
-                      <p className="text-xs font-semibold">Crypto</p>
+                      <Coins size={16} className="text-cyan-400" />
+                      <p className="text-xs font-semibold">Stablecoin</p>
                     </div>
-                    <p className="font-bold text-lg">{balances.crypto} BTC</p>
+                    <p className="font-bold text-lg">{balances.usdc.toFixed(2)} USDC</p>
                   </div>
                 </div>
 
@@ -120,16 +120,16 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 </button>
 
                 <button
-                  onClick={() => { setMethod('crypto'); setStep('amount') }}
+                  onClick={() => { setMethod('usdc'); setStep('amount') }}
                   className="w-full p-4 glass glass-hover rounded-xl flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
-                      <Bitcoin size={18} className="text-orange-400" />
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
+                      <Coins size={18} className="text-cyan-400" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-sm">Cryptocurrency</p>
-                      <p className="text-olu-muted text-xs">Bitcoin wallet</p>
+                      <p className="font-semibold text-sm">Stablecoin (USDC)</p>
+                      <p className="text-olu-muted text-xs">USDC wallet transfer</p>
                     </div>
                   </div>
                   <ArrowRight size={18} className="text-olu-muted" />
@@ -147,9 +147,9 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
             {step === 'amount' && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-semibold mb-1">Withdraw {method === 'fiat' ? 'USD' : 'BTC'}</p>
+                  <p className="text-sm font-semibold mb-1">Withdraw {method === 'fiat' ? 'USD' : 'USDC'}</p>
                   <p className="text-olu-muted text-xs mb-3">
-                    Available: {method === 'fiat' ? `$${balances.fiat.toFixed(2)}` : `${balances.crypto} BTC`}
+                    Available: {method === 'fiat' ? `$${balances.fiat.toFixed(2)}` : `${balances.usdc.toFixed(2)} USDC`}
                   </p>
                 </div>
 
@@ -161,7 +161,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                     type="number"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
-                    placeholder={method === 'fiat' ? '0.00' : '0.0000'}
+                    placeholder="0.00"
                     className="w-full p-3 glass rounded-xl text-sm focus:outline-none border border-olu-border focus:border-white/30 transition-colors"
                   />
                 </div>

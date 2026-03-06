@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, Play, Bell, Search, ShoppingBag, LogIn } from 'lucide-react'
+import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, ShoppingBag, LogIn, Wallet, Coins } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 import RoleSwitcher from './RoleSwitcher'
@@ -26,12 +26,16 @@ const SIDEBAR_NAV = [
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
-  if (user.avatarImg) {
-    return <img src={user.avatarImg} alt={user.name} className={clsx('rounded-full object-cover flex-shrink-0', sz)} />
+  const avatarSrc = user.avatar_img || user.avatarImg
+  const avatarColor = user.avatar_color || user.avatarColor || 'from-gray-600 to-gray-500'
+  const initials = user.initials || 'U'
+
+  if (avatarSrc) {
+    return <img src={avatarSrc} alt={user.name} className={clsx('rounded-xl object-cover flex-shrink-0', sz)} />
   }
   return (
-    <div className={clsx(`bg-gradient-to-br ${user.avatarColor} rounded-full flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
-      {user.initials}
+    <div className={clsx(`bg-gradient-to-br ${avatarColor} rounded-xl flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
+      {initials}
     </div>
   )
 }
@@ -77,7 +81,7 @@ function MoreMenu({ open, onClose }) {
             </div>
 
             {authUser ? (
-              <button onClick={() => setShowRoleSwitcher(true)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
+              <button onClick={() => go('/profile')} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
                 <Avatar user={currentUser} size="md" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm">{currentUser.name}</p>
@@ -98,6 +102,7 @@ function MoreMenu({ open, onClose }) {
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/ai-config')} />
+              {currentRole === 'creator' && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />}
               {currentRole === 'creator' && <MenuItem icon={LayoutDashboard} label="Creator Console" onClick={() => go('/console/creator')} />}
               {currentRole === 'advertiser' && <MenuItem icon={Megaphone} label="Advertiser Console" onClick={() => go('/console/advertiser')} />}
               {currentRole === 'supplier' && <MenuItem icon={Package} label="Supplier Console" onClick={() => go('/console/supplier')} />}
@@ -111,12 +116,19 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, setShowRoleSwitcher } = useApp()
+  const { currentUser, currentRole, availableRoles, setShowRoleSwitcher } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const isConsole = location.pathname.startsWith('/console/')
+  const hasMultipleRoles = availableRoles.length > 1
+
+  const creatorWalletPreview = {
+    total: 3248.91,
+    pending: 286.4,
+    stablecoin: 846.25,
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -132,7 +144,7 @@ export default function AppLayout() {
 
         {authUser ? (
           <div className="px-3 pb-3">
-            <button onClick={() => setShowRoleSwitcher(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
+            <button onClick={() => navigate('/profile')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
               <Avatar user={currentUser} size="md" />
               <div className="min-w-0 text-left">
                 <p className="font-semibold text-sm truncate">{currentUser.name}</p>
@@ -201,8 +213,33 @@ export default function AppLayout() {
           </div>
         </nav>
 
+        {authUser && currentRole === 'creator' && (
+          <div className="px-3 pb-3">
+            <button
+              onClick={() => navigate('/wallet')}
+              className="w-full rounded-2xl bg-gradient-to-br from-emerald-500/12 to-cyan-500/12 border border-emerald-400/25 p-3 text-left hover:border-emerald-300/40 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-emerald-300">
+                  <Wallet size={14} />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Wallet</span>
+                </div>
+                <ChevronRight size={14} className="text-emerald-300/80" />
+              </div>
+              <p className="text-white font-bold text-lg leading-none mb-1">${creatorWalletPreview.total.toLocaleString()}</p>
+              <div className="flex items-center justify-between text-[11px] text-olu-muted">
+                <span>+${creatorWalletPreview.pending.toFixed(2)} pending</span>
+                <span className="inline-flex items-center gap-1 text-cyan-300">
+                  <Coins size={11} />
+                  {creatorWalletPreview.stablecoin.toFixed(2)} USDC
+                </span>
+              </div>
+            </button>
+          </div>
+        )}
+
         <div className="p-3 border-t border-olu-border space-y-2">
-          {authUser && (
+          {authUser && hasMultipleRoles && (
             <button
               onClick={() => setShowRoleSwitcher(true)}
               className="w-full py-2 px-3 rounded-2xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted text-sm font-medium transition-colors flex items-center justify-center gap-2"
@@ -232,7 +269,7 @@ export default function AppLayout() {
             <Menu size={22} />
           </button>
           <span className="font-black text-lg">OLU</span>
-          <button onClick={() => setShowRoleSwitcher(true)}>
+          <button onClick={() => (hasMultipleRoles ? setShowRoleSwitcher(true) : navigate('/profile'))}>
             <Avatar user={currentUser} />
           </button>
         </header>

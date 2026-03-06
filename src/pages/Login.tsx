@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
@@ -6,20 +6,36 @@ import { LogIn, Loader2 } from 'lucide-react'
 
 export default function Login() {
   const navigate = useNavigate()
-  const { signIn } = useAuth()
+  const { signIn, user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/', { replace: true })
+    }
+  }, [authLoading, user, navigate])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    const form = e.currentTarget as HTMLFormElement
+    const formData = new FormData(form)
+    const formEmail = String(formData.get('email') || '').trim()
+    const formPassword = String(formData.get('password') || '')
+
+    if (!formEmail || !formPassword) {
+      setError('Please enter email and password.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await signIn(email, password)
-      navigate('/')
+      await signIn(formEmail, formPassword)
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
     } finally {
@@ -51,10 +67,12 @@ export default function Login() {
               <label className="block text-sm font-medium mb-2">Email</label>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                autoComplete="email"
                 className="w-full bg-[#1c1c1c] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
@@ -63,10 +81,12 @@ export default function Login() {
               <label className="block text-sm font-medium mb-2">Password</label>
               <input
                 type="password"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                autoComplete="current-password"
                 className="w-full bg-[#1c1c1c] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
@@ -102,7 +122,7 @@ export default function Login() {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-olu-muted">
-            Demo accounts: luna@example.com / alex@example.com (password: demo123)
+            Demo: luna.demo@olu.app / alex.demo@olu.app (see shared demo credentials)
           </p>
         </div>
       </motion.div>

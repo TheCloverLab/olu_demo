@@ -77,11 +77,13 @@ function CreatorRow({ creator }: { creator: User }) {
 }
 
 function PostCard({ post }: { post: any }) {
+  const { currentUser } = useApp()
   const navigate = useNavigate()
   const [liked, setLiked] = useState(false)
   const [tipped, setTipped] = useState(false)
   
   const creator = post.creator
+  const creatorAvatar = creator?.avatar_img || creator?.avatarImg || (creator?.id === currentUser?.id ? (currentUser?.avatar_img || currentUser?.avatarImg) : null)
   const timeAgo = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'
 
   return (
@@ -93,8 +95,8 @@ function PostCard({ post }: { post: any }) {
       {/* Header */}
       <div className="flex items-center gap-3 p-4 pb-3">
         <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
-          {creator?.avatar_img
-            ? <img src={creator.avatar_img} alt={creator.name} className="w-9 h-9 rounded-full object-cover" />
+          {creatorAvatar
+            ? <img src={creatorAvatar} alt={creator.name} className="w-9 h-9 rounded-full object-cover" />
             : <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>{creator?.initials || '?'}</div>
           }
         </button>

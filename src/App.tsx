@@ -13,6 +13,7 @@ import Chat from './pages/Chat'
 import Team from './pages/Team'
 import TeamChat from './pages/TeamChat'
 import Profile from './pages/Profile'
+import WalletPage from './pages/WalletPage'
 import AIAgentConfig from './pages/AIAgentConfig'
 import CreatorConsole from './pages/CreatorConsole'
 import AdvertiserConsole from './pages/AdvertiserConsole'
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'profile', element: <Profile /> },
+      { path: 'wallet', element: <RoleProtected requiredRole="creator"><WalletPage /></RoleProtected> },
       { path: 'settings', element: <RoleProtected><Settings /></RoleProtected> },
       { path: 'ai-config', element: <AIAgentConfig /> },
       { path: 'shop', element: <Shop /> },

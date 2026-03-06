@@ -239,9 +239,13 @@ export default function ContentDetail() {
         {/* Creator row */}
         <div className="flex items-center gap-3 mb-3">
           <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
-            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${post.creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>
-              {post.creator?.initials || '?'}
-            </div>
+            {post.creator?.avatar_img ? (
+              <img src={post.creator.avatar_img} alt={post.creator?.name || 'Creator'} className="w-9 h-9 rounded-full object-cover" />
+            ) : (
+              <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${post.creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>
+                {post.creator?.initials || '?'}
+              </div>
+            )}
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
@@ -308,7 +312,10 @@ export default function ContentDetail() {
                 placeholder="Add a comment..."
                 className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/20 transition-colors"
               />
-              <button onClick={submitComment} className="p-2.5 rounded-xl bg-white text-black hover:opacity-90 transition-opacity">
+              <button
+                onClick={submitComment}
+                className="w-10 h-10 flex-shrink-0 rounded-xl bg-white text-black hover:opacity-90 transition-opacity flex items-center justify-center"
+              >
                 <Send size={14} />
               </button>
             </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { BadgeCheck, Heart, MessageCircle, Gift, Lock, ArrowLeft, ShoppingBag, Crown, FileText } from 'lucide-react'
+import { BadgeCheck, Heart, MessageCircle, Gift, Lock, ArrowLeft, ShoppingBag, Crown, FileText, Send } from 'lucide-react'
 import clsx from 'clsx'
 import { getMembershipTiersByCreator, getPostsByCreator, getProductsByCreator, getUserById } from '../services/api'
 
@@ -20,6 +20,9 @@ export default function CreatorProfile() {
   const [tab, setTab] = useState<'posts' | 'shop' | 'members'>('posts')
   const [following, setFollowing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [coverBroken, setCoverBroken] = useState(false)
+  const [avatarBroken, setAvatarBroken] = useState(false)
+  const avatarSrc = creator?.avatar_img || creator?.avatarImg
 
   useEffect(() => {
     async function load() {
@@ -62,20 +65,43 @@ export default function CreatorProfile() {
       </div>
 
       <div className={`h-40 bg-gradient-to-br ${creator.avatar_color || 'from-gray-700 to-gray-900'} relative mx-4 rounded-2xl overflow-hidden`}>
-        {creator.cover_img && <img src={creator.cover_img} alt="" className="w-full h-full object-cover opacity-75" />}
+        {creator.cover_img && !coverBroken && (
+          <img
+            src={creator.cover_img}
+            alt=""
+            className="w-full h-full object-cover opacity-75"
+            onError={() => setCoverBroken(true)}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-olu-bg/80 to-transparent" />
       </div>
 
       <div className="px-4 -mt-8 relative">
         <div className="flex items-end justify-between mb-4">
           <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-2xl text-white border-4 border-olu-bg shadow-xl overflow-hidden`}>
-            {creator.avatar_img ? <img src={creator.avatar_img} alt={creator.name} className="w-full h-full object-cover" /> : creator.initials}
+            {avatarSrc && !avatarBroken ? (
+              <img src={avatarSrc} alt={creator.name} className="w-full h-full object-cover" onError={() => setAvatarBroken(true)} />
+            ) : (
+              creator.initials
+            )}
           </div>
           <div className="flex gap-2 mb-1">
-            <button className="px-3 py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
+            <button
+              onClick={() => navigate(`/chat?with=${creator.id}`)}
+              className="px-3 py-2 rounded-xl glass glass-hover text-olu-muted text-xs font-semibold transition-all flex items-center gap-1.5 flex-shrink-0"
+            >
+              <Send size={13} /> Message
+            </button>
+            <button className="px-3 py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 flex-shrink-0">
               <Crown size={13} /> Subscribe
             </button>
-            <button onClick={() => setFollowing(!following)} className={clsx('p-2 rounded-xl transition-all', following ? 'bg-white/10 text-sky-400 border border-white/10' : 'glass glass-hover text-olu-muted')}>
+            <button
+              onClick={() => setFollowing(!following)}
+              className={clsx(
+                'w-11 h-11 rounded-xl transition-all flex items-center justify-center flex-shrink-0 text-lg leading-none',
+                following ? 'bg-white/10 text-sky-400 border border-white/10' : 'glass glass-hover text-olu-muted'
+              )}
+            >
               {following ? '✓' : '+'}
             </button>
           </div>

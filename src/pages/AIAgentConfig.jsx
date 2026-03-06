@@ -6,16 +6,16 @@ import { AI_AGENTS } from '../data/mock'
 import clsx from 'clsx'
 
 const MARKETPLACE_AGENTS = [
-  { id: 'ip_manager', name: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', category: 'Creator', price: 'Free', rating: 4.9, reviews: 1240, description: 'Manages IP licensing, authorizations, and royalty collection.' },
-  { id: 'legal', name: 'Legal Officer', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', category: 'Creator', price: 'Free', rating: 4.8, reviews: 890, description: 'Monitors unauthorized use and sends DMCA takedowns.' },
-  { id: 'community', name: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', category: 'Creator', price: 'Free', rating: 4.7, reviews: 2100, description: 'Runs community events and rewards top customers.' },
-  { id: 'growth', name: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', category: 'Creator', price: 'Free', rating: 4.6, reviews: 1560, description: 'Drives follower and subscriber growth across platforms.' },
-  { id: 'analyst', name: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-indigo-600', category: 'Creator', price: 'Free', rating: 4.9, reviews: 3200, description: 'Deep analytics across all platforms with actionable insights.' },
-  { id: 'creativity', name: 'Creativity Officer', avatarImg: '/images/agents/nova.jpg', color: 'from-orange-400 to-amber-500', category: 'Creator', price: 'Free', rating: 4.8, reviews: 2800, description: 'Content ideation based on trends and audience behavior.' },
-  { id: 'marketing', name: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', category: 'Advertiser', price: 'Free', rating: 4.7, reviews: 980, description: 'End-to-end influencer campaign planning and execution.' },
-  { id: 'channel', name: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', category: 'Supplier', price: 'Free', rating: 4.5, reviews: 560, description: 'Connects creators and suppliers for merch partnerships.' },
-  { id: 'finance', name: 'Finance Officer', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', category: 'Pro', price: '$9.99/mo', rating: 4.9, reviews: 1100, description: 'Cross-border payments, invoicing, and financial reporting.' },
-  { id: 'translation', name: 'Localization Agent', avatarImg: '/images/agents/localization.jpg', color: 'from-cyan-500 to-blue-600', category: 'Pro', price: '$4.99/mo', rating: 4.6, reviews: 430, description: 'Translates and localizes content for global audiences.' },
+  { id: 'ip_manager', name: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', category: 'Creator', price: 'Free', rating: 4.9, reviews: 1240, description: 'Manages IP licensing, authorizations, and royalty collection.', model: 'GPT-4', costPer1k: 0.03 },
+  { id: 'legal', name: 'Legal Officer', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', category: 'Creator', price: 'Free', rating: 4.8, reviews: 890, description: 'Monitors unauthorized use and sends DMCA takedowns.', model: 'Claude 3.5', costPer1k: 0.015 },
+  { id: 'community', name: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', category: 'Creator', price: 'Free', rating: 4.7, reviews: 2100, description: 'Runs community events and rewards top customers.', model: 'GPT-4', costPer1k: 0.03 },
+  { id: 'growth', name: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', category: 'Creator', price: 'Free', rating: 4.6, reviews: 1560, description: 'Drives follower and subscriber growth across platforms.', model: 'Claude 3.5', costPer1k: 0.015 },
+  { id: 'analyst', name: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-indigo-600', category: 'Creator', price: 'Free', rating: 4.9, reviews: 3200, description: 'Deep analytics across all platforms with actionable insights.', model: 'GPT-4', costPer1k: 0.03 },
+  { id: 'creativity', name: 'Creativity Officer', avatarImg: '/images/agents/nova.jpg', color: 'from-orange-400 to-amber-500', category: 'Creator', price: 'Free', rating: 4.8, reviews: 2800, description: 'Content ideation based on trends and audience behavior.', model: 'Claude 3.5', costPer1k: 0.015 },
+  { id: 'marketing', name: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', category: 'Advertiser', price: 'Free', rating: 4.7, reviews: 980, description: 'End-to-end influencer campaign planning and execution.', model: 'GPT-4', costPer1k: 0.03 },
+  { id: 'channel', name: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', category: 'Supplier', price: 'Free', rating: 4.5, reviews: 560, description: 'Connects creators and suppliers for merch partnerships.', model: 'GPT-3.5', costPer1k: 0.002 },
+  { id: 'finance', name: 'Finance Officer', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', category: 'Pro', price: '$9.99/mo', rating: 4.9, reviews: 1100, description: 'Cross-border payments, invoicing, and financial reporting.', model: 'GPT-4', costPer1k: 0.03 },
+  { id: 'translation', name: 'Localization Agent', avatarImg: '/images/agents/localization.jpg', color: 'from-cyan-500 to-blue-600', category: 'Pro', price: '$4.99/mo', rating: 4.6, reviews: 430, description: 'Translates and localizes content for global audiences.', model: 'Claude 3.5', costPer1k: 0.015 },
 ]
 
 function AgentCard({ agent, onHire }) {
@@ -31,7 +31,11 @@ function AgentCard({ agent, onHire }) {
         <span className="text-xs font-semibold">{agent.rating}</span>
         <span className="text-olu-muted text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
-      <p className="text-olu-muted text-xs leading-relaxed flex-1 mb-3">{agent.description}</p>
+      <p className="text-olu-muted text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
+      <div className="flex items-center gap-2 mb-3 text-xs">
+        <span className="px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 font-medium">{agent.model}</span>
+        <span className="text-olu-muted">${agent.costPer1k}/1K tokens</span>
+      </div>
       <button onClick={() => onHire(agent)} className="w-full py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
         <Plus size={12} /> Hire Agent
       </button>

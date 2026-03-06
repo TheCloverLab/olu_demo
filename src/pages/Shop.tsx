@@ -4,15 +4,35 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, Plus, Package, DollarSign, TrendingUp } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
+interface Product {
+  id: string
+  name: string
+  price: number
+  stock: number
+  creatorId: string
+  creatorName: string
+  image: string
+}
+
+interface CartItem extends Product {
+  quantity: number
+}
+
 // Mock products data
-const MOCK_PRODUCTS = [
+const MOCK_PRODUCTS: Product[] = [
   { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/hoodie.jpg' },
   { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/pins.jpg' },
   { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/stand.jpg' },
   { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/plushie.jpg' },
 ]
 
-function ProductCard({ product, onAddToCart, isCreator }) {
+interface ProductCardProps {
+  product: Product
+  onAddToCart?: (product: Product) => void
+  isCreator: boolean
+}
+
+function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
   return (
     <motion.div whileHover={{ y: -3 }} className="glass glass-hover rounded-2xl overflow-hidden">
       <div className="aspect-square bg-[#1c1c1c] relative overflow-hidden">
@@ -110,10 +130,10 @@ function CreatorShopView() {
 }
 
 function UserShopView() {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id)
       if (existing) {

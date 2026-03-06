@@ -2,9 +2,17 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wallet, DollarSign, Bitcoin, ArrowRight, X } from 'lucide-react'
 
-export default function WalletModal({ open, onClose }) {
-  const [step, setStep] = useState('balance') // balance, method, amount, confirm
-  const [method, setMethod] = useState(null) // fiat, crypto
+interface WalletModalProps {
+  open: boolean
+  onClose: () => void
+}
+
+type Step = 'balance' | 'method' | 'amount' | 'confirm'
+type Method = 'fiat' | 'crypto' | null
+
+export default function WalletModal({ open, onClose }: WalletModalProps) {
+  const [step, setStep] = useState<Step>('balance')
+  const [method, setMethod] = useState<Method>(null)
   const [amount, setAmount] = useState('')
 
   const balances = {

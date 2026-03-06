@@ -6,13 +6,13 @@ import { useApp } from '../../context/AppContext'
 import RoleSwitcher from './RoleSwitcher'
 import clsx from 'clsx'
 
-// Mobile bottom nav matches Patreon: Home, Chat, Play(Team), Bell, Search
+// Mobile bottom nav: Home, Chat, Team, Profile, AI
 const MOBILE_NAV = [
   { to: '/', icon: Home, exact: true },
   { to: '/chat', icon: MessageCircle },
-  { to: '/team', icon: Play },
-  { to: '/profile', icon: Bell },
-  { to: '/ai-config', icon: Search },
+  { to: '/team', icon: Users },
+  { to: '/profile', icon: User },
+  { to: '/ai-config', icon: Bot },
 ]
 
 const SIDEBAR_NAV = [

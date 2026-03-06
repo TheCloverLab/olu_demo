@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, Play, Bell, Search } from 'lucide-react'
+import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, Play, Bell, Search, ShoppingBag } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import RoleSwitcher from './RoleSwitcher'
 import clsx from 'clsx'
@@ -19,6 +19,7 @@ const SIDEBAR_NAV = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/chat', icon: MessageCircle, label: 'Chat' },
   { to: '/team', icon: Users, label: 'Team' },
+  { to: '/shop', icon: ShoppingBag, label: 'Shop' },
   { to: '/profile', icon: User, label: 'Me' },
 ]
 

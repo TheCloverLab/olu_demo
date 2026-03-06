@@ -6,19 +6,23 @@ import { useApp } from '../context/AppContext'
 
 // Mock products data
 const MOCK_PRODUCTS = [
-  { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', gradient: 'from-purple-500 to-pink-500' },
-  { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', gradient: 'from-blue-500 to-cyan-500' },
-  { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', gradient: 'from-emerald-500 to-teal-500' },
-  { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', gradient: 'from-orange-500 to-red-500' },
+  { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop' },
+  { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=400&h=400&fit=crop' },
+  { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&h=400&fit=crop' },
+  { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', image: 'https://images.unsplash.com/photo-1530325553241-4f6e7690cf36?w=400&h=400&fit=crop' },
 ]
 
 function ProductCard({ product, onAddToCart, isCreator }) {
   return (
     <motion.div whileHover={{ y: -3 }} className="glass glass-hover rounded-2xl overflow-hidden">
-      <div className="aspect-square bg-[#1c1c1c] relative">
-        <div className={`w-full h-full bg-gradient-to-br ${product.gradient} flex items-center justify-center`}>
-          <Package size={48} className="text-white/30" />
-        </div>
+      <div className="aspect-square bg-[#1c1c1c] relative overflow-hidden">
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package size={48} className="text-olu-muted" />
+          </div>
+        )}
         {product.stock < 20 && (
           <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-red-500/90 text-white text-xs font-semibold">
             Low Stock

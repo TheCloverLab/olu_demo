@@ -12,6 +12,7 @@ import AIAgentConfig from './pages/AIAgentConfig'
 import CreatorConsole from './pages/CreatorConsole'
 import AdvertiserConsole from './pages/AdvertiserConsole'
 import SupplierConsole from './pages/SupplierConsole'
+import Shop from './pages/Shop'
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'profile', element: <Profile /> },
       { path: 'ai-config', element: <AIAgentConfig /> },
+      { path: 'shop', element: <Shop /> },
       { path: 'console/creator', element: <CreatorConsole /> },
       { path: 'console/advertiser', element: <AdvertiserConsole /> },
       { path: 'console/supplier', element: <SupplierConsole /> },

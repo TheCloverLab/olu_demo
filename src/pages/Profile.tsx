@@ -1,13 +1,16 @@
 import { useNavigate } from 'react-router-dom'
-import { BadgeCheck, Settings, Share2, LayoutDashboard } from 'lucide-react'
+import { BadgeCheck, Settings, Share2, LayoutDashboard, Wallet } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { POSTS, formatNumber } from '../data/mock'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
+import WalletModal from '../components/Wallet'
 
 export default function Profile() {
   const { currentUser, currentRole, setShowRoleSwitcher } = useApp()
   const navigate = useNavigate()
   const myPosts = POSTS.filter(p => p.creatorId === currentUser.id)
+  const [showWallet, setShowWallet] = useState(false)
 
   return (
     <div className="max-w-2xl mx-auto pb-24 md:pb-6">
@@ -62,15 +65,27 @@ export default function Profile() {
 
         {/* Console shortcut */}
         {currentRole === 'creator' && (
-          <button onClick={() => navigate('/console/creator')} className="w-full mb-5 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-olu-border">
-            <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
-              <LayoutDashboard size={16} className="text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold">Creator Console</p>
-              <p className="text-olu-muted text-xs">View analytics, customers, IP & shop</p>
-            </div>
-          </button>
+          <>
+            <button onClick={() => navigate('/console/creator')} className="w-full mb-3 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-olu-border">
+              <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
+                <LayoutDashboard size={16} className="text-white" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold">Creator Console</p>
+                <p className="text-olu-muted text-xs">View analytics, customers, IP & shop</p>
+              </div>
+            </button>
+
+            <button onClick={() => setShowWallet(true)} className="w-full mb-5 flex items-center gap-3 p-3 glass glass-hover rounded-xl border border-olu-border">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                <Wallet size={16} className="text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold">Wallet</p>
+                <p className="text-olu-muted text-xs">Manage earnings & withdraw funds</p>
+              </div>
+            </button>
+          </>
         )}
 
         {/* Posts grid */}
@@ -92,6 +107,8 @@ export default function Profile() {
           <div className="text-center py-10 text-olu-muted text-sm">No posts yet</div>
         )}
       </div>
+
+      <WalletModal open={showWallet} onClose={() => setShowWallet(false)} />
     </div>
   )
 }

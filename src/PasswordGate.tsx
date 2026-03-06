@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useState, ReactNode } from 'react'
 import { Zap } from 'lucide-react'
 
-export default function PasswordGate({ children }) {
+interface PasswordGateProps {
+  children: ReactNode
+}
+
+export default function PasswordGate({ children }: PasswordGateProps) {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem('olu_auth') === '1')
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)

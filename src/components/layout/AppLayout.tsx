@@ -1,8 +1,9 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, Play, Bell, Search, ShoppingBag } from 'lucide-react'
+import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, Play, Bell, Search, ShoppingBag, LogIn } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useAuth } from '../../context/AuthContext'
 import RoleSwitcher from './RoleSwitcher'
 import clsx from 'clsx'
 
@@ -49,7 +50,8 @@ function MenuItem({ icon: Icon, label, onClick }) {
 }
 
 function MoreMenu({ open, onClose }) {
-  const { currentRole, currentUser } = useApp()
+  const { currentRole, currentUser, setShowRoleSwitcher } = useApp()
+  const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
 
@@ -74,20 +76,32 @@ function MoreMenu({ open, onClose }) {
               </button>
             </div>
 
-            <button onClick={() => setShowRoleSwitcher?.(true)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
-              <Avatar user={currentUser} size="md" />
-              <div className="min-w-0">
-                <p className="font-semibold text-sm">{currentUser.name}</p>
-                <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
+            {authUser ? (
+              <button onClick={() => setShowRoleSwitcher(true)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
+                <Avatar user={currentUser} size="md" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm">{currentUser.name}</p>
+                  <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
+                </div>
+              </button>
+            ) : (
+              <div className="mx-4 mt-4 mb-2 space-y-2">
+                <button onClick={() => go('/login')} className="w-full bg-white text-black rounded-xl px-4 py-2.5 font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+                  <LogIn size={16} />
+                  Sign in
+                </button>
+                <button onClick={() => go('/signup')} className="w-full bg-[#1c1c1c] text-white rounded-xl px-4 py-2.5 font-semibold hover:bg-[#242424] transition-colors">
+                  Sign up
+                </button>
               </div>
-            </button>
+            )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/ai-config')} />
               {currentRole === 'creator' && <MenuItem icon={LayoutDashboard} label="Creator Console" onClick={() => go('/console/creator')} />}
               {currentRole === 'advertiser' && <MenuItem icon={Megaphone} label="Advertiser Console" onClick={() => go('/console/advertiser')} />}
               {currentRole === 'supplier' && <MenuItem icon={Package} label="Supplier Console" onClick={() => go('/console/supplier')} />}
-              <MenuItem icon={Settings} label="Settings" onClick={onClose} />
+              <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
         </>
@@ -98,7 +112,9 @@ function MoreMenu({ open, onClose }) {
 
 export default function AppLayout() {
   const { currentUser, setShowRoleSwitcher } = useApp()
+  const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
+  const navigate = useNavigate()
   const location = useLocation()
   const isConsole = location.pathname.startsWith('/console/')
 
@@ -114,15 +130,33 @@ export default function AppLayout() {
           {isConsole && <span className="ml-auto text-xs bg-[#2a2a2a] text-olu-muted px-2 py-0.5 rounded-full">Console</span>}
         </div>
 
-        <div className="px-3 pb-3">
-          <button onClick={() => setShowRoleSwitcher(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
-            <Avatar user={currentUser} size="md" />
-            <div className="min-w-0 text-left">
-              <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-              <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
-            </div>
-          </button>
-        </div>
+        {authUser ? (
+          <div className="px-3 pb-3">
+            <button onClick={() => setShowRoleSwitcher(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
+              <Avatar user={currentUser} size="md" />
+              <div className="min-w-0 text-left">
+                <p className="font-semibold text-sm truncate">{currentUser.name}</p>
+                <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
+              </div>
+            </button>
+          </div>
+        ) : (
+          <div className="px-3 pb-3 space-y-2">
+            <button 
+              onClick={() => navigate('/login')}
+              className="w-full bg-white text-black rounded-xl px-4 py-2.5 font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <LogIn size={16} />
+              Sign in
+            </button>
+            <button 
+              onClick={() => navigate('/signup')}
+              className="w-full bg-[#1c1c1c] text-white rounded-xl px-4 py-2.5 font-semibold hover:bg-[#242424] transition-colors text-sm"
+            >
+              Sign up
+            </button>
+          </div>
+        )}
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
           {SIDEBAR_NAV.map(({ to, icon: Icon, label, exact }) => (
@@ -167,14 +201,26 @@ export default function AppLayout() {
           </div>
         </nav>
 
-        <div className="p-3 border-t border-olu-border">
-          <button
-            onClick={() => setShowRoleSwitcher(true)}
-            className="w-full py-2 px-3 rounded-2xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted text-sm font-medium transition-colors flex items-center justify-center gap-2"
+        <div className="p-3 border-t border-olu-border space-y-2">
+          {authUser && (
+            <button
+              onClick={() => setShowRoleSwitcher(true)}
+              className="w-full py-2 px-3 rounded-2xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <Users size={14} />
+              Switch Role
+            </button>
+          )}
+          <NavLink 
+            to="/settings"
+            className={({ isActive }) => clsx(
+              'w-full py-2 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              isActive ? 'bg-[#2a2a2a] text-white' : 'bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted'
+            )}
           >
-            <Users size={14} />
-            Switch Role
-          </button>
+            <Settings size={14} />
+            Settings
+          </NavLink>
         </div>
       </aside>
 

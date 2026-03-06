@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Heart, MessageCircle, Share2, Gift, Lock, Repeat2, BadgeCheck, Check, X, Send } from 'lucide-react'
-import { POSTS, formatNumber } from '../data/mock'
+import { getPostById } from '../services/api'
 import clsx from 'clsx'
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
+}
 
 const MOCK_COMMENTS = [
   { id: 1, user: 'Alex Park', initials: 'AP', color: 'from-pink-500 to-rose-600', text: 'This is absolutely stunning! The color palette is incredible 🎨', time: '1h ago', likes: 24 },
@@ -25,7 +29,7 @@ function TipModal({ post, onClose }) {
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-olu-surface rounded-2xl p-8 text-center max-w-sm w-full border border-olu-border">
           <div className="text-5xl mb-4">🎉</div>
           <h3 className="font-bold text-xl mb-2">Tip Sent!</h3>
-          <p className="text-olu-muted text-sm mb-1">You tipped <span className="text-amber-400 font-bold">${amount}</span> to {post.creatorName}</p>
+          <p className="text-olu-muted text-sm mb-1">You tipped <span className="text-amber-400 font-bold">${amount}</span> to {post.creator?.name || 'Creator'}</p>
           <p className="text-olu-muted text-xs mt-2">Transaction processed instantly via OLU Pay</p>
           <button onClick={onClose} className="mt-6 px-8 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm">Done</button>
         </motion.div>
@@ -40,7 +44,7 @@ function TipModal({ post, onClose }) {
           <div className="p-5 border-b border-olu-border flex items-center justify-between">
             <div>
               <h3 className="font-bold">Send a Tip 🎁</h3>
-              <p className="text-olu-muted text-xs mt-0.5">Support {post.creatorName} directly</p>
+               <p className="text-olu-muted text-xs mt-0.5">Support {post.creator?.name || 'Creator'} directly</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/08"><X size={18} className="text-olu-muted" /></button>
           </div>
@@ -156,13 +160,42 @@ function FanCreateModal({ post, onClose }) {
 export default function ContentDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const post = POSTS.find(p => p.id === id) || POSTS[0]
+  const [post, setPost] = useState<any | null>(null)
+  const [loadingPost, setLoadingPost] = useState(true)
 
   const [liked, setLiked] = useState(false)
   const [showTip, setShowTip] = useState(false)
   const [showFanCreate, setShowFanCreate] = useState(false)
   const [comment, setComment] = useState('')
   const [comments, setComments] = useState(MOCK_COMMENTS)
+
+  useEffect(() => {
+    async function loadPost() {
+      if (!id) {
+        setLoadingPost(false)
+        return
+      }
+
+      try {
+        const data = await getPostById(id)
+        setPost(data)
+      } catch (err) {
+        console.error('Failed loading content detail', err)
+      } finally {
+        setLoadingPost(false)
+      }
+    }
+
+    loadPost()
+  }, [id])
+
+  if (loadingPost) {
+    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Loading content...</div>
+  }
+
+  if (!post) {
+    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Content not found.</div>
+  }
 
   const submitComment = () => {
     if (!comment.trim()) return
@@ -179,17 +212,17 @@ export default function ContentDetail() {
       </div>
 
       {/* Content */}
-      <div className={`mx-4 rounded-2xl h-72 bg-gradient-to-br ${post.gradientBg} flex items-center justify-center relative overflow-hidden mb-4`}>
-        {post.coverImg && <img src={post.coverImg} alt={post.title} className="absolute inset-0 w-full h-full object-cover" />}
+      <div className={`mx-4 rounded-2xl h-72 bg-gradient-to-br ${post.gradient_bg || 'from-gray-700 to-gray-900'} flex items-center justify-center relative overflow-hidden mb-4`}>
+        {post.cover_img && <img src={post.cover_img} alt={post.title} className="absolute inset-0 w-full h-full object-cover" />}
         <div className="absolute inset-0 bg-black/20" />
         <div className="text-9xl opacity-10 relative">{post.emoji}</div>
         {post.locked && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
             <Lock size={32} className="text-white" />
             <p className="text-white font-semibold">Premium Content</p>
-            <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
-              Unlock for ${post.lockPrice}
-            </button>
+              <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+                Unlock for ${post.lock_price}
+              </button>
           </div>
         )}
         <div className="absolute top-3 right-3">
@@ -197,7 +230,7 @@ export default function ContentDetail() {
         </div>
         {post.sponsored && (
           <div className="absolute top-3 left-3">
-            <span className="text-xs bg-amber-500/80 backdrop-blur-sm text-white px-2 py-1 rounded-full font-medium">Sponsored · {post.sponsoredBy}</span>
+            <span className="text-xs bg-amber-500/80 backdrop-blur-sm text-white px-2 py-1 rounded-full font-medium">Sponsored · {post.sponsored_by}</span>
           </div>
         )}
       </div>
@@ -205,17 +238,17 @@ export default function ContentDetail() {
       <div className="px-4">
         {/* Creator row */}
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate(`/creator/${post.creatorId}`)}>
-            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${post.avatarColor} flex items-center justify-center font-bold text-white text-xs`}>
-              {post.initials}
+          <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
+            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${post.creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>
+              {post.creator?.initials || '?'}
             </div>
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <button onClick={() => navigate(`/creator/${post.creatorId}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creatorName}</button>
-              {post.verified && <BadgeCheck size={14} className="text-sky-400" fill="currentColor" />}
+              <button onClick={() => navigate(`/creator/${post.creator_id}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creator?.name || 'Creator'}</button>
+              {post.creator?.verified && <BadgeCheck size={14} className="text-sky-400" fill="currentColor" />}
             </div>
-            <p className="text-olu-muted text-xs">{post.time}</p>
+            <p className="text-olu-muted text-xs">{post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'}</p>
           </div>
         </div>
 
@@ -247,7 +280,7 @@ export default function ContentDetail() {
         </div>
 
         {/* Fan Creation CTA */}
-        {post.allowFanCreation && (
+        {post.allow_fan_creation && (
           <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-white/10 mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center flex-shrink-0">
@@ -255,7 +288,7 @@ export default function ContentDetail() {
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm">Create Fan Work from this post</p>
-                <p className="text-xs text-olu-muted">Get a {Math.round(post.fanCreationFee * 100)}% revenue-share license · Handled by Lisa (IP Manager)</p>
+                <p className="text-xs text-olu-muted">Get a {Math.round((post.fan_creation_fee || 0) * 100)}% revenue-share license · Handled by Lisa (IP Manager)</p>
               </div>
               <div className="text-sky-400 text-xs font-semibold">License IP →</div>
             </div>

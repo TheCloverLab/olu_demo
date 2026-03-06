@@ -1,0 +1,35 @@
+import { ReactNode } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useApp } from '../../context/AppContext'
+
+type AppRole = 'creator' | 'fan' | 'advertiser' | 'supplier'
+
+type RoleProtectedProps = {
+  children: ReactNode
+  requireAuth?: boolean
+  requiredRole?: AppRole
+  bypassOnboarding?: boolean
+}
+
+export default function RoleProtected({ children, requireAuth = true, requiredRole, bypassOnboarding = false }: RoleProtectedProps) {
+  const { user, loading } = useAuth()
+  const { availableRoles } = useApp()
+  const location = useLocation()
+
+  if (loading) return null
+
+  if (requireAuth && !user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
+
+  if (requiredRole && !availableRoles.includes(requiredRole)) {
+    return <Navigate to="/settings" replace />
+  }
+
+  if (!bypassOnboarding && user && user.onboarding_completed === false && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />
+  }
+
+  return <>{children}</>
+}

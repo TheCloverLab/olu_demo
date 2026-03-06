@@ -3,8 +3,8 @@ import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign } from 'lucide-react'
-import { useApp } from '../context/AppContext'
-import { AI_AGENTS, GROUP_CHATS } from '../data/mock'
+import { useAuth } from '../context/AuthContext'
+import { addConversationMessage, addGroupChatMessage, getAgentsWithTasks, getConversations, getGroupChatMessages, getGroupChatsByUser } from '../services/api'
 import clsx from 'clsx'
 
 const FALLBACK_BY_ROLE = {
@@ -105,8 +105,8 @@ function TaskItem({ task }) {
 }
 
 // --- @mention helpers ---
-function useMention(inputRef, participants) {
-  const [mentionQuery, setMentionQuery] = useState(null) // null = closed, string = filter
+function useMention(inputRef: any, participants: any[]) {
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null) // null = closed, string = filter
   const [mentionIndex, setMentionIndex] = useState(0)
   const [mentionStart, setMentionStart] = useState(-1) // cursor pos of '@'
 
@@ -208,24 +208,32 @@ function renderWithMentions(text, participantNames) {
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
-  const { currentRole } = useApp()
+  const { user } = useAuth()
   const [tab, setTab] = useState('chat')
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [streaming, setStreaming] = useState(false)
   const [thinking, setThinking] = useState('')
-  const bottomRef = useRef(null)
-  const textareaRef = useRef(null)
+  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [liveAgents, setLiveAgents] = useState<any[]>([])
+  const [messages, setMessages] = useState<any[]>([])
+  const [selectedAgentDbId, setSelectedAgentDbId] = useState<string | null>(null)
+  const [selectedGroupDbId, setSelectedGroupDbId] = useState<string | null>(null)
+  const [liveGroups, setLiveGroups] = useState<any[]>([])
 
   const isGroup = agentId?.startsWith('grp-')
-  const allAgents = AI_AGENTS[currentRole] || []
+  const fallbackAgents: any[] = []
+  const allAgents = liveAgents.length > 0 ? liveAgents : fallbackAgents
 
-  let agent, tasks, groupParticipants = []
+  let agent: any
+  let tasks: any[]
+  let groupParticipants: any[] = []
 
   if (isGroup) {
-    const groupId = agentId.replace('grp-', '')
-    const groups = GROUP_CHATS[currentRole] || []
-    const group = groups.find(g => g.id === groupId) || groups[0]
+    const groupId = (agentId || '').replace('grp-', '')
+    const groups = liveGroups || []
+    const group = groups.find((g: any) => g.chat_key === groupId || g.id === groupId) || groups[0]
     agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online', conversation: group?.conversation || [] } : null
     tasks = []
     // Build participant list from agent data
@@ -238,14 +246,73 @@ export default function TeamChat() {
         })
     }
   } else {
-    agent = allAgents.find(a => a.id === agentId) || allAgents[0]
+    agent = allAgents.find(a => a.id === agentId || a.agent_key === agentId) || allAgents[0]
     tasks = agent?.tasks || []
   }
 
   const mention = useMention(textareaRef, groupParticipants)
-  const participantNames = groupParticipants.map(p => p.name)
+  const participantNames = groupParticipants.map((p) => p.name)
 
-  const [messages, setMessages] = useState(agent?.conversation || [])
+  useEffect(() => {
+    async function loadLiveData() {
+      if (!user?.id) return
+
+      try {
+        if (isGroup) {
+          const groupKey = (agentId || '').replace('grp-', '')
+          const groups = await getGroupChatsByUser(user.id)
+          setLiveGroups(groups || [])
+          const group = (groups || []).find((g: any) => g.chat_key === groupKey || g.id === groupKey)
+          if (group?.id) {
+            setSelectedGroupDbId(group.id)
+            const groupMessages = await getGroupChatMessages(group.id)
+            setMessages(
+              (groupMessages || []).map((m: any) => ({
+                from: m.from_name === 'You' ? 'user' : m.from_name,
+                text: m.text,
+                time: m.time,
+              }))
+            )
+            return
+          }
+          setMessages(agent?.conversation || [])
+          return
+        }
+
+        const agentRows = await getAgentsWithTasks(user.id)
+        const mappedAgents = (agentRows || []).map((a: any) => ({
+          ...a,
+          avatarImg: a.avatar_img,
+          lastMessage: a.last_message,
+          lastTime: a.last_time,
+        }))
+        setLiveAgents(mappedAgents)
+
+        const selected = mappedAgents.find((a: any) => a.id === agentId || a.agent_key === agentId)
+        if (!selected?.id) {
+          setMessages(agent?.conversation || [])
+          return
+        }
+
+        setSelectedAgentDbId(selected.id)
+        const conv = await getConversations(selected.id)
+        setMessages(
+          (conv || []).map((m: any) => ({
+            from: m.from_type === 'user' ? 'user' : 'agent',
+            text: m.text,
+            time: m.time,
+          }))
+        )
+        return
+      } catch (err) {
+        console.error('Failed to load live team chat data', err)
+      }
+
+      setMessages([])
+    }
+
+    loadLiveData()
+  }, [user?.id, agentId, isGroup])
 
   useEffect(() => {
     const t = setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -260,9 +327,29 @@ export default function TeamChat() {
     const userMsg = { from: 'user', text: userText, time: 'Just now' }
     const next = [...messages, userMsg]
     setMessages(next)
+
+    if (isGroup) {
+      if (selectedGroupDbId) {
+        try {
+          await addGroupChatMessage(selectedGroupDbId, 'You', userText)
+        } catch (err) {
+          console.error('Failed saving group message', err)
+        }
+      }
+      return
+    }
+
     setLoading(true)
 
     try {
+      if (selectedAgentDbId) {
+        try {
+          await addConversationMessage(selectedAgentDbId, 'user', userText, 'Just now')
+        } catch (err) {
+          console.error('Failed saving user message', err)
+        }
+      }
+
       const apiMessages = [
         { role: 'system', content: buildSystemPrompt(agent) },
         ...next
@@ -280,6 +367,10 @@ export default function TeamChat() {
         body: JSON.stringify({ messages: apiMessages }),
       })
 
+      if (!res.body) {
+        throw new Error('Empty response body')
+      }
+
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
 
@@ -287,6 +378,7 @@ export default function TeamChat() {
       setMessages(prev => [...prev, { from: 'agent', text: '', time: 'Just now' }])
       setLoading(false)
       setStreaming(true)
+      let assistantText = ''
 
       let buffer = ''
       while (true) {
@@ -294,7 +386,7 @@ export default function TeamChat() {
         if (done) break
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
-        buffer = lines.pop() // keep incomplete line for next chunk
+        buffer = lines.pop() || '' // keep incomplete line for next chunk
 
         for (const line of lines) {
           if (!line.startsWith('data:')) continue
@@ -318,6 +410,7 @@ export default function TeamChat() {
             const token = delta.content || ''
             if (token) {
               setThinking('') // clear thinking hint once content starts
+              assistantText += token
               setMessages(prev => {
                 const msgs = [...prev]
                 msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: msgs[msgs.length - 1].text + token }
@@ -325,6 +418,14 @@ export default function TeamChat() {
               })
             }
           } catch (_) {}
+        }
+      }
+
+      if (selectedAgentDbId && assistantText.trim()) {
+        try {
+          await addConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+        } catch (err) {
+          console.error('Failed saving assistant message', err)
         }
       }
     } catch (e) {

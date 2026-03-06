@@ -51,7 +51,10 @@ const ROLE_OPTIONS = [
 ]
 
 export default function RoleSwitcher() {
-  const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole } = useApp()
+  const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole, availableRoles } = useApp()
+
+  // Filter to only show roles the user has
+  const userRoleOptions = ROLE_OPTIONS.filter(role => availableRoles.includes(role.key as any))
 
   return (
     <AnimatePresence>
@@ -76,9 +79,13 @@ export default function RoleSwitcher() {
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
                     <Zap size={16} className="text-sky-400" fill="currentColor" />
-                    <span className="font-bold gradient-text">OLU Demo</span>
+                    <span className="font-bold gradient-text">Switch Role</span>
                   </div>
-                  <p className="text-olu-muted text-sm">Switch between user roles to explore the platform</p>
+                  <p className="text-olu-muted text-sm">
+                    {userRoleOptions.length > 1 
+                      ? 'Choose which role to use' 
+                      : 'You have one role'}
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowRoleSwitcher(false)}
@@ -89,15 +96,15 @@ export default function RoleSwitcher() {
               </div>
 
               {/* Role Cards */}
-              <div className="p-4 grid grid-cols-2 gap-3">
-                {ROLE_OPTIONS.map((role) => {
+              <div className={`p-4 grid ${userRoleOptions.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
+                {userRoleOptions.map((role) => {
                   const isActive = currentRole === role.key
                   return (
                     <motion.button
                       key={role.key}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => switchRole(role.key)}
+                      onClick={() => switchRole(role.key as any)}
                       className={clsx(
                         'relative p-4 rounded-xl border text-left transition-all',
                         isActive
@@ -130,7 +137,9 @@ export default function RoleSwitcher() {
 
               <div className="px-5 pb-5">
                 <p className="text-center text-olu-muted text-xs">
-                  This demo showcases OLU from the perspective of all 4 key user roles
+                  {userRoleOptions.length > 1 
+                    ? `You have ${userRoleOptions.length} roles` 
+                    : 'Add more roles in Settings'}
                 </p>
               </div>
             </div>

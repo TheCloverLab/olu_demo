@@ -1,538 +1,219 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShieldAlert, ShoppingBag, UserCheck, ChevronRight, MoreHorizontal, Check, X, ArrowUpRight, Send } from 'lucide-react'
-import { REVENUE_DATA, VIEWS_DATA, FANS, IP_LICENSES, IP_INFRINGEMENTS, SHOP_PRODUCTS, SUPPLIER_CREATORS, formatNumber } from '../data/mock'
+import { useEffect, useMemo, useState } from 'react'
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShoppingBag } from 'lucide-react'
 import clsx from 'clsx'
+import { useAuth } from '../context/AuthContext'
+import {
+  getRevenueAnalytics,
+  getViewsAnalytics,
+  getFansByCreator,
+  getIPLicensesByCreator,
+  getIPInfringementsByCreator,
+  getProductsByCreator,
+} from '../services/api'
+import type { AnalyticsRevenue, AnalyticsViews, Fan, IPLicense, IPInfringement, Product } from '../lib/supabase'
+
+function compactNumber(value: number) {
+  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+}
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
   { key: 'fans', label: 'Customers', icon: Users },
-  { key: 'ip_licenses', label: 'IP Licenses', icon: CheckSquare },
-  { key: 'ip_violations', label: 'IP Violations', icon: ShieldAlert },
+  { key: 'ip', label: 'IP', icon: CheckSquare },
   { key: 'shop', label: 'Shop', icon: ShoppingBag },
-]
+] as const
 
-const STATUS_COLOR = {
-  approved: 'bg-emerald-500/15 text-emerald-400',
-  negotiating: 'bg-amber-500/15 text-amber-400',
-  rejected: 'bg-red-500/15 text-red-400',
-  pending: 'bg-gray-500/15 text-gray-400',
-}
+type TabKey = (typeof TABS)[number]['key']
 
-const VIOLATION_STATUS_COLOR = {
-  resolved: 'bg-emerald-500/15 text-emerald-400',
-  in_progress: 'bg-amber-500/15 text-amber-400',
-}
-
-const TIER_COLOR = {
-  vip: 'bg-amber-500/15 text-amber-400',
-  creator_club: 'bg-white/10 text-sky-400',
-  free: 'bg-gray-500/15 text-gray-400',
-}
-
-const FAN_STATUS_ACTIONS = {
-  active: ['Send message', 'Send coupon', '1-on-1 session', 'View details'],
-  new: ['Welcome message', 'Offer discount', 'View details'],
-  churned: ['Win-back offer', 'Send message', 'View details'],
-}
-
-function MetricCard({ label, value, change, icon: Icon, color }) {
-  const positive = change > 0
+function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
     <div className="glass rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-olu-muted text-xs font-medium">{label}</p>
-        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center`}>
-          <Icon size={14} className="text-white" />
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-olu-muted text-xs">{label}</p>
+        <Icon size={14} className="text-olu-muted" />
       </div>
-      <p className="font-black text-2xl mb-1">{value}</p>
-      <div className="flex items-center gap-1">
-        <ArrowUpRight size={12} className={positive ? 'text-emerald-400' : 'text-red-400 rotate-180'} />
-        <span className={clsx('text-xs font-medium', positive ? 'text-emerald-400' : 'text-red-400')}>{Math.abs(change)}% vs last month</span>
-      </div>
-    </div>
-  )
-}
-
-function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-olu-surface border border-olu-border rounded-xl p-3 text-xs shadow-xl">
-      <p className="font-semibold mb-2">{label}</p>
-      {payload.map(p => (
-        <div key={p.dataKey} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-olu-muted capitalize">{p.dataKey}:</span>
-          <span className="font-semibold">{typeof p.value === 'number' && p.value > 10000 ? formatNumber(p.value) : `$${p.value?.toLocaleString()}`}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const ACTION_ITEMS = [
-  { id: 'a1', title: 'Review IP license request from IndieSound Studio', type: 'IP License', urgent: true },
-  { id: 'a2', title: 'Approve hoodie product listing from ArtisanCraft Co.', type: 'Shop', urgent: false },
-  { id: 'a3', title: 'Review fan creation license application — 3 pending', type: 'Fan Creation', urgent: false },
-  { id: 'a4', title: 'Renew voice licensing terms with GameVerse Studios', type: 'IP License', urgent: true },
-]
-
-function ActionRequiredList() {
-  const [items, setItems] = useState(ACTION_ITEMS)
-  const [activeAction, setActiveAction] = useState(null) // { id, type: 'approve'|'reject' }
-  const [feedback, setFeedback] = useState('')
-
-  const handleAction = (id, type) => {
-    if (activeAction?.id === id && activeAction?.type === type) {
-      setActiveAction(null)
-      setFeedback('')
-      return
-    }
-    setActiveAction({ id, type })
-    setFeedback('')
-  }
-
-  const submitAction = (id) => {
-    setItems(prev => prev.map(item =>
-      item.id === id
-        ? { ...item, resolved: activeAction.type, feedback: feedback.trim() || null }
-        : item
-    ))
-    setActiveAction(null)
-    setFeedback('')
-  }
-
-  const unresolvedCount = items.filter(i => !i.resolved).length
-
-  return (
-    <div className="glass rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <p className="font-bold">Action Required 🔔</p>
-        {unresolvedCount < items.length && (
-          <span className="text-xs text-olu-muted">{unresolvedCount} remaining</span>
-        )}
-      </div>
-      <div className="space-y-3">
-        {items.map((todo) => (
-          <div
-            key={todo.id}
-            className={clsx('glass rounded-xl', todo.resolved && 'opacity-60')}
-          >
-            <div className="flex items-center gap-3 p-3">
-              {!todo.resolved && todo.urgent && <div className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />}
-              {todo.resolved === 'approve' && <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><Check size={11} className="text-emerald-400" /></div>}
-              {todo.resolved === 'reject' && <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0"><X size={11} className="text-red-400" /></div>}
-              <div className="flex-1 min-w-0">
-                <p className={clsx('text-sm font-medium line-clamp-1', todo.resolved && 'line-through text-olu-muted')}>{todo.title}</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-olu-muted text-xs">{todo.type}</p>
-                  {todo.resolved && todo.feedback && (
-                    <p className="text-olu-muted text-xs italic truncate">— "{todo.feedback}"</p>
-                  )}
-                </div>
-              </div>
-              {!todo.resolved && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAction(todo.id, 'approve')}
-                    className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
-                  >
-                    <Check size={13} />
-                  </button>
-                  <button
-                    onClick={() => handleAction(todo.id, 'reject')}
-                    className={clsx('p-1.5 rounded-lg transition-colors', activeAction?.id === todo.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Feedback input */}
-            {activeAction?.id === todo.id && (
-              <div className="px-3 pb-3">
-                <div className={clsx('rounded-lg border p-2', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
-                  <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
-                    {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={feedback}
-                      onChange={e => setFeedback(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') submitAction(todo.id) }}
-                      placeholder={activeAction.type === 'approve' ? 'e.g. Looks good, proceed' : 'e.g. Terms too broad, counter at...'}
-                      className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => submitAction(todo.id)}
-                      className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
-                    >
-                      {activeAction.type === 'approve' ? 'Approve' : 'Reject'} <Send size={10} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Dashboard() {
-  return (
-    <div className="space-y-6">
-      {/* Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard label="Monthly Revenue" value="$12,400" change={8.2} icon={DollarSign} color="from-violet-600 to-indigo-600" />
-        <MetricCard label="Total Customers" value="234K" change={12.4} icon={Users} color="from-emerald-600 to-teal-600" />
-        <MetricCard label="Total Views" value="3.2M" change={23.1} icon={Eye} color="from-blue-600 to-cyan-600" />
-        <MetricCard label="IP Licenses" value="$1,040/mo" change={45.2} icon={CheckSquare} color="from-amber-500 to-orange-600" />
-      </div>
-
-      {/* Revenue Chart */}
-      <div className="glass rounded-2xl p-5">
-        <p className="font-bold mb-4">Revenue Breakdown</p>
-        <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={REVENUE_DATA}>
-            <defs>
-              <linearGradient id="subs" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="tips" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="shop" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#252545" />
-            <XAxis dataKey="month" tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v/1000}k`} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '11px', color: '#8b8baa' }} />
-            <Area type="monotone" dataKey="subscriptions" stroke="#7c3aed" fill="url(#subs)" strokeWidth={2} />
-            <Area type="monotone" dataKey="tips" stroke="#f59e0b" fill="url(#tips)" strokeWidth={2} />
-            <Area type="monotone" dataKey="shop" stroke="#10b981" fill="url(#shop)" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Views Chart */}
-      <div className="glass rounded-2xl p-5">
-        <p className="font-bold mb-4">Views by Platform</p>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={VIEWS_DATA}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#252545" />
-            <XAxis dataKey="month" tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatNumber(v)} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '11px', color: '#8b8baa' }} />
-            <Bar dataKey="tiktok" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="youtube" fill="#ef4444" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="instagram" fill="#ec4899" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Todos */}
-      <ActionRequiredList />
-    </div>
-  )
-}
-
-function FanCRM() {
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [actionFan, setActionFan] = useState(null)
-  const filters = ['all', 'vip', 'creator_club', 'free', 'new', 'churned']
-
-  const filtered = activeFilter === 'all' ? FANS : FANS.filter(f => f.tier === activeFilter || f.status === activeFilter)
-
-  return (
-    <div>
-      <div className="grid grid-cols-4 gap-3 mb-5">
-        {[
-          { label: 'Total', value: '2.8K', color: 'text-olu-text' },
-          { label: 'VIP', value: '127', color: 'text-amber-400' },
-          { label: 'Paid', value: '890', color: 'text-sky-400' },
-          { label: 'Churned', value: '341', color: 'text-red-400' },
-        ].map(s => (
-          <div key={s.label} className="glass rounded-xl p-3 text-center">
-            <p className={clsx('font-black text-xl', s.color)}>{s.value}</p>
-            <p className="text-olu-muted text-xs">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex gap-1 p-1 bg-olu-card rounded-xl mb-4 overflow-x-auto scrollbar-hide">
-        {filters.map(f => (
-          <button key={f} onClick={() => setActiveFilter(f)}
-            className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap capitalize transition-all', activeFilter === f ? 'bg-olu-surface text-olu-text' : 'text-olu-muted hover:text-olu-text')}>
-            {f === 'all' ? 'All Customers' : f.replace('_', ' ')}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-2">
-        {filtered.map((fan) => (
-          <div key={fan.id} className="flex items-center gap-3 p-4 glass glass-hover rounded-2xl">
-            {fan.avatarImg
-              ? <img src={fan.avatarImg} alt={fan.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-              : <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${fan.color} flex items-center justify-center font-bold text-white text-sm flex-shrink-0`}>{fan.initials}</div>
-            }
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-semibold text-sm">{fan.name}</span>
-                <span className={clsx('text-xs px-2 py-0.5 rounded-full capitalize', TIER_COLOR[fan.tier])}>{fan.tier.replace('_', ' ')}</span>
-              </div>
-              <p className="text-olu-muted text-xs">{fan.handle} · Last seen {fan.lastSeen}</p>
-            </div>
-            <div className="text-right mr-2 hidden sm:block">
-              <p className="font-semibold text-sm">${fan.totalSpend}</p>
-              <p className="text-olu-muted text-xs">total spend</p>
-            </div>
-            <button onClick={() => setActionFan(actionFan === fan.id ? null : fan.id)} className="p-2 rounded-xl hover:bg-white/08 transition-colors">
-              <MoreHorizontal size={16} className="text-olu-muted" />
-            </button>
-
-            {actionFan === fan.id && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                className="absolute right-4 mt-2 bg-olu-surface border border-olu-border rounded-xl shadow-xl z-20 w-44 overflow-hidden" style={{ marginTop: '40px' }}>
-                {(FAN_STATUS_ACTIONS[fan.status] || FAN_STATUS_ACTIONS.active).map((action) => (
-                  <button key={action} onClick={() => setActionFan(null)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/05 transition-colors">{action}</button>
-                ))}
-              </motion.div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function IPLicenses() {
-  const [licenses, setLicenses] = useState(IP_LICENSES)
-  const [activeAction, setActiveAction] = useState(null)
-  const [feedback, setFeedback] = useState('')
-
-  const handleAction = (id, type) => {
-    if (activeAction?.id === id && activeAction?.type === type) {
-      setActiveAction(null)
-      setFeedback('')
-      return
-    }
-    setActiveAction({ id, type })
-    setFeedback('')
-  }
-
-  const submitAction = (id) => {
-    setLicenses(prev => prev.map(l =>
-      l.id === id
-        ? { ...l, status: activeAction.type === 'approve' ? 'approved' : 'rejected', approvedBy: 'Luna (Manual)', feedback: feedback.trim() || null }
-        : l
-    ))
-    setActiveAction(null)
-    setFeedback('')
-  }
-
-  return (
-    <div className="space-y-3">
-      {licenses.map((license) => (
-        <div key={license.id} className="p-4 glass rounded-2xl">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="font-semibold text-sm">{license.requester}</p>
-              <p className="text-olu-muted text-xs">{license.type}</p>
-            </div>
-            <span className={clsx('text-xs px-2 py-1 rounded-full font-medium capitalize', STATUS_COLOR[license.status])}>{license.status}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-3 text-olu-muted">
-              <span>Fee: <strong className="text-olu-text">{license.amount}</strong></span>
-              <span>Approved by: <strong className="text-olu-text">{license.approvedBy}</strong></span>
-            </div>
-            <span className="text-olu-muted">{license.date}</span>
-          </div>
-          {license.feedback && (
-            <p className="text-olu-muted text-xs italic mt-2">Feedback: "{license.feedback}"</p>
-          )}
-          {license.status === 'negotiating' && (
-            <>
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => handleAction(license.id, 'approve')}
-                  className={clsx('flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1', activeAction?.id === license.id && activeAction?.type === 'approve' ? 'bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25')}
-                >
-                  <Check size={12} /> Approve
-                </button>
-                <button
-                  onClick={() => handleAction(license.id, 'reject')}
-                  className={clsx('flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1', activeAction?.id === license.id && activeAction?.type === 'reject' ? 'bg-red-500/30 text-red-300 ring-1 ring-red-500/50' : 'bg-red-500/15 text-red-400 hover:bg-red-500/25')}
-                >
-                  <X size={12} /> Reject
-                </button>
-              </div>
-              {activeAction?.id === license.id && (
-                <div className={clsx('rounded-lg border p-2 mt-3', activeAction.type === 'approve' ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5')}>
-                  <p className={clsx('text-xs font-medium mb-2', activeAction.type === 'approve' ? 'text-emerald-400' : 'text-red-400')}>
-                    {activeAction.type === 'approve' ? 'Approve' : 'Reject'} — add feedback (optional)
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={feedback}
-                      onChange={e => setFeedback(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') submitAction(license.id) }}
-                      placeholder={activeAction.type === 'approve' ? 'e.g. Accepted, proceed with terms' : 'e.g. Rate too low, counter at $10K'}
-                      className="flex-1 bg-transparent text-sm placeholder:text-olu-muted/60 focus:outline-none"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => submitAction(license.id)}
-                      className={clsx('px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1', activeAction.type === 'approve' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 hover:bg-red-500/30')}
-                    >
-                      Confirm <Send size={10} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function IPViolations() {
-  return (
-    <div className="space-y-3">
-      <div className="p-3 glass rounded-xl border border-red-500/20 flex items-center gap-2 mb-4">
-        <ShieldAlert size={16} className="text-red-400 flex-shrink-0" />
-        <p className="text-sm"><span className="text-red-300 font-semibold">Michael</span> is monitoring 6 platforms 24/7. <span className="text-emerald-400">75%</span> resolution rate this month.</p>
-      </div>
-      {IP_INFRINGEMENTS.map((item) => (
-        <div key={item.id} className="p-4 glass rounded-2xl">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-semibold text-sm">{item.platform}</span>
-                <span className="text-olu-muted text-xs">· {item.offender}</span>
-              </div>
-              <p className="text-olu-muted text-xs">{item.content}</p>
-            </div>
-            <span className={clsx('text-xs px-2 py-1 rounded-full font-medium capitalize flex-shrink-0 ml-2', VIOLATION_STATUS_COLOR[item.status])}>{item.status.replace('_', ' ')}</span>
-          </div>
-          <div className="mt-2 pt-2 border-t border-olu-border text-xs text-olu-muted">
-            <p>Action: <span className="text-olu-text">{item.action}</span></p>
-            <p>Result: <span className="text-olu-text">{item.result}</span></p>
-            <p className="mt-1">{item.date}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function Shop() {
-  return (
-    <div>
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {[
-          { label: 'Monthly Sales', value: '$25,382' },
-          { label: 'Products', value: '324' },
-          { label: 'Suppliers', value: '27' },
-        ].map(s => (
-          <div key={s.label} className="glass rounded-xl p-3 text-center">
-            <p className="font-black text-lg">{s.value}</p>
-            <p className="text-olu-muted text-xs">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="space-y-3 mb-6">
-        <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider">Products</p>
-        {SHOP_PRODUCTS.map((product) => (
-          <div key={product.id} className="flex items-center gap-3 p-4 glass rounded-2xl">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${product.gradientBg} flex items-center justify-center text-xl flex-shrink-0`}>
-              {product.emoji}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm line-clamp-1">{product.name}</p>
-              <p className="text-olu-muted text-xs capitalize">{product.type} · {product.sales} sold</p>
-              {product.stock !== null && (
-                <p className={clsx('text-xs', product.stock < 20 ? 'text-red-400' : 'text-olu-muted')}>{product.stock} in stock</p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-sm">${product.price}</p>
-              <span className="text-xs bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full">Live</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider mb-3">Supplier Partnerships</p>
-        {SUPPLIER_CREATORS.filter(s => s.status === 'active').map(supplier => (
-          <div key={supplier.id} className="flex items-center gap-3 p-4 glass rounded-2xl">
-            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${supplier.avatarColor} flex items-center justify-center font-bold text-white text-sm`}>
-              AC
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-sm">ArtisanCraft Co.</p>
-              <p className="text-olu-muted text-xs">{supplier.products} products · Active partner</p>
-            </div>
-            <ChevronRight size={16} className="text-olu-muted" />
-          </div>
-        ))}
-      </div>
+      <p className="font-black text-2xl">{value}</p>
     </div>
   )
 }
 
 export default function CreatorConsole() {
-  const [tab, setTab] = useState('dashboard')
+  const { user } = useAuth()
+  const [tab, setTab] = useState<TabKey>('dashboard')
+  const [loading, setLoading] = useState(true)
+
+  const [revenue, setRevenue] = useState<AnalyticsRevenue[]>([])
+  const [views, setViews] = useState<AnalyticsViews[]>([])
+  const [fans, setFans] = useState<Fan[]>([])
+  const [licenses, setLicenses] = useState<IPLicense[]>([])
+  const [infringements, setInfringements] = useState<IPInfringement[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    async function load() {
+      if (!user?.id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const [revenueData, viewsData, fansData, licensesData, infringementsData, productsData] = await Promise.all([
+          getRevenueAnalytics(user.id),
+          getViewsAnalytics(user.id),
+          getFansByCreator(user.id),
+          getIPLicensesByCreator(user.id),
+          getIPInfringementsByCreator(user.id),
+          getProductsByCreator(user.id),
+        ])
+
+        setRevenue(revenueData)
+        setViews(viewsData)
+        setFans(fansData)
+        setLicenses(licensesData)
+        setInfringements(infringementsData)
+        setProducts(productsData)
+      } catch (err) {
+        console.error('Failed loading creator console', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [user?.id])
+
+  const totals = useMemo(() => {
+    const totalRevenue = revenue.reduce((acc, r) => acc + r.subscriptions + r.tips + r.shop + r.ip, 0)
+    const totalViews = views.reduce((acc, v) => acc + v.tiktok + v.youtube + v.instagram, 0)
+    const activeFans = fans.filter((f) => f.status === 'active').length
+    return { totalRevenue, totalViews, activeFans }
+  }, [revenue, views, fans])
+
+  if (loading) {
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-olu-muted">Loading creator console...</div>
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
-          <TrendingUp size={18} className="text-white" />
-        </div>
-        <div>
-          <h1 className="font-black text-2xl">Creator Console</h1>
-          <p className="text-olu-muted text-sm">Manage your creator business</p>
-        </div>
+    <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8 space-y-6">
+      <div>
+        <h1 className="font-black text-2xl">Creator Console</h1>
+        <p className="text-olu-muted text-sm">Real-time creator operations from Supabase</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-olu-card rounded-xl mb-6 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
         {TABS.map(({ key, label, icon: Icon }) => (
-          <button key={key} onClick={() => setTab(key)}
-            className={clsx('flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all', tab === key ? 'bg-olu-surface text-olu-text' : 'text-olu-muted hover:text-olu-text')}>
-            <Icon size={13} />{label}
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={clsx(
+              'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
+              tab === key ? 'bg-white text-black' : 'bg-[#1b1b1b] text-olu-muted hover:text-white'
+            )}
+          >
+            <Icon size={14} />
+            {label}
           </button>
         ))}
       </div>
 
-      <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-        {tab === 'dashboard' && <Dashboard />}
-        {tab === 'fans' && <FanCRM />}
-        {tab === 'ip_licenses' && <IPLicenses />}
-        {tab === 'ip_violations' && <IPViolations />}
-        {tab === 'shop' && <Shop />}
-      </motion.div>
+      {tab === 'dashboard' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <MetricCard label="Total Revenue" value={`$${Math.round(totals.totalRevenue).toLocaleString()}`} icon={DollarSign} />
+            <MetricCard label="Total Views" value={compactNumber(totals.totalViews)} icon={Eye} />
+            <MetricCard label="Active Customers" value={totals.activeFans.toString()} icon={Users} />
+            <MetricCard label="IP Licenses" value={licenses.length.toString()} icon={CheckSquare} />
+          </div>
+
+          <div className="glass rounded-2xl p-5">
+            <p className="font-bold mb-4">Revenue Breakdown</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={revenue}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#252545" />
+                <XAxis dataKey="month" tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Area type="monotone" dataKey="subscriptions" stackId="1" stroke="#8b5cf6" fill="#8b5cf633" />
+                <Area type="monotone" dataKey="tips" stackId="1" stroke="#f59e0b" fill="#f59e0b33" />
+                <Area type="monotone" dataKey="shop" stackId="1" stroke="#10b981" fill="#10b98133" />
+                <Area type="monotone" dataKey="ip" stackId="1" stroke="#3b82f6" fill="#3b82f633" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="glass rounded-2xl p-5">
+            <p className="font-bold mb-4">Platform Views</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={views}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#252545" />
+                <XAxis dataKey="month" tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#8b8baa', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Bar dataKey="tiktok" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="youtube" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="instagram" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {tab === 'fans' && (
+        <div className="glass rounded-2xl p-5 space-y-3">
+          {fans.map((fan) => (
+            <div key={fan.id} className="flex items-center justify-between p-3 rounded-xl bg-[#161616]">
+              <div>
+                <p className="font-medium text-sm">{fan.name}</p>
+                <p className="text-olu-muted text-xs">{fan.handle} · {fan.tier}</p>
+              </div>
+              <p className="text-sm font-semibold">${Math.round(fan.total_spend)}</p>
+            </div>
+          ))}
+          {fans.length === 0 && <p className="text-olu-muted text-sm">No customer data yet.</p>}
+        </div>
+      )}
+
+      {tab === 'ip' && (
+        <div className="grid lg:grid-cols-2 gap-4">
+          <div className="glass rounded-2xl p-5 space-y-3">
+            <p className="font-bold">Licenses</p>
+            {licenses.map((item) => (
+              <div key={item.id} className="p-3 rounded-xl bg-[#161616]">
+                <p className="text-sm font-medium">{item.requester}</p>
+                <p className="text-olu-muted text-xs">{item.type} · {item.status}</p>
+              </div>
+            ))}
+            {licenses.length === 0 && <p className="text-olu-muted text-sm">No license requests.</p>}
+          </div>
+
+          <div className="glass rounded-2xl p-5 space-y-3">
+            <p className="font-bold">Infringements</p>
+            {infringements.map((item) => (
+              <div key={item.id} className="p-3 rounded-xl bg-[#161616]">
+                <p className="text-sm font-medium">{item.platform} · {item.offender}</p>
+                <p className="text-olu-muted text-xs">{item.content} · {item.status}</p>
+              </div>
+            ))}
+            {infringements.length === 0 && <p className="text-olu-muted text-sm">No infringement records.</p>}
+          </div>
+        </div>
+      )}
+
+      {tab === 'shop' && (
+        <div className="glass rounded-2xl p-5 space-y-3">
+          {products.map((product) => (
+            <div key={product.id} className="flex items-center justify-between p-3 rounded-xl bg-[#161616]">
+              <div>
+                <p className="text-sm font-medium">{product.name}</p>
+                <p className="text-olu-muted text-xs">{product.status} · stock {product.stock}</p>
+              </div>
+              <p className="font-semibold">${Number(product.price).toFixed(2)}</p>
+            </div>
+          ))}
+          {products.length === 0 && <p className="text-olu-muted text-sm">No products yet.</p>}
+        </div>
+      )}
     </div>
   )
 }

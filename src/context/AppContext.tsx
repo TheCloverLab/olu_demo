@@ -1,11 +1,12 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
-import { ROLES } from '../data/mock'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useAuth } from './AuthContext'
 
-type RoleType = keyof typeof ROLES
+type RoleType = 'creator' | 'fan' | 'advertiser' | 'supplier'
 
 interface AppContextType {
   currentRole: RoleType
-  currentUser: typeof ROLES[RoleType]
+  currentUser: any
+  availableRoles: RoleType[]
   switchRole: (role: RoleType) => void
   showRoleSwitcher: boolean
   setShowRoleSwitcher: (show: boolean) => void
@@ -18,20 +19,46 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children }: AppProviderProps) {
-  const [currentRole, setCurrentRole] = useState<RoleType>('creator')
+  const { user: authUser } = useAuth()
+  const [currentRole, setCurrentRole] = useState<RoleType>('fan')
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false)
 
-  const currentUser = ROLES[currentRole]
+  // Get available roles from authenticated user or default to all roles
+  const availableRoles: RoleType[] = authUser?.roles || ['fan']
+
+  // Set initial role when user logs in
+  useEffect(() => {
+    if (authUser?.roles && authUser.roles.length > 0) {
+      setCurrentRole(authUser.roles[0])
+    }
+  }, [authUser])
+
+  const currentUser = authUser || {
+    id: 'guest',
+    name: 'Guest',
+    handle: '@guest',
+    role: 'fan',
+    roles: ['fan'],
+    initials: 'G',
+    avatar_color: 'from-gray-600 to-gray-500',
+    followers: 0,
+    following: 0,
+    posts: 0,
+    verified: false,
+  }
 
   const switchRole = (role: RoleType) => {
-    setCurrentRole(role)
-    setShowRoleSwitcher(false)
+    if (availableRoles.includes(role)) {
+      setCurrentRole(role)
+      setShowRoleSwitcher(false)
+    }
   }
 
   return (
     <AppContext.Provider value={{
       currentRole,
       currentUser,
+      availableRoles,
       switchRole,
       showRoleSwitcher,
       setShowRoleSwitcher,

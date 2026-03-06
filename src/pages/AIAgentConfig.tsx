@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bot, Plus, Settings, Trash2, ShoppingBag, Check, X, Star, Zap } from 'lucide-react'
-import { useApp } from '../context/AppContext'
-import { AI_AGENTS } from '../data/mock'
+import { useAuth } from '../context/AuthContext'
+import { getAgentsByUser } from '../services/api'
 import clsx from 'clsx'
 
 const MARKETPLACE_AGENTS = [
@@ -75,12 +75,25 @@ function HireModal({ agent, onClose, onConfirm }) {
 }
 
 export default function AIAgentConfig() {
-  const { currentRole } = useApp()
+  const { user } = useAuth()
   const [hireTarget, setHireTarget] = useState(null)
   const [hired, setHired] = useState(new Set())
   const [successAgent, setSuccessAgent] = useState(null)
   const [filter, setFilter] = useState('All')
-  const activeAgents = AI_AGENTS[currentRole] || []
+  const [activeAgents, setActiveAgents] = useState<any[]>([])
+
+  useEffect(() => {
+    async function loadAgents() {
+      if (!user?.id) return
+      try {
+        const data = await getAgentsByUser(user.id)
+        setActiveAgents(data || [])
+      } catch (err) {
+        console.error('Failed to load AI agents', err)
+      }
+    }
+    loadAgents()
+  }, [user?.id])
 
   const categories = ['All', 'Creator', 'Advertiser', 'Supplier', 'Pro']
   const filteredMarket = MARKETPLACE_AGENTS.filter(a => filter === 'All' || a.category === filter)
@@ -120,11 +133,11 @@ export default function AIAgentConfig() {
           <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider mb-3">Your Team ({activeAgents.length})</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {activeAgents.map((agent) => (
-              <div key={agent.id} className="flex items-center gap-3 p-4 glass rounded-2xl group">
-                <div className="relative flex-shrink-0">
-                  {agent.avatarImg
-                    ? <img src={agent.avatarImg} alt={agent.name} className="w-11 h-11 rounded-xl object-cover" />
-                    : <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-xl font-bold text-white`}>{agent.name[0]}</div>
+                <div key={agent.id} className="flex items-center gap-3 p-4 glass rounded-2xl group">
+                  <div className="relative flex-shrink-0">
+                  {agent.avatar_img
+                    ? <img src={agent.avatar_img} alt={agent.name} className="w-11 h-11 rounded-xl object-cover" />
+                    : <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${agent.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xl font-bold text-white`}>{agent.name[0]}</div>
                   }
                   <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-olu-card', agent.status === 'online' ? 'bg-emerald-400' : 'bg-amber-400')} />
                 </div>

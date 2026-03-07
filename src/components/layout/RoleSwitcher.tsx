@@ -40,7 +40,11 @@ const ROLE_OPTIONS = [
 
 export default function RoleSwitcher() {
   const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole, availableRoles } = useApp()
-  const userRoleOptions = ROLE_OPTIONS.filter((role) => availableRoles.includes(role.key as any))
+  const inBusinessSurface = typeof window !== 'undefined' && window.location.pathname.startsWith('/business')
+  const userRoleOptions = ROLE_OPTIONS.filter((role) => {
+    if (inBusinessSurface && role.key === 'fan') return false
+    return availableRoles.includes(role.key as any)
+  })
 
   return (
     <AnimatePresence>
@@ -70,7 +74,9 @@ export default function RoleSwitcher() {
                       <span className="font-black text-cyan-200">Switch Capability</span>
                     </div>
                     <p className="text-cyan-100/60 text-sm">
-                      Choose the operator context you want to use in this workspace.
+                      {inBusinessSurface
+                        ? 'Choose the operator context you want to use in this workspace.'
+                        : 'Choose the account context you want to use right now.'}
                     </p>
                   </div>
                   <button

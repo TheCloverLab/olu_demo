@@ -22,6 +22,7 @@ describe('RoleSwitcher', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    window.history.replaceState({}, '', '/')
   })
 
   it('renders nothing when closed', () => {
@@ -121,5 +122,24 @@ describe('RoleSwitcher', () => {
 
     render(<RoleSwitcher />)
     expect(screen.getByText('Modules stay visible at workspace level')).toBeInTheDocument()
+  })
+
+  it('hides consumer context inside business surface', () => {
+    window.history.replaceState({}, '', '/business')
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      showRoleSwitcher: true,
+      setShowRoleSwitcher: mockSetShowRoleSwitcher,
+      currentRole: 'creator',
+      switchRole: mockSwitchRole,
+      availableRoles: ['fan', 'creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+      currentUser: {},
+    })
+
+    render(<RoleSwitcher />)
+    expect(screen.queryByText('Consumer')).not.toBeInTheDocument()
+    expect(screen.getByText('Creator Ops')).toBeInTheDocument()
+    expect(screen.getByText('Marketing')).toBeInTheDocument()
   })
 })

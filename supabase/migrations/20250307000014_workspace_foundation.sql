@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE workspaces (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   owner_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -13,7 +13,7 @@ CREATE TABLE workspaces (
 );
 
 CREATE TABLE workspace_memberships (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   membership_role TEXT NOT NULL CHECK (membership_role IN ('owner', 'admin', 'operator', 'viewer')),
@@ -24,7 +24,7 @@ CREATE TABLE workspace_memberships (
 );
 
 CREATE TABLE workspace_modules (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   module_key TEXT NOT NULL CHECK (module_key IN ('creator_ops', 'marketing', 'supply_chain')),
   enabled BOOLEAN NOT NULL DEFAULT true,
@@ -34,7 +34,7 @@ CREATE TABLE workspace_modules (
 );
 
 CREATE TABLE workspace_permissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   membership_role TEXT NOT NULL CHECK (membership_role IN ('owner', 'admin', 'operator', 'viewer')),
   resource TEXT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE workspace_permissions (
 );
 
 CREATE TABLE workspace_integrations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   provider TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'planned' CHECK (status IN ('connected', 'disconnected', 'planned', 'error')),
@@ -58,7 +58,7 @@ CREATE TABLE workspace_integrations (
 );
 
 CREATE TABLE workspace_policies (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL UNIQUE REFERENCES workspaces(id) ON DELETE CASCADE,
   approval_policy JSONB NOT NULL DEFAULT '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":500}'::jsonb,
   sandbox_policy JSONB NOT NULL DEFAULT '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb,
@@ -68,7 +68,7 @@ CREATE TABLE workspace_policies (
 );
 
 CREATE TABLE workspace_billing (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   workspace_id UUID NOT NULL UNIQUE REFERENCES workspaces(id) ON DELETE CASCADE,
   plan TEXT NOT NULL DEFAULT 'starter',
   status TEXT NOT NULL DEFAULT 'trial' CHECK (status IN ('trial', 'active', 'past_due', 'cancelled')),

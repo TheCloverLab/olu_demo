@@ -4,6 +4,9 @@ BEGIN;
 
 -- Clean existing seed rows (safe ordering for FK constraints)
 TRUNCATE TABLE
+  workspace_agent_tasks,
+  workspace_agents,
+  agent_templates,
   workspace_billing,
   workspace_policies,
   workspace_integrations,
@@ -102,6 +105,34 @@ VALUES
   ('05600000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'starter', 'trial', 'luna@example.com'),
   ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'growth', 'active', 'finance@gameverse.example.com'),
   ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'starter', 'active', 'ops@artisancraft.example.com');
+
+INSERT INTO agent_templates (id, template_key, name, role, avatar_img, color, category, pricing_model, price_label, model, cost_per_1k, rating, reviews, description, status)
+VALUES
+  ('05700000-0000-0000-0000-000000000001', 'ip_manager', 'IP Manager', 'IP Manager', '/images/agents/lisa.jpg', 'from-zinc-600 to-zinc-500', 'Creator', 'free', 'Free', 'GPT-5.2', 0.0050, 4.9, 1240, 'Manages IP licensing, authorizations, and royalty collection.', 'active'),
+  ('05700000-0000-0000-0000-000000000002', 'legal_officer', 'Legal Officer', 'Legal Officer', '/images/agents/debian.jpg', 'from-red-500 to-rose-600', 'Creator', 'free', 'Free', 'Claude Opus 4.6', 0.0030, 4.8, 890, 'Monitors unauthorized use and sends DMCA takedowns.', 'active'),
+  ('05700000-0000-0000-0000-000000000003', 'community_manager', 'Community Manager', 'Community Manager', '/images/agents/aria.jpg', 'from-pink-500 to-rose-500', 'Creator', 'free', 'Free', 'Gemini 3 Flash', 0.0001, 4.7, 2100, 'Runs community events and rewards top customers.', 'active'),
+  ('05700000-0000-0000-0000-000000000004', 'growth_officer', 'Growth Officer', 'Growth Officer', '/images/agents/zephyr.jpg', 'from-emerald-500 to-teal-600', 'Creator', 'free', 'Free', 'Claude Sonnet 4.5', 0.0030, 4.6, 1560, 'Drives follower and subscriber growth across platforms.', 'active'),
+  ('05700000-0000-0000-0000-000000000005', 'data_analyst', 'Data Analyst', 'Data Analyst', '/images/agents/eric.jpg', 'from-blue-500 to-indigo-600', 'Creator', 'free', 'Free', 'GPT-5.2', 0.0050, 4.9, 3200, 'Deep analytics across all platforms with actionable insights.', 'active'),
+  ('05700000-0000-0000-0000-000000000006', 'creativity_officer', 'Creativity Officer', 'Creativity Officer', '/images/agents/nova.jpg', 'from-orange-400 to-amber-500', 'Creator', 'free', 'Free', 'Gemini 3.1 Pro', 0.0002, 4.8, 2800, 'Content ideation based on trends and audience behavior.', 'active'),
+  ('05700000-0000-0000-0000-000000000007', 'marketing_manager', 'Marketing Manager', 'Marketing Manager', '/images/agents/max.jpg', 'from-blue-500 to-cyan-500', 'Advertiser', 'free', 'Free', 'GPT-5.1', 0.0040, 4.7, 980, 'End-to-end influencer campaign planning and execution.', 'active'),
+  ('05700000-0000-0000-0000-000000000008', 'channel_manager', 'Channel Manager', 'Channel Manager', '/images/agents/chan.jpg', 'from-emerald-500 to-green-600', 'Supplier', 'free', 'Free', 'Claude Haiku 4.x', 0.0001, 4.5, 560, 'Connects creators and suppliers for merch partnerships.', 'active'),
+  ('05700000-0000-0000-0000-000000000009', 'finance_officer', 'Finance Officer', 'Finance Officer', '/images/agents/finance.jpg', 'from-yellow-500 to-amber-600', 'Pro', 'subscription', '$9.99/mo', 'GPT-5.2-Codex', 0.0060, 4.9, 1100, 'Cross-border payments, invoicing, and financial reporting.', 'active'),
+  ('05700000-0000-0000-0000-000000000010', 'localization_agent', 'Localization Agent', 'Localization Agent', '/images/agents/localization.jpg', 'from-cyan-500 to-blue-600', 'Pro', 'subscription', '$4.99/mo', 'Gemini 3 Pro', 0.0003, 4.6, 430, 'Translates and localizes content for global audiences.', 'active');
+
+INSERT INTO workspace_agents (id, workspace_id, template_id, hired_by_user_id, agent_key, name, role, avatar_img, color, status, description, last_message, last_time)
+VALUES
+  ('05800000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'lisa', 'Lisa', 'IP Manager', '/images/agents/lisa.jpg', 'from-zinc-600 to-zinc-500', 'online', 'Manages and licenses creator IP.', 'Received 3 new IP licensing requests.', '12m ago'),
+  ('05800000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'eric', 'Eric', 'Data Analyst', '/images/agents/eric.jpg', 'from-blue-500 to-blue-700', 'online', 'Analyzes performance and growth metrics.', 'Weekly report ready.', '2h ago'),
+  ('05800000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', '05700000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000003', 'max', 'Max', 'Marketing Manager', '/images/agents/max.jpg', 'from-blue-500 to-cyan-500', 'online', 'Plans influencer campaigns end-to-end.', 'Luna team responded positively.', '15m ago'),
+  ('05800000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000003', '05700000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000004', 'chan', 'Chan', 'Channel Manager', '/images/agents/chan.jpg', 'from-emerald-500 to-green-600', 'online', 'Manages supplier and creator partnerships.', 'Hoodie design approved.', '20m ago');
+
+INSERT INTO workspace_agent_tasks (id, workspace_agent_id, task_key, title, status, priority, due, progress)
+VALUES
+  ('05900000-0000-0000-0000-000000000001', '05800000-0000-0000-0000-000000000001', 't1', 'Review GameVerse IP proposal', 'pending', 'high', 'Today', 0),
+  ('05900000-0000-0000-0000-000000000002', '05800000-0000-0000-0000-000000000001', 't2', 'Renew voice licensing terms', 'in_progress', 'medium', 'This week', 45),
+  ('05900000-0000-0000-0000-000000000003', '05800000-0000-0000-0000-000000000002', 't3', 'Weekly performance report', 'done', 'high', 'Done', 100),
+  ('05900000-0000-0000-0000-000000000004', '05800000-0000-0000-0000-000000000003', 't4', 'Negotiate with Luna IP Manager', 'in_progress', 'high', 'Today', 60),
+  ('05900000-0000-0000-0000-000000000005', '05800000-0000-0000-0000-000000000004', 't5', 'List Luna hoodie in creator shop', 'in_progress', 'high', 'Today', 70);
 
 -- Posts
 INSERT INTO posts (id, creator_id, type, title, preview, cover_img, gradient_bg, emoji, likes, comments, tips, locked, lock_price, allow_fan_creation, fan_creation_fee, sponsored, sponsored_by, tags)

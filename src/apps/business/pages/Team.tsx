@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getAgentsWithTasks, getGroupChatsByUser } from '../../../services/api'
-import type { AIAgent, AgentTask } from '../../../lib/supabase'
+import { getGroupChatsByUser } from '../../../services/api'
+import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
+import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
 import clsx from 'clsx'
 
 type GroupChat = {
@@ -16,7 +17,7 @@ type GroupChat = {
   last_time?: string
 }
 
-type AgentWithTasks = AIAgent & { tasks?: AgentTask[] }
+type AgentWithTasks = WorkspaceAgentWithTasks
 
 const ROLE_COLORS: Record<string, string> = {
   'IP Manager': 'bg-violet-500/15 text-violet-400',
@@ -48,7 +49,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/team/${agent.agent_key || agent.id}`)}
-      className="w-full flex items-center gap-3 p-4 rounded-2xl text-left border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1726] transition-colors"
+      className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
     >
       <div className="relative flex-shrink-0">
         {agent.avatar_img ? (
@@ -90,7 +91,7 @@ function GroupRow({ group }: { group: GroupChat }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/team/grp-${group.chat_key || group.id}`)}
-      className="w-full flex items-center gap-3 p-4 rounded-2xl text-left border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1726] transition-colors"
+      className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
     >
       <div className="relative flex-shrink-0">
         <div className="w-12 h-12 rounded-xl bg-[#0d1726] flex items-center justify-center border border-cyan-500/10">
@@ -128,7 +129,7 @@ export default function Team() {
 
       try {
         const [agentsData, groupsData] = await Promise.all([
-          getAgentsWithTasks(user.id),
+          getWorkspaceAgentsWithTasksForUser(user),
           getGroupChatsByUser(user.id),
         ])
         setAgents(agentsData)
@@ -193,13 +194,25 @@ export default function Team() {
         </div>
       </div>
 
+      <div className="rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(14,28,48,0.92),rgba(8,18,33,0.86))] p-5 mb-6 shadow-[0_18px_60px_rgba(2,8,23,0.32)]">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-[#0a1525] border border-cyan-400/10 flex items-center justify-center">
+            <ShieldCheck size={18} className="text-cyan-200" />
+          </div>
+          <div>
+            <p className="font-semibold">Workspace command layer</p>
+            <p className="text-cyan-100/60 text-sm">Your team roster now comes from workspace-backed agents and task queues instead of front-end mock state.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
           { label: 'Agents', value: agents.length, icon: Bot, iconClass: 'text-sky-300', iconBg: 'bg-sky-500/15' },
           { label: 'Active Tasks', value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15' },
           { label: 'Online', value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15' },
         ].map((card) => (
-          <div key={card.label} className="rounded-2xl p-4 text-center border border-cyan-500/10 bg-[#091422]">
+          <div key={card.label} className="rounded-[24px] p-4 text-center border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <div className="flex justify-center mb-2">
               <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
                 <card.icon size={15} className={card.iconClass} fill={card.label === 'Online' ? 'currentColor' : 'none'} />

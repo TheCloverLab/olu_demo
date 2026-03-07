@@ -23,7 +23,7 @@ type TabKey = (typeof TABS)[number]['key']
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-2xl p-4 border border-cyan-500/10 bg-[#091422]">
+    <div className="rounded-[24px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
       <div className="flex items-center justify-between mb-2">
         <p className="text-cyan-100/55 text-xs">{label}</p>
         <Icon size={14} className="text-cyan-100/55" />
@@ -138,9 +138,25 @@ export default function CreatorConsole() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8 space-y-6">
-      <div>
-        <h1 className="font-black text-2xl">Creator Ops</h1>
-        <p className="text-cyan-100/60 text-sm">Creator-side approvals and monetization with backend-backed workflow state</p>
+      <div className="rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(17,33,53,0.96),rgba(8,19,34,0.88))] p-6 shadow-[0_18px_60px_rgba(2,8,23,0.35)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-black text-2xl">Creator Ops</h1>
+            <p className="text-cyan-100/60 text-sm mt-1">Creator-side approvals, monetization, and workflow telemetry inside the business workspace</p>
+          </div>
+          <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
+            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
+              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Reward Locked</p>
+              <p className="font-black text-2xl">${myTarget?.creator_reward ?? 0}</p>
+              <p className="text-cyan-100/60 text-xs mt-1">Current workflow payout</p>
+            </div>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
+              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Current Stage</p>
+              <p className="font-black text-2xl capitalize">{workflow?.campaign.status || 'idle'}</p>
+              <p className="text-cyan-100/60 text-xs mt-1">Synced from backend campaign state</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -161,7 +177,7 @@ export default function CreatorConsole() {
 
       {tab === 'campaigns' && (
         <div className="grid lg:grid-cols-[1.2fr,0.95fr] gap-4">
-          <div className="rounded-3xl p-6 space-y-5 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[32px] p-6 space-y-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-cyan-100/55 text-xs uppercase tracking-wider mb-2">KOL-side workspace</p>
@@ -175,7 +191,7 @@ export default function CreatorConsole() {
               </span>
             </div>
 
-            <div className="rounded-3xl bg-[#0d1726] p-5 border border-cyan-500/10">
+            <div className="rounded-[28px] bg-[#0d1726] p-5 border border-cyan-500/10">
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div>
                   <p className="font-bold text-lg">{workflow?.campaign.brand_name || 'No campaign'}</p>
@@ -228,7 +244,7 @@ export default function CreatorConsole() {
             </div>
           </div>
 
-          <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <p className="font-bold mb-4">Approval story</p>
             <div className="space-y-3">
               {[
@@ -290,7 +306,7 @@ export default function CreatorConsole() {
             <MetricCard label="IP Licenses" value={licenses.length.toString()} icon={CheckSquare} />
           </div>
 
-          <div className="rounded-2xl p-5 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[28px] p-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold mb-4">Revenue Breakdown</p>
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={revenue}>
@@ -306,7 +322,7 @@ export default function CreatorConsole() {
             </ResponsiveContainer>
           </div>
 
-          <div className="rounded-2xl p-5 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[28px] p-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold mb-4">Platform Views</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={views}>

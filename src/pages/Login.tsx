@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { LogIn, Loader2 } from 'lucide-react'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { signIn, user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const nextPath = (location.state as { from?: string } | null)?.from || '/business'
+
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/', { replace: true })
+      navigate(nextPath, { replace: true })
     }
-  }, [authLoading, user, navigate])
+  }, [authLoading, user, navigate, nextPath])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

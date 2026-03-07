@@ -4,6 +4,9 @@ BEGIN;
 
 -- Clean existing seed rows (safe ordering for FK constraints)
 TRUNCATE TABLE
+  business_campaign_events,
+  business_campaign_targets,
+  business_campaigns,
   campaign_creators,
   campaigns,
   supplier_creator_partnerships,
@@ -143,6 +146,20 @@ VALUES
   ('91000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000007', 'live', 'Content Live', 8500, 890000, 4200),
   ('91000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'production', 'Content in Production', 12000, 0, 0),
   ('91000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000007', 'completed', 'Completed', 8000, 2100000, 12000);
+
+-- Prototype workflow tables for business-side campaign execution
+INSERT INTO business_campaigns (id, advertiser_id, agent_id, name, brand_name, objective, budget, budget_spent, status, target_creator_count)
+VALUES
+  ('94000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000003', 'Run club launch sprint', 'AeroPulse', 'Find 5 sports KOLs to promote the new performance sneaker line.', 1000, 220, 'offer_sent', 5);
+
+INSERT INTO business_campaign_targets (id, campaign_id, creator_id, creator_agent_id, stage, offer_amount, deliverable_type, deliverable_status, marketer_message, creator_message, creator_reward)
+VALUES
+  ('94100000-0000-0000-0000-000000000001', '94000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 'offer_sent', 100, 'ai_video', 'waiting', 'Marketing Manager shortlisted Luna Chen and drafted a promo package with AI video sample plus $100 placement fee.', 'Business Agent received an AeroPulse promotion request. Review the AI-generated promo and decide whether to accept.', 0);
+
+INSERT INTO business_campaign_events (id, campaign_id, target_id, actor_type, actor_user_id, title, detail)
+VALUES
+  ('94200000-0000-0000-0000-000000000001', '94000000-0000-0000-0000-000000000001', '94100000-0000-0000-0000-000000000001', 'advertiser', '00000000-0000-0000-0000-000000000003', 'Campaign brief created', 'Marketing Manager accepted the AeroPulse launch brief and started sourcing sports creators.'),
+  ('94200000-0000-0000-0000-000000000002', '94000000-0000-0000-0000-000000000001', '94100000-0000-0000-0000-000000000001', 'agent', NULL, 'Offer sent to Luna Chen', 'AI-generated promo sample, fee, and posting requirements were delivered to the creator-side business agent.');
 
 -- Supplier tables
 INSERT INTO supplier_creator_partnerships (id, supplier_id, creator_id, status, products_count, monthly_sales, ip_approved, channel_manager)

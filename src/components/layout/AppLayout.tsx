@@ -1,25 +1,23 @@
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, MessageCircle, Users, User, Settings, ChevronRight, LayoutDashboard, Bot, Menu, X, Megaphone, Package, Zap, ShoppingBag, LogIn, Wallet, Coins } from 'lucide-react'
+import { Home, MessageCircle, User, Settings, ChevronRight, Menu, X, Zap, ShoppingBag, LogIn, Briefcase } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 import RoleSwitcher from './RoleSwitcher'
 import clsx from 'clsx'
 
-// Mobile bottom nav: Home, Chat, Team, Profile, AI
+// Consumer app navigation
 const MOBILE_NAV = [
   { to: '/', icon: Home, exact: true },
   { to: '/chat', icon: MessageCircle },
-  { to: '/team', icon: Users },
+  { to: '/shop', icon: ShoppingBag },
   { to: '/profile', icon: User },
-  { to: '/ai-config', icon: Bot },
 ]
 
 const SIDEBAR_NAV = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/chat', icon: MessageCircle, label: 'Chat' },
-  { to: '/team', icon: Users, label: 'Team' },
   { to: '/shop', icon: ShoppingBag, label: 'Shop' },
   { to: '/profile', icon: User, label: 'Me' },
 ]
@@ -54,7 +52,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
 }
 
 function MoreMenu({ open, onClose }) {
-  const { currentRole, currentUser, setShowRoleSwitcher } = useApp()
+  const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
@@ -101,11 +99,7 @@ function MoreMenu({ open, onClose }) {
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/ai-config')} />
-              {currentRole === 'creator' && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />}
-              {currentRole === 'creator' && <MenuItem icon={LayoutDashboard} label="Creator Console" onClick={() => go('/console/creator')} />}
-              {currentRole === 'advertiser' && <MenuItem icon={Megaphone} label="Advertiser Console" onClick={() => go('/console/advertiser')} />}
-              {currentRole === 'supplier' && <MenuItem icon={Package} label="Supplier Console" onClick={() => go('/console/supplier')} />}
+              <MenuItem icon={Briefcase} label="Business Workspace" onClick={() => go('/business')} />
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
@@ -116,19 +110,10 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, currentRole, availableRoles, setShowRoleSwitcher } = useApp()
+  const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
-  const location = useLocation()
-  const isConsole = location.pathname.startsWith('/console/')
-  const hasMultipleRoles = availableRoles.length > 1
-
-  const creatorWalletPreview = {
-    total: 3248.91,
-    pending: 286.4,
-    stablecoin: 846.25,
-  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -139,7 +124,6 @@ export default function AppLayout() {
             <Zap size={14} className="text-black" fill="black" />
           </div>
           <span className="font-black text-lg">OLU</span>
-          {isConsole && <span className="ml-auto text-xs bg-[#2a2a2a] text-olu-muted px-2 py-0.5 rounded-full">Console</span>}
         </div>
 
         {authUser ? (
@@ -187,67 +171,14 @@ export default function AppLayout() {
           ))}
 
           <div className="pt-4">
-            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Tools</p>
-            <NavLink to="/ai-config" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
-              <Bot size={18} />AI Agents
+            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Workspace</p>
+            <NavLink to="/business" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
+              <Briefcase size={18} />Business Workspace
             </NavLink>
-          </div>
-
-          <div className="pt-4">
-            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Console</p>
-            {currentUser.role === 'creator' && (
-              <NavLink to="/console/creator" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
-                <LayoutDashboard size={18} />Creator Console
-              </NavLink>
-            )}
-            {currentUser.role === 'advertiser' && (
-              <NavLink to="/console/advertiser" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
-                <Megaphone size={18} />Advertiser Console
-              </NavLink>
-            )}
-            {currentUser.role === 'supplier' && (
-              <NavLink to="/console/supplier" className={({ isActive }) => clsx('flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer', isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]')}>
-                <Package size={18} />Supplier Console
-              </NavLink>
-            )}
           </div>
         </nav>
 
-        {authUser && currentRole === 'creator' && (
-          <div className="px-3 pb-3">
-            <button
-              onClick={() => navigate('/wallet')}
-              className="w-full rounded-2xl bg-gradient-to-br from-emerald-500/12 to-cyan-500/12 border border-emerald-400/25 p-3 text-left hover:border-emerald-300/40 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-emerald-300">
-                  <Wallet size={14} />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Wallet</span>
-                </div>
-                <ChevronRight size={14} className="text-emerald-300/80" />
-              </div>
-              <p className="text-white font-bold text-lg leading-none mb-1">${creatorWalletPreview.total.toLocaleString()}</p>
-              <div className="flex items-center justify-between text-[11px] text-olu-muted">
-                <span>+${creatorWalletPreview.pending.toFixed(2)} pending</span>
-                <span className="inline-flex items-center gap-1 text-cyan-300">
-                  <Coins size={11} />
-                  {creatorWalletPreview.stablecoin.toFixed(2)} USDC
-                </span>
-              </div>
-            </button>
-          </div>
-        )}
-
         <div className="p-3 border-t border-olu-border space-y-2">
-          {authUser && hasMultipleRoles && (
-            <button
-              onClick={() => setShowRoleSwitcher(true)}
-              className="w-full py-2 px-3 rounded-2xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <Users size={14} />
-              Switch Role
-            </button>
-          )}
           <NavLink 
             to="/settings"
             className={({ isActive }) => clsx(
@@ -269,7 +200,7 @@ export default function AppLayout() {
             <Menu size={22} />
           </button>
           <span className="font-black text-lg">OLU</span>
-          <button onClick={() => (hasMultipleRoles ? setShowRoleSwitcher(true) : navigate('/profile'))}>
+          <button onClick={() => navigate('/profile')}>
             <Avatar user={currentUser} />
           </button>
         </header>

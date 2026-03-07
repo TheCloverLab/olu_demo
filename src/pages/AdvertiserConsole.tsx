@@ -1,16 +1,30 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Megaphone, Target, DollarSign, TrendingUp, Users } from 'lucide-react'
+import { Megaphone, Target, DollarSign, TrendingUp, Users, Sparkles, ArrowRight, RefreshCcw, CheckCircle2, Clock3 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../context/AuthContext'
-import { getCampaignsByAdvertiser } from '../services/api'
-import type { Campaign } from '../lib/supabase'
+import { getCampaignsByAdvertiser, getLatestBusinessCampaignForAdvertiser, startBusinessCampaignDemo, advanceBusinessCampaign, getCreators } from '../services/api'
+import type { BusinessCampaignWorkflow, Campaign, User } from '../lib/supabase'
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+  { key: 'mission', label: 'Mission Control', icon: Sparkles },
   { key: 'campaigns', label: 'Campaigns', icon: Megaphone },
   { key: 'creators', label: 'Creator CRM', icon: Users },
 ] as const
+
+const STAGE_META = {
+  draft: { label: 'Draft', tone: 'bg-white/10 text-olu-muted' },
+  sourcing: { label: 'Sourcing', tone: 'bg-cyan-500/20 text-cyan-300' },
+  offer_sent: { label: 'Offer Sent', tone: 'bg-amber-500/20 text-amber-300' },
+  creator_review: { label: 'Creator Review', tone: 'bg-amber-500/20 text-amber-300' },
+  approved: { label: 'Approved', tone: 'bg-emerald-500/20 text-emerald-300' },
+  scheduled: { label: 'Scheduled', tone: 'bg-emerald-500/20 text-emerald-300' },
+  published: { label: 'Published', tone: 'bg-emerald-500/20 text-emerald-300' },
+  reporting: { label: 'Reporting', tone: 'bg-cyan-500/20 text-cyan-300' },
+  completed: { label: 'Completed', tone: 'bg-emerald-500/20 text-emerald-300' },
+  cancelled: { label: 'Cancelled', tone: 'bg-red-500/20 text-red-300' },
+} as const
 
 type TabKey = (typeof TABS)[number]['key']
 
@@ -32,28 +46,39 @@ function MetricCard({ label, value, icon: Icon }: { label: string; value: string
 
 export default function AdvertiserConsole() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<TabKey>('dashboard')
+  const [tab, setTab] = useState<TabKey>('mission')
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [workflow, setWorkflow] = useState<BusinessCampaignWorkflow | null>(null)
+  const [creators, setCreators] = useState<User[]>([])
+  const [selectedCreatorId, setSelectedCreatorId] = useState('')
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      if (!user?.id) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const data = await getCampaignsByAdvertiser(user.id)
-        setCampaigns(data)
-      } catch (err) {
-        console.error('Failed loading advertiser console', err)
-      } finally {
-        setLoading(false)
-      }
+  async function loadData() {
+    if (!user?.id) {
+      setLoading(false)
+      return
     }
 
-    load()
+    try {
+      const [campaignData, workflowData] = await Promise.all([
+        getCampaignsByAdvertiser(user.id),
+        getLatestBusinessCampaignForAdvertiser(user.id),
+      ])
+      const creatorData = await getCreators()
+      setCampaigns(campaignData)
+      setWorkflow(workflowData)
+      setCreators(creatorData)
+      setSelectedCreatorId((current) => current || workflowData?.targets?.[0]?.creator_id || creatorData[0]?.id || '')
+    } catch (err) {
+      console.error('Failed loading advertiser console', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
   }, [user?.id])
 
   const totals = useMemo(() => {
@@ -71,17 +96,62 @@ export default function AdvertiserConsole() {
     conversions: Number(c.conversions),
   }))
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8 text-olu-muted">Loading advertiser console...</div>
+  const stageMeta = workflow ? STAGE_META[workflow.campaign.status] : STAGE_META.draft
+  const primaryTarget = workflow?.targets[0]
+  const selectedCreator = creators.find((creator) => creator.id === selectedCreatorId) || null
+  const demoProgress = useMemo(() => {
+    if (!workflow) return 0
+    const stageOrder = ['draft', 'sourcing', 'offer_sent', 'approved', 'scheduled', 'published', 'completed']
+    const index = stageOrder.indexOf(workflow.campaign.status)
+    return index <= 0 ? 0 : (index / (stageOrder.length - 1)) * 100
+  }, [workflow])
+
+  async function handleStart() {
+    if (!user?.id || !selectedCreatorId) return
+    setActionLoading(true)
+    try {
+      const data = await startBusinessCampaignDemo(user.id, selectedCreatorId)
+      setWorkflow(data)
+    } catch (err) {
+      console.error('Failed to start business campaign demo', err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleAdvance() {
+    if (!workflow?.campaign.id || !user?.id) return
+    setActionLoading(true)
+    try {
+      const data = await advanceBusinessCampaign(workflow.campaign.id, user.id)
+      setWorkflow(data)
+    } catch (err) {
+      console.error('Failed to advance business campaign', err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleRefresh() {
+    setActionLoading(true)
+    try {
+      await loadData()
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  if (loading) return <div className="max-w-5xl mx-auto px-4 py-8 text-olu-muted">Loading advertiser console...</div>
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
           <Megaphone size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="font-black text-2xl">Advertiser Console</h1>
-          <p className="text-olu-muted text-sm">Live campaign operations from Supabase</p>
+          <h1 className="font-black text-2xl">Marketing Workspace</h1>
+          <p className="text-olu-muted text-sm">Influencer campaign operations backed by Supabase workflow state</p>
         </div>
       </div>
 
@@ -100,6 +170,173 @@ export default function AdvertiserConsole() {
           </button>
         ))}
       </div>
+
+      {tab === 'mission' && (
+        <div className="space-y-4">
+          <div className="grid lg:grid-cols-[1.25fr,0.9fr] gap-4">
+            <div className="glass rounded-3xl p-6 space-y-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-olu-muted text-xs uppercase tracking-wider mb-2">Prototype flow</p>
+                  <h2 className="font-black text-2xl">{workflow?.campaign.brand_name || 'No active workflow'}</h2>
+                  <p className="text-olu-muted text-sm mt-2 max-w-2xl">
+                    {workflow?.campaign.objective || 'Start a real workflow row in Supabase, then drive it across marketer and creator workspaces.'}
+                  </p>
+                </div>
+                <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', stageMeta.tone)}>
+                  {stageMeta.label}
+                </span>
+              </div>
+
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all" style={{ width: `${demoProgress}%` }} />
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Budget</p>
+                  <p className="font-black text-xl">${workflow?.campaign.budget ?? 0}</p>
+                </div>
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Spent</p>
+                  <p className="font-black text-xl">${workflow?.campaign.budget_spent ?? 0}</p>
+                </div>
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Creator Fee</p>
+                  <p className="font-black text-xl">${primaryTarget?.offer_amount ?? 0}</p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-[#161616] p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock3 size={14} className="text-olu-muted" />
+                  <p className="font-semibold text-sm">Latest workflow event</p>
+                </div>
+                <p className="text-sm text-white">{workflow?.events[0]?.title || 'No activity yet'}</p>
+                <p className="text-sm text-olu-muted leading-relaxed mt-2">{workflow?.events[0]?.detail || 'The workflow timeline will appear here once you create or advance it.'}</p>
+              </div>
+
+              <div className="rounded-2xl bg-[#161616] p-4">
+                <p className="font-semibold text-sm mb-3">Target creator</p>
+                <select
+                  value={selectedCreatorId}
+                  onChange={(e) => setSelectedCreatorId(e.target.value)}
+                  disabled={actionLoading}
+                  className="w-full rounded-xl bg-black/20 border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                >
+                  {creators.map((creator) => (
+                    <option key={creator.id} value={creator.id}>
+                      {creator.name} ({creator.handle})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-olu-muted text-xs mt-2">
+                  New workflows are now tied to a selected creator instead of a hardcoded seed account.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleStart}
+                  disabled={actionLoading || !selectedCreatorId}
+                  className="px-4 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
+                >
+                  Start workflow for {selectedCreator?.name || 'creator'}
+                </button>
+                <button
+                  onClick={handleAdvance}
+                  disabled={actionLoading || !workflow || !['sourcing', 'approved', 'scheduled', 'published'].includes(workflow.campaign.status)}
+                  className="px-4 py-2.5 rounded-xl bg-[#1b1b1b] text-white text-sm font-semibold disabled:opacity-40"
+                >
+                  Advance marketer step
+                </button>
+                <button
+                  onClick={handleRefresh}
+                  disabled={actionLoading}
+                  className="px-4 py-2.5 rounded-xl bg-[#1b1b1b] text-olu-muted text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                >
+                  <RefreshCcw size={14} />
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="glass rounded-3xl p-6">
+              <p className="font-bold mb-4">Execution stages</p>
+              <div className="space-y-3">
+                {[
+                  { title: '1. Source KOLs', desc: 'Agent finds sports creators and ranks them by fit.', active: ['sourcing', 'offer_sent', 'approved', 'scheduled', 'completed'].includes(workflow?.campaign.status || 'draft') },
+                  { title: '2. Send package', desc: 'Offer includes AI video sample, fee, and posting requirements.', active: ['offer_sent', 'approved', 'scheduled', 'completed'].includes(workflow?.campaign.status || 'draft') },
+                  { title: '3. Creator approval', desc: 'KOL-side business agent requests approval in creator workspace.', active: ['approved', 'scheduled', 'completed'].includes(workflow?.campaign.status || 'draft') },
+                  { title: '4. Scheduled publish', desc: 'Approved promo moves into creator publishing queue.', active: ['scheduled', 'published', 'completed'].includes(workflow?.campaign.status || 'draft') },
+                  { title: '5. Metrics return', desc: 'First-day reach, clicks, and conversions come back into marketing workspace.', active: ['completed'].includes(workflow?.campaign.status || 'draft') },
+                ].map((step) => (
+                  <div key={step.title} className="rounded-2xl bg-[#161616] p-4 flex items-start gap-3">
+                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/8 text-olu-muted')}>
+                      {step.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{step.title}</p>
+                      <p className="text-olu-muted text-xs mt-1 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="glass rounded-3xl p-6">
+              <p className="font-bold mb-4">Creator pipeline</p>
+              <div className="space-y-3">
+                {(workflow?.targets || []).map((target) => (
+                  <div key={target.id} className="rounded-2xl bg-[#161616] p-4 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-sm">{target.creator?.name || 'Creator'}</p>
+                      <p className="text-olu-muted text-xs mt-1">{target.stage} · {target.deliverable_status}</p>
+                    </div>
+                    <span className="text-sm font-semibold">${target.offer_amount}</span>
+                  </div>
+                ))}
+                {!workflow && <p className="text-olu-muted text-sm">No live workflow yet.</p>}
+              </div>
+            </div>
+
+            <div className="glass rounded-3xl p-6">
+              <p className="font-bold mb-4">Activity log</p>
+              <div className="space-y-3">
+                {(workflow?.events || []).map((event) => (
+                  <div key={event.id} className="rounded-2xl bg-[#161616] p-4">
+                    <p className="font-semibold text-sm">{event.title}</p>
+                    <p className="text-olu-muted text-xs mt-1 leading-relaxed">{event.detail}</p>
+                  </div>
+                ))}
+                {!workflow && <p className="text-olu-muted text-sm">Create a workflow to see persistent timeline events.</p>}
+              </div>
+            </div>
+          </div>
+
+          {workflow && (
+            <div className="glass rounded-3xl p-6">
+              <p className="font-bold mb-4">Reported outcome</p>
+              <div className="grid md:grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Reach</p>
+                  <p className="font-black text-xl">{compactNumber(workflow.campaign.reported_reach || 0)}</p>
+                </div>
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Conversions</p>
+                  <p className="font-black text-xl">{compactNumber(workflow.campaign.reported_conversions || 0)}</p>
+                </div>
+                <div className="rounded-2xl bg-[#161616] p-4">
+                  <p className="text-olu-muted text-xs mb-1">Clicks</p>
+                  <p className="font-black text-xl">{compactNumber(primaryTarget?.reported_clicks || 0)}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {tab === 'dashboard' && (
         <div className="space-y-6">
@@ -163,7 +400,7 @@ export default function AdvertiserConsole() {
       {tab === 'creators' && (
         <div className="glass rounded-2xl p-5">
           <p className="font-semibold mb-2">Creator CRM</p>
-          <p className="text-olu-muted text-sm">Creator relationship details will be powered by `campaign_creators` next.</p>
+          <p className="text-olu-muted text-sm">Mission Control now reads the cross-workspace prototype flow from backend tables. Next step can be expanding this into broader creator relationship records.</p>
         </div>
       )}
     </div>

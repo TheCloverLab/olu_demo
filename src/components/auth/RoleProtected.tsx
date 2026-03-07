@@ -20,7 +20,7 @@ export default function RoleProtected({ children, requireAuth = true, requiredRo
   if (loading) return null
 
   if (requireAuth && !user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
   }
 
   if (requiredRole && !availableRoles.includes(requiredRole)) {

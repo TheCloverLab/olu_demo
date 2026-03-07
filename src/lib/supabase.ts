@@ -196,6 +196,62 @@ export type Campaign = {
   updated_at?: string
 }
 
+export type BusinessCampaign = {
+  id: string
+  advertiser_id: string
+  agent_id?: string
+  name: string
+  brand_name: string
+  objective: string
+  budget: number
+  budget_spent: number
+  status: 'draft' | 'sourcing' | 'offer_sent' | 'creator_review' | 'approved' | 'scheduled' | 'published' | 'reporting' | 'completed' | 'cancelled'
+  target_creator_count: number
+  reported_reach: number
+  reported_conversions: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type BusinessCampaignTarget = {
+  id: string
+  campaign_id: string
+  creator_id: string
+  creator_agent_id?: string
+  stage: 'shortlisted' | 'offer_sent' | 'creator_review' | 'approved' | 'scheduled' | 'published' | 'reported' | 'rejected'
+  offer_amount: number
+  deliverable_type: string
+  deliverable_status: 'waiting' | 'uploaded' | 'approved' | 'published' | 'reported'
+  marketer_message?: string
+  creator_message?: string
+  creator_reward: number
+  published_at?: string
+  reported_views: number
+  reported_clicks: number
+  reported_conversions: number
+  responded_at?: string
+  created_at?: string
+  updated_at?: string
+  creator?: Pick<User, 'id' | 'name' | 'handle' | 'avatar_img' | 'avatar_color' | 'initials'>
+}
+
+export type BusinessCampaignEvent = {
+  id: string
+  campaign_id: string
+  target_id?: string
+  actor_type: 'advertiser' | 'creator' | 'agent' | 'system'
+  actor_user_id?: string
+  title: string
+  detail?: string
+  created_at?: string
+}
+
+export type BusinessCampaignWorkflow = {
+  campaign: BusinessCampaign
+  targets: BusinessCampaignTarget[]
+  events: BusinessCampaignEvent[]
+}
+
 export type MembershipTier = {
   id: string
   creator_id: string

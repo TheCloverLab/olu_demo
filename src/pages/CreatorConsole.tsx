@@ -1,17 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShoppingBag } from 'lucide-react'
+import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShoppingBag, Sparkles, CheckCircle2, XCircle, ArrowRight, RefreshCcw } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../context/AuthContext'
-import {
-  getRevenueAnalytics,
-  getViewsAnalytics,
-  getFansByCreator,
-  getIPLicensesByCreator,
-  getIPInfringementsByCreator,
-  getProductsByCreator,
-} from '../services/api'
-import type { AnalyticsRevenue, AnalyticsViews, Fan, IPLicense, IPInfringement, Product } from '../lib/supabase'
+import { getRevenueAnalytics, getViewsAnalytics, getFansByCreator, getIPLicensesByCreator, getIPInfringementsByCreator, getProductsByCreator, getLatestBusinessCampaignForCreator, approveBusinessCampaignTarget, rejectBusinessCampaignTarget } from '../services/api'
+import type { AnalyticsRevenue, AnalyticsViews, BusinessCampaignWorkflow, Fan, IPLicense, IPInfringement, Product } from '../lib/supabase'
 
 function compactNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
@@ -19,6 +12,7 @@ function compactNumber(value: number) {
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+  { key: 'campaigns', label: 'Business Agent', icon: Sparkles },
   { key: 'fans', label: 'Customers', icon: Users },
   { key: 'ip', label: 'IP', icon: CheckSquare },
   { key: 'shop', label: 'Shop', icon: ShoppingBag },
@@ -40,8 +34,9 @@ function MetricCard({ label, value, icon: Icon }: { label: string; value: string
 
 export default function CreatorConsole() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<TabKey>('dashboard')
+  const [tab, setTab] = useState<TabKey>('campaigns')
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
 
   const [revenue, setRevenue] = useState<AnalyticsRevenue[]>([])
   const [views, setViews] = useState<AnalyticsViews[]>([])
@@ -49,38 +44,41 @@ export default function CreatorConsole() {
   const [licenses, setLicenses] = useState<IPLicense[]>([])
   const [infringements, setInfringements] = useState<IPInfringement[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [workflow, setWorkflow] = useState<BusinessCampaignWorkflow | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      if (!user?.id) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const [revenueData, viewsData, fansData, licensesData, infringementsData, productsData] = await Promise.all([
-          getRevenueAnalytics(user.id),
-          getViewsAnalytics(user.id),
-          getFansByCreator(user.id),
-          getIPLicensesByCreator(user.id),
-          getIPInfringementsByCreator(user.id),
-          getProductsByCreator(user.id),
-        ])
-
-        setRevenue(revenueData)
-        setViews(viewsData)
-        setFans(fansData)
-        setLicenses(licensesData)
-        setInfringements(infringementsData)
-        setProducts(productsData)
-      } catch (err) {
-        console.error('Failed loading creator console', err)
-      } finally {
-        setLoading(false)
-      }
+  async function loadData() {
+    if (!user?.id) {
+      setLoading(false)
+      return
     }
 
-    load()
+    try {
+      const [revenueData, viewsData, fansData, licensesData, infringementsData, productsData, workflowData] = await Promise.all([
+        getRevenueAnalytics(user.id),
+        getViewsAnalytics(user.id),
+        getFansByCreator(user.id),
+        getIPLicensesByCreator(user.id),
+        getIPInfringementsByCreator(user.id),
+        getProductsByCreator(user.id),
+        getLatestBusinessCampaignForCreator(user.id),
+      ])
+
+      setRevenue(revenueData)
+      setViews(viewsData)
+      setFans(fansData)
+      setLicenses(licensesData)
+      setInfringements(infringementsData)
+      setProducts(productsData)
+      setWorkflow(workflowData)
+    } catch (err) {
+      console.error('Failed loading creator console', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
   }, [user?.id])
 
   const totals = useMemo(() => {
@@ -90,6 +88,49 @@ export default function CreatorConsole() {
     return { totalRevenue, totalViews, activeFans }
   }, [revenue, views, fans])
 
+  const myTarget = useMemo(() => {
+    if (!workflow || !user?.id) return null
+    return workflow.targets.find((target) => target.creator_id === user.id) || workflow.targets[0] || null
+  }, [workflow, user?.id])
+
+  const hasIncomingCampaign = ['offer_sent', 'creator_review'].includes(workflow?.campaign.status || '')
+  const campaignAccepted = ['approved', 'scheduled', 'published', 'completed'].includes(workflow?.campaign.status || '')
+
+  async function handleApprove() {
+    if (!myTarget?.id || !user?.id) return
+    setActionLoading(true)
+    try {
+      const data = await approveBusinessCampaignTarget(myTarget.id, user.id)
+      setWorkflow(data)
+    } catch (err) {
+      console.error('Failed to approve business campaign target', err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleReject() {
+    if (!myTarget?.id || !user?.id) return
+    setActionLoading(true)
+    try {
+      const data = await rejectBusinessCampaignTarget(myTarget.id, user.id)
+      setWorkflow(data)
+    } catch (err) {
+      console.error('Failed to reject business campaign target', err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleRefresh() {
+    setActionLoading(true)
+    try {
+      await loadData()
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   if (loading) {
     return <div className="max-w-6xl mx-auto px-4 py-8 text-olu-muted">Loading creator console...</div>
   }
@@ -97,8 +138,8 @@ export default function CreatorConsole() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8 space-y-6">
       <div>
-        <h1 className="font-black text-2xl">Creator Console</h1>
-        <p className="text-olu-muted text-sm">Real-time creator operations from Supabase</p>
+        <h1 className="font-black text-2xl">Creator Ops</h1>
+        <p className="text-olu-muted text-sm">Creator-side approvals and monetization with backend-backed workflow state</p>
       </div>
 
       <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -116,6 +157,128 @@ export default function CreatorConsole() {
           </button>
         ))}
       </div>
+
+      {tab === 'campaigns' && (
+        <div className="grid lg:grid-cols-[1.2fr,0.95fr] gap-4">
+          <div className="glass rounded-3xl p-6 space-y-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-olu-muted text-xs uppercase tracking-wider mb-2">KOL-side prototype</p>
+                <h2 className="font-black text-2xl">Business Agent inbox</h2>
+                <p className="text-olu-muted text-sm mt-2 max-w-2xl">
+                  The creator now sees the same workflow from Supabase, not from local UI state. This is the approval step for an incoming advertiser collaboration.
+                </p>
+              </div>
+              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-300' : 'bg-white/10 text-olu-muted')}>
+                {campaignAccepted ? 'Accepted' : hasIncomingCampaign ? 'Needs review' : 'No request'}
+              </span>
+            </div>
+
+            <div className="rounded-3xl bg-[#161616] p-5">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div>
+                  <p className="font-bold text-lg">{workflow?.campaign.brand_name || 'No campaign'}</p>
+                  <p className="text-olu-muted text-xs mt-1">Promotion request for {myTarget?.creator?.name || user?.name || 'creator'}</p>
+                </div>
+                <span className="text-sm font-semibold">${myTarget?.offer_amount ?? 0}</span>
+              </div>
+              <p className="text-sm text-olu-muted leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
+              <div className="grid md:grid-cols-3 gap-3 mt-4">
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-olu-muted text-xs mb-1">Deliverable</p>
+                  <p className="font-semibold text-sm">{myTarget?.deliverable_type || 'ai_video'}</p>
+                </div>
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-olu-muted text-xs mb-1">Placement fee</p>
+                  <p className="font-semibold text-sm">${myTarget?.offer_amount ?? 0}</p>
+                </div>
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-olu-muted text-xs mb-1">Queue status</p>
+                  <p className="font-semibold text-sm capitalize">{myTarget?.deliverable_status || 'waiting'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleApprove}
+                disabled={!hasIncomingCampaign || actionLoading}
+                className="px-4 py-2.5 rounded-xl bg-white text-black text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+              >
+                <CheckCircle2 size={16} />
+                Approve campaign
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={!hasIncomingCampaign || actionLoading}
+                className="px-4 py-2.5 rounded-xl bg-[#1b1b1b] text-olu-muted text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+              >
+                <XCircle size={16} />
+                Reject
+              </button>
+              <button
+                onClick={handleRefresh}
+                disabled={actionLoading}
+                className="px-4 py-2.5 rounded-xl bg-[#1b1b1b] text-olu-muted text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+              >
+                <RefreshCcw size={14} />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <div className="glass rounded-3xl p-6">
+            <p className="font-bold mb-4">Approval story</p>
+            <div className="space-y-3">
+              {[
+                { title: 'Incoming brief', desc: 'Your business agent shows who the advertiser is, what the promo asset looks like, and the fee being offered.', active: hasIncomingCampaign || campaignAccepted },
+                { title: 'Creator decision', desc: 'You approve the placement from your own workspace, and the backend writes the new state for both parties.', active: campaignAccepted },
+                { title: 'Publishing queue', desc: 'After approval, the campaign can be advanced by the marketer into scheduled and published states.', active: ['scheduled', 'published', 'completed'].includes(workflow?.campaign.status || '') },
+                { title: 'Metrics returned', desc: 'The creator-side workspace can see when reported results come back from the live placement.', active: ['completed'].includes(workflow?.campaign.status || '') },
+              ].map((item) => (
+                <div key={item.title} className="rounded-2xl bg-[#161616] p-4 flex items-start gap-3">
+                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/8 text-olu-muted')}>
+                    {item.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{item.title}</p>
+                    <p className="text-olu-muted text-xs mt-1 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-2xl bg-[#161616] p-4 mt-4">
+              <p className="text-olu-muted text-xs mb-1">Creator reward locked</p>
+              <p className="font-black text-2xl">${myTarget?.creator_reward ?? 0}</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              <div className="rounded-2xl bg-[#161616] p-4">
+                <p className="text-olu-muted text-xs mb-1">Views</p>
+                <p className="font-black text-xl">{compactNumber(myTarget?.reported_views ?? 0)}</p>
+              </div>
+              <div className="rounded-2xl bg-[#161616] p-4">
+                <p className="text-olu-muted text-xs mb-1">Clicks</p>
+                <p className="font-black text-xl">{compactNumber(myTarget?.reported_clicks ?? 0)}</p>
+              </div>
+              <div className="rounded-2xl bg-[#161616] p-4">
+                <p className="text-olu-muted text-xs mb-1">Conversions</p>
+                <p className="font-black text-xl">{compactNumber(myTarget?.reported_conversions ?? 0)}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-4">
+              {(workflow?.events || []).slice(0, 3).map((event) => (
+                <div key={event.id} className="rounded-2xl bg-[#161616] p-4">
+                  <p className="font-semibold text-sm">{event.title}</p>
+                  <p className="text-olu-muted text-xs mt-1">{event.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {tab === 'dashboard' && (
         <div className="space-y-6">

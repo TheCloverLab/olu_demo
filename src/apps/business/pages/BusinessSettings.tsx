@@ -1,24 +1,76 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Bell, Cable, ChevronLeft, CreditCard, KeyRound, ShieldCheck, Users, Wrench } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-
-const CONNECTORS = [
-  { name: 'Shopify', status: 'Connected', tone: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20' },
-  { name: 'Zendesk', status: 'Planned', tone: 'bg-white/8 text-cyan-100/60 border-cyan-500/10' },
-  { name: 'Mixpanel', status: 'Planned', tone: 'bg-white/8 text-cyan-100/60 border-cyan-500/10' },
-]
-
-const APPROVAL_RULES = [
-  'Publishing requires marketer approval after creator acceptance.',
-  'Budget changes above $500 need workspace owner review.',
-  'Sandbox takeover remains manual for high-risk automations.',
-]
+import { getWorkspaceSettingsForUser } from '../../../domain/workspace/api'
+import type { WorkspaceSettingsData } from '../../../lib/supabase'
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
   const { availableRoles, currentUser } = useApp()
   const { user } = useAuth()
+  const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadSettings() {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getWorkspaceSettingsForUser(user)
+        if (!cancelled) {
+          setSettings(data)
+        }
+      } catch (error) {
+        console.error('Failed to load workspace settings', error)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadSettings()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
+  const connectors = useMemo(() => {
+    return (settings?.integrations || []).map((integration) => ({
+      name: integration.provider,
+      status: integration.status === 'connected' ? 'Connected' : integration.status === 'planned' ? 'Planned' : integration.status === 'error' ? 'Error' : 'Disconnected',
+      tone:
+        integration.status === 'connected'
+          ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20'
+          : integration.status === 'error'
+            ? 'bg-red-500/15 text-red-300 border-red-500/20'
+            : 'bg-white/8 text-cyan-100/60 border-cyan-500/10',
+    }))
+  }, [settings?.integrations])
+
+  const approvalRules = useMemo(() => {
+    const approval = settings?.policies?.approval_policy || {}
+    const sandbox = settings?.policies?.sandbox_policy || {}
+
+    return [
+      approval.publish_requires_marketer_approval
+        ? 'Publishing requires marketer approval after creator acceptance.'
+        : 'Publishing can proceed without marketer approval.',
+      `Budget changes above $${approval.budget_change_review_threshold ?? 500} need workspace owner review.`,
+      `Sandbox takeover is ${sandbox.takeover_mode || 'manual'} for high-risk automations.`,
+    ]
+  }, [settings?.policies])
+
+  if (loading) {
+    return <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 text-cyan-100/60">Loading workspace settings...</div>
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -52,19 +104,19 @@ export default function BusinessSettings() {
 
           <div className="grid sm:grid-cols-3 gap-3">
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-              <p className="text-cyan-100/55 text-xs mb-1">Operator</p>
-              <p className="font-semibold text-sm">{currentUser.name}</p>
+              <p className="text-cyan-100/55 text-xs mb-1">Workspace</p>
+              <p className="font-semibold text-sm">{settings?.workspace.name || `${currentUser.name} Workspace`}</p>
               <p className="text-cyan-100/50 text-xs mt-1">{user?.email}</p>
             </div>
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
               <p className="text-cyan-100/55 text-xs mb-1">Capabilities</p>
-              <p className="font-black text-2xl">{availableRoles.length}</p>
+              <p className="font-black text-2xl">{settings?.modules.filter((module) => module.enabled).length ?? availableRoles.length}</p>
               <p className="text-cyan-100/50 text-xs mt-1">Modules enabled</p>
             </div>
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-              <p className="text-cyan-100/55 text-xs mb-1">Publishing mode</p>
-              <p className="font-semibold text-sm">Human review</p>
-              <p className="text-cyan-100/50 text-xs mt-1">Safe for MVP</p>
+              <p className="text-cyan-100/55 text-xs mb-1">Membership role</p>
+              <p className="font-semibold text-sm capitalize">{settings?.membership.membership_role || 'owner'}</p>
+              <p className="text-cyan-100/50 text-xs mt-1">Workspace control scope</p>
             </div>
           </div>
 
@@ -74,27 +126,17 @@ export default function BusinessSettings() {
               <p className="font-semibold text-sm">Members and permissions</p>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium">Workspace owner</p>
-                  <p className="text-cyan-100/55 text-xs">Can manage billing, policies, and connectors</p>
+              {(settings?.permissions || []).slice(0, 3).map((permission) => (
+                <div key={`${permission.membership_role}-${permission.resource}-${permission.action}`} className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium capitalize">{permission.membership_role}</p>
+                    <p className="text-cyan-100/55 text-xs">{permission.resource} · {permission.action}</p>
+                  </div>
+                  <span className={permission.allowed ? 'px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-200 text-xs' : 'px-3 py-1 rounded-full bg-white/8 text-cyan-100/70 text-xs'}>
+                    {permission.allowed ? 'Allowed' : 'Blocked'}
+                  </span>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-200 text-xs">Active</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium">Marketing operators</p>
-                  <p className="text-cyan-100/55 text-xs">Can create briefs and advance approved workflows</p>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-white/8 text-cyan-100/70 text-xs">Next</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium">Creator-side agents</p>
-                  <p className="text-cyan-100/55 text-xs">Receive offers but stay inside review boundaries</p>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-white/8 text-cyan-100/70 text-xs">Configured</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -111,7 +153,7 @@ export default function BusinessSettings() {
               </div>
             </div>
             <div className="space-y-3">
-              {CONNECTORS.map((connector) => (
+              {connectors.map((connector) => (
                 <div key={connector.name} className="flex items-center justify-between gap-3 rounded-2xl p-3 bg-[#0d1726] border border-cyan-500/10">
                   <div>
                     <p className="font-medium text-sm">{connector.name}</p>
@@ -136,7 +178,7 @@ export default function BusinessSettings() {
               </div>
             </div>
             <div className="space-y-2">
-              {APPROVAL_RULES.map((rule) => (
+              {approvalRules.map((rule) => (
                 <div key={rule} className="rounded-2xl p-3 bg-[#0d1726] border border-cyan-500/10 text-sm text-cyan-50/80">
                   {rule}
                 </div>
@@ -155,7 +197,7 @@ export default function BusinessSettings() {
                   <p className="text-cyan-100/55 text-xs">Session and access</p>
                 </div>
               </div>
-              <p className="text-sm text-cyan-50/75">Single operator login, manual review for sensitive flows, and sandbox takeover disabled by default.</p>
+              <p className="text-sm text-cyan-50/75">Single operator login, {settings?.policies?.sandbox_policy?.takeover_mode || 'manual'} review for sensitive flows, and sandbox takeover visible at the workspace layer.</p>
             </div>
 
             <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
@@ -168,7 +210,7 @@ export default function BusinessSettings() {
                   <p className="text-cyan-100/55 text-xs">Team routing</p>
                 </div>
               </div>
-              <p className="text-sm text-cyan-50/75">Creator approvals, rejected offers, and publish events route into the business workspace instead of consumer inboxes.</p>
+              <p className="text-sm text-cyan-50/75">Creator approvals, rejected offers, and publish events route into the business workspace: {settings?.policies?.notification_policy?.route_publish_events_to_workspace ? 'enabled' : 'disabled'}.</p>
             </div>
           </div>
 
@@ -182,7 +224,7 @@ export default function BusinessSettings() {
                 <p className="text-cyan-100/55 text-xs">MVP placeholder</p>
               </div>
             </div>
-            <p className="text-sm text-cyan-50/75">Keep billing lightweight for now: one workspace owner, one active plan, and spend visibility on campaign workflows.</p>
+              <p className="text-sm text-cyan-50/75">Current plan: {settings?.billing?.plan || 'starter'} · status: {settings?.billing?.status || 'trial'} · billing contact: {settings?.billing?.billing_email || user?.email}.</p>
           </div>
         </div>
       </section>

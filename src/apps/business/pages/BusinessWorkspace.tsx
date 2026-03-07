@@ -7,7 +7,7 @@ import { useApp } from '../../../context/AppContext'
 const PLATFORM_CONNECTORS = ['Shopify', 'Temu', 'SHEIN', 'Zendesk', 'Mixpanel', 'Google Play', 'App Store']
 
 export default function BusinessWorkspace() {
-  const { availableRoles, currentUser } = useApp()
+  const { availableRoles, currentUser, enabledBusinessModules } = useApp()
 
   const modules = useMemo(() => {
     return [
@@ -16,24 +16,24 @@ export default function BusinessWorkspace() {
         description: 'IP licensing, CRM, merch, and creator-side monetization workflows.',
         to: '/business/modules/creator',
         icon: LayoutDashboard,
-        enabled: availableRoles.includes('creator'),
+        enabled: enabledBusinessModules.includes('creator_ops'),
       },
       {
         title: 'Marketing',
         description: 'Influencer campaign planning, negotiation progress, and budget control.',
         to: '/business/modules/marketing',
         icon: Megaphone,
-        enabled: availableRoles.includes('advertiser'),
+        enabled: enabledBusinessModules.includes('marketing'),
       },
       {
         title: 'Supply Chain',
         description: 'Creator partnerships, SKU readiness, and supplier-side merchandising.',
         to: '/business/modules/supply',
         icon: Package,
-        enabled: availableRoles.includes('supplier'),
+        enabled: enabledBusinessModules.includes('supply_chain'),
       },
     ]
-  }, [availableRoles])
+  }, [enabledBusinessModules])
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -107,7 +107,7 @@ export default function BusinessWorkspace() {
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-bold text-lg">{title}</h3>
                 <span className={enabled ? 'text-emerald-300 text-xs' : 'text-amber-300 text-xs'}>
-                  {enabled ? 'Enabled' : 'Not enabled'}
+                  {enabled ? 'Enabled' : 'Coming soon'}
                 </span>
               </div>
               <p className="text-olu-muted text-sm leading-relaxed mt-2">{description}</p>

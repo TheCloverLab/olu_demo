@@ -1,12 +1,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
+import { getEnabledBusinessModulesForUser } from '../domain/workspace/api'
 
 type RoleType = 'creator' | 'fan' | 'advertiser' | 'supplier'
+type BusinessModule = 'creator_ops' | 'marketing' | 'supply_chain'
 
 interface AppContextType {
   currentRole: RoleType
   currentUser: any
   availableRoles: RoleType[]
+  enabledBusinessModules: BusinessModule[]
   switchRole: (role: RoleType) => void
   showRoleSwitcher: boolean
   setShowRoleSwitcher: (show: boolean) => void
@@ -22,16 +25,45 @@ export function AppProvider({ children }: AppProviderProps) {
   const { user: authUser } = useAuth()
   const [currentRole, setCurrentRole] = useState<RoleType>('fan')
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false)
+  const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModule[]>([])
 
   // Get available roles from authenticated user or default to all roles
   const availableRoles: RoleType[] = authUser?.roles || ['fan']
-
   // Set initial role when user logs in
   useEffect(() => {
     if (authUser?.roles && authUser.roles.length > 0) {
       setCurrentRole(authUser.roles[0])
     }
   }, [authUser])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadWorkspaceModules() {
+      if (!authUser) {
+        setEnabledBusinessModules([])
+        return
+      }
+
+      try {
+        const modules = await getEnabledBusinessModulesForUser(authUser)
+        if (!cancelled) {
+          setEnabledBusinessModules(modules)
+        }
+      } catch (error) {
+        console.error('Failed to load workspace modules', error)
+        if (!cancelled) {
+          setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+        }
+      }
+    }
+
+    loadWorkspaceModules()
+
+    return () => {
+      cancelled = true
+    }
+  }, [authUser?.id])
 
   const currentUser = authUser || {
     id: 'guest',
@@ -59,6 +91,7 @@ export function AppProvider({ children }: AppProviderProps) {
       currentRole,
       currentUser,
       availableRoles,
+      enabledBusinessModules,
       switchRole,
       showRoleSwitcher,
       setShowRoleSwitcher,

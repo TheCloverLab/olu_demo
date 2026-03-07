@@ -25,9 +25,9 @@ const BUSINESS_NAV = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/team', icon: Users, label: 'Team' },
   { to: '/business/agents', icon: Bot, label: 'Agents' },
-  { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops', requiredRole: 'creator' },
-  { to: '/business/modules/marketing', icon: Megaphone, label: 'Marketing', requiredRole: 'advertiser' },
-  { to: '/business/modules/supply', icon: Package, label: 'Supply Chain', requiredRole: 'supplier' },
+  { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops' },
+  { to: '/business/modules/marketing', icon: Megaphone, label: 'Marketing' },
+  { to: '/business/modules/supply', icon: Package, label: 'Supply Chain' },
 ] as const
 
 function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
@@ -167,22 +167,7 @@ export default function BusinessLayout() {
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {BUSINESS_NAV.map(({ to, icon: Icon, label, exact, requiredRole }) => {
-            const enabled = !requiredRole || availableRoles.includes(requiredRole as any)
-
-            if (!enabled) {
-              return (
-                <div
-                  key={to}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium text-cyan-50/32 bg-transparent"
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                  <span className="ml-auto text-[10px] uppercase tracking-wider">Locked</span>
-                </div>
-              )
-            }
-
+          {BUSINESS_NAV.map(({ to, icon: Icon, label, exact }) => {
             return (
               <NavLink
                 key={to}

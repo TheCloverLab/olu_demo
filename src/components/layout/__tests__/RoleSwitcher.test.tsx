@@ -31,6 +31,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan', 'creator'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
@@ -45,6 +46,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan', 'creator'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
@@ -61,6 +63,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
@@ -77,6 +80,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan', 'creator'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
@@ -92,6 +96,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'creator',
       switchRole: mockSwitchRole,
       availableRoles: ['fan', 'creator', 'advertiser', 'supplier'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
@@ -110,6 +115,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 

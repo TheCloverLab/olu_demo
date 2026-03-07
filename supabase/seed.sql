@@ -4,6 +4,13 @@ BEGIN;
 
 -- Clean existing seed rows (safe ordering for FK constraints)
 TRUNCATE TABLE
+  workspace_billing,
+  workspace_policies,
+  workspace_integrations,
+  workspace_permissions,
+  workspace_modules,
+  workspace_memberships,
+  workspaces,
   business_campaign_events,
   business_campaign_targets,
   business_campaigns,
@@ -40,6 +47,61 @@ VALUES
   ('00000000-0000-0000-0000-000000000006', 'yuki', '@yukidraws', 'yuki@example.com', 'creator', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', '/images/covers/yukidraws.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false, '{}'::jsonb),
   ('00000000-0000-0000-0000-000000000007', 'marcus', '@techmarkus', 'marcus@example.com', 'creator', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', '/images/covers/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true, '{}'::jsonb),
   ('00000000-0000-0000-0000-000000000008', 'zara', '@zaranova', 'zara@example.com', 'creator', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', '/images/covers/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true, '{}'::jsonb);
+
+-- Workspace foundation
+INSERT INTO workspaces (id, owner_user_id, name, slug, status)
+VALUES
+  ('05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Luna Studio', 'luna-studio', 'active'),
+  ('05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'GameVerse Growth', 'gameverse-growth', 'active'),
+  ('05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004', 'ArtisanCraft Ops', 'artisancraft-ops', 'active');
+
+INSERT INTO workspace_memberships (id, workspace_id, user_id, membership_role, status)
+VALUES
+  ('05100000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004', 'owner', 'active');
+
+INSERT INTO workspace_modules (id, workspace_id, module_key, enabled)
+VALUES
+  ('05200000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'creator_ops', true),
+  ('05200000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'marketing', true),
+  ('05200000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'supply_chain', true),
+  ('05200000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'creator_ops', true),
+  ('05200000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000002', 'marketing', true),
+  ('05200000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000002', 'supply_chain', true),
+  ('05200000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000003', 'creator_ops', true),
+  ('05200000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000003', 'marketing', true),
+  ('05200000-0000-0000-0000-000000000009', '05000000-0000-0000-0000-000000000003', 'supply_chain', true);
+
+INSERT INTO workspace_permissions (id, workspace_id, membership_role, resource, action, allowed)
+VALUES
+  ('05300000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000003', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'owner', 'billing', 'manage', true);
+
+INSERT INTO workspace_integrations (id, workspace_id, provider, status, config_json, last_sync_at)
+VALUES
+  ('05400000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'Shopify', 'connected', '{"shop":"luna-merch"}'::jsonb, NOW() - INTERVAL '2 hours'),
+  ('05400000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'Mixpanel', 'planned', '{}'::jsonb, NULL),
+  ('05400000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'Zendesk', 'planned', '{}'::jsonb, NULL),
+  ('05400000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'Shopify', 'connected', '{"shop":"gameverse-store"}'::jsonb, NOW() - INTERVAL '30 minutes'),
+  ('05400000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000002', 'Mixpanel', 'connected', '{"project":"gameverse-growth"}'::jsonb, NOW() - INTERVAL '1 day'),
+  ('05400000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'Shopify', 'planned', '{}'::jsonb, NULL);
+
+INSERT INTO workspace_policies (id, workspace_id, approval_policy, sandbox_policy, notification_policy)
+VALUES
+  ('05500000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":500}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb),
+  ('05500000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":750}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb),
+  ('05500000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":500}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb);
+
+INSERT INTO workspace_billing (id, workspace_id, plan, status, billing_email)
+VALUES
+  ('05600000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'starter', 'trial', 'luna@example.com'),
+  ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'growth', 'active', 'finance@gameverse.example.com'),
+  ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'starter', 'active', 'ops@artisancraft.example.com');
 
 -- Posts
 INSERT INTO posts (id, creator_id, type, title, preview, cover_img, gradient_bg, emoji, likes, comments, tips, locked, lock_price, allow_fan_creation, fan_creation_fee, sponsored, sponsored_by, tags)

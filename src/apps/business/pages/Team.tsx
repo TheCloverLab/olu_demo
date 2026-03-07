@@ -48,7 +48,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/team/${agent.agent_key || agent.id}`)}
-      className="w-full flex items-center gap-3 p-4 glass glass-hover rounded-2xl text-left"
+      className="w-full flex items-center gap-3 p-4 rounded-2xl text-left border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1726] transition-colors"
     >
       <div className="relative flex-shrink-0">
         {agent.avatar_img ? (
@@ -90,10 +90,10 @@ function GroupRow({ group }: { group: GroupChat }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/team/grp-${group.chat_key || group.id}`)}
-      className="w-full flex items-center gap-3 p-4 glass glass-hover rounded-2xl text-left"
+      className="w-full flex items-center gap-3 p-4 rounded-2xl text-left border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1726] transition-colors"
     >
       <div className="relative flex-shrink-0">
-        <div className="w-12 h-12 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-[#0d1726] flex items-center justify-center border border-cyan-500/10">
           <div className="flex -space-x-1">
             {(group.icons || []).slice(0, 3).map((icon, i) => (
               <span key={i} className="text-sm">{icon}</span>
@@ -152,7 +152,7 @@ export default function Team() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 pb-24 md:pb-6 flex items-center justify-center">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex items-center justify-center">
         <p className="text-olu-muted text-sm">Loading team...</p>
       </div>
     )
@@ -160,8 +160,8 @@ export default function Team() {
 
   if (agents.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 pb-24 md:pb-6 flex flex-col items-center text-center">
-        <div className="w-20 h-20 rounded-2xl bg-olu-card flex items-center justify-center text-4xl mb-4">🤖</div>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex flex-col items-center text-center">
+        <div className="w-20 h-20 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center text-4xl mb-4">🤖</div>
         <h2 className="font-bold text-xl mb-2">No AI Agents Yet</h2>
         <p className="text-olu-muted text-sm max-w-xs mb-6">
           You do not have AI agents configured yet. Open AI Config to start building your team.
@@ -179,17 +179,17 @@ export default function Team() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-black text-2xl">My Team</h1>
-          <p className="text-olu-muted text-sm mt-0.5">
+          <p className="text-cyan-100/60 text-sm mt-0.5">
             {agents.length} AI Agent{agents.length > 1 ? 's' : ''} ·{' '}
             {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
-          <Bot size={18} className="text-white" />
+        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+          <Bot size={18} className="text-cyan-200" />
         </div>
       </div>
 
@@ -199,22 +199,22 @@ export default function Team() {
           { label: 'Active Tasks', value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15' },
           { label: 'Online', value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15' },
         ].map((card) => (
-          <div key={card.label} className="glass rounded-xl p-3 text-center">
+          <div key={card.label} className="rounded-2xl p-4 text-center border border-cyan-500/10 bg-[#091422]">
             <div className="flex justify-center mb-2">
               <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
                 <card.icon size={15} className={card.iconClass} fill={card.label === 'Online' ? 'currentColor' : 'none'} />
               </span>
             </div>
             <div className="font-black text-xl">{card.value}</div>
-            <div className="text-olu-muted text-xs">{card.label}</div>
+            <div className="text-cyan-100/55 text-xs">{card.label}</div>
           </div>
         ))}
       </div>
 
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <MessageCircle size={14} className="text-olu-muted" />
-          <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider">Direct</p>
+          <MessageCircle size={14} className="text-cyan-100/55" />
+          <p className="text-cyan-100/55 text-xs font-semibold uppercase tracking-wider">Direct</p>
         </div>
         <div className="space-y-2">
           {agents.map((agent) => (
@@ -226,8 +226,8 @@ export default function Team() {
       {groups.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <CheckSquare size={14} className="text-olu-muted" />
-            <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider">Group Chats</p>
+            <CheckSquare size={14} className="text-cyan-100/55" />
+            <p className="text-cyan-100/55 text-xs font-semibold uppercase tracking-wider">Group Chats</p>
           </div>
           <div className="space-y-2">
             {groups.map((group) => (

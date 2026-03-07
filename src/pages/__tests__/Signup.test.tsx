@@ -66,7 +66,7 @@ describe('Signup', () => {
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('new@example.com', 'password123')
-      expect(mockNavigate).toHaveBeenCalledWith('/')
+      expect(mockNavigate).toHaveBeenCalledWith('/business')
     })
   })
 

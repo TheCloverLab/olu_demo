@@ -45,6 +45,7 @@ describe('Home', () => {
       currentRole: 'fan',
       currentUser: { id: 'user-1' },
       availableRoles: ['fan'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       switchRole: vi.fn(),
       showRoleSwitcher: false,
       setShowRoleSwitcher: vi.fn(),

@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import Settings from '../Settings'
 import * as AuthContext from '../../context/AuthContext'
 import * as AppContext from '../../context/AppContext'
-import * as api from '../../services/api'
+import * as WorkspaceApi from '../../domain/workspace/api'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
+vi.mock('../../domain/workspace/api', () => ({
   getMyRoleApplications: vi.fn(),
   submitRoleApplication: vi.fn(),
 }))
@@ -64,11 +64,12 @@ describe('Settings', () => {
       currentRole: 'fan',
       currentUser: {},
       availableRoles: ['fan'],
+      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       switchRole: vi.fn(),
       showRoleSwitcher: false,
       setShowRoleSwitcher: vi.fn(),
     })
-    vi.mocked(api.getMyRoleApplications).mockResolvedValue([])
+    vi.mocked(WorkspaceApi.getMyRoleApplications).mockResolvedValue([])
   })
 
   it('renders account settings page', async () => {
@@ -109,7 +110,7 @@ describe('Settings', () => {
   })
 
   it('submits role application', async () => {
-    vi.mocked(api.submitRoleApplication).mockResolvedValue('app-1')
+    vi.mocked(WorkspaceApi.submitRoleApplication).mockResolvedValue('app-1')
 
     render(<MemoryRouter><Settings /></MemoryRouter>)
 
@@ -121,13 +122,13 @@ describe('Settings', () => {
     await userEvent.click(screen.getAllByText('Apply')[0])
 
     await waitFor(() => {
-      expect(api.submitRoleApplication).toHaveBeenCalledWith('creator', 'Requested from account settings')
+      expect(WorkspaceApi.submitRoleApplication).toHaveBeenCalledWith('creator', 'Requested from account settings')
       expect(screen.getByText(/Application submitted/)).toBeInTheDocument()
     })
   })
 
   it('shows pending status for submitted applications', async () => {
-    vi.mocked(api.getMyRoleApplications).mockResolvedValue([
+    vi.mocked(WorkspaceApi.getMyRoleApplications).mockResolvedValue([
       { id: 'a1', user_id: 'user-1', target_role: 'creator', status: 'pending' },
     ] as any)
 

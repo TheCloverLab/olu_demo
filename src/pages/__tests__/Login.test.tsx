@@ -123,6 +123,6 @@ describe('Login', () => {
     })
 
     renderLogin()
-    expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/business', { replace: true })
   })
 })

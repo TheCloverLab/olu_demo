@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '../lib/supabase'
 import type { User } from '../lib/supabase'
 import { Session } from '@supabase/supabase-js'
+import { ensureWorkspaceForUser } from '../domain/workspace/api'
 
 interface AuthContextType {
   session: Session | null
@@ -99,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .slice(0, 2) || 'U'
 
       // Create user profile
-      const { error: profileError } = await supabase.from('users').insert({
+      const { data: createdProfile, error: profileError } = await supabase.from('users').insert({
         auth_id: authData.user.id,
         email,
         username: userData?.username || generatedUsername,
@@ -114,8 +115,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         posts: userData?.posts ?? 0,
         verified: userData?.verified ?? false,
         ...userData,
-      })
+      }).select('*').single()
       if (profileError) throw profileError
+
+      await ensureWorkspaceForUser(createdProfile as User)
     }
 
     return { needsEmailConfirmation: !authData.session }

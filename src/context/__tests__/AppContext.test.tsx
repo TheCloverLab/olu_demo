@@ -3,17 +3,23 @@ import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppProvider, useApp } from '../AppContext'
 import * as AuthContext from '../AuthContext'
+import * as WorkspaceApi from '../../domain/workspace/api'
 
 vi.mock('../AuthContext', () => ({
   useAuth: vi.fn(),
 }))
 
+vi.mock('../../domain/workspace/api', () => ({
+  getEnabledBusinessModulesForUser: vi.fn(),
+}))
+
 function TestConsumer() {
-  const { currentRole, availableRoles, switchRole, showRoleSwitcher, setShowRoleSwitcher } = useApp()
+  const { currentRole, availableRoles, enabledBusinessModules, switchRole, showRoleSwitcher, setShowRoleSwitcher } = useApp()
   return (
     <div>
       <span data-testid="role">{currentRole}</span>
       <span data-testid="roles">{availableRoles.join(',')}</span>
+      <span data-testid="modules">{enabledBusinessModules.join(',')}</span>
       <span data-testid="switcher">{showRoleSwitcher ? 'open' : 'closed'}</span>
       <button onClick={() => switchRole('creator')}>Switch to Creator</button>
       <button onClick={() => switchRole('advertiser')}>Switch to Advertiser</button>
@@ -25,6 +31,7 @@ function TestConsumer() {
 describe('AppContext', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops', 'marketing', 'supply_chain'])
   })
 
   it('defaults to fan role when no user', () => {
@@ -45,6 +52,7 @@ describe('AppContext', () => {
 
     expect(screen.getByTestId('role')).toHaveTextContent('fan')
     expect(screen.getByTestId('roles')).toHaveTextContent('fan')
+    expect(screen.getByTestId('modules')).toHaveTextContent('')
   })
 
   it('sets initial role from user profile', () => {

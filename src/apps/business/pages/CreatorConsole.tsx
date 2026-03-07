@@ -340,9 +340,9 @@ export default function CreatorConsole() {
       )}
 
       {tab === 'fans' && (
-        <div className="rounded-2xl p-5 space-y-3 border border-cyan-500/10 bg-[#091422]">
+        <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
           {fans.map((fan) => (
-            <div key={fan.id} className="flex items-center justify-between p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10">
+            <div key={fan.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
               <div>
                 <p className="font-medium text-sm">{fan.name}</p>
                 <p className="text-cyan-100/55 text-xs">{fan.handle} · {fan.tier}</p>
@@ -356,10 +356,10 @@ export default function CreatorConsole() {
 
       {tab === 'ip' && (
         <div className="grid lg:grid-cols-2 gap-4">
-          <div className="rounded-2xl p-5 space-y-3 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold">Licenses</p>
             {licenses.map((item) => (
-              <div key={item.id} className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10">
+              <div key={item.id} className="p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
                 <p className="text-sm font-medium">{item.requester}</p>
                 <p className="text-cyan-100/55 text-xs">{item.type} · {item.status}</p>
               </div>
@@ -367,31 +367,31 @@ export default function CreatorConsole() {
             {licenses.length === 0 && <p className="text-cyan-100/60 text-sm">No license requests.</p>}
           </div>
 
-          <div className="rounded-2xl p-5 space-y-3 border border-cyan-500/10 bg-[#091422]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold">Infringements</p>
             {infringements.map((item) => (
-              <div key={item.id} className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10">
+              <div key={item.id} className="p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
                 <p className="text-sm font-medium">{item.platform} · {item.offender}</p>
                 <p className="text-cyan-100/55 text-xs">{item.content} · {item.status}</p>
               </div>
             ))}
-            {infringements.length === 0 && <p className="text-olu-muted text-sm">No infringement records.</p>}
+            {infringements.length === 0 && <p className="text-cyan-100/60 text-sm">No infringement records.</p>}
           </div>
         </div>
       )}
 
       {tab === 'shop' && (
-        <div className="glass rounded-2xl p-5 space-y-3">
+        <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
           {products.map((product) => (
-            <div key={product.id} className="flex items-center justify-between p-3 rounded-xl bg-[#161616]">
+            <div key={product.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
               <div>
                 <p className="text-sm font-medium">{product.name}</p>
-                <p className="text-olu-muted text-xs">{product.status} · stock {product.stock}</p>
+                <p className="text-cyan-100/55 text-xs">{product.status} · stock {product.stock}</p>
               </div>
               <p className="font-semibold">${Number(product.price).toFixed(2)}</p>
             </div>
           ))}
-          {products.length === 0 && <p className="text-olu-muted text-sm">No products yet.</p>}
+          {products.length === 0 && <p className="text-cyan-100/60 text-sm">No products yet.</p>}
         </div>
       )}
     </div>

@@ -1,149 +1,139 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Check, Zap } from 'lucide-react'
+import { X, Check, Zap, Briefcase } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import clsx from 'clsx'
 
 const ROLE_OPTIONS = [
   {
     key: 'creator',
-    label: 'Creator',
-    name: 'Luna Chen',
-    handle: '@lunachen',
-    initials: 'LC',
-    avatarColor: 'from-violet-500 to-purple-700',
-    gradient: 'from-violet-600 to-indigo-700',
-    description: 'Content creator & digital artist. Manage your community, IP, and revenue.',
+    label: 'Creator Ops',
+    name: 'Creator operator mode',
+    accent: 'from-violet-500 to-indigo-600',
     icon: '🎨',
+    description: 'Focus on approvals, community, IP, and creator-side revenue operations.',
   },
   {
     key: 'fan',
-    label: 'Customer',
-    name: 'Alex Park',
-    handle: '@alexpark',
-    initials: 'AP',
-    avatarColor: 'from-pink-500 to-rose-600',
-    gradient: 'from-pink-600 to-rose-700',
-    description: 'Customer of Luna Chen. Discover content, support creators, create fan works.',
+    label: 'Consumer',
+    name: 'Consumer context',
+    accent: 'from-pink-500 to-rose-600',
     icon: '⭐',
+    description: 'Use the customer-facing app context for discovery, support, and purchases.',
   },
   {
     key: 'advertiser',
-    label: 'Advertiser',
-    name: 'GameVerse Studios',
-    handle: '@gameverse',
-    initials: 'GV',
-    avatarColor: 'from-blue-500 to-cyan-600',
-    gradient: 'from-blue-600 to-cyan-700',
-    description: 'Indie game studio. Run AI-driven influencer marketing campaigns.',
+    label: 'Marketing',
+    name: 'Advertiser operator mode',
+    accent: 'from-blue-500 to-cyan-600',
     icon: '📣',
+    description: 'Focus on campaign sourcing, creator approvals, spend, and reporting workflows.',
   },
   {
     key: 'supplier',
-    label: 'Supplier',
-    name: 'ArtisanCraft Co.',
-    handle: '@artisancraft',
-    initials: 'AC',
-    avatarColor: 'from-emerald-500 to-teal-600',
-    gradient: 'from-emerald-600 to-teal-700',
-    description: 'Custom merch manufacturer. Connect with creators and supply branded products.',
+    label: 'Supply Chain',
+    name: 'Supplier operator mode',
+    accent: 'from-emerald-500 to-teal-600',
     icon: '🏭',
+    description: 'Focus on product readiness, creator partnerships, and fulfillment coordination.',
   },
-]
+] as const
 
 export default function RoleSwitcher() {
   const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole, availableRoles } = useApp()
-
-  // Filter to only show roles the user has
-  const userRoleOptions = ROLE_OPTIONS.filter(role => availableRoles.includes(role.key as any))
+  const userRoleOptions = ROLE_OPTIONS.filter((role) => availableRoles.includes(role.key as any))
 
   return (
     <AnimatePresence>
       {showRoleSwitcher && (
         <>
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 z-50 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/75 z-50 backdrop-blur-md"
             onClick={() => setShowRoleSwitcher(false)}
           />
+
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="w-full max-w-lg"
-          >
-            <div className="bg-olu-surface border border-olu-border rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
-              {/* Header */}
-              <div className="p-5 border-b border-olu-border flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <Zap size={16} className="text-sky-400" fill="currentColor" />
-                    <span className="font-bold gradient-text">Switch Role</span>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+              className="w-full max-w-3xl"
+            >
+              <div className="rounded-[32px] overflow-hidden border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(9,21,35,0.98),rgba(6,14,24,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+                <div className="p-6 border-b border-cyan-500/10 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap size={16} className="text-cyan-300" />
+                      <span className="font-black text-cyan-200">Switch Capability</span>
+                    </div>
+                    <p className="text-cyan-100/60 text-sm">
+                      Choose the operator context you want to use in this workspace.
+                    </p>
                   </div>
-                  <p className="text-olu-muted text-sm">
-                    {userRoleOptions.length > 1 
-                      ? 'Choose which role to use' 
-                      : 'You have one role'}
-                  </p>
+                  <button
+                    onClick={() => setShowRoleSwitcher(false)}
+                    className="p-2 rounded-xl hover:bg-cyan-500/10 transition-colors"
+                  >
+                    <X size={18} className="text-cyan-100/60" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowRoleSwitcher(false)}
-                  className="p-2 rounded-xl hover:bg-white/08 transition-colors"
-                >
-                  <X size={18} className="text-olu-muted" />
-                </button>
-              </div>
 
-              {/* Role Cards */}
-              <div className={`p-4 grid ${userRoleOptions.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
-                {userRoleOptions.map((role) => {
-                  const isActive = currentRole === role.key
-                  return (
-                    <motion.button
-                      key={role.key}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => switchRole(role.key as any)}
-                      className={clsx(
-                        'relative p-4 rounded-xl border text-left transition-all',
-                        isActive
-                          ? 'border-white/30 bg-white/5'
-                          : 'border-olu-border hover:border-white/20 hover:bg-white/03'
-                      )}
-                    >
-                      {isActive && (
-                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                          <Check size={11} className="text-white" strokeWidth={3} />
+                <div className={clsx('p-5 grid gap-4', userRoleOptions.length === 1 ? 'grid-cols-1' : 'md:grid-cols-2')}>
+                  {userRoleOptions.map((role) => {
+                    const isActive = currentRole === role.key
+                    return (
+                      <motion.button
+                        key={role.key}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => switchRole(role.key as any)}
+                        className={clsx(
+                          'relative p-5 rounded-[28px] border text-left transition-all',
+                          isActive
+                            ? 'border-cyan-300/40 bg-[#0d1a2d]'
+                            : 'border-cyan-500/10 bg-[#091523] hover:border-cyan-300/20 hover:bg-[#0d1a2d]'
+                        )}
+                      >
+                        {isActive && (
+                          <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-cyan-300 text-[#04111f] flex items-center justify-center">
+                            <Check size={14} strokeWidth={3} />
+                          </div>
+                        )}
+
+                        <div className="flex items-start gap-4">
+                          <div className={clsx('w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-2xl shadow-[0_12px_30px_rgba(0,0,0,0.18)]', role.accent)}>
+                            {role.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-black text-xl">{role.label}</span>
+                              {isActive && (
+                                <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-cyan-300/15 text-cyan-200">
+                                  Active
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-cyan-100/60 text-sm">{role.name}</p>
+                            <p className="text-cyan-100/68 text-sm mt-3 leading-relaxed max-w-md">{role.description}</p>
+                          </div>
                         </div>
-                      )}
+                      </motion.button>
+                    )
+                  })}
+                </div>
 
-                      {/* Avatar */}
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${role.avatarColor} flex items-center justify-center mb-3 text-lg`}>
-                        {role.icon}
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-semibold text-sm">{role.label}</span>
-                        </div>
-                        <p className="text-olu-muted text-xs">{role.name}</p>
-                        <p className="text-olu-muted text-xs mt-2 leading-relaxed line-clamp-2">{role.description}</p>
-                      </div>
-                    </motion.button>
-                  )
-                })}
+                <div className="px-6 pb-6 flex items-center justify-between text-xs text-cyan-100/50">
+                  <span>{userRoleOptions.length} capabilities available in this account</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Briefcase size={12} />
+                    Modules stay visible at workspace level
+                  </span>
+                </div>
               </div>
-
-              <div className="px-5 pb-5">
-                <p className="text-center text-olu-muted text-xs">
-                  {userRoleOptions.length > 1 
-                    ? `You have ${userRoleOptions.length} roles` 
-                    : 'Add more roles in Settings'}
-                </p>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
           </div>
         </>
       )}

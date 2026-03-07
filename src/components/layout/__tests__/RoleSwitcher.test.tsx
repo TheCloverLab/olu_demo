@@ -51,9 +51,9 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    expect(screen.getByText('Switch Role')).toBeInTheDocument()
-    expect(screen.getByText('Creator')).toBeInTheDocument()
-    expect(screen.getByText('Customer')).toBeInTheDocument()
+    expect(screen.getByText('Switch Capability')).toBeInTheDocument()
+    expect(screen.getByText('Creator Ops')).toBeInTheDocument()
+    expect(screen.getByText('Consumer')).toBeInTheDocument()
   })
 
   it('only shows available roles', () => {
@@ -68,9 +68,9 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    expect(screen.getByText('Customer')).toBeInTheDocument()
-    expect(screen.queryByText('Creator')).not.toBeInTheDocument()
-    expect(screen.queryByText('Advertiser')).not.toBeInTheDocument()
+    expect(screen.getByText('Consumer')).toBeInTheDocument()
+    expect(screen.queryByText('Creator Ops')).not.toBeInTheDocument()
+    expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   })
 
   it('calls switchRole when a role card is clicked', async () => {
@@ -85,7 +85,7 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    await userEvent.click(screen.getByText('Creator'))
+    await userEvent.click(screen.getByText('Creator Ops'))
     expect(mockSwitchRole).toHaveBeenCalledWith('creator')
   })
 
@@ -101,14 +101,14 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    expect(screen.getByText('Creator')).toBeInTheDocument()
-    expect(screen.getByText('Customer')).toBeInTheDocument()
-    expect(screen.getByText('Advertiser')).toBeInTheDocument()
-    expect(screen.getByText('Supplier')).toBeInTheDocument()
-    expect(screen.getByText('You have 4 roles')).toBeInTheDocument()
+    expect(screen.getByText('Creator Ops')).toBeInTheDocument()
+    expect(screen.getByText('Consumer')).toBeInTheDocument()
+    expect(screen.getByText('Marketing')).toBeInTheDocument()
+    expect(screen.getByText('Supply Chain')).toBeInTheDocument()
+    expect(screen.getByText('4 capabilities available in this account')).toBeInTheDocument()
   })
 
-  it('shows "Add more roles" when only one role', () => {
+  it('shows workspace-level explanation footer', () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
       showRoleSwitcher: true,
       setShowRoleSwitcher: mockSetShowRoleSwitcher,
@@ -120,6 +120,6 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    expect(screen.getByText('Add more roles in Settings')).toBeInTheDocument()
+    expect(screen.getByText('Modules stay visible at workspace level')).toBeInTheDocument()
   })
 })

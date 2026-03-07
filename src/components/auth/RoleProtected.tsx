@@ -24,7 +24,7 @@ export default function RoleProtected({ children, requireAuth = true, requiredRo
   }
 
   if (requiredRole && !availableRoles.includes(requiredRole)) {
-    return <Navigate to="/settings" replace />
+    return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/settings'} replace />
   }
 
   if (!bypassOnboarding && user && user.onboarding_completed === false && location.pathname !== '/onboarding') {

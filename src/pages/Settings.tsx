@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext'
 import { ChevronLeft, Check, Plus, Clock3, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { getMyRoleApplications, submitRoleApplication } from '../services/api'
+import { getMyRoleApplications, submitRoleApplication } from '../domain/workspace/api'
 import type { RoleApplication } from '../lib/supabase'
 
 const ROLE_OPTIONS = [

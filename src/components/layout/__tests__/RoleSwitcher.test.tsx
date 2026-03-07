@@ -22,7 +22,6 @@ describe('RoleSwitcher', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    window.history.replaceState({}, '', '/')
   })
 
   it('renders nothing when closed', () => {
@@ -54,7 +53,7 @@ describe('RoleSwitcher', () => {
     render(<RoleSwitcher />)
     expect(screen.getByText('Switch Capability')).toBeInTheDocument()
     expect(screen.getByText('Creator Ops')).toBeInTheDocument()
-    expect(screen.getByText('Consumer')).toBeInTheDocument()
+    expect(screen.queryByText('Consumer')).not.toBeInTheDocument()
   })
 
   it('only shows available roles', () => {
@@ -69,7 +68,6 @@ describe('RoleSwitcher', () => {
     })
 
     render(<RoleSwitcher />)
-    expect(screen.getByText('Consumer')).toBeInTheDocument()
     expect(screen.queryByText('Creator Ops')).not.toBeInTheDocument()
     expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   })
@@ -80,7 +78,7 @@ describe('RoleSwitcher', () => {
       setShowRoleSwitcher: mockSetShowRoleSwitcher,
       currentRole: 'fan',
       switchRole: mockSwitchRole,
-      availableRoles: ['fan', 'creator'],
+      availableRoles: ['creator'],
       enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
@@ -96,17 +94,16 @@ describe('RoleSwitcher', () => {
       setShowRoleSwitcher: mockSetShowRoleSwitcher,
       currentRole: 'creator',
       switchRole: mockSwitchRole,
-      availableRoles: ['fan', 'creator', 'advertiser', 'supplier'],
+      availableRoles: ['creator', 'advertiser', 'supplier'],
       enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       currentUser: {},
     })
 
     render(<RoleSwitcher />)
     expect(screen.getByText('Creator Ops')).toBeInTheDocument()
-    expect(screen.getByText('Consumer')).toBeInTheDocument()
     expect(screen.getByText('Marketing')).toBeInTheDocument()
     expect(screen.getByText('Supply Chain')).toBeInTheDocument()
-    expect(screen.getByText('4 capabilities available in this account')).toBeInTheDocument()
+    expect(screen.getByText('3 capabilities available in this account')).toBeInTheDocument()
   })
 
   it('shows workspace-level explanation footer', () => {
@@ -122,24 +119,5 @@ describe('RoleSwitcher', () => {
 
     render(<RoleSwitcher />)
     expect(screen.getByText('Modules stay visible at workspace level')).toBeInTheDocument()
-  })
-
-  it('hides consumer context inside business surface', () => {
-    window.history.replaceState({}, '', '/business')
-
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      showRoleSwitcher: true,
-      setShowRoleSwitcher: mockSetShowRoleSwitcher,
-      currentRole: 'creator',
-      switchRole: mockSwitchRole,
-      availableRoles: ['fan', 'creator', 'advertiser'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      currentUser: {},
-    })
-
-    render(<RoleSwitcher />)
-    expect(screen.queryByText('Consumer')).not.toBeInTheDocument()
-    expect(screen.getByText('Creator Ops')).toBeInTheDocument()
-    expect(screen.getByText('Marketing')).toBeInTheDocument()
   })
 })

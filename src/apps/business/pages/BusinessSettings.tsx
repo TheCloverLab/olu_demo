@@ -1,17 +1,48 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bell, Cable, ChevronLeft, CreditCard, KeyRound, ShieldCheck, Users, Wrench } from 'lucide-react'
+import { Bell, Cable, ChevronLeft, CreditCard, KeyRound, ShieldCheck, Users, Wrench, Sparkles, Megaphone, PackageCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import { getWorkspaceSettingsForUser } from '../../../domain/workspace/api'
-import type { WorkspaceSettingsData } from '../../../lib/supabase'
+import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
+import type { BusinessModuleKey, WorkspaceSettingsData } from '../../../lib/supabase'
+
+const MODULE_METADATA: Array<{
+  key: BusinessModuleKey
+  label: string
+  description: string
+  icon: typeof Sparkles
+  accentClass: string
+}> = [
+  {
+    key: 'creator_ops',
+    label: 'Creator Ops',
+    description: 'Approvals, IP control, customers, and shop operations for creator-side work.',
+    icon: Sparkles,
+    accentClass: 'bg-cyan-400/12 text-cyan-200 border-cyan-400/20',
+  },
+  {
+    key: 'marketing',
+    label: 'Marketing',
+    description: 'Campaign sourcing, offer routing, and performance loops for advertiser workflows.',
+    icon: Megaphone,
+    accentClass: 'bg-blue-500/12 text-blue-200 border-blue-400/20',
+  },
+  {
+    key: 'supply_chain',
+    label: 'Supply Chain',
+    description: 'Supplier partnerships, catalog readiness, and merch operations across creators.',
+    icon: PackageCheck,
+    accentClass: 'bg-emerald-500/12 text-emerald-200 border-emerald-400/20',
+  },
+]
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
-  const { availableRoles, currentUser } = useApp()
+  const { currentUser, reloadBusinessModules } = useApp()
   const { user } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -42,6 +73,12 @@ export default function BusinessSettings() {
     }
   }, [user?.id])
 
+  async function refreshSettings() {
+    if (!user) return
+    const data = await getWorkspaceSettingsForUser(user)
+    setSettings(data)
+  }
+
   const connectors = useMemo(() => {
     return (settings?.integrations || []).map((integration) => ({
       name: integration.provider,
@@ -67,6 +104,29 @@ export default function BusinessSettings() {
       `Sandbox takeover is ${sandbox.takeover_mode || 'manual'} for high-risk automations.`,
     ]
   }, [settings?.policies])
+
+  const moduleStates = useMemo(() => {
+    const enabledMap = new Map((settings?.modules || []).map((module) => [module.module_key, module.enabled]))
+    return MODULE_METADATA.map((module) => ({
+      ...module,
+      enabled: enabledMap.get(module.key) ?? false,
+    }))
+  }, [settings?.modules])
+
+  async function handleToggleModule(moduleKey: BusinessModuleKey, enabled: boolean) {
+    if (!user) return
+
+    setSavingModule(moduleKey)
+    try {
+      await updateWorkspaceModuleForUser(user, moduleKey, enabled)
+      await refreshSettings()
+      await reloadBusinessModules()
+    } catch (error) {
+      console.error('Failed to update workspace module', error)
+    } finally {
+      setSavingModule(null)
+    }
+  }
 
   if (loading) {
     return <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 text-cyan-100/60">Loading workspace settings...</div>
@@ -110,7 +170,7 @@ export default function BusinessSettings() {
             </div>
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
               <p className="text-cyan-100/55 text-xs mb-1">Capabilities</p>
-              <p className="font-black text-2xl">{settings?.modules.filter((module) => module.enabled).length ?? availableRoles.length}</p>
+              <p className="font-black text-2xl">{settings?.modules.filter((module) => module.enabled).length ?? 0}</p>
               <p className="text-cyan-100/50 text-xs mt-1">Modules enabled</p>
             </div>
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
@@ -142,6 +202,49 @@ export default function BusinessSettings() {
         </div>
 
         <div className="space-y-4">
+          <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-200 flex items-center justify-center">
+                <Sparkles size={18} />
+              </span>
+              <div>
+                <p className="font-bold">Capabilities</p>
+                <p className="text-cyan-100/55 text-xs">Enable the operator surfaces available in this workspace</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {moduleStates.map((module) => {
+                const Icon = module.icon
+                const isSaving = savingModule === module.key
+                return (
+                  <div key={module.key} className="flex items-center justify-between gap-4 rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
+                    <div className="flex items-start gap-3">
+                      <span className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${module.accentClass}`}>
+                        <Icon size={18} />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-sm">{module.label}</p>
+                        <p className="text-cyan-100/55 text-xs max-w-md mt-1">{module.description}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={() => handleToggleModule(module.key, !module.enabled)}
+                      className={`min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                        module.enabled
+                          ? 'bg-cyan-300 text-slate-950 hover:bg-cyan-200'
+                          : 'bg-white/8 text-cyan-50 border border-cyan-500/10 hover:bg-white/12'
+                      }`}
+                    >
+                      {isSaving ? 'Saving...' : module.enabled ? 'Enabled' : 'Enable'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center">

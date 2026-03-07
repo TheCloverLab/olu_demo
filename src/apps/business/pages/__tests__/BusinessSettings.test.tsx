@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BusinessSettings from '../BusinessSettings'
 import * as AuthContext from '../../../../context/AuthContext'
@@ -16,6 +17,7 @@ vi.mock('../../../../context/AppContext', () => ({
 
 vi.mock('../../../../domain/workspace/api', () => ({
   getWorkspaceSettingsForUser: vi.fn(),
+  updateWorkspaceModuleForUser: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -40,6 +42,7 @@ describe('BusinessSettings', () => {
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
       switchRole: vi.fn(),
       showRoleSwitcher: false,
       setShowRoleSwitcher: vi.fn(),
@@ -76,6 +79,40 @@ describe('BusinessSettings', () => {
       expect(screen.getByText('Shopify')).toBeInTheDocument()
       expect(screen.getByText(/Budget changes above \$500/)).toBeInTheDocument()
       expect(screen.getByText(/Current plan: starter/)).toBeInTheDocument()
+    })
+  })
+
+  it('updates a workspace capability from settings', async () => {
+    const user = userEvent.setup()
+    const reloadBusinessModules = vi.fn().mockResolvedValue(undefined)
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'creator',
+      currentUser: { name: 'Alice' },
+      availableRoles: ['creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing'],
+      reloadBusinessModules,
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+    vi.mocked(WorkspaceApi.updateWorkspaceModuleForUser).mockResolvedValue({
+      id: 'm3',
+      workspace_id: 'ws-1',
+      module_key: 'supply_chain',
+      enabled: true,
+    } as any)
+
+    render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
+
+    await user.click(await screen.findByRole('button', { name: 'Enable' }))
+
+    await waitFor(() => {
+      expect(WorkspaceApi.updateWorkspaceModuleForUser).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'user-1' }),
+        'supply_chain',
+        true
+      )
+      expect(reloadBusinessModules).toHaveBeenCalled()
     })
   })
 })

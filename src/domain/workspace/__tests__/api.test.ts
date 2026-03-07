@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { supabase } from '../../../lib/supabase'
-import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser, getWorkspaceSettingsForUser } from '../api'
+import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser, getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../api'
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -12,6 +12,7 @@ function createChain({ data = null, error = null }: { data?: any; error?: any } 
   const chain: any = {}
   chain.select = vi.fn().mockReturnValue(chain)
   chain.insert = vi.fn().mockReturnValue(chain)
+  chain.update = vi.fn().mockReturnValue(chain)
   chain.eq = vi.fn().mockReturnValue(chain)
   chain.order = vi.fn().mockReturnValue(chain)
   chain.limit = vi.fn().mockReturnValue(chain)
@@ -119,5 +120,29 @@ describe('workspace api', () => {
     expect(result.modules).toHaveLength(1)
     expect(result.integrations[0].provider).toBe('Shopify')
     expect(result.billing?.plan).toBe('starter')
+  })
+
+  it('updates a workspace module for the current user', async () => {
+    const membershipLookup = createChain({
+      data: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' },
+    })
+    const moduleUpdate = createChain({
+      data: { id: 'm1', workspace_id: 'ws-1', module_key: 'marketing', enabled: false },
+    })
+
+    vi.mocked(supabase.from)
+      .mockReturnValueOnce(membershipLookup)
+      .mockReturnValueOnce(moduleUpdate)
+
+    const result = await updateWorkspaceModuleForUser({
+      id: 'user-1',
+      username: 'alice',
+      handle: '@alice',
+      name: 'Alice',
+      email: 'alice@example.com',
+    } as any, 'marketing', false)
+
+    expect(moduleUpdate.update).toHaveBeenCalledWith({ enabled: false })
+    expect(result.enabled).toBe(false)
   })
 })

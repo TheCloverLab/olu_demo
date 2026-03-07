@@ -207,6 +207,24 @@ export async function getWorkspaceSettingsForUser(user: Pick<User, 'id' | 'usern
   } as WorkspaceSettingsData
 }
 
+export async function updateWorkspaceModuleForUser(
+  user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
+  moduleKey: BusinessModuleKey,
+  enabled: boolean
+) {
+  const membership = await ensureWorkspaceForUser(user)
+  const { data, error } = await supabase
+    .from('workspace_modules')
+    .update({ enabled })
+    .eq('workspace_id', membership.workspace_id)
+    .eq('module_key', moduleKey)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as WorkspaceModule
+}
+
 export async function getMyRoleApplications() {
   const { data, error } = await supabase
     .from('role_applications')

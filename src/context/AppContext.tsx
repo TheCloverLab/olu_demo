@@ -10,6 +10,7 @@ interface AppContextType {
   currentUser: any
   availableRoles: RoleType[]
   enabledBusinessModules: BusinessModule[]
+  reloadBusinessModules: () => Promise<void>
   switchRole: (role: RoleType) => void
   showRoleSwitcher: boolean
   setShowRoleSwitcher: (show: boolean) => void
@@ -36,10 +37,25 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, [authUser])
 
+  async function loadWorkspaceModules() {
+    if (!authUser) {
+      setEnabledBusinessModules([])
+      return
+    }
+
+    try {
+      const modules = await getEnabledBusinessModulesForUser(authUser)
+      setEnabledBusinessModules(modules)
+    } catch (error) {
+      console.error('Failed to load workspace modules', error)
+      setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
 
-    async function loadWorkspaceModules() {
+    async function syncWorkspaceModules() {
       if (!authUser) {
         setEnabledBusinessModules([])
         return
@@ -58,7 +74,7 @@ export function AppProvider({ children }: AppProviderProps) {
       }
     }
 
-    loadWorkspaceModules()
+    syncWorkspaceModules()
 
     return () => {
       cancelled = true
@@ -92,6 +108,7 @@ export function AppProvider({ children }: AppProviderProps) {
       currentUser,
       availableRoles,
       enabledBusinessModules,
+      reloadBusinessModules: loadWorkspaceModules,
       switchRole,
       showRoleSwitcher,
       setShowRoleSwitcher,

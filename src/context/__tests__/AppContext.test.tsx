@@ -14,13 +14,14 @@ vi.mock('../../domain/workspace/api', () => ({
 }))
 
 function TestConsumer() {
-  const { currentRole, availableRoles, enabledBusinessModules, switchRole, showRoleSwitcher, setShowRoleSwitcher } = useApp()
+  const { currentRole, availableRoles, enabledBusinessModules, reloadBusinessModules, switchRole, showRoleSwitcher, setShowRoleSwitcher } = useApp()
   return (
     <div>
       <span data-testid="role">{currentRole}</span>
       <span data-testid="roles">{availableRoles.join(',')}</span>
       <span data-testid="modules">{enabledBusinessModules.join(',')}</span>
       <span data-testid="switcher">{showRoleSwitcher ? 'open' : 'closed'}</span>
+      <button onClick={() => reloadBusinessModules()}>Reload Modules</button>
       <button onClick={() => switchRole('creator')}>Switch to Creator</button>
       <button onClick={() => switchRole('advertiser')}>Switch to Advertiser</button>
       <button onClick={() => setShowRoleSwitcher(true)}>Open Switcher</button>
@@ -187,5 +188,35 @@ describe('AppContext', () => {
     expect(() => {
       render(<TestConsumer />)
     }).toThrow('useApp must be used within AppProvider')
+  })
+
+  it('reloads workspace modules on demand', async () => {
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: '1', username: 'alice', handle: '@alice', name: 'Alice', email: 'alice@example.com', roles: ['creator'] } as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+    vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser)
+      .mockResolvedValueOnce(['creator_ops'])
+      .mockResolvedValueOnce(['creator_ops', 'marketing'])
+
+    render(
+      <AppProvider>
+        <TestConsumer />
+      </AppProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops')
+
+    await userEvent.click(screen.getByText('Reload Modules'))
+
+    await screen.findByText('Reload Modules')
+    expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops,marketing')
   })
 })

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import AppLayout from './components/layout/AppLayout'
 import BusinessLayout from './components/layout/BusinessLayout'
 import Home from './pages/Home'
+import BusinessAccount from './pages/BusinessAccount'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Settings from './pages/Settings'
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
       { path: 'creator/:id', element: <CreatorProfile /> },
       { path: 'content/:id', element: <ContentDetail /> },
       { path: 'chat', element: <Chat /> },
-      { path: 'profile', element: <Profile /> },
+      { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <Settings /> },
       { path: 'shop', element: <Shop /> },
     ],

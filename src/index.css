@@ -69,6 +69,13 @@ textarea {
     background: #242424;
   }
 
+  .business-shell {
+    background:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 24%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 20%),
+      linear-gradient(180deg, #07111f 0%, #050b14 100%);
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, #a78bfa, #818cf8);
     -webkit-background-clip: text;

@@ -37,8 +37,8 @@ export default function BusinessWorkspace() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
       <section className="grid lg:grid-cols-[1.4fr,0.9fr] gap-4">
-        <div className="glass rounded-3xl p-6 md:p-7">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/8 text-xs text-olu-muted mb-4">
+        <div className="rounded-3xl p-6 md:p-7 border border-cyan-400/15 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-xs text-cyan-100/70 mb-4">
             <Briefcase size={14} />
             Business entrypoint
           </div>
@@ -49,22 +49,22 @@ export default function BusinessWorkspace() {
             This shell replaces role-first navigation. Each merchant enables the modules they need and runs workflows from one operational surface.
           </p>
           <div className="grid grid-cols-3 gap-3 mt-6">
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">{modules.filter((item) => item.enabled).length}</p>
               <p className="text-xs text-olu-muted mt-1">Active modules</p>
             </div>
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">{availableRoles.length}</p>
               <p className="text-xs text-olu-muted mt-1">Capabilities</p>
             </div>
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">7</p>
               <p className="text-xs text-olu-muted mt-1">Planned connectors</p>
             </div>
           </div>
         </div>
 
-        <div className="glass rounded-3xl p-6">
+        <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#0a1525]">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center text-blue-300">
               <Bot size={18} />
@@ -75,15 +75,15 @@ export default function BusinessWorkspace() {
             </div>
           </div>
           <div className="space-y-3 text-sm">
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">{currentUser.name}</p>
               <p className="text-olu-muted text-xs">Workspace owner with unified visibility across modules and approvals.</p>
             </div>
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">AI employees</p>
               <p className="text-olu-muted text-xs">Operate in platform-native views first, with future Slack / TG / WhatsApp bridge support.</p>
             </div>
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">Sandbox mode</p>
               <p className="text-olu-muted text-xs">Remote monitoring and remote takeover are designed as first-class controls.</p>
             </div>
@@ -93,8 +93,8 @@ export default function BusinessWorkspace() {
 
       <section className="grid lg:grid-cols-3 gap-4">
         {modules.map(({ title, description, to, icon: Icon, enabled }) => (
-          <Link key={title} to={to} className="glass rounded-3xl p-6 hover:bg-white/5 transition-colors">
-            <div className="w-11 h-11 rounded-2xl bg-white/8 flex items-center justify-center mb-4">
+          <Link key={title} to={to} className="rounded-3xl p-6 hover:bg-[#0d1a2d] transition-colors border border-cyan-500/10 bg-[#091422]">
+            <div className="w-11 h-11 rounded-2xl bg-cyan-400/10 flex items-center justify-center mb-4 text-cyan-200">
               <Icon size={20} />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -109,7 +109,7 @@ export default function BusinessWorkspace() {
       </section>
 
       <section className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4">
-        <div className="glass rounded-3xl p-6">
+        <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={16} className="text-amber-300" />
             <p className="font-bold">Priority demo journey</p>
@@ -121,32 +121,32 @@ export default function BusinessWorkspace() {
               'KOL-side business agent receives a promotion request and requests approval.',
               'Once approved, content is scheduled and campaign progress returns to the marketer.',
             ].map((item) => (
-              <div key={item} className="rounded-2xl bg-[#161616] p-4 text-sm text-olu-muted">
+              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-olu-muted border border-cyan-500/10">
                 {item}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="glass rounded-3xl p-6">
+        <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
           <div className="flex items-center gap-2 mb-4">
             <Cable size={16} className="text-cyan-300" />
             <p className="font-bold">Connectors roadmap</p>
           </div>
           <div className="flex flex-wrap gap-2 mb-5">
             {PLATFORM_CONNECTORS.map((connector) => (
-              <span key={connector} className="px-3 py-1.5 rounded-full bg-[#161616] text-sm text-olu-muted">
+              <span key={connector} className="px-3 py-1.5 rounded-full bg-[#0d1726] text-sm text-cyan-100/70 border border-cyan-500/10">
                 {connector}
               </span>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <Users size={16} className="text-white mb-2" />
               <p className="font-semibold text-sm">Existing team tools</p>
               <p className="text-olu-muted text-xs mt-1">Bridge AI employees into the merchant's existing workflows.</p>
             </div>
-            <div className="rounded-2xl bg-[#161616] p-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <ShieldCheck size={16} className="text-white mb-2" />
               <p className="font-semibold text-sm">Controlled delivery</p>
               <p className="text-olu-muted text-xs mt-1">Approval, payment, and sandbox visibility remain first-class constraints.</p>

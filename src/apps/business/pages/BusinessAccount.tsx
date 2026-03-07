@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext'
 
 export default function BusinessAccount() {
   const navigate = useNavigate()
-  const { currentUser, availableRoles } = useApp()
+  const { currentUser, availableRoles, enabledBusinessModules } = useApp()
   const { user } = useAuth()
 
   return (
@@ -44,11 +44,11 @@ export default function BusinessAccount() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-              <p className="text-olu-muted text-xs mb-1">Capabilities enabled</p>
-              <p className="font-black text-2xl">{availableRoles.length}</p>
+              <p className="text-olu-muted text-xs mb-1">Workspace modules</p>
+              <p className="font-black text-2xl">{enabledBusinessModules.length}</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-              <p className="text-olu-muted text-xs mb-1">Default capability</p>
+              <p className="text-olu-muted text-xs mb-1">Current operator mode</p>
               <p className="font-semibold text-sm capitalize">{currentUser.role}</p>
             </div>
           </div>
@@ -56,9 +56,9 @@ export default function BusinessAccount() {
           <div className="rounded-2xl bg-[#0d1726] p-4 mt-4 border border-cyan-500/10">
             <p className="text-olu-muted text-xs mb-2">Enabled workspace modules</p>
             <div className="flex flex-wrap gap-2">
-              {availableRoles.map((role) => (
-                <span key={role} className="px-3 py-1.5 rounded-full bg-black/20 text-sm capitalize">
-                  {role}
+              {enabledBusinessModules.map((moduleKey) => (
+                <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-black/20 text-sm capitalize">
+                  {moduleKey.replace('_', ' ')}
                 </span>
               ))}
             </div>

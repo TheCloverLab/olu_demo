@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom'
 import Settings from '../Settings'
 import * as AuthContext from '../../context/AuthContext'
 import * as AppContext from '../../context/AppContext'
-import * as WorkspaceApi from '../../domain/workspace/api'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -13,11 +12,6 @@ vi.mock('../../context/AuthContext', () => ({
 
 vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
-}))
-
-vi.mock('../../domain/workspace/api', () => ({
-  getMyRoleApplications: vi.fn(),
-  submitRoleApplication: vi.fn(),
 }))
 
 vi.mock('../../lib/supabase', () => ({
@@ -69,14 +63,13 @@ describe('Settings', () => {
       showRoleSwitcher: false,
       setShowRoleSwitcher: vi.fn(),
     })
-    vi.mocked(WorkspaceApi.getMyRoleApplications).mockResolvedValue([])
   })
 
   it('renders account settings page', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
     expect(screen.getByText('Account Settings')).toBeInTheDocument()
     expect(screen.getByText('Profile')).toBeInTheDocument()
-    expect(screen.getByText('Roles')).toBeInTheDocument()
+    expect(screen.getByText('Account Scope')).toBeInTheDocument()
     expect(screen.getByText('Session')).toBeInTheDocument()
   })
 
@@ -87,55 +80,20 @@ describe('Settings', () => {
     expect(screen.getByDisplayValue('testuser')).toBeInTheDocument()
   })
 
-  it('shows role options with Active badge for current roles', async () => {
+  it('shows workspace-scope explanation instead of role application controls', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
 
     await waitFor(() => {
-      // Fan should show Active since it's in availableRoles
-      expect(screen.getByText('Fan')).toBeInTheDocument()
-      expect(screen.getByText('Creator')).toBeInTheDocument()
-      expect(screen.getByText('Advertiser')).toBeInTheDocument()
-      expect(screen.getByText('Supplier')).toBeInTheDocument()
+      expect(screen.getByText('Business capabilities moved out of consumer settings')).toBeInTheDocument()
+      expect(screen.queryByText('Apply')).not.toBeInTheDocument()
     })
   })
 
-  it('shows Apply buttons for roles user does not have', async () => {
+  it('mentions signed-in contexts count in account scope message', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
 
     await waitFor(() => {
-      // Creator, Advertiser, Supplier should have Apply buttons
-      const applyButtons = screen.getAllByText('Apply')
-      expect(applyButtons).toHaveLength(3)
-    })
-  })
-
-  it('submits role application', async () => {
-    vi.mocked(WorkspaceApi.submitRoleApplication).mockResolvedValue('app-1')
-
-    render(<MemoryRouter><Settings /></MemoryRouter>)
-
-    await waitFor(() => {
-      expect(screen.getAllByText('Apply')).toHaveLength(3)
-    })
-
-    // Click first Apply button (Creator)
-    await userEvent.click(screen.getAllByText('Apply')[0])
-
-    await waitFor(() => {
-      expect(WorkspaceApi.submitRoleApplication).toHaveBeenCalledWith('creator', 'Requested from account settings')
-      expect(screen.getByText(/Application submitted/)).toBeInTheDocument()
-    })
-  })
-
-  it('shows pending status for submitted applications', async () => {
-    vi.mocked(WorkspaceApi.getMyRoleApplications).mockResolvedValue([
-      { id: 'a1', user_id: 'user-1', target_role: 'creator', status: 'pending' },
-    ] as any)
-
-    render(<MemoryRouter><Settings /></MemoryRouter>)
-
-    await waitFor(() => {
-      expect(screen.getByText('Pending')).toBeInTheDocument()
+      expect(screen.getByText(/supports 1 signed-in context/i)).toBeInTheDocument()
     })
   })
 

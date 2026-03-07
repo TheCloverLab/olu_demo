@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Package, TrendingUp, Users, DollarSign } from 'lucide-react'
+import { Package, TrendingUp, Users, DollarSign, Boxes, Link2, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { getSupplierPartnershipsBySupplier, getSupplierProductsBySupplier } from '../../../services/api'
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
-  { key: 'rankings', label: 'Rankings', icon: Package },
+  { key: 'rankings', label: 'Rankings', icon: Boxes },
   { key: 'creators', label: 'Creators', icon: Users },
 ] as const
 
@@ -18,10 +18,10 @@ function compactNumber(value: number) {
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="glass rounded-2xl p-4">
+    <div className="rounded-[24px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-olu-muted text-xs">{label}</p>
-        <Icon size={14} className="text-olu-muted" />
+        <p className="text-cyan-100/55 text-xs">{label}</p>
+        <Icon size={14} className="text-cyan-100/55" />
       </div>
       <p className="font-black text-2xl">{value}</p>
     </div>
@@ -66,17 +66,37 @@ export default function SupplierConsole() {
     return { revenue, sold, activeCreators }
   }, [products, partnerships])
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8 text-olu-muted">Loading supplier console...</div>
+  const activePartnerships = partnerships.filter((p) => p.status === 'active')
+
+  if (loading) {
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-cyan-100/60">Loading supplier console...</div>
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
-          <Package size={18} className="text-white" />
-        </div>
-        <div>
-          <h1 className="font-black text-2xl">Supplier Console</h1>
-          <p className="text-olu-muted text-sm">Creator partnerships and product operations</p>
+    <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
+      <div className="rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(17,33,53,0.96),rgba(8,19,34,0.88))] p-6 shadow-[0_18px_60px_rgba(2,8,23,0.35)]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+              <Package size={18} className="text-cyan-200" />
+            </div>
+            <div>
+              <h1 className="font-black text-2xl">Supply Chain</h1>
+              <p className="text-cyan-100/60 text-sm">Creator partnerships, catalog readiness, and merchandise operations inside the business workspace</p>
+            </div>
+          </div>
+          <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
+            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
+              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Active Links</p>
+              <p className="font-black text-2xl">{activePartnerships.length}</p>
+              <p className="text-cyan-100/60 text-xs mt-1">Live creator-supplier relationships</p>
+            </div>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
+              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Monthly GMV</p>
+              <p className="font-black text-2xl">${Math.round(totals.revenue).toLocaleString()}</p>
+              <p className="text-cyan-100/60 text-xs mt-1">Current merchandise throughput</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -87,7 +107,7 @@ export default function SupplierConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-white text-black' : 'bg-[#1b1b1b] text-olu-muted hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#091523] border border-cyan-500/10 text-cyan-100/60 hover:text-white'
             )}
           >
             <Icon size={14} />
@@ -98,6 +118,11 @@ export default function SupplierConsole() {
 
       {tab === 'dashboard' && (
         <div className="space-y-6">
+          <div className="rounded-[28px] border border-cyan-400/10 bg-[#08111d] p-4 flex items-center gap-3">
+            <ShieldCheck size={16} className="text-cyan-200" />
+            <p className="text-sm text-cyan-100/68">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <MetricCard label="Monthly Revenue" value={`$${Math.round(totals.revenue).toLocaleString()}`} icon={DollarSign} />
             <MetricCard label="Units Sold" value={compactNumber(totals.sold)} icon={Package} />
@@ -105,18 +130,18 @@ export default function SupplierConsole() {
             <MetricCard label="Products" value={products.length.toString()} icon={TrendingUp} />
           </div>
 
-          <div className="glass rounded-2xl p-5 space-y-3">
+          <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <p className="font-bold">Active Partnerships</p>
-            {partnerships.filter((p) => p.status === 'active').map((p) => (
-              <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-[#161616]">
+            {activePartnerships.map((partnership) => (
+              <div key={partnership.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
                 <div>
-                  <p className="font-medium text-sm">{p.creator?.name || 'Creator'}</p>
-                  <p className="text-olu-muted text-xs">{p.products_count} products · manager {p.channel_manager || '-'}</p>
+                  <p className="font-medium text-sm">{partnership.creator?.name || 'Creator'}</p>
+                  <p className="text-cyan-100/60 text-xs">{partnership.products_count} products · manager {partnership.channel_manager || '-'}</p>
                 </div>
-                <p className="text-sm font-semibold">${Math.round(p.monthly_sales || 0).toLocaleString()}</p>
+                <p className="text-sm font-semibold">${Math.round(partnership.monthly_sales || 0).toLocaleString()}</p>
               </div>
             ))}
-            {partnerships.filter((p) => p.status === 'active').length === 0 && <p className="text-olu-muted text-sm">No active partnerships yet.</p>}
+            {activePartnerships.length === 0 && <p className="text-cyan-100/60 text-sm">No active partnerships yet.</p>}
           </div>
         </div>
       )}
@@ -126,53 +151,58 @@ export default function SupplierConsole() {
           {products
             .slice()
             .sort((a, b) => Number(b.sold_month || 0) - Number(a.sold_month || 0))
-            .map((product, i) => (
-              <div key={product.id} className="glass rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-8 h-8 rounded-lg bg-[#1b1b1b] flex items-center justify-center font-black text-sm">{i + 1}</div>
+            .map((product, index) => (
+              <div key={product.id} className="rounded-[28px] p-4 flex items-center gap-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+                <div className="w-8 h-8 rounded-lg bg-[#0d1726] border border-cyan-500/10 flex items-center justify-center font-black text-sm">{index + 1}</div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm line-clamp-1">{product.name}</p>
-                  <p className="text-olu-muted text-xs">{product.sku} · ${Number(product.price).toFixed(2)}</p>
+                  <p className="text-cyan-100/60 text-xs">{product.sku} · ${Number(product.price).toFixed(2)}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold">{product.sold_month || 0}</p>
-                  <p className="text-olu-muted text-xs">month</p>
+                  <p className="text-cyan-100/60 text-xs">month</p>
                 </div>
               </div>
             ))}
-          {products.length === 0 && <p className="text-olu-muted text-sm">No products yet.</p>}
+          {products.length === 0 && <p className="text-cyan-100/60 text-sm">No products yet.</p>}
         </div>
       )}
 
       {tab === 'creators' && (
         <div className="space-y-3">
-          {partnerships.map((p) => (
-            <div key={p.id} className="glass rounded-2xl p-4">
+          {partnerships.map((partnership) => (
+            <div key={partnership.id} className="rounded-[32px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm">{p.creator?.name || 'Creator'}</p>
-                  <p className="text-olu-muted text-xs">{p.creator?.handle || ''}</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#0d1726] border border-cyan-500/10 flex items-center justify-center">
+                    <Link2 size={16} className="text-cyan-200" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{partnership.creator?.name || 'Creator'}</p>
+                    <p className="text-cyan-100/60 text-xs">{partnership.creator?.handle || ''}</p>
+                  </div>
                 </div>
-                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', p.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/10 text-olu-muted')}>
-                  {p.status}
+                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', partnership.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-cyan-100/60')}>
+                  {partnership.status}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
-                <div className="p-2 rounded-lg bg-[#161616] text-center">
-                  <p className="font-semibold">{p.products_count || 0}</p>
-                  <p className="text-olu-muted">Products</p>
+                <div className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-center">
+                  <p className="font-semibold">{partnership.products_count || 0}</p>
+                  <p className="text-cyan-100/60">Products</p>
                 </div>
-                <div className="p-2 rounded-lg bg-[#161616] text-center">
-                  <p className="font-semibold">{p.ip_approved ? 'Approved' : 'Pending'}</p>
-                  <p className="text-olu-muted">IP</p>
+                <div className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-center">
+                  <p className="font-semibold">{partnership.ip_approved ? 'Approved' : 'Pending'}</p>
+                  <p className="text-cyan-100/60">IP</p>
                 </div>
-                <div className="p-2 rounded-lg bg-[#161616] text-center">
-                  <p className="font-semibold">${Math.round(p.monthly_sales || 0).toLocaleString()}</p>
-                  <p className="text-olu-muted">Monthly</p>
+                <div className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-center">
+                  <p className="font-semibold">${Math.round(partnership.monthly_sales || 0).toLocaleString()}</p>
+                  <p className="text-cyan-100/60">Monthly</p>
                 </div>
               </div>
             </div>
           ))}
-          {partnerships.length === 0 && <p className="text-olu-muted text-sm">No creator partnerships yet.</p>}
+          {partnerships.length === 0 && <p className="text-cyan-100/60 text-sm">No creator partnerships yet.</p>}
         </div>
       )}
     </div>

@@ -1,30 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
-import { ChevronLeft, Check, Plus, Clock3, LogOut } from 'lucide-react'
+import { ChevronLeft, LogOut, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { getMyRoleApplications, submitRoleApplication } from '../domain/workspace/api'
-import type { RoleApplication } from '../lib/supabase'
-
-const ROLE_OPTIONS = [
-  { value: 'creator', label: 'Creator', emoji: '🎨', description: 'Create and monetize content' },
-  { value: 'fan', label: 'Fan', emoji: '❤️', description: 'Support and engage with creators' },
-  { value: 'advertiser', label: 'Advertiser', emoji: '📣', description: 'Run marketing campaigns' },
-  { value: 'supplier', label: 'Supplier', emoji: '🏭', description: 'Supply products to creators' },
-] as const
-
-const APPLYABLE_ROLES = new Set(['creator', 'advertiser', 'supplier'])
 
 export default function Settings() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { availableRoles } = useApp()
-
-  const [applications, setApplications] = useState<RoleApplication[]>([])
-  const [loading, setLoading] = useState(true)
-  const [savingRole, setSavingRole] = useState<string | null>(null)
   const [savingProfile, setSavingProfile] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
@@ -35,57 +20,11 @@ export default function Settings() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
 
-  async function loadApplications() {
-    try {
-      const data = await getMyRoleApplications()
-      setApplications(data)
-    } catch (err: any) {
-      setMessage(`Failed to load applications: ${err.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadApplications()
-  }, [])
-
   useEffect(() => {
     setName(user?.name || '')
     setHandle((user?.handle || '').replace(/^@/, ''))
     setBio(user?.bio || '')
   }, [user?.id])
-
-  const pendingRoles = useMemo(() => {
-    return new Set(
-      applications
-        .filter((app) => app.status === 'pending')
-        .map((app) => app.target_role)
-    )
-  }, [applications])
-
-  const approvedRoles = useMemo(() => {
-    return new Set(
-      applications
-        .filter((app) => app.status === 'approved')
-        .map((app) => app.target_role)
-    )
-  }, [applications])
-
-  async function handleApply(role: 'creator' | 'advertiser' | 'supplier') {
-    setSavingRole(role)
-    setMessage('')
-
-    try {
-      await submitRoleApplication(role, 'Requested from account settings')
-      setMessage(`Application submitted for ${role}. We will review it soon.`)
-      await loadApplications()
-    } catch (err: any) {
-      setMessage(err.message || 'Failed to submit application')
-    } finally {
-      setSavingRole(null)
-    }
-  }
 
   async function handleSaveProfile() {
     if (!user?.id) return
@@ -177,7 +116,7 @@ export default function Settings() {
             </button>
             <div>
               <h1 className="font-bold text-lg">Account Settings</h1>
-              <p className="text-olu-muted text-xs">Manage your profile and role applications</p>
+              <p className="text-olu-muted text-xs">Manage your profile and account security</p>
             </div>
           </div>
         </div>
@@ -248,79 +187,23 @@ export default function Settings() {
 
           <div className="bg-[#111111] rounded-2xl p-6">
             <div className="mb-4">
-              <h2 className="font-semibold mb-1">Roles</h2>
+              <h2 className="font-semibold mb-1">Account Scope</h2>
               <p className="text-olu-muted text-sm">
-                New users start as Fan. Apply for additional roles below.
+                Product roles and business modules now live in the workspace layer. This page only manages your personal identity and sign-in state.
               </p>
             </div>
 
-            <div className="space-y-3">
-              {ROLE_OPTIONS.map(({ value, label, emoji, description }) => {
-                const hasRole = availableRoles.includes(value)
-                const isPending = value === 'fan' ? false : pendingRoles.has(value)
-                const isApproved = value === 'fan' ? false : approvedRoles.has(value)
-                const canApply = APPLYABLE_ROLES.has(value)
-                const isApplying = savingRole === value
-
-                return (
-                  <motion.div
-                    key={value}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-olu-border"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl flex-shrink-0">
-                      {emoji}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold text-sm">{label}</p>
-                      <p className="text-olu-muted text-xs">{description}</p>
-                    </div>
-
-                    {hasRole ? (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-black text-xs font-semibold">
-                        <Check size={12} />
-                        Active
-                      </div>
-                    ) : isPending ? (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
-                        <Clock3 size={12} />
-                        Pending
-                      </div>
-                    ) : canApply ? (
-                      <button
-                        onClick={() => handleApply(value as 'creator' | 'advertiser' | 'supplier')}
-                        disabled={isApplying}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1c1c] hover:bg-[#242424] text-sm font-medium transition-colors disabled:opacity-50"
-                      >
-                        <Plus size={14} />
-                        {isApplying ? 'Applying...' : 'Apply'}
-                      </button>
-                    ) : (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1c1c1c] text-olu-muted text-xs font-semibold">
-                        Default
-                      </div>
-                    )}
-
-                    {!hasRole && isApproved && (
-                      <div className="text-xs text-green-400">Approved. Refresh to activate.</div>
-                    )}
-                  </motion.div>
-                )
-              })}
-            </div>
-
-            {message && (
-              <div className={`mt-4 p-3 rounded-xl text-sm ${
-                message.toLowerCase().includes('failed') || message.toLowerCase().includes('error')
-                  ? 'bg-red-500/10 text-red-400'
-                  : 'bg-green-500/10 text-green-400'
-              }`}>
-                {message}
+            <div className="rounded-2xl border border-olu-border bg-black/30 p-4 flex items-start gap-4">
+              <span className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck size={20} />
+              </span>
+              <div>
+                <p className="font-semibold text-base">Business capabilities moved out of consumer settings</p>
+                <p className="text-olu-muted text-sm mt-1 leading-relaxed">
+                  Use the business workspace for capability switching, module access, approvals, and operator controls. Your current account supports {availableRoles.length} signed-in context{availableRoles.length > 1 ? 's' : ''}, but they are no longer managed from this page.
+                </p>
               </div>
-            )}
-
-            {loading && <p className="text-olu-muted text-sm mt-4">Loading applications...</p>}
+            </div>
           </div>
 
           <div className="bg-[#111111] rounded-2xl p-6">

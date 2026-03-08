@@ -50,26 +50,34 @@ export default function LearningHub() {
         </div>
         <div>
           <h1 className="font-black text-2xl">{learning.title}</h1>
-          <p className="text-olu-muted text-sm">{learning.subtitle}</p>
+          <p className="text-olu-muted text-sm">
+            {courseLibrary.length > 0
+              ? `${courseLibrary.length} course${courseLibrary.length > 1 ? 's' : ''} in your library`
+              : 'Your purchased courses show up here.'}
+          </p>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {courseLibrary.length === 0 && (
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 text-sm text-olu-muted">
-            No purchased courses yet. Buy a course to unlock your learning dashboard.
+            No courses in your library yet.
           </div>
         )}
         {courseLibrary.map((course) => (
-          <div key={course.id} className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div key={course.id} className="rounded-[24px] overflow-hidden border border-white/10 bg-[#111111]">
             {(() => {
               const computed = computeCourseProgress(course, progressBySlug[course.slug] || [])
               return (
                 <>
+            <div className={`h-36 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-end`}>
+              <p className="text-xs uppercase tracking-[0.16em] text-black/60">{course.instructor}</p>
+              <p className="font-black text-2xl text-black mt-2">{course.title}</p>
+            </div>
+            <div className="p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="font-bold text-lg">{course.title}</p>
-                <p className="text-xs text-olu-muted mt-1">{course.instructor}</p>
+                <p className="text-sm text-olu-muted">{course.subtitle}</p>
               </div>
               <span className="text-sm font-semibold text-emerald-300">{computed.percent}%</span>
             </div>
@@ -94,6 +102,14 @@ export default function LearningHub() {
                 </div>
                 <p className="font-semibold text-sm mt-2">Resume learning</p>
               </button>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {course.sections.slice(0, 2).map((section) => (
+                <span key={section.id} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                  {section.title}
+                </span>
+              ))}
+            </div>
             </div>
                 </>
               )

@@ -85,13 +85,11 @@ export default function Membership() {
         </div>
         <div>
           <h1 className="font-black text-2xl">Membership</h1>
-          <p className="text-olu-muted text-sm">{membership.subtitle}</p>
-          {summary.hostName && (
-            <p className="text-xs text-olu-muted mt-1">
-              Current host: {summary.hostName}
-              {summary.totalMembers > 0 ? ` · ${summary.totalMembers} total members` : ''}
-            </p>
-          )}
+          <p className="text-olu-muted text-sm">
+            {summary.hostName
+              ? `${summary.hostName} · ${summary.totalMembers} members`
+              : membership.subtitle}
+          </p>
         </div>
       </div>
 
@@ -140,9 +138,17 @@ export default function Membership() {
 
       {summary.activeFans > 0 && (
         <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
-          <p className="text-sm text-olu-muted">
-            {summary.activeFans} active fans are currently in this community footprint.
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+              {summary.activeFans} active now
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+              Member chat
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+              Weekly drops
+            </span>
+          </div>
         </div>
       )}
     </div>

@@ -106,8 +106,8 @@ export default function Profile() {
           icon: Sparkles,
           title: membershipName ? `${membershipName} member` : 'Membership access',
           description: membershipName
-            ? `You currently have access to ${communitySummary.creatorName}'s member spaces.`
-            : 'You are browsing the app as a visitor. Upgrade to unlock member-only community spaces and posts.',
+            ? `${communitySummary.creatorName} membership is active.`
+            : 'No active membership yet.',
           ctaLabel: membershipName ? 'Open topics' : 'Open membership',
           ctaHref: membershipName ? '/topics' : '/membership',
         },
@@ -131,8 +131,8 @@ export default function Profile() {
           icon: CreditCard,
           title: 'Library status',
           description: learningSummary.purchasedCount > 0
-            ? `${learningSummary.purchasedCount} purchased course${learningSummary.purchasedCount > 1 ? 's' : ''} in this app.`
-            : `${learningSummary.featuredCourseTitle} is ready to purchase when you want structured lessons.`,
+            ? `${learningSummary.purchasedCount} purchased course${learningSummary.purchasedCount > 1 ? 's' : ''}.`
+            : `${learningSummary.featuredCourseTitle} is available.`,
           ctaLabel: learningSummary.purchasedCount > 0 ? 'View library' : 'Open checkout',
           ctaHref: learningSummary.purchasedCount > 0 ? '/learning' : '/courses',
         },
@@ -183,14 +183,7 @@ export default function Profile() {
         <div className="glass rounded-2xl p-4 mb-5">
           <div className="mb-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
-            <p className="font-semibold text-sm mt-1">
-              {consumerTemplate === 'fan_community' ? 'Community' : 'Academy'}
-            </p>
-            <p className="text-xs text-olu-muted mt-1">
-              {consumerTemplate === 'fan_community'
-                ? 'Your membership, topics, and current access live here.'
-                : 'Your purchases, progress, and next learning step live here.'}
-            </p>
+            <p className="font-semibold text-sm mt-1">Memberships & learning</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3">

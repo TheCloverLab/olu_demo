@@ -37,14 +37,12 @@ export const CONSUMER_NAV: Record<ConsumerTemplateKey, ConsumerNavItem[]> = {
   fan_community: [
     { to: '/', icon: Home, label: 'Home', exact: true },
     { to: '/discover', icon: Compass, label: 'Discover' },
-    { to: '/topics', icon: Users, label: 'Topics' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/profile', icon: User, label: 'Me' },
   ],
   sell_courses: [
     { to: '/', icon: Home, label: 'Home', exact: true },
     { to: '/discover', icon: Compass, label: 'Discover' },
-    { to: '/learning', icon: BookOpen, label: 'Learning' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/profile', icon: User, label: 'Me' },
   ],

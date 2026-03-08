@@ -29,20 +29,24 @@ export default function Topics() {
         <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Flame size={15} className="text-orange-300" />
-            <p className="font-semibold">Topic brief</p>
+            <p className="font-semibold">About this topic</p>
           </div>
           <p className="text-sm text-olu-muted leading-relaxed">{activeTopic.description}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Why members join</p>
-            <p className="text-sm text-white/72 leading-relaxed">
-              This topic gives members a dedicated discussion space instead of sending every conversation into the main feed.
-            </p>
+            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">What happens here</p>
+            <div className="flex flex-wrap gap-2">
+              {['Discussion threads', 'Member feedback', 'Host replies'].map((item) => (
+                <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">What to do next</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Join the conversation</p>
             <button
               onClick={() => navigate(`/chat?topic=${activeTopic.id}`)}
               className="mt-1 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity"
@@ -70,11 +74,15 @@ export default function Topics() {
       <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
         <div className="flex items-center gap-2 mb-2">
           <Flame size={15} className="text-orange-300" />
-          <p className="font-semibold">How topics work</p>
+          <p className="font-semibold">Active right now</p>
         </div>
-        <p className="text-sm text-olu-muted leading-relaxed">
-          {topics.whyItExists}
-        </p>
+        <div className="flex flex-wrap gap-2">
+          {['Weekly critique', 'Member Q&A', 'Drop watch'].map((item) => (
+            <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-3">

@@ -65,7 +65,7 @@ describe('Topics', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('Topic brief')).toBeInTheDocument()
+    expect(screen.getByText('About this topic')).toBeInTheDocument()
     expect(screen.getByText('Office Hours')).toBeInTheDocument()
 
     await user.click(screen.getByText('Open discussion'))

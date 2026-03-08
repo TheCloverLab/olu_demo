@@ -7,7 +7,7 @@ import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 
 export default function LearningHub() {
   const navigate = useNavigate()
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const { learning } = consumerExperience.courses
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
 
@@ -15,7 +15,7 @@ export default function LearningHub() {
     let cancelled = false
 
     async function loadCourses() {
-      const snapshot = await getCourseLibrarySnapshot()
+      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourseLibrary(snapshot.courses)
       }

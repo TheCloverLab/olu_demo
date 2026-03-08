@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { getCommunityMembershipSnapshot, type CommunityTier } from '../../../domain/consumer/api'
 
 export default function Membership() {
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const { user } = useAuth()
   const { membership } = consumerExperience.community
   const [tiers, setTiers] = useState<CommunityTier[]>(membership.tiers)
@@ -19,7 +19,10 @@ export default function Membership() {
 
     async function loadSnapshot() {
       try {
-        const snapshot = await getCommunityMembershipSnapshot(user as any)
+        const snapshot = await getCommunityMembershipSnapshot(
+          user as any,
+          consumerConfig.featured_creator_id
+        )
         if (!cancelled) {
           setTiers(snapshot.tiers)
           setSummary({

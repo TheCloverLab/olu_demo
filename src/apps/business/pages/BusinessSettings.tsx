@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
-import type { BusinessModuleKey, WorkspaceSettingsData } from '../../../lib/supabase'
+import type { BusinessModuleKey, ConsumerCourse, User, WorkspaceSettingsData } from '../../../lib/supabase'
 import { CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../../consumer/templateConfig'
+import { getCreators, getConsumerCourses } from '../../../services/api'
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
@@ -39,12 +40,14 @@ const MODULE_METADATA: Array<{
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
-  const { consumerTemplate, currentUser, reloadBusinessModules, setConsumerTemplate } = useApp()
+  const { consumerConfig, consumerTemplate, currentUser, reloadBusinessModules, setConsumerConfig, setConsumerTemplate } = useApp()
   const { user } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
   const [savingConsumerTemplate, setSavingConsumerTemplate] = useState<ConsumerTemplateKey | null>(null)
+  const [creatorOptions, setCreatorOptions] = useState<User[]>([])
+  const [courseOptions, setCourseOptions] = useState<ConsumerCourse[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +77,30 @@ export default function BusinessSettings() {
       cancelled = true
     }
   }, [user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadConsumerOptions() {
+      try {
+        const [creators, courses] = await Promise.all([
+          getCreators(),
+          getConsumerCourses(),
+        ])
+        if (!cancelled) {
+          setCreatorOptions(creators)
+          setCourseOptions(courses)
+        }
+      } catch (error) {
+        console.error('Failed to load consumer options', error)
+      }
+    }
+
+    loadConsumerOptions()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function refreshSettings() {
     if (!user) return
@@ -161,6 +188,30 @@ export default function BusinessSettings() {
     } finally {
       setSavingConsumerTemplate(null)
     }
+  }
+
+  function handleConsumerConfigChange(config: Partial<typeof consumerConfig>) {
+    setConsumerConfig(config)
+    setSettings((current) => current ? {
+      ...current,
+      consumerConfig: current.consumerConfig
+        ? {
+            ...current.consumerConfig,
+            config_json: {
+              ...(current.consumerConfig.config_json || {}),
+              ...config,
+            },
+          }
+        : {
+            id: 'local-consumer-config',
+            workspace_id: current.workspace.id,
+            template_key: consumerTemplate,
+            config_json: {
+              featured_template: consumerTemplate,
+              ...config,
+            },
+          },
+    } : current)
   }
 
   if (loading) {
@@ -343,6 +394,36 @@ export default function BusinessSettings() {
                   </button>
                 )
               })}
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-4">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Featured creator</p>
+                <select
+                  aria-label="Featured creator"
+                  value={settings?.consumerConfig?.config_json?.featured_creator_id || consumerConfig.featured_creator_id || ''}
+                  onChange={(event) => handleConsumerConfigChange({ featured_creator_id: event.target.value || null })}
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                >
+                  <option value="">Auto</option>
+                  {creatorOptions.map((creator) => (
+                    <option key={creator.id} value={creator.id}>{creator.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Featured course</p>
+                <select
+                  aria-label="Featured course"
+                  value={settings?.consumerConfig?.config_json?.featured_course_slug || consumerConfig.featured_course_slug || ''}
+                  onChange={(event) => handleConsumerConfigChange({ featured_course_slug: event.target.value || null })}
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                >
+                  <option value="">Auto</option>
+                  {courseOptions.map((course) => (
+                    <option key={course.id} value={course.slug}>{course.title}</option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
 

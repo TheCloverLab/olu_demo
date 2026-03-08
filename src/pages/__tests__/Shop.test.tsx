@@ -27,6 +27,7 @@ function mockUseApp(overrides: Record<string, any> = {}) {
     currentUser: { id: 'user-1' },
     availableRoles: ['fan'],
     enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+    consumerConfig: {},
     consumerTemplate: 'fan_community',
     consumerExperience: {
       courses: {

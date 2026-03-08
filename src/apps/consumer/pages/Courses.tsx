@@ -8,7 +8,7 @@ import { getCourseLibrarySnapshot, getCourseSnapshotBySlug } from '../../../doma
 export default function Courses() {
   const navigate = useNavigate()
   const { courseSlug } = useParams()
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const { courses } = consumerExperience
   const [selected, setSelected] = useState<Course | null | undefined>(courseSlug ? undefined : null)
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
@@ -18,14 +18,14 @@ export default function Courses() {
 
     async function loadCourses() {
       if (courseSlug) {
-        const course = await getCourseSnapshotBySlug(courseSlug)
+        const course = await getCourseSnapshotBySlug(courseSlug, consumerConfig.featured_course_slug)
         if (!cancelled) {
           setSelected(course)
         }
         return
       }
 
-      const snapshot = await getCourseLibrarySnapshot()
+      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourseLibrary(snapshot.courses)
       }

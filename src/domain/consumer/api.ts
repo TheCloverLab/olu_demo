@@ -257,8 +257,17 @@ function mapMembershipTier(tier: MembershipTier): CommunityTier {
 }
 
 export async function resolveFeaturedCommunityCreator(
-  viewer?: Pick<User, 'id' | 'role'> | null
+  viewer?: Pick<User, 'id' | 'role'> | null,
+  preferredCreatorId?: string | null
 ) {
+  if (preferredCreatorId) {
+    try {
+      return await getUserById(preferredCreatorId)
+    } catch (error) {
+      console.error('Failed to load preferred featured creator', error)
+    }
+  }
+
   if (viewer?.id && viewer.role === 'creator') {
     try {
       return await getUserById(viewer.id)
@@ -272,9 +281,10 @@ export async function resolveFeaturedCommunityCreator(
 }
 
 export async function getCommunityMembershipSnapshot(
-  viewer?: Pick<User, 'id' | 'role'> | null
+  viewer?: Pick<User, 'id' | 'role'> | null,
+  preferredCreatorId?: string | null
 ): Promise<CommunityMembershipSnapshot> {
-  const creator = await resolveFeaturedCommunityCreator(viewer)
+  const creator = await resolveFeaturedCommunityCreator(viewer, preferredCreatorId)
   if (!creator) {
     return {
       creator: null,
@@ -342,9 +352,9 @@ function mapCourseRecord(
   }
 }
 
-export async function getCourseLibrarySnapshot(): Promise<CourseLibrarySnapshot> {
+export async function getCourseLibrarySnapshot(preferredCourseSlug?: string | null): Promise<CourseLibrarySnapshot> {
   try {
-    const courses = await getConsumerCourses()
+    const courses = (await getConsumerCourses()) || []
     if (!courses.length) {
       return {
         courses: COURSE_LIBRARY,
@@ -360,9 +370,12 @@ export async function getCourseLibrarySnapshot(): Promise<CourseLibrarySnapshot>
     )
 
     const mapped = sectionsByCourse.map(({ course, sections }) => mapCourseRecord(course, sections))
+    const featuredCourse = preferredCourseSlug
+      ? mapped.find((course) => course.slug === preferredCourseSlug || course.id === preferredCourseSlug) || mapped[0]
+      : mapped[0]
     return {
       courses: mapped,
-      featuredCourse: mapped[0],
+      featuredCourse,
     }
   } catch (error) {
     console.error('Failed to load course library snapshot', error)
@@ -373,17 +386,20 @@ export async function getCourseLibrarySnapshot(): Promise<CourseLibrarySnapshot>
   }
 }
 
-export async function getCourseSnapshotBySlug(slug: string) {
+export async function getCourseSnapshotBySlug(slug: string | null | undefined, preferredCourseSlug?: string | null) {
   try {
-    const course = await getConsumerCourseBySlug(slug)
+    const lookupSlug = slug || preferredCourseSlug
+    if (!lookupSlug) return null
+    const course = await getConsumerCourseBySlug(lookupSlug)
     if (!course) {
-      return COURSE_LIBRARY.find((item) => item.slug === slug || item.id === slug) || null
+      return COURSE_LIBRARY.find((item) => item.slug === lookupSlug || item.id === lookupSlug) || null
     }
 
     const sections = await getConsumerCourseSections(course.id)
     return mapCourseRecord(course, sections)
   } catch (error) {
     console.error('Failed to load course snapshot', error)
-    return COURSE_LIBRARY.find((item) => item.slug === slug || item.id === slug) || null
+    const lookupSlug = slug || preferredCourseSlug
+    return COURSE_LIBRARY.find((item) => item.slug === lookupSlug || item.id === lookupSlug) || null
   }
 }

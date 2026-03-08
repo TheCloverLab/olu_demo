@@ -212,6 +212,11 @@ async function getWorkspaceConsumerConfig(workspaceId: string) {
   return data as WorkspaceConsumerConfig | null
 }
 
+export async function getWorkspaceConsumerConfigForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
+  const membership = await ensureWorkspaceForUser(user)
+  return await getWorkspaceConsumerConfig(membership.workspace_id)
+}
+
 export async function getEnabledBusinessModulesForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
   const membership = await ensureWorkspaceForUser(user)
   const modules = await getWorkspaceModules(membership.workspace_id)
@@ -243,8 +248,7 @@ export async function getWorkspaceSettingsForUser(user: Pick<User, 'id' | 'usern
 }
 
 export async function getConsumerTemplateForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
-  const membership = await ensureWorkspaceForUser(user)
-  const consumerConfig = await getWorkspaceConsumerConfig(membership.workspace_id)
+  const consumerConfig = await getWorkspaceConsumerConfigForUser(user)
   return (consumerConfig?.template_key || 'fan_community') as ConsumerTemplateKey
 }
 
@@ -270,15 +274,35 @@ export async function updateWorkspaceConsumerTemplateForUser(
   user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
   templateKey: ConsumerTemplateKey
 ) {
+  return updateWorkspaceConsumerConfigForUser(user, {
+    template_key: templateKey,
+    config_json: {
+      featured_template: templateKey,
+    },
+  })
+}
+
+export async function updateWorkspaceConsumerConfigForUser(
+  user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
+  updates: {
+    template_key?: ConsumerTemplateKey
+    config_json?: WorkspaceConsumerConfig['config_json']
+  }
+) {
   const membership = await ensureWorkspaceForUser(user)
+  const currentConfig = await getWorkspaceConsumerConfig(membership.workspace_id)
+  const nextTemplate = updates.template_key || currentConfig?.template_key || 'fan_community'
+  const nextConfigJson = {
+    ...(currentConfig?.config_json || {}),
+    ...(updates.config_json || {}),
+    featured_template: nextTemplate,
+  }
   const { data, error } = await supabase
     .from('workspace_consumer_configs')
     .upsert({
       workspace_id: membership.workspace_id,
-      template_key: templateKey,
-      config_json: {
-        featured_template: templateKey,
-      },
+      template_key: nextTemplate,
+      config_json: nextConfigJson,
     }, { onConflict: 'workspace_id' })
     .select('*')
     .single()

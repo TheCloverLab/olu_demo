@@ -217,7 +217,7 @@ function UserShopView() {
 }
 
 export default function Shop() {
-  const { currentRole, consumerTemplate, consumerExperience } = useApp()
+  const { consumerConfig, currentRole, consumerTemplate, consumerExperience } = useApp()
   const isCreator = currentRole === 'creator'
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
 
@@ -227,7 +227,7 @@ export default function Shop() {
     let cancelled = false
 
     async function loadCourses() {
-      const snapshot = await getCourseLibrarySnapshot()
+      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourseLibrary(snapshot.courses)
       }

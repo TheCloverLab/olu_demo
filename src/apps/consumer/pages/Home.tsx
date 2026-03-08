@@ -18,7 +18,7 @@ function formatNumber(value: number) {
 function CommunityHome() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const community = consumerExperience.community
   const [creators, setCreators] = useState<User[]>([])
   const [posts, setPosts] = useState<any[]>([])
@@ -50,7 +50,10 @@ function CommunityHome() {
 
     async function loadMembershipSnapshot() {
       try {
-        const snapshot = await getCommunityMembershipSnapshot(user as any)
+        const snapshot = await getCommunityMembershipSnapshot(
+          user as any,
+          consumerConfig.featured_creator_id
+        )
         if (!cancelled) {
           setMembershipTiers(snapshot.tiers)
           setMemberStats({
@@ -273,7 +276,7 @@ function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) 
 
 function CoursesHome() {
   const navigate = useNavigate()
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const courses = consumerExperience.courses
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
   const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
@@ -282,7 +285,7 @@ function CoursesHome() {
     let cancelled = false
 
     async function loadCourses() {
-      const snapshot = await getCourseLibrarySnapshot()
+      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourseLibrary(snapshot.courses)
         setFeaturedCourse(snapshot.featuredCourse)

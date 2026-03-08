@@ -12,6 +12,8 @@ vi.mock('../AuthContext', () => ({
 vi.mock('../../domain/workspace/api', () => ({
   getEnabledBusinessModulesForUser: vi.fn(),
   getConsumerTemplateForUser: vi.fn(),
+  getWorkspaceConsumerConfigForUser: vi.fn(),
+  updateWorkspaceConsumerConfigForUser: vi.fn(),
   updateWorkspaceConsumerTemplateForUser: vi.fn(),
 }))
 
@@ -49,7 +51,19 @@ describe('AppContext', () => {
     window.localStorage.clear()
     vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops', 'marketing', 'supply_chain'])
     vi.mocked(WorkspaceApi.getConsumerTemplateForUser).mockResolvedValue('fan_community')
+    vi.mocked(WorkspaceApi.getWorkspaceConsumerConfigForUser).mockResolvedValue({
+      id: 'cfg-1',
+      workspace_id: 'ws-1',
+      template_key: 'fan_community',
+      config_json: { featured_template: 'fan_community' },
+    } as any)
     vi.mocked(WorkspaceApi.updateWorkspaceConsumerTemplateForUser).mockResolvedValue({
+      id: 'cfg-1',
+      workspace_id: 'ws-1',
+      template_key: 'sell_courses',
+      config_json: { featured_template: 'sell_courses' },
+    } as any)
+    vi.mocked(WorkspaceApi.updateWorkspaceConsumerConfigForUser).mockResolvedValue({
       id: 'cfg-1',
       workspace_id: 'ws-1',
       template_key: 'sell_courses',

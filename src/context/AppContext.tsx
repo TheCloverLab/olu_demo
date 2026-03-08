@@ -3,10 +3,13 @@ import { useAuth } from './AuthContext'
 import {
   getConsumerTemplateForUser,
   getEnabledBusinessModulesForUser,
+  getWorkspaceConsumerConfigForUser,
+  updateWorkspaceConsumerConfigForUser,
   updateWorkspaceConsumerTemplateForUser,
 } from '../domain/workspace/api'
 import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
 import { getConsumerExperience, type ConsumerExperience } from '../domain/consumer/api'
+import type { WorkspaceConsumerConfig } from '../lib/supabase'
 
 type RoleType = 'creator' | 'fan' | 'advertiser' | 'supplier'
 type BusinessModule = 'creator_ops' | 'marketing' | 'supply_chain'
@@ -23,8 +26,10 @@ interface AppContextType {
   availableRoles: RoleType[]
   enabledBusinessModules: BusinessModule[]
   consumerTemplate: ConsumerTemplateKey
+  consumerConfig: WorkspaceConsumerConfig['config_json']
   consumerExperience: ConsumerExperience
   setConsumerTemplate: (template: ConsumerTemplateKey) => void
+  setConsumerConfig: (config: Partial<WorkspaceConsumerConfig['config_json']>) => void
   reloadBusinessModules: () => Promise<void>
   switchRole: (role: RoleType) => void
   showRoleSwitcher: boolean
@@ -42,6 +47,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [currentRole, setCurrentRole] = useState<RoleType>('fan')
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false)
   const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModule[]>([])
+  const [consumerConfig, setConsumerConfigState] = useState<WorkspaceConsumerConfig['config_json']>({})
   const [consumerTemplate, setConsumerTemplateState] = useState<ConsumerTemplateKey>(() => {
     if (typeof window === 'undefined') return 'fan_community'
     const saved = window.localStorage.getItem('olu.consumerTemplate')
@@ -95,9 +101,11 @@ export function AppProvider({ children }: AppProviderProps) {
           getEnabledBusinessModulesForUser(authUser),
           getConsumerTemplateForUser(authUser),
         ])
+        const persistedConfig = await getWorkspaceConsumerConfigForUser(authUser)
         if (!cancelled) {
           setEnabledBusinessModules(modules)
           setConsumerTemplateState(persistedTemplate)
+          setConsumerConfigState(persistedConfig?.config_json || {})
           if (typeof window !== 'undefined') {
             window.localStorage.setItem('olu.consumerTemplate', persistedTemplate)
           }
@@ -106,6 +114,7 @@ export function AppProvider({ children }: AppProviderProps) {
         console.error('Failed to load workspace modules', error)
         if (!cancelled) {
           setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+          setConsumerConfigState({})
         }
       }
     }
@@ -141,6 +150,10 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const setConsumerTemplate = (template: ConsumerTemplateKey) => {
     setConsumerTemplateState(template)
+    setConsumerConfigState((current) => ({
+      ...current,
+      featured_template: template,
+    }))
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('olu.consumerTemplate', template)
     }
@@ -149,6 +162,21 @@ export function AppProvider({ children }: AppProviderProps) {
         console.error('Failed to persist consumer template', error)
       })
     }
+  }
+
+  const setConsumerConfig = (config: Partial<WorkspaceConsumerConfig['config_json']>) => {
+    setConsumerConfigState((current) => {
+      const next = { ...current, ...config }
+      if (authUser) {
+        updateWorkspaceConsumerConfigForUser(authUser, {
+          config_json: next,
+          template_key: consumerTemplate,
+        }).catch((error) => {
+          console.error('Failed to persist consumer config', error)
+        })
+      }
+      return next
+    })
   }
 
   const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name)
@@ -160,8 +188,10 @@ export function AppProvider({ children }: AppProviderProps) {
       availableRoles,
       enabledBusinessModules,
       consumerTemplate,
+      consumerConfig,
       consumerExperience,
       setConsumerTemplate,
+      setConsumerConfig,
       reloadBusinessModules: loadWorkspaceModules,
       switchRole,
       showRoleSwitcher,

@@ -381,7 +381,12 @@ export type WorkspaceConsumerConfig = {
   id: string
   workspace_id: string
   template_key: 'fan_community' | 'sell_courses'
-  config_json: Record<string, any>
+  config_json: {
+    featured_template?: 'fan_community' | 'sell_courses'
+    featured_creator_id?: string | null
+    featured_course_slug?: string | null
+    [key: string]: any
+  }
   created_at?: string
   updated_at?: string
 }

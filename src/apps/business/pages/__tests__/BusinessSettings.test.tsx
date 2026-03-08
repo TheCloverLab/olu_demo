@@ -6,6 +6,7 @@ import BusinessSettings from '../BusinessSettings'
 import * as AuthContext from '../../../../context/AuthContext'
 import * as AppContext from '../../../../context/AppContext'
 import * as WorkspaceApi from '../../../../domain/workspace/api'
+import * as Api from '../../../../services/api'
 
 vi.mock('../../../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -18,6 +19,11 @@ vi.mock('../../../../context/AppContext', () => ({
 vi.mock('../../../../domain/workspace/api', () => ({
   getWorkspaceSettingsForUser: vi.fn(),
   updateWorkspaceModuleForUser: vi.fn(),
+}))
+
+vi.mock('../../../../services/api', () => ({
+  getCreators: vi.fn(),
+  getConsumerCourses: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -42,7 +48,9 @@ describe('BusinessSettings', () => {
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {},
       consumerTemplate: 'fan_community',
+      setConsumerConfig: vi.fn(),
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
       switchRole: vi.fn(),
@@ -72,6 +80,12 @@ describe('BusinessSettings', () => {
       billing: { id: 'b1', workspace_id: 'ws-1', plan: 'starter', status: 'trial', billing_email: 'alice@example.com' },
       consumerConfig: { id: 'cc1', workspace_id: 'ws-1', template_key: 'fan_community', config_json: { featured_template: 'fan_community' } },
     } as any)
+    vi.mocked(Api.getCreators).mockResolvedValue([
+      { id: 'creator-1', name: 'Luna Chen' },
+    ] as any)
+    vi.mocked(Api.getConsumerCourses).mockResolvedValue([
+      { id: 'course-1', slug: 'community-growth', title: 'Build a Paid Fan Community' },
+    ] as any)
   })
 
   it('renders workspace-backed settings data', async () => {
@@ -93,7 +107,9 @@ describe('BusinessSettings', () => {
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {},
       consumerTemplate: 'fan_community',
+      setConsumerConfig: vi.fn(),
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules,
       switchRole: vi.fn(),
@@ -124,12 +140,15 @@ describe('BusinessSettings', () => {
   it('switches the consumer template from settings', async () => {
     const user = userEvent.setup()
     const setConsumerTemplate = vi.fn()
+    const setConsumerConfig = vi.fn()
     vi.mocked(AppContext.useApp).mockReturnValue({
       currentRole: 'creator',
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {},
       consumerTemplate: 'fan_community',
+      setConsumerConfig,
       setConsumerTemplate,
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
       switchRole: vi.fn(),
@@ -145,5 +164,32 @@ describe('BusinessSettings', () => {
       expect(setConsumerTemplate).toHaveBeenCalledWith('sell_courses')
       expect(screen.getByText('Active')).toBeInTheDocument()
     })
+  })
+
+  it('updates featured consumer content selections', async () => {
+    const user = userEvent.setup()
+    const setConsumerConfig = vi.fn()
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'creator',
+      currentUser: { name: 'Alice' },
+      availableRoles: ['creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {},
+      consumerTemplate: 'fan_community',
+      setConsumerConfig,
+      setConsumerTemplate: vi.fn(),
+      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+
+    render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
+
+    await user.selectOptions(await screen.findByLabelText(/Featured creator/i), 'creator-1')
+    await user.selectOptions(await screen.findByLabelText(/Featured course/i), 'community-growth')
+
+    expect(setConsumerConfig).toHaveBeenCalledWith({ featured_creator_id: 'creator-1' })
+    expect(setConsumerConfig).toHaveBeenCalledWith({ featured_course_slug: 'community-growth' })
   })
 })

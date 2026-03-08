@@ -8,7 +8,7 @@ import { getCourseSnapshotBySlug } from '../../../domain/consumer/api'
 export default function Learn() {
   const navigate = useNavigate()
   const { courseSlug, sectionId } = useParams()
-  const { consumerExperience } = useApp()
+  const { consumerConfig, consumerExperience } = useApp()
   const { detail } = consumerExperience.courses
   const [course, setCourse] = useState<Course | null | undefined>(undefined)
 
@@ -17,7 +17,7 @@ export default function Learn() {
 
     async function loadCourse() {
       if (!courseSlug) return
-      const data = await getCourseSnapshotBySlug(courseSlug)
+      const data = await getCourseSnapshotBySlug(courseSlug, consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourse(data)
       }

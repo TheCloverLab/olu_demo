@@ -119,7 +119,7 @@ describe('Home', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Find something worth joining.')).toBeInTheDocument()
-      expect(screen.getByText('Join another creator circle')).toBeInTheDocument()
+      expect(screen.getByText('Find a new community')).toBeInTheDocument()
       expect(screen.getByText('Pick your next academy')).toBeInTheDocument()
     })
   })

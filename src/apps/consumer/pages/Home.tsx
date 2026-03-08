@@ -1,19 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowRight, BadgeCheck, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, MessageCircle, PlayCircle, Search, Sparkles, Users } from 'lucide-react'
-import clsx from 'clsx'
-import { useApp } from '../../../context/AppContext'
+import { ArrowRight, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getCommunityMembershipSnapshot, getCourseLibrarySnapshot } from '../../../domain/consumer/api'
-import {
-  computeCourseProgress,
-  getMembershipStatus,
-  getProgressForCourse,
-  getPurchasedCourseSlugs,
-} from '../../../domain/consumer/engagement'
+import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
+import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCreators, getPosts } from '../../../services/api'
-import { CONSUMER_TEMPLATE_META } from '../templateConfig'
 import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
@@ -21,289 +12,31 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
-function CommunityHome() {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { consumerConfig, consumerExperience } = useApp()
-  const community = consumerExperience.community
-  const [creators, setCreators] = useState<User[]>([])
-  const [posts, setPosts] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [membershipTiers, setMembershipTiers] = useState(community.membership.tiers)
-  const [memberStats, setMemberStats] = useState<{ totalMembers: number; activeFans: number; hostName?: string }>({
-    totalMembers: 0,
-    activeFans: 0,
-  })
-  const [creatorId, setCreatorId] = useState<string | null>(null)
-  const [activeTierName, setActiveTierName] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [creatorsData, postsData] = await Promise.all([getCreators(), getPosts(12)])
-        setCreators(creatorsData)
-        setPosts(postsData)
-      } catch (error) {
-        console.error('Error loading community home:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadMembershipSnapshot() {
-      try {
-        const snapshot = await getCommunityMembershipSnapshot(
-          user as any,
-          consumerConfig.featured_creator_id
-        )
-        if (!cancelled) {
-          setMembershipTiers(snapshot.tiers)
-          setCreatorId(snapshot.creator?.id || null)
-          setMemberStats({
-            totalMembers: snapshot.totalMembers,
-            activeFans: snapshot.activeFans,
-            hostName: snapshot.creator?.name,
-          })
-        }
-      } catch (error) {
-        console.error('Failed to load membership snapshot', error)
-      }
-    }
-
-    loadMembershipSnapshot()
-    return () => {
-      cancelled = true
-    }
-  }, [consumerConfig.featured_creator_id, user?.id])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadMembershipStatus() {
-      if (!creatorId) {
-        setActiveTierName(null)
-        return
-      }
-      try {
-        const status = await getMembershipStatus(user as any, creatorId)
-        if (!cancelled) {
-          setActiveTierName(status?.tier_name || null)
-        }
-      } catch (error) {
-        console.error('Failed to load community membership status', error)
-      }
-    }
-
-    loadMembershipStatus()
-    return () => {
-      cancelled = true
-    }
-  }, [creatorId, user?.id])
-
-  const featuredCreators = creators.slice(0, 4)
-  const featuredPosts = posts.slice(0, 5)
-  const membershipCtaLabel = activeTierName ? `Current plan: ${activeTierName}` : community.membership.ctaLabel
-  const hasMembership = !!activeTierName
-
-  return (
-    <div className="pb-24 md:pb-6">
-      <div className="max-w-3xl mx-auto px-4 py-4 space-y-6">
-        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,113,133,0.18),transparent_34%),linear-gradient(135deg,#18111b,#0c0a10)] p-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-4">
-            <Users size={13} />
-            {hasMembership ? 'Your Community Home' : community.hero.eyebrow}
-          </div>
-          <h1 className="font-black text-3xl leading-tight max-w-xl">
-            {hasMembership
-              ? `Welcome back${memberStats.hostName ? ` to ${memberStats.hostName}` : ''}.`
-              : community.hero.title}
-          </h1>
-          <p className="text-olu-muted text-sm mt-3 max-w-xl leading-relaxed">
-            {hasMembership
-              ? 'Your membership is active. Jump back into circles, catch up on new drops, and continue the conversations you already unlocked.'
-              : community.hero.description}
-          </p>
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            {(hasMembership
-              ? [
-                  { label: 'Current plan', value: activeTierName || 'Member' },
-                  { label: 'Active fans', value: formatNumber(memberStats.activeFans) },
-                  { label: 'Total members', value: formatNumber(memberStats.totalMembers) },
-                ]
-              : community.hero.stats).map((item) => (
-              <div key={item.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                <p className={clsx('font-black', hasMembership && item.label === 'Current plan' ? 'text-lg' : 'text-2xl')}>{item.value}</p>
-                <p className="text-xs text-white/60 mt-1">{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid md:grid-cols-[1.15fr,0.85fr] gap-4">
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Membership</p>
-                <h2 className="font-bold text-xl">{hasMembership ? 'Your access' : community.membership.title}</h2>
-              </div>
-              <Crown size={18} className="text-amber-300" />
-            </div>
-            <div className="space-y-3">
-              {membershipTiers.map((item, index) => (
-                <div key={item.name} className={clsx('rounded-2xl p-4 border', index === 1 ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10')}>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="font-black">{item.price}</p>
-                  </div>
-                  <p className={clsx('text-sm', index === 1 ? 'text-black/70' : 'text-olu-muted')}>{item.note}</p>
-                </div>
-              ))}
-            </div>
-            {memberStats.totalMembers > 0 && (
-              <p className="text-xs text-olu-muted mt-3">
-                {formatNumber(memberStats.totalMembers)} paid/free members
-                {memberStats.activeFans > 0 ? ` · ${formatNumber(memberStats.activeFans)} active fans` : ''}
-              </p>
-            )}
-            {activeTierName && (
-              <p className="text-xs text-emerald-300 mt-3">
-                You already joined as {activeTierName}.
-              </p>
-            )}
-            <button
-              onClick={() => navigate('/membership')}
-              className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              {hasMembership ? 'Manage membership' : membershipCtaLabel}
-              <ArrowRight size={16} />
-            </button>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Continue with' : 'Topics'}</p>
-                <h2 className="font-bold text-xl">{hasMembership ? 'Your circles' : community.topics.title}</h2>
-              </div>
-              <MessageCircle size={18} className="text-sky-300" />
-            </div>
-            <div className="space-y-3">
-              {community.topics.entries.map((topic) => (
-                <button
-                  key={topic.id}
-                  onClick={() => navigate(`/topics/${topic.id}`)}
-                  className="w-full text-left rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/8 transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-sm">{topic.name}</p>
-                    <ChevronRight size={14} className="text-olu-muted" />
-                  </div>
-                  <p className="text-xs text-olu-muted mt-1">{topic.members} members</p>
-                  <p className="text-sm text-white/72 mt-2">{topic.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Discover more' : 'Creator spaces'}</p>
-                <h2 className="font-bold text-xl">{hasMembership ? 'Other community apps' : community.spaces.title}</h2>
-                {memberStats.hostName && <p className="text-xs text-olu-muted mt-1">Hosted by {memberStats.hostName}</p>}
-              </div>
-            <button onClick={() => navigate('/topics')} className="text-sm text-white/72 hover:text-white transition-colors">
-              View all
-            </button>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {featuredCreators.map((creator) => (
-              <button
-                key={creator.id}
-                onClick={() => navigate(`/creator/${creator.id}`)}
-                className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden text-left hover:bg-white/8 transition-colors"
-              >
-                <div className={`h-28 bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'}`}>
-                  {creator.cover_img && <img src={creator.cover_img} alt={creator.name} className="w-full h-full object-cover" />}
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p className="font-semibold text-sm">{creator.name}</p>
-                    {creator.verified && <BadgeCheck size={13} className="text-sky-400" fill="currentColor" />}
-                  </div>
-                  <p className="text-xs text-olu-muted line-clamp-2">{creator.bio}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Updates' : 'Feed'}</p>
-              <h2 className="font-bold text-xl">{hasMembership ? 'New from your app' : community.feed.title}</h2>
-            </div>
-            <Flame size={18} className="text-orange-300" />
-          </div>
-          <p className="text-sm text-olu-muted mb-4">{community.feed.subtitle}</p>
-          {loading ? (
-            <div className="text-olu-muted py-6 text-sm">Loading community feed...</div>
-          ) : (
-            <div className="space-y-3">
-              {featuredPosts.map((post) => (
-                <button
-                  key={post.id}
-                  onClick={() => navigate(`/content/${post.id}`)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-sm">{post.title}</p>
-                      <p className="text-xs text-olu-muted mt-1">{post.creator?.name || 'Community host'} · {post.type}</p>
-                    </div>
-                    {post.locked && <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> Members</span>}
-                  </div>
-                  <p className="text-sm text-white/72 mt-3 line-clamp-2">{post.preview}</p>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-    </div>
-  )
+type JoinedCommunity = {
+  creator: User
+  tierName: string
 }
 
-function CourseCard({
+function ContinueCourseCard({
   course,
-  purchased,
   progress,
   onOpen,
 }: {
   course: Course
-  purchased: boolean
-  progress?: ConsumerLessonProgress[]
+  progress: ConsumerLessonProgress[]
   onOpen: () => void
 }) {
-  const courseProgress = computeCourseProgress(course, progress || [])
+  const summary = computeCourseProgress(course, progress)
 
   return (
     <button
       onClick={onOpen}
       className="rounded-[24px] overflow-hidden border border-white/10 bg-[#111111] text-left hover:-translate-y-0.5 transition-all"
     >
-      <div className={`h-40 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-between`}>
+      <div className={`h-36 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-between`}>
         <span className="inline-flex w-fit items-center gap-2 rounded-full bg-black/15 px-3 py-1 text-xs font-medium text-black/75">
           <GraduationCap size={13} />
-          {course.level}
+          Academy
         </span>
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-black/60">{course.instructor}</p>
@@ -314,222 +47,312 @@ function CourseCard({
         <p className="text-sm text-olu-muted line-clamp-2">{course.subtitle}</p>
         <div className="grid grid-cols-3 gap-2 mt-4">
           <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
-            <p className="font-bold text-sm">{course.stats.lessons}</p>
+            <p className="font-bold text-sm">{summary.completedCount}/{course.sections.length}</p>
             <p className="text-[11px] text-olu-muted">Lessons</p>
           </div>
           <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
-            <p className="font-bold text-sm">{formatNumber(course.stats.students)}</p>
-            <p className="text-[11px] text-olu-muted">Students</p>
+            <p className="font-bold text-sm">{summary.percent}%</p>
+            <p className="text-[11px] text-olu-muted">Progress</p>
           </div>
           <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
             <p className="font-bold text-sm">{course.stats.completionRate}</p>
-            <p className="text-[11px] text-olu-muted">Completion</p>
+            <p className="text-[11px] text-olu-muted">Avg. complete</p>
           </div>
         </div>
         <div className="flex items-center justify-between mt-4">
-          <p className="font-black text-xl">${course.price}</p>
+          <p className="font-semibold text-sm text-emerald-300">Continue learning</p>
           <span className="inline-flex items-center gap-2 text-sm text-white/72">
-            {purchased ? `Continue · ${courseProgress.percent}%` : 'View course'}
+            Open
             <ArrowRight size={15} />
           </span>
         </div>
-        {purchased && (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-300">
-            <PlayCircle size={13} />
-            Purchased
-          </div>
-        )}
       </div>
     </button>
   )
 }
 
-function CoursesHome() {
+export default function Home() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { consumerConfig, consumerExperience } = useApp()
-  const courses = consumerExperience.courses
+  const [creators, setCreators] = useState<User[]>([])
+  const [posts, setPosts] = useState<any[]>([])
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
-  const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
   const [purchasedSlugs, setPurchasedSlugs] = useState<string[]>([])
   const [progressBySlug, setProgressBySlug] = useState<Record<string, ConsumerLessonProgress[]>>({})
+  const [memberships, setMemberships] = useState<Record<string, { tier_name: string }>>({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadCourses() {
+    async function loadHome() {
       try {
-        const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
-        const purchased = await getPurchasedCourseSlugs(user as any, snapshot.courses)
-        const progressEntries = await Promise.all(
-          snapshot.courses.map(async (course) => [course.slug, await getProgressForCourse(user as any, course)] as const)
+        const [creatorsData, postsData, courseSnapshot] = await Promise.all([
+          getCreators(),
+          getPosts(16),
+          getCourseLibrarySnapshot(),
+        ])
+
+        const [membershipEntries, purchased, progressEntries] = await Promise.all([
+          Promise.all(
+            creatorsData.map(async (creator) => {
+              const status = await getMembershipStatus(user as any, creator.id).catch(() => null)
+              return [creator.id, status] as const
+            })
+          ),
+          getPurchasedCourseSlugs(user as any, courseSnapshot.courses).catch(() => []),
+          Promise.all(
+            courseSnapshot.courses.map(async (course) => [course.slug, await getProgressForCourse(user as any, course).catch(() => [])] as const)
+          ),
+        ])
+
+        if (cancelled) return
+
+        setCreators(creatorsData)
+        setPosts(postsData)
+        setCourseLibrary(courseSnapshot.courses)
+        setPurchasedSlugs(purchased)
+        setProgressBySlug(Object.fromEntries(progressEntries))
+        setMemberships(
+          Object.fromEntries(
+            membershipEntries
+              .filter(([, status]) => !!status?.tier_name)
+              .map(([creatorId, status]) => [creatorId, { tier_name: status!.tier_name }])
+          )
         )
-        if (!cancelled) {
-          setCourseLibrary(snapshot.courses)
-          setFeaturedCourse(snapshot.featuredCourse)
-          setPurchasedSlugs(purchased)
-          setProgressBySlug(Object.fromEntries(progressEntries))
-        }
       } catch (error) {
-        console.error('Failed to load courses home', error)
+        console.error('Failed to load home', error)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
-    loadCourses()
+    loadHome()
     return () => {
       cancelled = true
     }
-  }, [consumerConfig.featured_course_slug, user?.id])
+  }, [user?.id])
 
-  const heroCourse = featuredCourse || courseLibrary[0]
-  const heroPurchased = heroCourse ? purchasedSlugs.includes(heroCourse.slug) : false
-  const heroProgress = heroCourse ? computeCourseProgress(heroCourse, progressBySlug[heroCourse.slug] || []) : null
-  const hasPurchasedAny = purchasedSlugs.length > 0
-  const heroPrimaryHref = heroCourse
-    ? heroPurchased
-      ? `/learn/${heroCourse.slug}/${heroProgress?.nextSection?.id || heroCourse.sections[0]?.id}`
-      : `/checkout/${heroCourse.slug}`
-    : '/courses'
-  const heroPrimaryLabel = heroPurchased ? 'Continue learning' : courses.detail.buyLabel
+  const joinedCommunities = useMemo<JoinedCommunity[]>(() => {
+    return creators
+      .filter((creator) => memberships[creator.id]?.tier_name)
+      .map((creator) => ({
+        creator,
+        tierName: memberships[creator.id].tier_name,
+      }))
+  }, [creators, memberships])
+
+  const purchasedCourses = useMemo(() => {
+    return courseLibrary.filter((course) => purchasedSlugs.includes(course.slug))
+  }, [courseLibrary, purchasedSlugs])
+
+  const relatedPosts = useMemo(() => {
+    const joinedCreatorIds = new Set(joinedCommunities.map((item) => item.creator.id))
+    const filtered = joinedCreatorIds.size > 0
+      ? posts.filter((post) => post.creator?.id && joinedCreatorIds.has(post.creator.id))
+      : []
+    return filtered.slice(0, 5)
+  }, [joinedCommunities, posts])
+
+  const recommendedCommunities = useMemo(() => {
+    const joinedIds = new Set(joinedCommunities.map((item) => item.creator.id))
+    return creators.filter((creator) => !joinedIds.has(creator.id)).slice(0, 3)
+  }, [creators, joinedCommunities])
+
+  const recommendedAcademies = useMemo(() => {
+    const purchased = new Set(purchasedSlugs)
+    return courseLibrary.filter((course) => !purchased.has(course.slug)).slice(0, 3)
+  }, [courseLibrary, purchasedSlugs])
+
+  const activeAppCount = joinedCommunities.length + purchasedCourses.length
 
   return (
     <div className="pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-        <section className={`rounded-[28px] overflow-hidden border border-white/10 bg-gradient-to-br ${heroCourse?.hero || 'from-sky-600 via-cyan-500 to-emerald-400'} p-6 md:p-8`}>
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/15 text-xs text-black/70 mb-4">
-              <BookOpen size={13} />
-              {hasPurchasedAny ? 'Your Learning Home' : courses.catalog.title}
-            </div>
-            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">
-              {hasPurchasedAny
-                ? `Continue with ${heroCourse?.title || 'your course library'}.`
-                : heroCourse?.headline || 'Build and sell a structured course offer.'}
-            </h1>
-            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">
-              {hasPurchasedAny
-                ? 'You already own courses in this app. Pick up where you left off, review progress, and keep momentum.'
-                : heroCourse?.description || 'Use a course catalog, checkout flow, and learning hub to deliver structured knowledge.'}
-            </p>
-            <div className="flex flex-wrap gap-3 mt-6">
-              <button
-                onClick={() => navigate(heroPrimaryHref)}
-                className="px-5 py-3 rounded-2xl bg-black text-white font-semibold hover:opacity-90 transition-opacity"
-              >
-                {heroPrimaryLabel}
-              </button>
-              <button
-                onClick={() => heroCourse && navigate(`/courses/${heroCourse.slug}/catalog`)}
-                className="px-5 py-3 rounded-2xl bg-white/70 text-black font-semibold hover:bg-white transition-colors"
-              >
-                {hasPurchasedAny ? 'Open library' : courses.detail.catalogLabel}
-              </button>
-            </div>
-            {heroPurchased && heroProgress && (
-              <p className="text-black/70 text-sm mt-4">
-                Purchased already · {heroProgress.completedCount}/{heroCourse.sections.length} lessons completed.
-              </p>
-            )}
+        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),linear-gradient(135deg,#131825,#090c12)] p-6 md:p-7">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-4">
+            <Sparkles size={13} />
+            Home
           </div>
-        </section>
-
-        <section className="grid md:grid-cols-[1.1fr,0.9fr] gap-4">
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Continue with' : 'Learning path'}</p>
-                <h2 className="font-bold text-xl">{hasPurchasedAny ? 'Your next learning step' : 'Start, continue, complete'}</h2>
+          <h1 className="font-black text-3xl leading-tight max-w-2xl">
+            {activeAppCount > 0 ? 'Your apps, updates, and next steps.' : 'Start building your app library.'}
+          </h1>
+          <p className="text-olu-muted text-sm mt-3 max-w-2xl leading-relaxed">
+            {activeAppCount > 0
+              ? 'Home pulls together the community apps you joined and the academy apps you bought, so you can jump back in without hunting through creators one by one.'
+              : 'Once you join communities or buy academies, they show up here with updates, progress, and shortcuts.'}
+          </p>
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            {[
+              { label: 'Active apps', value: formatNumber(activeAppCount) },
+              { label: 'Communities', value: formatNumber(joinedCommunities.length) },
+              { label: 'Academies', value: formatNumber(purchasedCourses.length) },
+            ].map((item) => (
+              <div key={item.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                <p className="font-black text-2xl">{item.value}</p>
+                <p className="text-xs text-white/60 mt-1">{item.label}</p>
               </div>
-              <PlayCircle size={18} className="text-emerald-300" />
-            </div>
-            <div className="space-y-3">
-              {courses.learning.steps.map((step, index) => (
-                <div key={step.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm font-black">{index + 1}</div>
-                    <div>
-                      <p className="font-semibold text-sm">{step.label}</p>
-                      <p className="text-xs text-olu-muted mt-1">{step.note}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => navigate('/learning')} className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity">
-              {hasPurchasedAny ? 'Open learning dashboard' : 'Browse courses first'}
-            </button>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Discover more' : 'Search'}</p>
-                <h2 className="font-bold text-xl">{hasPurchasedAny ? 'Find your next course' : 'Find a course quickly'}</h2>
-              </div>
-              <Search size={18} className="text-sky-300" />
-            </div>
-            <div className="rounded-2xl bg-white/5 border border-white/10 px-4 py-3 flex items-center gap-3">
-              <Search size={16} className="text-olu-muted" />
-              <input
-                placeholder="Search curriculum, outcomes, or instructor"
-                className="bg-transparent flex-1 text-sm placeholder:text-olu-muted focus:outline-none"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              {[...courses.learning.shortcuts, { label: 'Featured course', href: heroCourse ? `/courses/${heroCourse.slug}` : '/courses' }, { label: 'Checkout', href: heroCourse ? `/checkout/${heroCourse.slug}` : '/courses' }].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => navigate(item.href)}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
-                >
-                  <p className="font-semibold text-sm">{item.label}</p>
-                  <p className="text-xs text-olu-muted mt-1">Open page</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Your library' : 'Catalog'}</p>
-              <h2 className="font-bold text-2xl">{hasPurchasedAny ? 'Continue or expand' : 'Featured courses'}</h2>
-            </div>
-            <button onClick={() => navigate('/courses')} className="text-sm text-white/72 hover:text-white transition-colors">
-              Open full catalog
-            </button>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-4">
-            {courseLibrary.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                purchased={purchasedSlugs.includes(course.slug)}
-                progress={progressBySlug[course.slug]}
-                onOpen={() => navigate(`/courses/${course.slug}`)}
-              />
             ))}
           </div>
         </section>
-      </div>
-    </div>
-  )
-}
 
-export default function Home() {
-  const { consumerTemplate } = useApp()
-  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
+        {purchasedCourses.length > 0 ? (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Academy</p>
+                <h2 className="font-bold text-2xl">Continue learning</h2>
+              </div>
+              <button onClick={() => navigate('/learning')} className="text-sm text-white/72 hover:text-white transition-colors">
+                Open learning hub
+              </button>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-4">
+              {purchasedCourses.slice(0, 2).map((course) => {
+                const progress = progressBySlug[course.slug] || []
+                const summary = computeCourseProgress(course, progress)
+                return (
+                  <ContinueCourseCard
+                    key={course.id}
+                    course={course}
+                    progress={progress}
+                    onOpen={() => navigate(`/learn/${course.slug}/${summary.nextSection?.id || course.sections[0]?.id}`)}
+                  />
+                )
+              })}
+            </div>
+          </section>
+        ) : null}
 
-  return (
-    <div>
-      <div className="max-w-5xl mx-auto px-4 pt-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70">
-          <Sparkles size={13} />
-          {templateMeta.label}
-        </div>
+        {joinedCommunities.length > 0 ? (
+          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Community</p>
+                <h2 className="font-bold text-xl">Your communities</h2>
+              </div>
+              <Users size={18} className="text-sky-300" />
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {joinedCommunities.slice(0, 3).map(({ creator, tierName }) => (
+                <button
+                  key={creator.id}
+                  onClick={() => navigate(`/creator/${creator.id}`)}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <p className="font-semibold text-sm">{creator.name} Inner Circle</p>
+                      <p className="text-xs text-olu-muted mt-1">Community</p>
+                    </div>
+                    <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{tierName}</span>
+                  </div>
+                  <p className="text-sm text-white/72 line-clamp-2">{creator.bio || 'Open member spaces, new drops, and recurring discussions.'}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm text-white/72">
+                    Open app
+                    <ChevronRight size={15} />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {relatedPosts.length > 0 ? (
+          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Updates</p>
+                <h2 className="font-bold text-xl">New from your apps</h2>
+              </div>
+              <Flame size={18} className="text-orange-300" />
+            </div>
+            <div className="space-y-3">
+              {relatedPosts.map((post) => (
+                <button
+                  key={post.id}
+                  onClick={() => navigate(`/content/${post.id}`)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-sm">{post.title}</p>
+                      <p className="text-xs text-olu-muted mt-1">{post.creator?.name || 'Community host'} · Community</p>
+                    </div>
+                    {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> Members</span> : null}
+                  </div>
+                  <p className="text-sm text-white/72 mt-3 line-clamp-2">{post.preview}</p>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="grid lg:grid-cols-2 gap-4">
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended communities</p>
+                <h2 className="font-bold text-xl">Join another creator circle</h2>
+              </div>
+              <Crown size={18} className="text-amber-300" />
+            </div>
+            <div className="space-y-3">
+              {recommendedCommunities.map((creator) => (
+                <button
+                  key={creator.id}
+                  onClick={() => navigate(`/creator/${creator.id}`)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <p className="font-semibold text-sm">{creator.name} Inner Circle</p>
+                  <p className="text-xs text-olu-muted mt-1">Community</p>
+                  <p className="text-sm text-white/72 mt-2 line-clamp-2">{creator.bio || 'Membership, circles, and recurring updates.'}</p>
+                </button>
+              ))}
+              {!loading && recommendedCommunities.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+                  No new community apps to suggest right now.
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended academies</p>
+                <h2 className="font-bold text-xl">Pick your next academy</h2>
+              </div>
+              <BookOpen size={18} className="text-emerald-300" />
+            </div>
+            <div className="space-y-3">
+              {recommendedAcademies.map((course) => (
+                <button
+                  key={course.id}
+                  onClick={() => navigate(`/courses/${course.slug}`)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-sm">{course.instructor} Academy</p>
+                      <p className="text-xs text-olu-muted mt-1">{course.title}</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">${course.price}</span>
+                  </div>
+                  <p className="text-sm text-white/72 mt-2 line-clamp-2">{course.subtitle}</p>
+                </button>
+              ))}
+              {!loading && recommendedAcademies.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+                  No new academy apps to suggest right now.
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
       </div>
-      {consumerTemplate === 'sell_courses' ? <CoursesHome /> : <CommunityHome />}
     </div>
   )
 }

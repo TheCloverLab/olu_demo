@@ -1,27 +1,60 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Compass, Search, Sparkles, Users } from 'lucide-react'
-import { useApp } from '../../../context/AppContext'
+import { BookOpen, Compass, Crown, Search, Sparkles } from 'lucide-react'
+import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCreators } from '../../../services/api'
+
+type DiscoverApp = {
+  id: string
+  type: 'community' | 'academy'
+  title: string
+  creatorName: string
+  summary: string
+  priceLabel: string
+  href: string
+}
 
 export default function Discover() {
   const navigate = useNavigate()
-  const { consumerTemplate } = useApp()
   const [query, setQuery] = useState('')
-  const [creators, setCreators] = useState<any[]>([])
+  const [apps, setApps] = useState<DiscoverApp[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadCreators() {
+    async function loadDiscover() {
       try {
-        const data = await getCreators()
-        if (!cancelled) {
-          setCreators(data)
-        }
+        const [creators, courseSnapshot] = await Promise.all([
+          getCreators(),
+          getCourseLibrarySnapshot(),
+        ])
+
+        if (cancelled) return
+
+        const communityApps: DiscoverApp[] = creators.map((creator) => ({
+          id: `community-${creator.id}`,
+          type: 'community',
+          title: `${creator.name} Inner Circle`,
+          creatorName: creator.name,
+          summary: creator.bio || 'Membership, recurring circles, and creator-only drops.',
+          priceLabel: 'Membership',
+          href: `/creator/${creator.id}`,
+        }))
+
+        const academyApps: DiscoverApp[] = courseSnapshot.courses.map((course) => ({
+          id: `academy-${course.id}`,
+          type: 'academy',
+          title: `${course.instructor} Academy`,
+          creatorName: course.instructor,
+          summary: course.subtitle,
+          priceLabel: `$${course.price}`,
+          href: `/courses/${course.slug}`,
+        }))
+
+        setApps([...communityApps, ...academyApps])
       } catch (error) {
-        console.error('Failed to load creators for discover', error)
+        console.error('Failed to load discover', error)
       } finally {
         if (!cancelled) {
           setLoading(false)
@@ -29,28 +62,25 @@ export default function Discover() {
       }
     }
 
-    loadCreators()
+    loadDiscover()
     return () => {
       cancelled = true
     }
   }, [])
 
-  const filteredCreators = useMemo(() => {
+  const filteredApps = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    if (!normalized) return creators
-    return creators.filter((creator) => (
-      creator.name?.toLowerCase().includes(normalized)
-      || creator.handle?.toLowerCase().includes(normalized)
-      || creator.bio?.toLowerCase().includes(normalized)
+    if (!normalized) return apps
+    return apps.filter((app) => (
+      app.title.toLowerCase().includes(normalized)
+      || app.creatorName.toLowerCase().includes(normalized)
+      || app.summary.toLowerCase().includes(normalized)
+      || app.type.toLowerCase().includes(normalized)
     ))
-  }, [creators, query])
+  }, [apps, query])
 
-  const discoverTitle = consumerTemplate === 'fan_community' ? 'Discover community apps' : 'Discover academy apps'
-  const discoverDescription = consumerTemplate === 'fan_community'
-    ? 'Find creators with memberships, circles, and recurring community rituals.'
-    : 'Find creators with structured lessons, catalogs, and continuing learning paths.'
-  const primaryChip = consumerTemplate === 'fan_community' ? 'Membership-first' : 'Structured learning'
-  const secondaryChip = consumerTemplate === 'fan_community' ? 'Creator recommendations' : 'Course launches'
+  const recommendedCommunities = filteredApps.filter((app) => app.type === 'community').slice(0, 4)
+  const recommendedAcademies = filteredApps.filter((app) => app.type === 'academy').slice(0, 4)
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -59,10 +89,12 @@ export default function Discover() {
           <Compass size={14} />
           Discover
         </div>
-        <h1 className="font-black text-2xl md:text-4xl max-w-3xl leading-tight">{discoverTitle}</h1>
-        <p className="text-cyan-100/60 text-sm md:text-base max-w-2xl mt-3">{discoverDescription}</p>
+        <h1 className="font-black text-2xl md:text-4xl max-w-3xl leading-tight">Recommended apps across OLU</h1>
+        <p className="text-cyan-100/60 text-sm md:text-base max-w-2xl mt-3">
+          Browse community apps and academy apps from different creators. Discover is for recommendation. Home is for the apps you already joined or bought.
+        </p>
         <div className="flex flex-wrap gap-2 mt-5">
-          {[primaryChip, secondaryChip, 'Browse by creator'].map((chip) => (
+          {['Community', 'Academy', 'Creator-led'].map((chip) => (
             <span key={chip} className="rounded-full border border-cyan-500/10 bg-white/5 px-3 py-1.5 text-xs text-cyan-100/70">
               {chip}
             </span>
@@ -73,63 +105,100 @@ export default function Discover() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search creator, handle, or theme"
+            placeholder="Search app, creator, or theme"
             className="w-full bg-transparent outline-none text-sm text-white placeholder:text-cyan-100/35"
           />
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4">
+      <section className="grid lg:grid-cols-2 gap-4">
         <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-amber-300" />
-            <p className="font-bold">Recommended right now</p>
+            <Crown size={16} className="text-amber-300" />
+            <p className="font-bold">Community apps</p>
           </div>
           <div className="space-y-3">
-            {(loading ? [] : filteredCreators.slice(0, 3)).map((creator) => (
+            {recommendedCommunities.map((app) => (
               <button
-                key={creator.id}
-                onClick={() => navigate(`/creator/${creator.id}`)}
+                key={app.id}
+                onClick={() => navigate(app.href)}
                 className="w-full rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-sm">{creator.name}</p>
-                    <p className="text-xs text-cyan-100/45 mt-1">{creator.handle}</p>
-                    <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{creator.bio || 'No description yet.'}</p>
+                    <p className="font-semibold text-sm">{app.title}</p>
+                    <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
+                    <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
                   </div>
                   <span className="rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-100/70">
-                    {consumerTemplate === 'fan_community' ? 'Community' : 'Academy'}
+                    Community
                   </span>
                 </div>
               </button>
             ))}
-            {!loading && filteredCreators.length === 0 && (
+            {!loading && recommendedCommunities.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
-                No creators matched your search yet.
+                No community apps matched your search.
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
         <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Users size={16} className="text-cyan-300" />
-            <p className="font-bold">How discovery works</p>
+            <BookOpen size={16} className="text-emerald-300" />
+            <p className="font-bold">Academy apps</p>
           </div>
           <div className="space-y-3">
-            {[
-              'Browse creators in the current app shape first, then enter a creator app.',
-              'Use creator bio, handle, and recommendations to narrow who feels worth following.',
-              consumerTemplate === 'fan_community'
-                ? 'After entering an app, the next actions are membership, circles, and member posts.'
-                : 'After entering an app, the next actions are catalog, checkout, and learning.',
-            ].map((item) => (
-              <div key={item} className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-sm text-cyan-50/80">
-                {item}
-              </div>
+            {recommendedAcademies.map((app) => (
+              <button
+                key={app.id}
+                onClick={() => navigate(app.href)}
+                className="w-full rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-sm">{app.title}</p>
+                    <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
+                    <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
+                  </div>
+                  <span className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-100/75">
+                    {app.priceLabel}
+                  </span>
+                </div>
+              </button>
             ))}
+            {!loading && recommendedAcademies.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
+                No academy apps matched your search.
+              </div>
+            ) : null}
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles size={16} className="text-cyan-300" />
+          <p className="font-bold">Recommended right now</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-3">
+          {filteredApps.slice(0, 3).map((app) => (
+            <button
+              key={app.id}
+              onClick={() => navigate(app.href)}
+              className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-semibold text-sm">{app.title}</p>
+                <span className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/65">
+                  {app.type === 'community' ? 'Community' : 'Academy'}
+                </span>
+              </div>
+              <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
+              <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
+            </button>
+          ))}
         </div>
       </section>
     </div>

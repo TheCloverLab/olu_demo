@@ -75,7 +75,7 @@ export default function Profile() {
         if (!cancelled) {
           setLearningSummary({
             purchasedCount: purchasedSlugs.length,
-            featuredCourseTitle: featuredCourse?.title || 'Course app',
+            featuredCourseTitle: featuredCourse?.title || 'Academy',
             featuredProgressLabel,
           })
           setMembershipName(null)
@@ -184,7 +184,7 @@ export default function Profile() {
           <div className="mb-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
             <p className="font-semibold text-sm mt-1">
-              {consumerTemplate === 'fan_community' ? 'Community app' : 'Course app'}
+              {consumerTemplate === 'fan_community' ? 'Community' : 'Academy'}
             </p>
             <p className="text-xs text-olu-muted mt-1">
               {consumerTemplate === 'fan_community'

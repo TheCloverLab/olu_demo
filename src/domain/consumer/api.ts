@@ -242,17 +242,17 @@ export function getConsumerExperience(
   return {
     templateKey,
     profile: {
-      title: templateKey === 'sell_courses' ? 'Course App' : 'Community App',
+      title: templateKey === 'sell_courses' ? 'Academy' : 'Community',
       description:
         templateKey === 'sell_courses'
-          ? `${name} is currently browsing the course app experience.`
-          : `${name} is currently browsing the community app experience.`,
+          ? `${name} is currently browsing the academy experience.`
+          : `${name} is currently browsing the community experience.`,
       ctaLabel: templateKey === 'sell_courses' ? 'Open catalog' : 'Open membership',
       ctaHref: templateKey === 'sell_courses' ? '/courses' : '/membership',
     },
     community: {
       hero: {
-        eyebrow: 'Fan Community',
+        eyebrow: 'Community',
         title: communityHeroTitle,
         description: communityHeroDescription,
         stats: [

@@ -142,7 +142,7 @@ describe('BusinessSettings', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Consumer app')).toBeInTheDocument()
-      expect(screen.getByText('Fan Community')).toBeInTheDocument()
+      expect(screen.getByText('Community')).toBeInTheDocument()
       expect(screen.getByText('Current app')).toBeInTheDocument()
     })
   })

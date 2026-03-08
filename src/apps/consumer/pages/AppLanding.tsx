@@ -80,7 +80,7 @@ export default function AppLanding() {
   const appCopy = useMemo(() => {
     if (consumerTemplate === 'fan_community') {
       return {
-        eyebrow: 'Community App',
+        eyebrow: 'Community',
         titleSuffix: 'Inner Circle',
         summary: 'Join recurring conversations, member-only drops, and creator rituals that stay alive every week.',
         primaryCta: membershipStatus ? 'Open membership' : 'Join membership',
@@ -101,7 +101,7 @@ export default function AppLanding() {
     }
 
     return {
-      eyebrow: 'Course App',
+      eyebrow: 'Academy',
       titleSuffix: 'Academy',
       summary: 'Browse structured lessons, outcome-led curriculum, and a course flow designed for repeat learning.',
       primaryCta: hasCourseAccess ? 'Open learning' : 'Browse catalog',

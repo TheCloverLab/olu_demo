@@ -45,7 +45,7 @@ export default function Discover() {
     ))
   }, [creators, query])
 
-  const discoverTitle = consumerTemplate === 'fan_community' ? 'Discover community apps' : 'Discover course apps'
+  const discoverTitle = consumerTemplate === 'fan_community' ? 'Discover community apps' : 'Discover academy apps'
   const discoverDescription = consumerTemplate === 'fan_community'
     ? 'Find creators with memberships, circles, and recurring community rituals.'
     : 'Find creators with structured lessons, catalogs, and continuing learning paths.'
@@ -99,7 +99,7 @@ export default function Discover() {
                     <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{creator.bio || 'No description yet.'}</p>
                   </div>
                   <span className="rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-100/70">
-                    {consumerTemplate === 'fan_community' ? 'Community app' : 'Course app'}
+                    {consumerTemplate === 'fan_community' ? 'Community' : 'Academy'}
                   </span>
                 </div>
               </button>

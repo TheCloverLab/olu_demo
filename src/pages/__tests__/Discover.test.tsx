@@ -38,7 +38,7 @@ describe('Discover', () => {
     await waitFor(() => {
       expect(screen.getByText('Discover community apps')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen')).toBeInTheDocument()
-      expect(screen.getAllByText('Community app').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Community').length).toBeGreaterThan(0)
     })
   })
 

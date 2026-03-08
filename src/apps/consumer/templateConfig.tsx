@@ -18,18 +18,18 @@ export const CONSUMER_TEMPLATE_META: Record<ConsumerTemplateKey, {
   homeTitle: string
 }> = {
   fan_community: {
-    label: 'Fan Community',
+    label: 'Community',
     shortLabel: 'Community',
     description: 'Membership, topics, and fan interaction',
     accent: 'from-rose-500 via-fuchsia-500 to-orange-400',
     homeTitle: 'Community',
   },
   sell_courses: {
-    label: 'Sell Courses',
-    shortLabel: 'Courses',
+    label: 'Academy',
+    shortLabel: 'Academy',
     description: 'Course catalog, chapters, and learning progress',
     accent: 'from-sky-500 via-cyan-400 to-emerald-400',
-    homeTitle: 'Courses',
+    homeTitle: 'Academy',
   },
 }
 

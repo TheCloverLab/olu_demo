@@ -124,7 +124,7 @@ describe('Profile', () => {
 
     await waitFor(() => {
       expect(screen.getByText('My Access')).toBeInTheDocument()
-      expect(screen.getByText('Community app')).toBeInTheDocument()
+      expect(screen.getByText('Community')).toBeInTheDocument()
       expect(screen.getByText('Membership access')).toBeInTheDocument()
       expect(screen.getByText(/You are browsing the app as a visitor/)).toBeInTheDocument()
       expect(screen.getByText(/1.8K active fans across 4.2K total members/)).toBeInTheDocument()
@@ -159,7 +159,7 @@ describe('Profile', () => {
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Course app')).toBeInTheDocument()
+      expect(screen.getByText('Academy')).toBeInTheDocument()
       expect(screen.getByText('My learning')).toBeInTheDocument()
       expect(screen.getByText('1/2 lessons completed')).toBeInTheDocument()
       expect(screen.getByText('1 purchased course in this app.')).toBeInTheDocument()

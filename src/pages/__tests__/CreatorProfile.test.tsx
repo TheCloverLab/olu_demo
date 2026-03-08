@@ -73,7 +73,7 @@ describe('AppLanding', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Community App')).toBeInTheDocument()
+      expect(screen.getByText('Community')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Join membership/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Recent drops/i })).toBeInTheDocument()
@@ -89,7 +89,7 @@ describe('AppLanding', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Course App')).toBeInTheDocument()
+      expect(screen.getByText('Academy')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Academy')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Browse catalog/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Curriculum/i })).toBeInTheDocument()

@@ -55,7 +55,7 @@ const communityExperience = {
   },
   community: {
     hero: {
-      eyebrow: 'Fan Community',
+      eyebrow: 'Community',
       title: 'A place for members, rituals, and conversations that stay alive every week.',
       description: 'Join creator spaces.',
       stats: [

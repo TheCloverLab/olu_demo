@@ -190,9 +190,11 @@ export default function BusinessLayout() {
             <button onClick={() => setMenuOpen(true)} className="md:hidden p-1.5">
               <Menu size={22} />
             </button>
-            <div>
-              <h1 className="font-black text-lg md:text-xl">{activeModuleLabel || 'Business'}</h1>
-              <p className="text-cyan-100/60 text-xs md:text-sm">Enterprise workspace and agent operations</p>
+            <div className="min-w-0">
+              <p className="md:hidden font-black text-lg">{activeModuleLabel || 'Business'}</p>
+              <p className="hidden md:block text-cyan-100/45 text-xs tracking-[0.16em] uppercase">
+                Workspace / {activeModuleLabel || 'Business'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -447,7 +447,7 @@ export default function TeamChat() {
     <div className="flex flex-col h-full max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-olu-border flex-shrink-0">
-        <button onClick={() => navigate('/team')} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors mr-1">
+        <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors mr-1">
           <ArrowLeft size={18} className="text-olu-muted" />
         </button>
         <div className="relative flex-shrink-0">

@@ -48,7 +48,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
   return (
     <motion.button
       whileHover={{ x: 4 }}
-      onClick={() => navigate(`/team/${agent.agent_key || agent.id}`)}
+      onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
       className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
     >
       <div className="relative flex-shrink-0">
@@ -90,7 +90,7 @@ function GroupRow({ group }: { group: GroupChat }) {
   return (
     <motion.button
       whileHover={{ x: 4 }}
-      onClick={() => navigate(`/team/grp-${group.chat_key || group.id}`)}
+      onClick={() => navigate(`/business/team/grp-${group.chat_key || group.id}`)}
       className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
     >
       <div className="relative flex-shrink-0">
@@ -169,7 +169,7 @@ export default function Team() {
         </p>
         <button
           onClick={() => {
-            window.location.href = '/ai-config'
+            window.location.href = '/business/agents'
           }}
           className="px-6 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:opacity-90 transition-opacity"
         >

@@ -15,6 +15,8 @@ import CourseCatalog from './pages/CourseCatalog'
 import Learn from './pages/Learn'
 import Checkout from './pages/Checkout'
 import LearningHub from './pages/LearningHub'
+import Subscriptions from './pages/Subscriptions'
+import Wallet from './pages/Wallet'
 import Settings from '../../pages/Settings'
 import RoleProtected from '../../components/auth/RoleProtected'
 
@@ -40,6 +42,8 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'checkout/:courseSlug', element: <Checkout /> },
       { path: 'learning', element: <LearningHub /> },
       { path: 'profile', element: <UserCenter /> },
+      { path: 'subscriptions', element: <Subscriptions /> },
+      { path: 'wallet', element: <Wallet /> },
       { path: 'settings', element: <Settings /> },
       { path: 'shop', element: <Shop /> },
     ],

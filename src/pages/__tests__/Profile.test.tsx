@@ -109,6 +109,7 @@ describe('Profile', () => {
       expect(screen.getByText('Memberships, learning, and settings')).toBeInTheDocument()
       expect(screen.getByText('Subscriptions & account settings')).toBeInTheDocument()
       expect(screen.getByText('Public profile')).toBeInTheDocument()
+      expect(screen.getByText('Wallet & payments')).toBeInTheDocument()
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getAllByText('Academies in progress').length).toBeGreaterThan(0)
       expect(screen.getByText('Jump back in')).toBeInTheDocument()

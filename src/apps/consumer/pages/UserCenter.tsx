@@ -215,14 +215,23 @@ export default function UserCenter() {
             </div>
             <Settings size={18} className="text-white/45" />
           </div>
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-3 gap-3">
             <button
-              onClick={() => navigate(joinedCommunities.length > 0 ? `/membership` : '/discover')}
+              onClick={() => navigate('/subscriptions')}
               className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
             >
               <p className="font-semibold text-sm">Subscriptions</p>
               <p className="text-xs text-olu-muted mt-1">
                 Review active memberships and renew what you want to keep.
+              </p>
+            </button>
+            <button
+              onClick={() => navigate('/wallet')}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <p className="font-semibold text-sm">Wallet & payments</p>
+              <p className="text-xs text-olu-muted mt-1">
+                See recent purchases, membership charges, and payment activity.
               </p>
             </button>
             <button

@@ -12,6 +12,51 @@ type DiscoverApp = {
   summary: string
   priceLabel: string
   href: string
+  coverImg?: string
+  gradient: string
+  highlights: string[]
+}
+
+function DiscoverCard({
+  app,
+  onOpen,
+}: {
+  app: DiscoverApp
+  onOpen: () => void
+}) {
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#0d1726] text-left hover:bg-[#112034] transition-colors"
+    >
+      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
+        {app.coverImg ? <img src={app.coverImg} alt={app.title} className="h-full w-full object-cover" /> : null}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#06101d] via-[#06101d]/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/55">{app.type === 'community' ? 'Community' : 'Academy'}</p>
+              <p className="mt-1 text-lg font-black text-white">{app.title}</p>
+              <p className="mt-1 text-xs text-cyan-100/55">{app.creatorName}</p>
+            </div>
+            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] text-white/75">
+              {app.priceLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="p-4">
+        <p className="text-sm text-cyan-50/75 line-clamp-2">{app.summary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {app.highlights.map((item) => (
+            <span key={item} className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/70">
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </button>
+  )
 }
 
 export default function Discover() {
@@ -32,6 +77,8 @@ export default function Discover() {
 
         if (cancelled) return
 
+        const creatorByName = new Map(creators.map((creator) => [creator.name, creator]))
+
         const communityApps: DiscoverApp[] = creators.map((creator) => ({
           id: `community-${creator.id}`,
           type: 'community',
@@ -40,6 +87,9 @@ export default function Discover() {
           summary: creator.bio || 'Membership, recurring community discussions, and creator-only drops.',
           priceLabel: 'Membership',
           href: `/creator/${creator.id}`,
+          coverImg: creator.cover_img,
+          gradient: creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500',
+          highlights: ['Weekly drops', 'Private topics', 'Live sessions'],
         }))
 
         const academyApps: DiscoverApp[] = courseSnapshot.courses.map((course) => ({
@@ -50,6 +100,9 @@ export default function Discover() {
           summary: course.subtitle,
           priceLabel: `$${course.price}`,
           href: `/courses/${course.slug}`,
+          coverImg: creatorByName.get(course.instructor)?.cover_img,
+          gradient: course.hero,
+          highlights: course.sections?.slice(0, 3).map((section) => section.title) || ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
         }))
 
         setApps([...communityApps, ...academyApps])
@@ -119,22 +172,7 @@ export default function Discover() {
           </div>
           <div className="space-y-3">
             {recommendedCommunities.map((app) => (
-              <button
-                key={app.id}
-                onClick={() => navigate(app.href)}
-                className="w-full rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-sm">{app.title}</p>
-                    <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
-                    <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
-                  </div>
-                  <span className="rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-100/70">
-                    Community
-                  </span>
-                </div>
-              </button>
+              <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
             ))}
             {!loading && recommendedCommunities.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
@@ -151,22 +189,7 @@ export default function Discover() {
           </div>
           <div className="space-y-3">
             {recommendedAcademies.map((app) => (
-              <button
-                key={app.id}
-                onClick={() => navigate(app.href)}
-                className="w-full rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-sm">{app.title}</p>
-                    <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
-                    <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
-                  </div>
-                  <span className="rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-100/75">
-                    {app.priceLabel}
-                  </span>
-                </div>
-              </button>
+              <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
             ))}
             {!loading && recommendedAcademies.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
@@ -187,16 +210,24 @@ export default function Discover() {
             <button
               key={app.id}
               onClick={() => navigate(app.href)}
-              className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-left hover:bg-[#112034] transition-colors"
+              className="overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#0d1726] text-left hover:bg-[#112034] transition-colors"
             >
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold text-sm">{app.title}</p>
-                <span className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/65">
-                  {app.type === 'community' ? 'Community' : 'Academy'}
-                </span>
+              <div className={`relative h-32 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
+                {app.coverImg ? <img src={app.coverImg} alt={app.title} className="h-full w-full object-cover" /> : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#06101d] via-[#06101d]/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-sm text-white">{app.title}</p>
+                    <span className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/65">
+                      {app.type === 'community' ? 'Community' : 'Academy'}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-cyan-100/45 mt-1">{app.creatorName}</p>
-              <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
+              <div className="p-4">
+                <p className="text-xs text-cyan-100/45">{app.creatorName}</p>
+                <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
+              </div>
             </button>
           ))}
         </div>

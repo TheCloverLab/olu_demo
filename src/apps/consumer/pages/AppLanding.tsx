@@ -97,6 +97,16 @@ export default function AppLanding() {
           { key: 'content', label: 'Recent drops', icon: FileText },
           { key: 'access', label: 'Membership', icon: Crown },
         ] as const,
+        included: [
+          'Member-only updates and creator notes',
+          'Private topics with recurring discussion',
+          'Live sessions and priority Q&A',
+        ],
+        nowLive: [
+          posts[0]?.title || 'Weekly critique thread',
+          posts[1]?.title || 'Backstage drop preview',
+          'Members chat and event calendar',
+        ],
       }
     }
 
@@ -118,6 +128,16 @@ export default function AppLanding() {
         { key: 'content', label: 'Curriculum', icon: FileText },
         { key: 'access', label: 'Offer', icon: ShoppingBag },
       ] as const,
+      included: [
+        'Structured lessons and clear outcomes',
+        'Self-paced chapters with progress tracking',
+        'Templates, examples, and rewatchable sessions',
+      ],
+      nowLive: [
+        posts[0]?.title || 'Course walkthrough and module notes',
+        products[0]?.name || 'Course bundle and workbook',
+        'Learning hub with next-lesson flow',
+      ],
     }
   }, [consumerTemplate, membershipStatus, hasCourseAccess, tiers, posts.length, products.length, creator?.followers])
 
@@ -220,25 +240,11 @@ export default function AppLanding() {
       <div className="px-4">
         {tab === 'overview' && (
           <div className="space-y-4">
-            <div className="glass rounded-2xl p-5">
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Why enter this app</p>
-              <p className="text-sm text-olu-muted leading-relaxed">{appCopy.summary}</p>
-            </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="glass rounded-2xl p-5">
-                <p className="font-semibold text-sm mb-2">{consumerTemplate === 'fan_community' ? 'What you unlock' : 'What you get'}</p>
+                <p className="font-semibold text-sm mb-2">{consumerTemplate === 'fan_community' ? 'Included with membership' : 'Included in the academy'}</p>
                 <div className="space-y-2 text-sm text-olu-muted">
-                  {(consumerTemplate === 'fan_community'
-                    ? [
-                        'Member-only community rooms and recurring discussion spaces.',
-                        'Membership tiers with different levels of access.',
-                        'Recent creator drops and recurring community rituals.',
-                      ]
-                    : [
-                        'Structured course catalog and lesson flow.',
-                        'Learning progress after purchase.',
-                        'A clear path from browsing to checkout to learning.',
-                      ]).map((item) => (
+                  {appCopy.included.map((item) => (
                     <div key={item} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2">
                       {item}
                     </div>
@@ -246,13 +252,9 @@ export default function AppLanding() {
                 </div>
               </div>
               <div className="glass rounded-2xl p-5">
-                <p className="font-semibold text-sm mb-2">Next actions</p>
+                <p className="font-semibold text-sm mb-2">Inside right now</p>
                 <div className="space-y-2 text-sm text-olu-muted">
-                  {[
-                    `Start with ${appCopy.primaryCta.toLowerCase()}.`,
-                    consumerTemplate === 'fan_community' ? 'Browse topics after joining.' : 'Continue into learning after purchase.',
-                    'Use chat to message the creator when you need context.',
-                  ].map((item) => (
+                  {appCopy.nowLive.map((item) => (
                     <div key={item} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2">
                       {item}
                     </div>

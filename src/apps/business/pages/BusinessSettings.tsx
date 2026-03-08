@@ -215,33 +215,61 @@ export default function BusinessSettings() {
     } : current)
   }
 
-  function parseTopicEntries(value: string) {
-    return value
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line, index) => {
-        const [name, members, description] = line.split('|').map((item) => item?.trim() || '')
-        return {
-          id: `custom-topic-${index + 1}`,
-          name,
-          members,
-          description,
-        }
-      })
-      .filter((item) => item.name && item.members && item.description)
+  function getTopicEntries() {
+    if (!Array.isArray(currentConsumerConfig.community_topic_entries)) return []
+    return currentConsumerConfig.community_topic_entries.map((entry: any, index: number) => ({
+      id: typeof entry?.id === 'string' && entry.id.trim().length > 0 ? entry.id : `custom-topic-${index + 1}`,
+      name: typeof entry?.name === 'string' ? entry.name : '',
+      members: typeof entry?.members === 'string' ? entry.members : '',
+      description: typeof entry?.description === 'string' ? entry.description : '',
+    }))
   }
 
-  function stringifyTopicEntries(value: any) {
-    if (!Array.isArray(value) || value.length === 0) return ''
-    return value
-      .map((item) => [item?.name, item?.members, item?.description].map((part) => part || '').join(' | '))
-      .join('\n')
+  function updateTopicEntries(entries: Array<{ id: string; name: string; members: string; description: string }>) {
+    handleConsumerConfigChange({ community_topic_entries: entries })
+  }
+
+  function handleTopicEntryChange(index: number, field: 'name' | 'members' | 'description', value: string) {
+    const entries = getTopicEntries()
+    updateTopicEntries(entries.map((entry, entryIndex) => (
+      entryIndex === index
+        ? { ...entry, [field]: value }
+        : entry
+    )))
+  }
+
+  function handleCreateTopicEntry() {
+    const entries = getTopicEntries()
+    updateTopicEntries([
+      ...entries,
+      {
+        id: `custom-topic-${Date.now()}`,
+        name: 'New circle',
+        members: '0',
+        description: 'Describe what members gather here to do together.',
+      },
+    ])
+  }
+
+  function handleMoveTopicEntry(index: number, direction: -1 | 1) {
+    const entries = getTopicEntries()
+    const targetIndex = index + direction
+    if (targetIndex < 0 || targetIndex >= entries.length) return
+    const next = [...entries]
+    const [entry] = next.splice(index, 1)
+    next.splice(targetIndex, 0, entry)
+    updateTopicEntries(next)
+  }
+
+  function handleRemoveTopicEntry(index: number) {
+    updateTopicEntries(getTopicEntries().filter((_, entryIndex) => entryIndex !== index))
   }
 
   if (loading) {
     return <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 text-cyan-100/60">Loading workspace settings...</div>
   }
+
+  const topicEntries = getTopicEntries()
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -506,18 +534,94 @@ export default function BusinessSettings() {
                   className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
                 />
               </label>
-              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
-                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Community topics</p>
-                <textarea
-                  aria-label="Community topics"
-                  value={stringifyTopicEntries(currentConsumerConfig.community_topic_entries)}
-                  onChange={(event) => handleConsumerConfigChange({ community_topic_entries: parseTopicEntries(event.target.value) })}
-                  placeholder="Weekly Critique Room | 1.8K | Members post work-in-progress and get feedback"
-                  rows={5}
-                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
-                />
-                <p className="text-[11px] text-cyan-100/45 mt-2">One topic per line. Format: name | members | description</p>
-              </label>
+              <div className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55">Community topics</p>
+                    <p className="text-[11px] text-cyan-100/45 mt-1">Create, reorder, and remove the circles shown on the public community page.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCreateTopicEntry}
+                    className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15"
+                  >
+                    New topic
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {topicEntries.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-5 text-sm text-cyan-100/50">
+                      No topics configured yet.
+                    </div>
+                  ) : (
+                    topicEntries.map((entry, index) => (
+                      <div key={entry.id} className="rounded-2xl border border-cyan-500/10 bg-[#091422] p-3 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold">Topic {index + 1}</p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveTopicEntry(index, -1)}
+                              disabled={index === 0}
+                              className="rounded-full border border-cyan-500/10 px-2.5 py-1 text-[11px] text-cyan-100/70 disabled:opacity-40"
+                            >
+                              Up
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveTopicEntry(index, 1)}
+                              disabled={index === topicEntries.length - 1}
+                              className="rounded-full border border-cyan-500/10 px-2.5 py-1 text-[11px] text-cyan-100/70 disabled:opacity-40"
+                            >
+                              Down
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTopicEntry(index)}
+                              className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[11px] text-red-100"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <label className="block">
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/45 mb-1.5">Name</p>
+                            <input
+                              aria-label={`Topic name ${index + 1}`}
+                              value={entry.name}
+                              onChange={(event) => handleTopicEntryChange(index, 'name', event.target.value)}
+                              placeholder="Weekly Critique Room"
+                              className="w-full rounded-xl bg-[#07111d] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                            />
+                          </label>
+                          <label className="block">
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/45 mb-1.5">Members</p>
+                            <input
+                              aria-label={`Topic members ${index + 1}`}
+                              value={entry.members}
+                              onChange={(event) => handleTopicEntryChange(index, 'members', event.target.value)}
+                              placeholder="1.8K"
+                              className="w-full rounded-xl bg-[#07111d] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                            />
+                          </label>
+                        </div>
+                        <label className="block">
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-100/45 mb-1.5">Description</p>
+                          <textarea
+                            aria-label={`Topic description ${index + 1}`}
+                            value={entry.description}
+                            onChange={(event) => handleTopicEntryChange(index, 'description', event.target.value)}
+                            rows={3}
+                            placeholder="Members post work-in-progress and get feedback."
+                            className="w-full rounded-xl bg-[#07111d] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                          />
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-3 mt-3">
               <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BusinessSettings from '../BusinessSettings'
@@ -215,20 +215,95 @@ describe('BusinessSettings', () => {
 
     await user.type(await screen.findByLabelText(/Community hero title/i), 'Members first')
     await user.type(screen.getByLabelText(/Membership title/i), 'Inner circle')
-    fireEvent.change(screen.getByLabelText(/Community topics/i), {
-      target: { value: 'Office Hours | 320 | Weekly critique' },
-    })
+    await user.click(screen.getByRole('button', { name: /New topic/i }))
+    await user.clear(screen.getByLabelText(/Topic name 1/i))
+    await user.type(screen.getByLabelText(/Topic name 1/i), 'Office Hours')
+    await user.clear(screen.getByLabelText(/Topic members 1/i))
+    await user.type(screen.getByLabelText(/Topic members 1/i), '320')
+    await user.clear(screen.getByLabelText(/Topic description 1/i))
+    await user.type(screen.getByLabelText(/Topic description 1/i), 'Weekly critique')
 
     expect(setConsumerConfig).toHaveBeenCalledWith({ community_hero_title: 'Members first' })
     expect(setConsumerConfig).toHaveBeenCalledWith({ community_membership_title: 'Inner circle' })
-    expect(setConsumerConfig).toHaveBeenCalledWith({
+    expect(setConsumerConfig).toHaveBeenLastCalledWith({
       community_topic_entries: [
         {
-          id: 'custom-topic-1',
+          id: expect.stringMatching(/^custom-topic-/),
           name: 'Office Hours',
           members: '320',
           description: 'Weekly critique',
         },
+      ],
+    })
+  })
+
+  it('supports reordering and removing configured topics', async () => {
+    const user = userEvent.setup()
+    const setConsumerConfig = vi.fn()
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'creator',
+      currentUser: { name: 'Alice' },
+      availableRoles: ['creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {
+        community_topic_entries: [
+          { id: 'topic-1', name: 'Office Hours', members: '320', description: 'Weekly critique' },
+          { id: 'topic-2', name: 'Launch Reviews', members: '120', description: 'Shipping feedback' },
+        ],
+      },
+      consumerTemplate: 'fan_community',
+      setConsumerConfig,
+      setConsumerTemplate: vi.fn(),
+      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+    vi.mocked(WorkspaceApi.getWorkspaceSettingsForUser).mockResolvedValue({
+      workspace: { id: 'ws-1', name: 'Alice Workspace', slug: 'alice-workspace', owner_user_id: 'user-1', status: 'active' },
+      membership: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' },
+      modules: [
+        { id: 'm1', workspace_id: 'ws-1', module_key: 'creator_ops', enabled: true },
+        { id: 'm2', workspace_id: 'ws-1', module_key: 'marketing', enabled: true },
+      ],
+      permissions: [],
+      integrations: [],
+      policies: {
+        id: 'po1',
+        workspace_id: 'ws-1',
+        approval_policy: { publish_requires_marketer_approval: true, budget_change_review_threshold: 500 },
+        sandbox_policy: { takeover_mode: 'manual' },
+        notification_policy: { route_publish_events_to_workspace: true },
+      },
+      billing: { id: 'b1', workspace_id: 'ws-1', plan: 'starter', status: 'trial', billing_email: 'alice@example.com' },
+      consumerConfig: {
+        id: 'cc1',
+        workspace_id: 'ws-1',
+        template_key: 'fan_community',
+        config_json: {
+          featured_template: 'fan_community',
+          community_topic_entries: [
+            { id: 'topic-1', name: 'Office Hours', members: '320', description: 'Weekly critique' },
+            { id: 'topic-2', name: 'Launch Reviews', members: '120', description: 'Shipping feedback' },
+          ],
+        },
+      },
+    } as any)
+
+    render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
+
+    await user.click((await screen.findAllByRole('button', { name: /^Up$/i }))[1])
+    expect(setConsumerConfig).toHaveBeenCalledWith({
+      community_topic_entries: [
+        { id: 'topic-2', name: 'Launch Reviews', members: '120', description: 'Shipping feedback' },
+        { id: 'topic-1', name: 'Office Hours', members: '320', description: 'Weekly critique' },
+      ],
+    })
+
+    await user.click(screen.getAllByRole('button', { name: /Remove/i })[0])
+    expect(setConsumerConfig).toHaveBeenLastCalledWith({
+      community_topic_entries: [
+        { id: 'topic-1', name: 'Office Hours', members: '320', description: 'Weekly critique' },
       ],
     })
   })

@@ -100,7 +100,7 @@ describe('Home', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Your apps, updates, and next steps.')).toBeInTheDocument()
+      expect(screen.getByText('Welcome back.')).toBeInTheDocument()
       expect(screen.getAllByText('Continue learning').length).toBeGreaterThan(0)
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getByText('New from your apps')).toBeInTheDocument()
@@ -118,7 +118,7 @@ describe('Home', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Start building your app library.')).toBeInTheDocument()
+      expect(screen.getByText('Find something worth joining.')).toBeInTheDocument()
       expect(screen.getByText('Join another creator circle')).toBeInTheDocument()
       expect(screen.getByText('Pick your next academy')).toBeInTheDocument()
     })

@@ -177,12 +177,12 @@ export default function Home() {
             Home
           </div>
           <h1 className="font-black text-3xl leading-tight max-w-2xl">
-            {activeAppCount > 0 ? 'Your apps, updates, and next steps.' : 'Start building your app library.'}
+            {activeAppCount > 0 ? 'Welcome back.' : 'Find something worth joining.'}
           </h1>
           <p className="text-olu-muted text-sm mt-3 max-w-2xl leading-relaxed">
             {activeAppCount > 0
-              ? 'Home pulls together the community apps you joined and the academy apps you bought, so you can jump back in without hunting through creators one by one.'
-              : 'Once you join communities or buy academies, they show up here with updates, progress, and shortcuts.'}
+              ? 'Your recent apps, access, and updates are all here.'
+              : 'Explore creators, communities, and academies to build your app library.'}
           </p>
           <div className="grid grid-cols-3 gap-3 mt-6">
             {[

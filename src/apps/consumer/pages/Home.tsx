@@ -109,6 +109,7 @@ function CommunityHome() {
   const featuredCreators = creators.slice(0, 4)
   const featuredPosts = posts.slice(0, 5)
   const membershipCtaLabel = activeTierName ? `Current plan: ${activeTierName}` : community.membership.ctaLabel
+  const hasMembership = !!activeTierName
 
   return (
     <div className="pb-24 md:pb-6">
@@ -116,16 +117,28 @@ function CommunityHome() {
         <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,113,133,0.18),transparent_34%),linear-gradient(135deg,#18111b,#0c0a10)] p-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-4">
             <Users size={13} />
-            {community.hero.eyebrow}
+            {hasMembership ? 'Your Community Home' : community.hero.eyebrow}
           </div>
-          <h1 className="font-black text-3xl leading-tight max-w-xl">{community.hero.title}</h1>
+          <h1 className="font-black text-3xl leading-tight max-w-xl">
+            {hasMembership
+              ? `Welcome back${memberStats.hostName ? ` to ${memberStats.hostName}` : ''}.`
+              : community.hero.title}
+          </h1>
           <p className="text-olu-muted text-sm mt-3 max-w-xl leading-relaxed">
-            {community.hero.description}
+            {hasMembership
+              ? 'Your membership is active. Jump back into circles, catch up on new drops, and continue the conversations you already unlocked.'
+              : community.hero.description}
           </p>
           <div className="grid grid-cols-3 gap-3 mt-6">
-            {community.hero.stats.map((item) => (
+            {(hasMembership
+              ? [
+                  { label: 'Current plan', value: activeTierName || 'Member' },
+                  { label: 'Active fans', value: formatNumber(memberStats.activeFans) },
+                  { label: 'Total members', value: formatNumber(memberStats.totalMembers) },
+                ]
+              : community.hero.stats).map((item) => (
               <div key={item.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                <p className="font-black text-2xl">{item.value}</p>
+                <p className={clsx('font-black', hasMembership && item.label === 'Current plan' ? 'text-lg' : 'text-2xl')}>{item.value}</p>
                 <p className="text-xs text-white/60 mt-1">{item.label}</p>
               </div>
             ))}
@@ -137,7 +150,7 @@ function CommunityHome() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Membership</p>
-                <h2 className="font-bold text-xl">{community.membership.title}</h2>
+                <h2 className="font-bold text-xl">{hasMembership ? 'Your access' : community.membership.title}</h2>
               </div>
               <Crown size={18} className="text-amber-300" />
             </div>
@@ -167,7 +180,7 @@ function CommunityHome() {
               onClick={() => navigate('/membership')}
               className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              {membershipCtaLabel}
+              {hasMembership ? 'Manage membership' : membershipCtaLabel}
               <ArrowRight size={16} />
             </button>
           </div>
@@ -175,8 +188,8 @@ function CommunityHome() {
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Topics</p>
-                <h2 className="font-bold text-xl">{community.topics.title}</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Continue with' : 'Topics'}</p>
+                <h2 className="font-bold text-xl">{hasMembership ? 'Your circles' : community.topics.title}</h2>
               </div>
               <MessageCircle size={18} className="text-sky-300" />
             </div>
@@ -202,8 +215,8 @@ function CommunityHome() {
         <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Creator spaces</p>
-                <h2 className="font-bold text-xl">{community.spaces.title}</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Discover more' : 'Creator spaces'}</p>
+                <h2 className="font-bold text-xl">{hasMembership ? 'Other community apps' : community.spaces.title}</h2>
                 {memberStats.hostName && <p className="text-xs text-olu-muted mt-1">Hosted by {memberStats.hostName}</p>}
               </div>
             <button onClick={() => navigate('/topics')} className="text-sm text-white/72 hover:text-white transition-colors">
@@ -235,8 +248,8 @@ function CommunityHome() {
         <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Feed</p>
-              <h2 className="font-bold text-xl">{community.feed.title}</h2>
+              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasMembership ? 'Updates' : 'Feed'}</p>
+              <h2 className="font-bold text-xl">{hasMembership ? 'New from your app' : community.feed.title}</h2>
             </div>
             <Flame size={18} className="text-orange-300" />
           </div>
@@ -371,6 +384,7 @@ function CoursesHome() {
   const heroCourse = featuredCourse || courseLibrary[0]
   const heroPurchased = heroCourse ? purchasedSlugs.includes(heroCourse.slug) : false
   const heroProgress = heroCourse ? computeCourseProgress(heroCourse, progressBySlug[heroCourse.slug] || []) : null
+  const hasPurchasedAny = purchasedSlugs.length > 0
   const heroPrimaryHref = heroCourse
     ? heroPurchased
       ? `/learn/${heroCourse.slug}/${heroProgress?.nextSection?.id || heroCourse.sections[0]?.id}`
@@ -385,10 +399,18 @@ function CoursesHome() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/15 text-xs text-black/70 mb-4">
               <BookOpen size={13} />
-              {courses.catalog.title}
+              {hasPurchasedAny ? 'Your Learning Home' : courses.catalog.title}
             </div>
-            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">{heroCourse?.headline || 'Build and sell a structured course offer.'}</h1>
-            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">{heroCourse?.description || 'Use a course catalog, checkout flow, and learning hub to deliver structured knowledge.'}</p>
+            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">
+              {hasPurchasedAny
+                ? `Continue with ${heroCourse?.title || 'your course library'}.`
+                : heroCourse?.headline || 'Build and sell a structured course offer.'}
+            </h1>
+            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">
+              {hasPurchasedAny
+                ? 'You already own courses in this app. Pick up where you left off, review progress, and keep momentum.'
+                : heroCourse?.description || 'Use a course catalog, checkout flow, and learning hub to deliver structured knowledge.'}
+            </p>
             <div className="flex flex-wrap gap-3 mt-6">
               <button
                 onClick={() => navigate(heroPrimaryHref)}
@@ -400,7 +422,7 @@ function CoursesHome() {
                 onClick={() => heroCourse && navigate(`/courses/${heroCourse.slug}/catalog`)}
                 className="px-5 py-3 rounded-2xl bg-white/70 text-black font-semibold hover:bg-white transition-colors"
               >
-                {courses.detail.catalogLabel}
+                {hasPurchasedAny ? 'Open library' : courses.detail.catalogLabel}
               </button>
             </div>
             {heroPurchased && heroProgress && (
@@ -415,8 +437,8 @@ function CoursesHome() {
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Learning path</p>
-                <h2 className="font-bold text-xl">Start, continue, complete</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Continue with' : 'Learning path'}</p>
+                <h2 className="font-bold text-xl">{hasPurchasedAny ? 'Your next learning step' : 'Start, continue, complete'}</h2>
               </div>
               <PlayCircle size={18} className="text-emerald-300" />
             </div>
@@ -434,15 +456,15 @@ function CoursesHome() {
               ))}
             </div>
             <button onClick={() => navigate('/learning')} className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity">
-              {purchasedSlugs.length > 0 ? 'Open learning dashboard' : 'Browse courses first'}
+              {hasPurchasedAny ? 'Open learning dashboard' : 'Browse courses first'}
             </button>
           </div>
 
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Search</p>
-                <h2 className="font-bold text-xl">Find a course quickly</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Discover more' : 'Search'}</p>
+                <h2 className="font-bold text-xl">{hasPurchasedAny ? 'Find your next course' : 'Find a course quickly'}</h2>
               </div>
               <Search size={18} className="text-sky-300" />
             </div>
@@ -471,8 +493,8 @@ function CoursesHome() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Catalog</p>
-              <h2 className="font-bold text-2xl">Featured courses</h2>
+              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{hasPurchasedAny ? 'Your library' : 'Catalog'}</p>
+              <h2 className="font-bold text-2xl">{hasPurchasedAny ? 'Continue or expand' : 'Featured courses'}</h2>
             </div>
             <button onClick={() => navigate('/courses')} className="text-sm text-white/72 hover:text-white transition-colors">
               Open full catalog

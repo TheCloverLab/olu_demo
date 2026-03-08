@@ -219,7 +219,8 @@ describe('Home', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Current plan: Core')).toBeInTheDocument()
+      expect(screen.getByText('Your Community Home')).toBeInTheDocument()
+      expect(screen.getAllByText('Core').length).toBeGreaterThan(0)
       expect(screen.getByText('You already joined as Core.')).toBeInTheDocument()
     })
   })

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, BadgeCheck, BookOpen, Crown, FileText, Lock, MessageCircle, Send, ShoppingBag, Sparkles, Users } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, BookOpen, Crown, FileText, Lock, MessageCircle, Send, ShoppingBag, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { getMembershipStatus, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
@@ -11,7 +11,7 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
-export default function CreatorProfile() {
+export default function AppLanding() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { consumerTemplate, currentUser } = useApp()

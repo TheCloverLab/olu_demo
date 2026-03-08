@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import CreatorProfile from '../../apps/consumer/pages/CreatorProfile'
+import AppLanding from '../../apps/consumer/pages/AppLanding'
 import * as AppContext from '../../context/AppContext'
 import * as ServicesApi from '../../services/api'
 import * as Engagement from '../../domain/consumer/engagement'
@@ -28,7 +28,7 @@ vi.mock('framer-motion', () => ({
   },
 }))
 
-describe('CreatorProfile', () => {
+describe('AppLanding', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(ServicesApi.getUserById).mockResolvedValue({
@@ -58,7 +58,7 @@ describe('CreatorProfile', () => {
     return render(
       <MemoryRouter initialEntries={['/creator/creator-1']}>
         <Routes>
-          <Route path="/creator/:id" element={<CreatorProfile />} />
+          <Route path="/creator/:id" element={<AppLanding />} />
         </Routes>
       </MemoryRouter>
     )

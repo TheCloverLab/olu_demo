@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router-dom'
 import AppLayout from './layout/AppLayout'
 import Home from './pages/Home'
-import CreatorProfile from './pages/CreatorProfile'
+import AppLanding from './pages/AppLanding'
 import ContentDetail from './pages/ContentDetail'
 import Chat from './pages/Chat'
 import Profile from './pages/Profile'
@@ -24,7 +24,7 @@ export const consumerRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Home /> },
       { path: 'discover', element: <Discover /> },
-      { path: 'creator/:id', element: <CreatorProfile /> },
+      { path: 'creator/:id', element: <AppLanding /> },
       { path: 'content/:id', element: <ContentDetail /> },
       { path: 'chat', element: <Chat /> },
       { path: 'topics', element: <Topics /> },

@@ -8,6 +8,7 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
+import { updateConsumerCourse } from '../../../services/api'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 
@@ -19,6 +20,13 @@ export default function ConsumerExperience() {
   const [communitySnapshot, setCommunitySnapshot] = useState<CommunityMembershipSnapshot | null>(null)
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
   const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
+  const [courseDraft, setCourseDraft] = useState({
+    title: '',
+    subtitle: '',
+    headline: '',
+    description: '',
+  })
+  const [savingCourse, setSavingCourse] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -41,6 +49,12 @@ export default function ConsumerExperience() {
         if (!cancelled) {
           setCourseLibrary(snapshot.courses)
           setFeaturedCourse(snapshot.featuredCourse)
+          setCourseDraft({
+            title: snapshot.featuredCourse?.title || '',
+            subtitle: snapshot.featuredCourse?.subtitle || '',
+            headline: snapshot.featuredCourse?.headline || '',
+            description: snapshot.featuredCourse?.description || '',
+          })
           setCommunitySnapshot(null)
         }
       } catch (error) {
@@ -57,6 +71,29 @@ export default function ConsumerExperience() {
       cancelled = true
     }
   }, [consumerConfig.featured_creator_id, consumerConfig.featured_course_slug, consumerTemplate, user?.id])
+
+  async function handleSaveFeaturedCourse() {
+    if (!featuredCourse) return
+
+    setSavingCourse(true)
+    try {
+      const updated = await updateConsumerCourse(featuredCourse.id, courseDraft)
+      const nextFeatured = {
+        ...featuredCourse,
+        ...updated,
+      }
+      setFeaturedCourse(nextFeatured)
+      setCourseLibrary((current) => current.map((course) => (
+        course.id === featuredCourse.id
+          ? { ...course, ...updated }
+          : course
+      )))
+    } catch (error) {
+      console.error('Failed to update featured course', error)
+    } finally {
+      setSavingCourse(false)
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -268,6 +305,58 @@ export default function ConsumerExperience() {
               <ArrowUpRight size={14} />
             </Link>
           </div>
+        </section>
+      )}
+
+      {!loading && consumerTemplate === 'sell_courses' && featuredCourse && (
+        <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen size={16} className="text-emerald-300" />
+            <p className="font-bold">Featured course editor</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course title</p>
+              <input
+                value={courseDraft.title}
+                onChange={(event) => setCourseDraft((current) => ({ ...current, title: event.target.value }))}
+                className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+              />
+            </label>
+            <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course subtitle</p>
+              <input
+                value={courseDraft.subtitle}
+                onChange={(event) => setCourseDraft((current) => ({ ...current, subtitle: event.target.value }))}
+                className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+              />
+            </label>
+            <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Hero headline</p>
+              <textarea
+                value={courseDraft.headline}
+                onChange={(event) => setCourseDraft((current) => ({ ...current, headline: event.target.value }))}
+                rows={3}
+                className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+              />
+            </label>
+            <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course description</p>
+              <textarea
+                value={courseDraft.description}
+                onChange={(event) => setCourseDraft((current) => ({ ...current, description: event.target.value }))}
+                rows={3}
+                className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+              />
+            </label>
+          </div>
+          <button
+            onClick={handleSaveFeaturedCourse}
+            disabled={savingCourse}
+            className="mt-4 rounded-2xl bg-white text-black px-4 py-3 font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {savingCourse ? 'Saving...' : 'Save featured course copy'}
+          </button>
         </section>
       )}
     </div>

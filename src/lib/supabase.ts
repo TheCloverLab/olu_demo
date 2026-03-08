@@ -452,3 +452,37 @@ export type WorkspaceAgentTask = {
 export type WorkspaceAgentWithTasks = WorkspaceAgent & {
   tasks?: WorkspaceAgentTask[]
 }
+
+export type ConsumerCourse = {
+  id: string
+  creator_id: string
+  slug: string
+  title: string
+  subtitle: string
+  instructor: string
+  price: number
+  level: 'Beginner' | 'Intermediate' | 'Advanced'
+  hero: string
+  headline: string
+  description: string
+  outcomes: string[]
+  lessons_count: number
+  students_count: number
+  completion_rate: string
+  status: 'draft' | 'published' | 'archived'
+  created_at?: string
+  updated_at?: string
+}
+
+export type ConsumerCourseSection = {
+  id: string
+  course_id: string
+  section_key: string
+  title: string
+  duration: string
+  summary: string
+  preview: boolean
+  position: number
+  created_at?: string
+  updated_at?: string
+}

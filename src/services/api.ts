@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { User, Post, AIAgent, AgentTask, Conversation, Product, Fan, IPLicense, IPInfringement, AnalyticsRevenue, AnalyticsViews, Campaign, MembershipTier } from '../lib/supabase'
+import type { User, Post, AIAgent, AgentTask, Conversation, Product, Fan, IPLicense, IPInfringement, AnalyticsRevenue, AnalyticsViews, Campaign, MembershipTier, ConsumerCourse, ConsumerCourseSection } from '../lib/supabase'
 export {
   advanceBusinessCampaign,
   approveBusinessCampaignTarget,
@@ -335,6 +335,43 @@ export async function getProductsByCreator(creatorId: string) {
   
   if (error) throw error
   return data as Product[]
+}
+
+// ============================================================================
+// CONSUMER COURSES
+// ============================================================================
+export async function getConsumerCourses() {
+  const { data, error } = await supabase
+    .from('consumer_courses')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data as ConsumerCourse[]
+}
+
+export async function getConsumerCourseBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('consumer_courses')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .maybeSingle()
+
+  if (error) throw error
+  return data as ConsumerCourse | null
+}
+
+export async function getConsumerCourseSections(courseId: string) {
+  const { data, error } = await supabase
+    .from('consumer_course_sections')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('position', { ascending: true })
+
+  if (error) throw error
+  return data as ConsumerCourseSection[]
 }
 
 // ============================================================================

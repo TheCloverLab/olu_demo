@@ -4,10 +4,12 @@ import { motion } from 'framer-motion'
 import { ArrowRight, BadgeCheck, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, MessageCircle, PlayCircle, Search, Sparkles, Users } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
+import { useAuth } from '../../../context/AuthContext'
+import { getCommunityMembershipSnapshot, getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCreators, getPosts } from '../../../services/api'
-import { FEATURED_COURSE, COURSE_LIBRARY } from '../courseData'
 import { CONSUMER_TEMPLATE_META } from '../templateConfig'
-import type { Post, User } from '../../../lib/supabase'
+import type { User } from '../../../lib/supabase'
+import type { Course } from '../courseData'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -15,11 +17,17 @@ function formatNumber(value: number) {
 
 function CommunityHome() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { consumerExperience } = useApp()
+  const community = consumerExperience.community
   const [creators, setCreators] = useState<User[]>([])
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const community = consumerExperience.community
+  const [membershipTiers, setMembershipTiers] = useState(community.membership.tiers)
+  const [memberStats, setMemberStats] = useState<{ totalMembers: number; activeFans: number; hostName?: string }>({
+    totalMembers: 0,
+    activeFans: 0,
+  })
 
   useEffect(() => {
     async function loadData() {
@@ -36,6 +44,31 @@ function CommunityHome() {
 
     loadData()
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMembershipSnapshot() {
+      try {
+        const snapshot = await getCommunityMembershipSnapshot(user as any)
+        if (!cancelled) {
+          setMembershipTiers(snapshot.tiers)
+          setMemberStats({
+            totalMembers: snapshot.totalMembers,
+            activeFans: snapshot.activeFans,
+            hostName: snapshot.creator?.name,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load membership snapshot', error)
+      }
+    }
+
+    loadMembershipSnapshot()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   const featuredCreators = creators.slice(0, 4)
   const featuredPosts = posts.slice(0, 5)
@@ -72,7 +105,7 @@ function CommunityHome() {
               <Crown size={18} className="text-amber-300" />
             </div>
             <div className="space-y-3">
-              {community.membership.tiers.map((item, index) => (
+              {membershipTiers.map((item, index) => (
                 <div key={item.name} className={clsx('rounded-2xl p-4 border', index === 1 ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10')}>
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-semibold">{item.name}</p>
@@ -82,6 +115,12 @@ function CommunityHome() {
                 </div>
               ))}
             </div>
+            {memberStats.totalMembers > 0 && (
+              <p className="text-xs text-olu-muted mt-3">
+                {formatNumber(memberStats.totalMembers)} paid/free members
+                {memberStats.activeFans > 0 ? ` · ${formatNumber(memberStats.activeFans)} active fans` : ''}
+              </p>
+            )}
             <button
               onClick={() => navigate('/membership')}
               className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -119,11 +158,12 @@ function CommunityHome() {
         </section>
 
         <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Creator spaces</p>
-              <h2 className="font-bold text-xl">{community.spaces.title}</h2>
-            </div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Creator spaces</p>
+                <h2 className="font-bold text-xl">{community.spaces.title}</h2>
+                {memberStats.hostName && <p className="text-xs text-olu-muted mt-1">Hosted by {memberStats.hostName}</p>}
+              </div>
             <button onClick={() => navigate('/topics')} className="text-sm text-white/72 hover:text-white transition-colors">
               View all
             </button>
@@ -187,7 +227,7 @@ function CommunityHome() {
   )
 }
 
-function CourseCard({ course, onOpen }: { course: typeof COURSE_LIBRARY[number]; onOpen: () => void }) {
+function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) {
   return (
     <button
       onClick={onOpen}
@@ -235,27 +275,48 @@ function CoursesHome() {
   const navigate = useNavigate()
   const { consumerExperience } = useApp()
   const courses = consumerExperience.courses
+  const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+  const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCourses() {
+      const snapshot = await getCourseLibrarySnapshot()
+      if (!cancelled) {
+        setCourseLibrary(snapshot.courses)
+        setFeaturedCourse(snapshot.featuredCourse)
+      }
+    }
+
+    loadCourses()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const heroCourse = featuredCourse || courseLibrary[0]
 
   return (
     <div className="pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-        <section className={`rounded-[28px] overflow-hidden border border-white/10 bg-gradient-to-br ${FEATURED_COURSE.hero} p-6 md:p-8`}>
+        <section className={`rounded-[28px] overflow-hidden border border-white/10 bg-gradient-to-br ${heroCourse?.hero || 'from-sky-600 via-cyan-500 to-emerald-400'} p-6 md:p-8`}>
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/15 text-xs text-black/70 mb-4">
               <BookOpen size={13} />
               {courses.catalog.title}
             </div>
-            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">{FEATURED_COURSE.headline}</h1>
-            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">{FEATURED_COURSE.description}</p>
+            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">{heroCourse?.headline || 'Build and sell a structured course offer.'}</h1>
+            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">{heroCourse?.description || 'Use a course catalog, checkout flow, and learning hub to deliver structured knowledge.'}</p>
             <div className="flex flex-wrap gap-3 mt-6">
               <button
-                onClick={() => navigate(`/checkout/${FEATURED_COURSE.slug}`)}
+                onClick={() => heroCourse && navigate(`/checkout/${heroCourse.slug}`)}
                 className="px-5 py-3 rounded-2xl bg-black text-white font-semibold hover:opacity-90 transition-opacity"
               >
                 {courses.detail.buyLabel}
               </button>
               <button
-                onClick={() => navigate(`/courses/${FEATURED_COURSE.slug}/catalog`)}
+                onClick={() => heroCourse && navigate(`/courses/${heroCourse.slug}/catalog`)}
                 className="px-5 py-3 rounded-2xl bg-white/70 text-black font-semibold hover:bg-white transition-colors"
               >
                 {courses.detail.catalogLabel}
@@ -307,7 +368,7 @@ function CoursesHome() {
               />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              {[...courses.learning.shortcuts, { label: 'Featured course', href: `/courses/${FEATURED_COURSE.slug}` }, { label: 'Checkout', href: `/checkout/${FEATURED_COURSE.slug}` }].map((item) => (
+              {[...courses.learning.shortcuts, { label: 'Featured course', href: heroCourse ? `/courses/${heroCourse.slug}` : '/courses' }, { label: 'Checkout', href: heroCourse ? `/checkout/${heroCourse.slug}` : '/courses' }].map((item) => (
                 <button
                   key={item.label}
                   onClick={() => navigate(item.href)}
@@ -332,7 +393,7 @@ function CoursesHome() {
             </button>
           </div>
           <div className="grid lg:grid-cols-2 gap-4">
-            {COURSE_LIBRARY.map((course) => (
+            {courseLibrary.map((course) => (
               <CourseCard key={course.id} course={course} onOpen={() => navigate(`/courses/${course.slug}`)} />
             ))}
           </div>

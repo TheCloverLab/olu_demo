@@ -1,13 +1,36 @@
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
-import { getCourseBySlug } from '../courseData'
+import type { Course } from '../courseData'
+import { getCourseSnapshotBySlug } from '../../../domain/consumer/api'
 
 export default function CourseCatalog() {
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { consumerExperience } = useApp()
   const { catalog } = consumerExperience.courses
-  const course = getCourseBySlug(courseSlug || '')
+  const [course, setCourse] = useState<Course | null | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCourse() {
+      if (!courseSlug) return
+      const data = await getCourseSnapshotBySlug(courseSlug)
+      if (!cancelled) {
+        setCourse(data)
+      }
+    }
+
+    loadCourse()
+    return () => {
+      cancelled = true
+    }
+  }, [courseSlug])
+
+  if (course === undefined) {
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading course...</div>
+  }
 
   if (!course) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Course not found.</div>

@@ -1,14 +1,41 @@
+import { useEffect, useState } from 'react'
 import { GraduationCap } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
-import { COURSE_LIBRARY, getCourseBySlug } from '../courseData'
+import type { Course } from '../courseData'
+import { getCourseLibrarySnapshot, getCourseSnapshotBySlug } from '../../../domain/consumer/api'
 
 export default function Courses() {
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { consumerExperience } = useApp()
   const { courses } = consumerExperience
-  const selected = courseSlug ? getCourseBySlug(courseSlug) : null
+  const [selected, setSelected] = useState<Course | null | undefined>(courseSlug ? undefined : null)
+  const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCourses() {
+      if (courseSlug) {
+        const course = await getCourseSnapshotBySlug(courseSlug)
+        if (!cancelled) {
+          setSelected(course)
+        }
+        return
+      }
+
+      const snapshot = await getCourseLibrarySnapshot()
+      if (!cancelled) {
+        setCourseLibrary(snapshot.courses)
+      }
+    }
+
+    loadCourses()
+    return () => {
+      cancelled = true
+    }
+  }, [courseSlug])
 
   if (selected) {
     return (
@@ -63,6 +90,10 @@ export default function Courses() {
     )
   }
 
+  if (courseSlug && selected === undefined) {
+    return <div className="max-w-4xl mx-auto px-4 py-8 text-olu-muted">Loading course...</div>
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <div className="flex items-center gap-3 mb-6">
@@ -75,7 +106,7 @@ export default function Courses() {
         </div>
       </div>
       <div className="grid lg:grid-cols-2 gap-4">
-        {COURSE_LIBRARY.map((course) => (
+        {courseLibrary.map((course) => (
           <button
             key={course.id}
             onClick={() => navigate(`/courses/${course.slug}`)}

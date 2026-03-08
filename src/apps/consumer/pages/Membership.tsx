@@ -1,9 +1,43 @@
+import { useEffect, useState } from 'react'
 import { Crown, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
+import { useAuth } from '../../../context/AuthContext'
+import { getCommunityMembershipSnapshot, type CommunityTier } from '../../../domain/consumer/api'
 
 export default function Membership() {
   const { consumerExperience } = useApp()
+  const { user } = useAuth()
   const { membership } = consumerExperience.community
+  const [tiers, setTiers] = useState<CommunityTier[]>(membership.tiers)
+  const [summary, setSummary] = useState<{ totalMembers: number; activeFans: number; hostName?: string }>({
+    totalMembers: 0,
+    activeFans: 0,
+  })
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadSnapshot() {
+      try {
+        const snapshot = await getCommunityMembershipSnapshot(user as any)
+        if (!cancelled) {
+          setTiers(snapshot.tiers)
+          setSummary({
+            totalMembers: snapshot.totalMembers,
+            activeFans: snapshot.activeFans,
+            hostName: snapshot.creator?.name,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load membership snapshot', error)
+      }
+    }
+
+    loadSnapshot()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -14,11 +48,17 @@ export default function Membership() {
         <div>
           <h1 className="font-black text-2xl">Membership</h1>
           <p className="text-olu-muted text-sm">{membership.subtitle}</p>
+          {summary.hostName && (
+            <p className="text-xs text-olu-muted mt-1">
+              Current host: {summary.hostName}
+              {summary.totalMembers > 0 ? ` · ${summary.totalMembers} total members` : ''}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        {membership.tiers.map((tier, index) => (
+        {tiers.map((tier, index) => (
           <div
             key={tier.name}
             className={`rounded-[24px] border p-5 ${
@@ -49,6 +89,14 @@ export default function Membership() {
           </div>
         ))}
       </div>
+
+      {summary.activeFans > 0 && (
+        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+          <p className="text-sm text-olu-muted">
+            {summary.activeFans} active fans are currently in this community footprint.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

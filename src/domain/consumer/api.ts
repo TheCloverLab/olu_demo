@@ -1,4 +1,16 @@
 import type { ConsumerTemplateKey } from '../../apps/consumer/templateConfig'
+import type { Course } from '../../apps/consumer/courseData'
+import type { Fan, MembershipTier, User } from '../../lib/supabase'
+import {
+  getConsumerCourseBySlug,
+  getConsumerCourses,
+  getConsumerCourseSections,
+  getCreators,
+  getFansByCreator,
+  getMembershipTiersByCreator,
+  getUserById,
+} from '../../services/api'
+import { COURSE_LIBRARY } from '../../apps/consumer/courseData'
 
 export type CommunityTier = {
   name: string
@@ -80,6 +92,19 @@ export type ConsumerExperience = {
       shortcuts: Array<{ label: string; href: string }>
     }
   }
+}
+
+export type CommunityMembershipSnapshot = {
+  creator: User | null
+  tiers: CommunityTier[]
+  totalMembers: number
+  activeFans: number
+  topFans: Fan[]
+}
+
+export type CourseLibrarySnapshot = {
+  courses: Course[]
+  featuredCourse: Course
 }
 
 const COMMUNITY_TIERS: CommunityTier[] = [
@@ -219,5 +244,146 @@ export function getConsumerExperience(
         ],
       },
     },
+  }
+}
+
+function mapMembershipTier(tier: MembershipTier): CommunityTier {
+  return {
+    name: tier.name,
+    price: tier.price === 0 ? '$0' : `$${tier.price}`,
+    note: tier.description || 'Membership tier',
+    perks: tier.perks || [],
+  }
+}
+
+export async function resolveFeaturedCommunityCreator(
+  viewer?: Pick<User, 'id' | 'role'> | null
+) {
+  if (viewer?.id && viewer.role === 'creator') {
+    try {
+      return await getUserById(viewer.id)
+    } catch (error) {
+      console.error('Failed to load viewer as featured creator', error)
+    }
+  }
+
+  const creators = await getCreators()
+  return creators[0] || null
+}
+
+export async function getCommunityMembershipSnapshot(
+  viewer?: Pick<User, 'id' | 'role'> | null
+): Promise<CommunityMembershipSnapshot> {
+  const creator = await resolveFeaturedCommunityCreator(viewer)
+  if (!creator) {
+    return {
+      creator: null,
+      tiers: COMMUNITY_TIERS,
+      totalMembers: 0,
+      activeFans: 0,
+      topFans: [],
+    }
+  }
+
+  const [tiers, fans] = await Promise.all([
+    getMembershipTiersByCreator(creator.id).catch((error) => {
+      console.error('Failed to load membership tiers', error)
+      return [] as MembershipTier[]
+    }),
+    getFansByCreator(creator.id).catch((error) => {
+      console.error('Failed to load fans', error)
+      return [] as Fan[]
+    }),
+  ])
+
+  const mappedTiers = tiers.length > 0 ? tiers.map(mapMembershipTier) : COMMUNITY_TIERS
+  const totalMembers = tiers.length > 0
+    ? tiers.reduce((sum, tier) => sum + (tier.subscriber_count || 0), 0)
+    : 0
+  const activeFans = fans.filter((fan) => fan.status === 'active').length
+
+  return {
+    creator,
+    tiers: mappedTiers,
+    totalMembers,
+    activeFans,
+    topFans: fans.slice(0, 3),
+  }
+}
+
+function mapCourseRecord(
+  course: Awaited<ReturnType<typeof getConsumerCourses>>[number],
+  sections: Awaited<ReturnType<typeof getConsumerCourseSections>>
+): Course {
+  return {
+    id: course.id,
+    slug: course.slug,
+    title: course.title,
+    subtitle: course.subtitle,
+    instructor: course.instructor,
+    price: Number(course.price),
+    level: course.level,
+    hero: course.hero,
+    headline: course.headline,
+    description: course.description,
+    outcomes: course.outcomes || [],
+    stats: {
+      lessons: course.lessons_count,
+      students: course.students_count,
+      completionRate: course.completion_rate,
+    },
+    sections: sections.map((section) => ({
+      id: section.section_key,
+      title: section.title,
+      duration: section.duration,
+      preview: section.preview,
+      summary: section.summary,
+    })),
+  }
+}
+
+export async function getCourseLibrarySnapshot(): Promise<CourseLibrarySnapshot> {
+  try {
+    const courses = await getConsumerCourses()
+    if (!courses.length) {
+      return {
+        courses: COURSE_LIBRARY,
+        featuredCourse: COURSE_LIBRARY[0],
+      }
+    }
+
+    const sectionsByCourse = await Promise.all(
+      courses.map(async (course) => ({
+        course,
+        sections: await getConsumerCourseSections(course.id).catch(() => []),
+      }))
+    )
+
+    const mapped = sectionsByCourse.map(({ course, sections }) => mapCourseRecord(course, sections))
+    return {
+      courses: mapped,
+      featuredCourse: mapped[0],
+    }
+  } catch (error) {
+    console.error('Failed to load course library snapshot', error)
+    return {
+      courses: COURSE_LIBRARY,
+      featuredCourse: COURSE_LIBRARY[0],
+    }
+  }
+}
+
+export async function getCourseSnapshotBySlug(slug: string) {
+  try {
+    const course = await getConsumerCourseBySlug(slug)
+    if (!course) {
+      return COURSE_LIBRARY.find((item) => item.slug === slug || item.id === slug) || null
+    }
+
+    const sections = await getConsumerCourseSections(course.id)
+    return mapCourseRecord(course, sections)
+  } catch (error) {
+    console.error('Failed to load course snapshot', error)
+    return COURSE_LIBRARY.find((item) => item.slug === slug || item.id === slug) || null
   }
 }

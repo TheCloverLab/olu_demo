@@ -1,12 +1,31 @@
+import { useEffect, useState } from 'react'
 import { BookOpen, Clock3, PlayCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
-import { COURSE_LIBRARY } from '../courseData'
+import type { Course } from '../courseData'
+import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 
 export default function LearningHub() {
   const navigate = useNavigate()
   const { consumerExperience } = useApp()
   const { learning } = consumerExperience.courses
+  const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCourses() {
+      const snapshot = await getCourseLibrarySnapshot()
+      if (!cancelled) {
+        setCourseLibrary(snapshot.courses)
+      }
+    }
+
+    loadCourses()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -21,7 +40,7 @@ export default function LearningHub() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {COURSE_LIBRARY.map((course) => (
+        {courseLibrary.map((course) => (
           <div key={course.id} className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>

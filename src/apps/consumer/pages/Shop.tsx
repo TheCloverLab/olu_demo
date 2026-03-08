@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Plus, Package, DollarSign, TrendingUp } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
-import { COURSE_LIBRARY } from '../courseData'
+import type { Course } from '../courseData'
+import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 
 interface Product {
   id: string
@@ -218,6 +219,25 @@ function UserShopView() {
 export default function Shop() {
   const { currentRole, consumerTemplate, consumerExperience } = useApp()
   const isCreator = currentRole === 'creator'
+  const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+
+  useEffect(() => {
+    if (consumerTemplate !== 'sell_courses') return
+
+    let cancelled = false
+
+    async function loadCourses() {
+      const snapshot = await getCourseLibrarySnapshot()
+      if (!cancelled) {
+        setCourseLibrary(snapshot.courses)
+      }
+    }
+
+    loadCourses()
+    return () => {
+      cancelled = true
+    }
+  }, [consumerTemplate])
 
   if (consumerTemplate === 'sell_courses') {
     const storefront = consumerExperience.courses.storefront
@@ -249,7 +269,7 @@ export default function Shop() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {COURSE_LIBRARY.map((course) => (
+          {courseLibrary.map((course) => (
             <Link
               key={course.id}
               to={`/courses/${course.slug}`}

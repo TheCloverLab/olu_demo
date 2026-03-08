@@ -22,6 +22,8 @@ TRUNCATE TABLE
   campaigns,
   supplier_creator_partnerships,
   supplier_products,
+  consumer_course_sections,
+  consumer_courses,
   analytics_views,
   analytics_revenue,
   ip_infringements,
@@ -155,6 +157,22 @@ VALUES
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Neon City Hoodie', 'Premium hoodie with Neon City artwork.', 59.99, '/images/products/neon-city-hoodie.jpg', 'physical', 45, 234, 'active'),
   ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Luna Chan Digital Art Pack', 'Monthly digital art bundle.', 14.99, '/images/products/luna-art-pack.jpg', 'digital', 0, 1240, 'active'),
   ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Pixel World Enamel Pin Set', 'Collector enamel pin set.', 24.99, '/images/products/pixel-pin-set.jpg', 'physical', 12, 567, 'active');
+
+INSERT INTO consumer_courses (id, creator_id, slug, title, subtitle, instructor, price, level, hero, headline, description, outcomes, lessons_count, students_count, completion_rate, status)
+VALUES
+  ('20500000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'community-growth', 'Build a Paid Fan Community', 'Turn audience attention into a durable membership business.', 'Luna Chen', 129.00, 'Intermediate', 'from-rose-600 via-fuchsia-600 to-orange-500', 'From casual audience to paying members in 30 days.', 'A practical course on community positioning, membership packaging, and retention loops for creators.', ARRAY['Design a community offer people understand in one screen','Build member tiers that drive upgrades','Create a recurring content rhythm that keeps churn low'], 18, 1240, '68%', 'published'),
+  ('20500000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', 'launch-playbook', 'Launch Your First Cohort Course', 'Design, sell, and deliver a course with a small team.', 'Ryu Codes', 179.00, 'Beginner', 'from-sky-600 via-cyan-500 to-emerald-400', 'A practical launch sequence for creators who want structured teaching revenue.', 'This course focuses on offer framing, curriculum design, launch sequencing, and student onboarding.', ARRAY['Break expertise into a clear curriculum','Build a landing page that sells the transformation','Run a lightweight course launch with clear milestones'], 22, 860, '72%', 'published');
+
+INSERT INTO consumer_course_sections (id, course_id, section_key, title, duration, summary, preview, position)
+VALUES
+  ('20600000-0000-0000-0000-000000000001', '20500000-0000-0000-0000-000000000001', 'cg-1', 'Positioning Your Community', '14 min', 'Define who the community is for and why people stay.', true, 1),
+  ('20600000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'cg-2', 'Pricing and Tier Design', '21 min', 'Package free, core, and premium tiers without confusing members.', false, 2),
+  ('20600000-0000-0000-0000-000000000003', '20500000-0000-0000-0000-000000000001', 'cg-3', 'Content Rhythm and Events', '19 min', 'Set weekly rituals that create return behavior.', false, 3),
+  ('20600000-0000-0000-0000-000000000004', '20500000-0000-0000-0000-000000000001', 'cg-4', 'Retention and Win-back', '16 min', 'Detect churn signals and build recovery loops.', false, 4),
+  ('20600000-0000-0000-0000-000000000005', '20500000-0000-0000-0000-000000000002', 'lp-1', 'Choose the Promise', '12 min', 'Frame the outcome and who the course is for.', true, 1),
+  ('20600000-0000-0000-0000-000000000006', '20500000-0000-0000-0000-000000000002', 'lp-2', 'Curriculum Mapping', '24 min', 'Turn experience into a simple module structure.', false, 2),
+  ('20600000-0000-0000-0000-000000000007', '20500000-0000-0000-0000-000000000002', 'lp-3', 'Launch Assets', '17 min', 'Build sales assets, social proof, and launch timing.', false, 3),
+  ('20600000-0000-0000-0000-000000000008', '20500000-0000-0000-0000-000000000002', 'lp-4', 'Student Delivery', '20 min', 'Handle onboarding, learning flow, and support.', false, 4);
 
 -- AI agents
 INSERT INTO ai_agents (id, user_id, agent_key, name, role, icon, avatar_img, color, status, description, last_message, last_time)

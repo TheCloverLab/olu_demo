@@ -89,7 +89,7 @@ function MoreMenu({ open, onClose }) {
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <div className="px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted mb-2">Template</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted mb-2">App</p>
                 <div className={`rounded-2xl p-3 bg-gradient-to-br ${templateMeta.accent}`}>
                   <p className="font-bold text-black text-sm">{templateMeta.label}</p>
                   <p className="text-black/70 text-xs mt-1">{templateMeta.description}</p>
@@ -176,7 +176,7 @@ export default function AppLayout() {
           ))}
 
           <div className="pt-4">
-            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Template</p>
+            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">App</p>
             {quickLinks.map(({ to, icon: Icon, label }) => (
               <NavLink
                 key={to}

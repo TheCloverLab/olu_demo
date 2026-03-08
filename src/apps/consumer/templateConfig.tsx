@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { BookOpen, GraduationCap, Home, MessageCircle, Sparkles, User, Users } from 'lucide-react'
+import { BookOpen, Compass, GraduationCap, Home, MessageCircle, Sparkles, User, Users } from 'lucide-react'
 
 export type ConsumerTemplateKey = 'fan_community' | 'sell_courses'
 
@@ -36,12 +36,14 @@ export const CONSUMER_TEMPLATE_META: Record<ConsumerTemplateKey, {
 export const CONSUMER_NAV: Record<ConsumerTemplateKey, ConsumerNavItem[]> = {
   fan_community: [
     { to: '/', icon: Home, label: 'Home', exact: true },
+    { to: '/discover', icon: Compass, label: 'Discover' },
     { to: '/topics', icon: Users, label: 'Topics' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/profile', icon: User, label: 'Me' },
   ],
   sell_courses: [
-    { to: '/', icon: GraduationCap, label: 'Courses', exact: true },
+    { to: '/', icon: Home, label: 'Home', exact: true },
+    { to: '/discover', icon: Compass, label: 'Discover' },
     { to: '/learning', icon: BookOpen, label: 'Learning' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/profile', icon: User, label: 'Me' },

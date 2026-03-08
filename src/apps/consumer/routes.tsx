@@ -9,6 +9,7 @@ import Shop from './pages/Shop'
 import Topics from './pages/Topics'
 import Membership from './pages/Membership'
 import Courses from './pages/Courses'
+import Discover from './pages/Discover'
 import CourseCatalog from './pages/CourseCatalog'
 import Learn from './pages/Learn'
 import Checkout from './pages/Checkout'
@@ -22,6 +23,7 @@ export const consumerRoutes: RouteObject[] = [
     element: <RoleProtected><AppLayout /></RoleProtected>,
     children: [
       { index: true, element: <Home /> },
+      { path: 'discover', element: <Discover /> },
       { path: 'creator/:id', element: <CreatorProfile /> },
       { path: 'content/:id', element: <ContentDetail /> },
       { path: 'chat', element: <Chat /> },

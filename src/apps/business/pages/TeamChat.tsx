@@ -11,13 +11,13 @@ import clsx from 'clsx'
 const STATUS_CONFIG = {
   done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
   in_progress: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
-  pending: { icon: Circle, color: 'text-olu-muted', bg: 'bg-white/05', label: 'Pending' },
+  pending: { icon: Circle, color: 'text-cyan-100/45', bg: 'bg-cyan-500/10', label: 'Pending' },
 }
 
 const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
   medium: 'text-amber-400 bg-amber-400/10',
-  low: 'text-olu-muted bg-white/05',
+  low: 'text-cyan-100/45 bg-cyan-500/10',
 }
 
 function preprocessMarkdown(text) {
@@ -53,22 +53,22 @@ function TaskItem({ task }) {
   const cfg = STATUS_CONFIG[status]
   const Icon = cfg.icon
   return (
-    <div className="flex items-start gap-3 p-3 glass rounded-xl">
-      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-400' : 'text-olu-muted hover:text-olu-text')}>
+    <div className="flex items-start gap-3 p-4 rounded-[24px] border border-cyan-500/10 bg-[#121821] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-400' : 'text-cyan-100/45 hover:text-white')}>
         <Icon size={16} />
       </button>
       <div className="flex-1 min-w-0">
-        <p className={clsx('text-sm font-medium', status === 'done' && 'line-through text-olu-muted')}>{task.title}</p>
+        <p className={clsx('text-sm font-medium text-white', status === 'done' && 'line-through text-cyan-100/45')}>{task.title}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', PRIORITY_COLOR[task.priority])}>{task.priority}</span>
-          <span className="text-olu-muted text-xs">{task.due}</span>
+          <span className="text-cyan-100/45 text-xs">{task.due}</span>
         </div>
         {status === 'in_progress' && task.progress != null && (
           <div className="mt-2 flex items-center gap-2">
             <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${task.progress}%` }} />
             </div>
-            <span className="text-olu-muted text-xs flex-shrink-0">{task.progress}%</span>
+            <span className="text-cyan-100/45 text-xs flex-shrink-0">{task.progress}%</span>
           </div>
         )}
       </div>
@@ -136,10 +136,10 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 4 }}
           transition={{ duration: 0.12 }}
-          className="absolute bottom-full left-0 mb-2 w-56 glass border border-olu-border rounded-xl overflow-hidden shadow-lg z-50"
+          className="absolute bottom-full left-0 mb-2 w-56 rounded-2xl overflow-hidden shadow-[0_18px_40px_rgba(2,8,23,0.35)] z-50 border border-cyan-500/10 bg-[#0c1624]"
         >
-          <div className="px-3 py-2 border-b border-olu-border">
-            <p className="text-olu-muted text-xs font-medium flex items-center gap-1"><AtSign size={12} /> Mention someone</p>
+          <div className="px-3 py-2 border-b border-cyan-500/10">
+            <p className="text-cyan-100/45 text-xs font-medium flex items-center gap-1"><AtSign size={12} /> Mention someone</p>
           </div>
           {filtered.map((p, i) => (
             <button
@@ -147,7 +147,7 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
               onMouseDown={e => { e.preventDefault(); onSelect(p) }}
               className={clsx(
                 'w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
-                i === mentionIndex ? 'bg-white/10 text-white' : 'text-olu-text hover:bg-white/05'
+                i === mentionIndex ? 'bg-cyan-300 text-[#04111f]' : 'text-white hover:bg-[#121f31]'
               )}
             >
               {p.avatarImg
@@ -157,7 +157,7 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
                   </div>
               }
               <span className="font-medium truncate">{p.name}</span>
-              {p.role && <span className="text-olu-muted text-xs ml-auto flex-shrink-0">{p.role}</span>}
+              {p.role && <span className={clsx('text-xs ml-auto flex-shrink-0', i === mentionIndex ? 'text-[#04111f]/70' : 'text-cyan-100/45')}>{p.role}</span>}
             </button>
           ))}
         </motion.div>
@@ -447,13 +447,13 @@ export default function TeamChat() {
 
   if (!dataLoaded && !agent) return (
     <div className="flex items-center justify-center h-full">
-      <p className="text-olu-muted">Loading chat...</p>
+      <p className="text-cyan-100/45">Loading chat...</p>
     </div>
   )
 
   if (!agent) return (
     <div className="flex items-center justify-center h-full">
-      <p className="text-olu-muted">Agent not found.</p>
+      <p className="text-cyan-100/45">Agent not found.</p>
     </div>
   )
 
@@ -490,8 +490,8 @@ export default function TeamChat() {
       </div>
 
       {tab === 'tasks' ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider mb-3">Active Tasks</p>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-b-[28px] bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-b border-cyan-500/10 shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
+          <p className="text-cyan-100/45 text-xs font-semibold uppercase tracking-wider mb-3">Active Tasks</p>
           {tasks.map(task => <TaskItem key={task.id} task={task} />)}
         </div>
       ) : (

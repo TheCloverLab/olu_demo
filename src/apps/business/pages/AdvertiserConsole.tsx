@@ -258,7 +258,7 @@ export default function AdvertiserConsole() {
                 <button
                   onClick={handleStart}
                   disabled={actionLoading || !selectedCreatorId}
-                  className="px-4 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
                 >
                   Start workflow for {selectedCreator?.name || 'creator'}
                 </button>

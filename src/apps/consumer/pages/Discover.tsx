@@ -89,9 +89,9 @@ export default function Discover() {
           <Compass size={14} />
           Discover
         </div>
-        <h1 className="font-black text-2xl md:text-4xl max-w-3xl leading-tight">Recommended apps across OLU</h1>
+        <h1 className="font-black text-2xl md:text-4xl max-w-3xl leading-tight">Discover new apps.</h1>
         <p className="text-cyan-100/60 text-sm md:text-base max-w-2xl mt-3">
-          Browse community apps and academy apps from different creators. Discover is for recommendation. Home is for the apps you already joined or bought.
+          Browse creators, communities, and academies.
         </p>
         <div className="flex flex-wrap gap-2 mt-5">
           {['Community', 'Academy', 'Creator-led'].map((chip) => (

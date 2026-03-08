@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bot, Plus, Settings, Trash2, ShoppingBag, Check, Star, Sparkles, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
@@ -97,6 +98,7 @@ function HireModal({
 
 export default function AIAgentConfig() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [hireTarget, setHireTarget] = useState<AgentTemplate | null>(null)
   const [successAgent, setSuccessAgent] = useState<string | null>(null)
   const [filter, setFilter] = useState('All')
@@ -210,7 +212,19 @@ export default function AIAgentConfig() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activeAgents.map((agent) => (
-                  <div key={agent.id} className="flex items-center gap-3 p-4 rounded-[24px] group border border-cyan-400/10 bg-[#091523] hover:bg-[#0d1a2d] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+                  <div
+                    key={agent.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/business/team/${agent.agent_key || agent.id}`)
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-cyan-400/10 bg-[#091523] hover:bg-[#0d1a2d] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
+                  >
                     <div className="relative flex-shrink-0">
                       {agent.avatar_img
                         ? <img src={agent.avatar_img} alt={agent.name} className="w-11 h-11 rounded-xl object-cover" />
@@ -223,8 +237,8 @@ export default function AIAgentConfig() {
                       <p className="text-cyan-100/55 text-xs">{agent.role}</p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 rounded-lg hover:bg-cyan-500/10 transition-colors"><Settings size={14} className="text-cyan-100/60" /></button>
-                      <button className="p-1.5 rounded-lg hover:bg-red-500/15 transition-colors"><Trash2 size={14} className="text-red-400" /></button>
+                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-cyan-500/10 transition-colors"><Settings size={14} className="text-cyan-100/60" /></button>
+                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-red-500/15 transition-colors"><Trash2 size={14} className="text-red-400" /></button>
                     </div>
                   </div>
                 ))}

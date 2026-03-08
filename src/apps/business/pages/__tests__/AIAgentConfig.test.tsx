@@ -6,6 +6,8 @@ import AIAgentConfig from '../AIAgentConfig'
 import * as AuthContext from '../../../../context/AuthContext'
 import * as AgentApi from '../../../../domain/agent/api'
 
+const mockNavigate = vi.fn()
+
 vi.mock('../../../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }))
@@ -15,6 +17,14 @@ vi.mock('../../../../domain/agent/api', () => ({
   getWorkspaceAgentsForUser: vi.fn(),
   hireWorkspaceAgent: vi.fn(),
 }))
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  }
+})
 
 describe('AIAgentConfig', () => {
   beforeEach(() => {
@@ -43,6 +53,19 @@ describe('AIAgentConfig', () => {
       role: 'Marketing Manager',
       status: 'online',
     } as any)
+  })
+
+  it('opens team chat when clicking an active workspace agent card', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><AIAgentConfig /></MemoryRouter>)
+
+    await waitFor(() => {
+      expect(screen.getByText('Lisa')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /Lisa IP Manager/i }))
+
+    expect(mockNavigate).toHaveBeenCalledWith('/business/team/ip_manager')
   })
 
   it('renders workspace-backed roster and marketplace templates', async () => {

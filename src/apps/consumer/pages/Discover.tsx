@@ -24,13 +24,22 @@ function DiscoverCard({
   app: DiscoverApp
   onOpen: () => void
 }) {
+  const [coverBroken, setCoverBroken] = useState(false)
+
   return (
     <button
       onClick={onOpen}
       className="w-full overflow-hidden rounded-[28px] border border-white/8 bg-[#111318] text-left hover:-translate-y-0.5 transition-all"
     >
       <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
-        {app.coverImg ? <img src={app.coverImg} alt={app.title} className="h-full w-full object-cover" /> : null}
+        {app.coverImg && !coverBroken ? (
+          <img
+            src={app.coverImg}
+            alt={app.title}
+            className="h-full w-full object-cover"
+            onError={() => setCoverBroken(true)}
+          />
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-center justify-between gap-3">

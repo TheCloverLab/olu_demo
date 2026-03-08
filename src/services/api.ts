@@ -32,6 +32,23 @@ export {
   submitRoleApplication,
 } from '../domain/workspace/api'
 
+const CREATOR_COVER_IMG_FIXTURES: Record<string, string> = {
+  '/images/covers/marcus.jpg': '/images/covers/marcuschen.jpg',
+  '/images/covers/zara.jpg': '/images/covers/zaranova.jpg',
+}
+
+function normalizeCreatorCoverImg<T extends { cover_img?: string | null }>(record: T): T {
+  if (!record.cover_img) return record
+
+  const normalized = CREATOR_COVER_IMG_FIXTURES[record.cover_img]
+  if (!normalized) return record
+
+  return {
+    ...record,
+    cover_img: normalized,
+  }
+}
+
 // ============================================================================
 // USERS
 // ============================================================================
@@ -42,7 +59,7 @@ export async function getUsers() {
     .order('created_at', { ascending: false })
   
   if (error) throw error
-  return data as User[]
+  return (data || []).map((user) => normalizeCreatorCoverImg(user)) as User[]
 }
 
 export async function getUserByHandle(handle: string) {
@@ -53,7 +70,7 @@ export async function getUserByHandle(handle: string) {
     .single()
   
   if (error) throw error
-  return data as User
+  return normalizeCreatorCoverImg(data as User)
 }
 
 export async function getUserById(id: string) {
@@ -64,7 +81,7 @@ export async function getUserById(id: string) {
     .single()
   
   if (error) throw error
-  return data as User
+  return normalizeCreatorCoverImg(data as User)
 }
 
 export async function getCreators() {
@@ -75,7 +92,7 @@ export async function getCreators() {
     .order('followers', { ascending: false })
   
   if (error) throw error
-  return data as User[]
+  return (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
 }
 
 // ============================================================================

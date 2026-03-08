@@ -32,10 +32,12 @@ function AppCover({
   title: string
   subtitle: string
 }) {
+  const [coverBroken, setCoverBroken] = useState(false)
+
   return (
     <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${gradient}`}>
-      {src ? (
-        <img src={src} alt={alt} className="h-full w-full object-cover" />
+      {src && !coverBroken ? (
+        <img src={src} alt={alt} className="h-full w-full object-cover" onError={() => setCoverBroken(true)} />
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-4">
@@ -202,6 +204,8 @@ export default function Home() {
     return new Map(creators.map((creator) => [creator.name, creator]))
   }, [creators])
 
+  const [brokenPostCovers, setBrokenPostCovers] = useState<Record<string, boolean>>({})
+
   return (
     <div className="pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
@@ -328,7 +332,14 @@ export default function Home() {
                   className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${post.gradient_bg || 'from-slate-700 to-slate-900'}`}>
-                    {post.cover_img ? <img src={post.cover_img} alt={post.title} className="h-full w-full object-cover" /> : null}
+                    {post.cover_img && !brokenPostCovers[post.id] ? (
+                      <img
+                        src={post.cover_img}
+                        alt={post.title}
+                        className="h-full w-full object-cover"
+                        onError={() => setBrokenPostCovers((current) => ({ ...current, [post.id]: true }))}
+                      />
+                    ) : null}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 p-4">
                       <div>

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BusinessSettings from '../BusinessSettings'
@@ -191,5 +191,45 @@ describe('BusinessSettings', () => {
 
     expect(setConsumerConfig).toHaveBeenCalledWith({ featured_creator_id: 'creator-1' })
     expect(setConsumerConfig).toHaveBeenCalledWith({ featured_course_slug: 'community-growth' })
+  })
+
+  it('updates consumer copy fields and topic overrides', async () => {
+    const user = userEvent.setup()
+    const setConsumerConfig = vi.fn()
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'creator',
+      currentUser: { name: 'Alice' },
+      availableRoles: ['creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerConfig: {},
+      consumerTemplate: 'fan_community',
+      setConsumerConfig,
+      setConsumerTemplate: vi.fn(),
+      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+
+    render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
+
+    await user.type(await screen.findByLabelText(/Community hero title/i), 'Members first')
+    await user.type(screen.getByLabelText(/Membership title/i), 'Inner circle')
+    fireEvent.change(screen.getByLabelText(/Community topics/i), {
+      target: { value: 'Office Hours | 320 | Weekly critique' },
+    })
+
+    expect(setConsumerConfig).toHaveBeenCalledWith({ community_hero_title: 'Members first' })
+    expect(setConsumerConfig).toHaveBeenCalledWith({ community_membership_title: 'Inner circle' })
+    expect(setConsumerConfig).toHaveBeenCalledWith({
+      community_topic_entries: [
+        {
+          id: 'custom-topic-1',
+          name: 'Office Hours',
+          members: '320',
+          description: 'Weekly critique',
+        },
+      ],
+    })
   })
 })

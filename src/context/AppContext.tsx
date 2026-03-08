@@ -179,7 +179,7 @@ export function AppProvider({ children }: AppProviderProps) {
     })
   }
 
-  const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name)
+  const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name, consumerConfig)
 
   return (
     <AppContext.Provider value={{

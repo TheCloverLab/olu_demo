@@ -14,7 +14,7 @@ import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 export default function ConsumerExperience() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { consumerConfig, consumerTemplate } = useApp()
+  const { consumerConfig, consumerExperience, consumerTemplate } = useApp()
   const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
   const [communitySnapshot, setCommunitySnapshot] = useState<CommunityMembershipSnapshot | null>(null)
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
@@ -87,6 +87,24 @@ export default function ConsumerExperience() {
               <p className="text-cyan-100/55 text-xs mb-1">Featured course</p>
               <p className="font-semibold text-sm">{featuredCourse?.title || 'Not set'}</p>
               <p className="text-cyan-100/50 text-xs mt-1">Used by storefront hero</p>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3 mt-4">
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
+              <p className="text-cyan-100/55 text-xs mb-1">Active headline</p>
+              <p className="font-semibold text-sm">
+                {consumerTemplate === 'fan_community'
+                  ? consumerExperience.community.hero.title
+                  : consumerExperience.courses.storefront.title}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
+              <p className="text-cyan-100/55 text-xs mb-1">Active supporting copy</p>
+              <p className="text-sm text-cyan-100/70 line-clamp-3">
+                {consumerTemplate === 'fan_community'
+                  ? consumerExperience.community.hero.description
+                  : consumerExperience.courses.storefront.description}
+              </p>
             </div>
           </div>
         </div>

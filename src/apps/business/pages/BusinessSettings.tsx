@@ -48,6 +48,7 @@ export default function BusinessSettings() {
   const [savingConsumerTemplate, setSavingConsumerTemplate] = useState<ConsumerTemplateKey | null>(null)
   const [creatorOptions, setCreatorOptions] = useState<User[]>([])
   const [courseOptions, setCourseOptions] = useState<ConsumerCourse[]>([])
+  const currentConsumerConfig = settings?.consumerConfig?.config_json || consumerConfig
 
   useEffect(() => {
     let cancelled = false
@@ -212,6 +213,30 @@ export default function BusinessSettings() {
             },
           },
     } : current)
+  }
+
+  function parseTopicEntries(value: string) {
+    return value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line, index) => {
+        const [name, members, description] = line.split('|').map((item) => item?.trim() || '')
+        return {
+          id: `custom-topic-${index + 1}`,
+          name,
+          members,
+          description,
+        }
+      })
+      .filter((item) => item.name && item.members && item.description)
+  }
+
+  function stringifyTopicEntries(value: any) {
+    if (!Array.isArray(value) || value.length === 0) return ''
+    return value
+      .map((item) => [item?.name, item?.members, item?.description].map((part) => part || '').join(' | '))
+      .join('\n')
   }
 
   if (loading) {
@@ -400,7 +425,7 @@ export default function BusinessSettings() {
                 <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Featured creator</p>
                 <select
                   aria-label="Featured creator"
-                  value={settings?.consumerConfig?.config_json?.featured_creator_id || consumerConfig.featured_creator_id || ''}
+                  value={currentConsumerConfig.featured_creator_id || ''}
                   onChange={(event) => handleConsumerConfigChange({ featured_creator_id: event.target.value || null })}
                   className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
                 >
@@ -414,7 +439,7 @@ export default function BusinessSettings() {
                 <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Featured course</p>
                 <select
                   aria-label="Featured course"
-                  value={settings?.consumerConfig?.config_json?.featured_course_slug || consumerConfig.featured_course_slug || ''}
+                  value={currentConsumerConfig.featured_course_slug || ''}
                   onChange={(event) => handleConsumerConfigChange({ featured_course_slug: event.target.value || null })}
                   className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
                 >
@@ -423,6 +448,120 @@ export default function BusinessSettings() {
                     <option key={course.id} value={course.slug}>{course.title}</option>
                   ))}
                 </select>
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Community hero title</p>
+                <input
+                  aria-label="Community hero title"
+                  value={currentConsumerConfig.community_hero_title || ''}
+                  onChange={(event) => handleConsumerConfigChange({ community_hero_title: event.target.value })}
+                  placeholder="A place for members, rituals, and conversations..."
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Community hero description</p>
+                <textarea
+                  aria-label="Community hero description"
+                  value={currentConsumerConfig.community_hero_description || ''}
+                  onChange={(event) => handleConsumerConfigChange({ community_hero_description: event.target.value })}
+                  placeholder="Join creator spaces built around access, identity..."
+                  rows={3}
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                />
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Membership title</p>
+                <input
+                  aria-label="Membership title"
+                  value={currentConsumerConfig.community_membership_title || ''}
+                  onChange={(event) => handleConsumerConfigChange({ community_membership_title: event.target.value })}
+                  placeholder="Join a creator circle"
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Membership subtitle</p>
+                <input
+                  aria-label="Membership subtitle"
+                  value={currentConsumerConfig.community_membership_subtitle || ''}
+                  onChange={(event) => handleConsumerConfigChange({ community_membership_subtitle: event.target.value })}
+                  placeholder="A clear ladder from casual follower to committed member."
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Topics title</p>
+                <input
+                  aria-label="Topics title"
+                  value={currentConsumerConfig.community_topics_title || ''}
+                  onChange={(event) => handleConsumerConfigChange({ community_topics_title: event.target.value })}
+                  placeholder="Browse active circles"
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Community topics</p>
+                <textarea
+                  aria-label="Community topics"
+                  value={stringifyTopicEntries(currentConsumerConfig.community_topic_entries)}
+                  onChange={(event) => handleConsumerConfigChange({ community_topic_entries: parseTopicEntries(event.target.value) })}
+                  placeholder="Weekly Critique Room | 1.8K | Members post work-in-progress and get feedback"
+                  rows={5}
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                />
+                <p className="text-[11px] text-cyan-100/45 mt-2">One topic per line. Format: name | members | description</p>
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course storefront title</p>
+                <input
+                  aria-label="Course storefront title"
+                  value={currentConsumerConfig.courses_storefront_title || ''}
+                  onChange={(event) => handleConsumerConfigChange({ courses_storefront_title: event.target.value })}
+                  placeholder="Sell structured knowledge, not merch."
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course storefront description</p>
+                <textarea
+                  aria-label="Course storefront description"
+                  value={currentConsumerConfig.courses_storefront_description || ''}
+                  onChange={(event) => handleConsumerConfigChange({ courses_storefront_description: event.target.value })}
+                  placeholder="This template replaces the merch shop with a course catalog..."
+                  rows={3}
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                />
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Catalog title</p>
+                <input
+                  aria-label="Catalog title"
+                  value={currentConsumerConfig.courses_catalog_title || ''}
+                  onChange={(event) => handleConsumerConfigChange({ courses_catalog_title: event.target.value })}
+                  placeholder="Course Catalog"
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
+              </label>
+              <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+                <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Catalog subtitle</p>
+                <input
+                  aria-label="Catalog subtitle"
+                  value={currentConsumerConfig.courses_catalog_subtitle || ''}
+                  onChange={(event) => handleConsumerConfigChange({ courses_catalog_subtitle: event.target.value })}
+                  placeholder="Structured offers with clear outcomes and chapter flow."
+                  className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                />
               </label>
             </div>
           </div>

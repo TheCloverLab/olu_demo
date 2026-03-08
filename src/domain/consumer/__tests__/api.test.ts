@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getCommunityMembershipSnapshot,
+  getConsumerExperience,
   getCourseLibrarySnapshot,
   getCourseSnapshotBySlug,
   resolveFeaturedCommunityCreator,
@@ -165,5 +166,25 @@ describe('consumer domain api', () => {
 
     expect(snapshot?.slug).toBe('community-growth')
     expect(snapshot?.sections).toHaveLength(1)
+  })
+
+  it('applies workspace consumer config overrides to the experience copy', () => {
+    const experience = getConsumerExperience('fan_community', 'Alice', {
+      community_hero_title: 'Members first, feed second.',
+      community_membership_title: 'Join the inner circle',
+      community_topics_title: 'Top discussions',
+      community_topic_entries: [
+        { name: 'Office Hours', members: '320', description: 'Weekly live critique.' },
+      ],
+      courses_storefront_title: 'Structured learning storefront',
+      courses_catalog_subtitle: 'Outcome-led catalog copy',
+    } as any)
+
+    expect(experience.community.hero.title).toBe('Members first, feed second.')
+    expect(experience.community.membership.title).toBe('Join the inner circle')
+    expect(experience.community.topics.title).toBe('Top discussions')
+    expect(experience.community.topics.entries[0].name).toBe('Office Hours')
+    expect(experience.courses.storefront.title).toBe('Structured learning storefront')
+    expect(experience.courses.catalog.subtitle).toBe('Outcome-led catalog copy')
   })
 })

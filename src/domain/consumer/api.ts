@@ -1,6 +1,6 @@
 import type { ConsumerTemplateKey } from '../../apps/consumer/templateConfig'
 import type { Course } from '../../apps/consumer/courseData'
-import type { Fan, MembershipTier, User } from '../../lib/supabase'
+import type { Fan, MembershipTier, User, WorkspaceConsumerConfig } from '../../lib/supabase'
 import {
   getConsumerCourseBySlug,
   getConsumerCourses,
@@ -168,11 +168,76 @@ const LEARNING_STEPS: LearningStep[] = [
   },
 ]
 
+function readStringOverride(value: unknown, fallback: string) {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback
+}
+
+function readTopicOverrides(value: unknown) {
+  if (!Array.isArray(value)) return COMMUNITY_TOPICS
+
+  const topics = value
+    .map((item, index) => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const name = typeof record.name === 'string' ? record.name.trim() : ''
+      const members = typeof record.members === 'string' ? record.members.trim() : ''
+      const description = typeof record.description === 'string' ? record.description.trim() : ''
+      if (!name || !members || !description) return null
+      return {
+        id: typeof record.id === 'string' && record.id.trim().length > 0 ? record.id : `custom-topic-${index + 1}`,
+        name,
+        members,
+        description,
+      }
+    })
+    .filter(Boolean) as CommunityTopic[]
+
+  return topics.length > 0 ? topics : COMMUNITY_TOPICS
+}
+
 export function getConsumerExperience(
   templateKey: ConsumerTemplateKey,
-  viewerName?: string
+  viewerName?: string,
+  config?: WorkspaceConsumerConfig['config_json']
 ): ConsumerExperience {
   const name = viewerName || 'Guest'
+  const communityHeroTitle = readStringOverride(
+    config?.community_hero_title,
+    'A place for members, rituals, and conversations that stay alive every week.'
+  )
+  const communityHeroDescription = readStringOverride(
+    config?.community_hero_description,
+    'Join creator spaces built around access, identity, discussion, and recurring drops instead of one-off purchases.'
+  )
+  const membershipTitle = readStringOverride(
+    config?.community_membership_title,
+    'Join a creator circle'
+  )
+  const membershipSubtitle = readStringOverride(
+    config?.community_membership_subtitle,
+    'A clear ladder from casual follower to committed member.'
+  )
+  const topicsTitle = readStringOverride(
+    config?.community_topics_title,
+    'Browse active circles'
+  )
+  const communityTopics = readTopicOverrides(config?.community_topic_entries)
+  const storefrontTitle = readStringOverride(
+    config?.courses_storefront_title,
+    'Sell structured knowledge, not merch.'
+  )
+  const storefrontDescription = readStringOverride(
+    config?.courses_storefront_description,
+    'This template replaces the merch shop with a course catalog, checkout flow, and learning hub.'
+  )
+  const catalogTitle = readStringOverride(
+    config?.courses_catalog_title,
+    'Course Catalog'
+  )
+  const catalogSubtitle = readStringOverride(
+    config?.courses_catalog_subtitle,
+    'Structured offers with clear outcomes and chapter flow.'
+  )
 
   return {
     templateKey,
@@ -188,9 +253,8 @@ export function getConsumerExperience(
     community: {
       hero: {
         eyebrow: 'Fan Community',
-        title: 'A place for members, rituals, and conversations that stay alive every week.',
-        description:
-          'Join creator spaces built around access, identity, discussion, and recurring drops instead of one-off purchases.',
+        title: communityHeroTitle,
+        description: communityHeroDescription,
         stats: [
           { label: 'Active members', value: '8.4K' },
           { label: 'Live circles', value: '24' },
@@ -198,17 +262,17 @@ export function getConsumerExperience(
         ],
       },
       membership: {
-        title: 'Join a creator circle',
-        subtitle: 'A clear ladder from casual follower to committed member.',
+        title: membershipTitle,
+        subtitle: membershipSubtitle,
         ctaLabel: 'Open membership tiers',
         tiers: COMMUNITY_TIERS,
       },
       topics: {
-        title: 'Browse active circles',
+        title: topicsTitle,
         subtitle: 'Recurring discussions, creator rituals, and member-only threads.',
         whyItExists:
           'The community template needs a first-class topic layer. This page gives members a place to enter circles instead of treating everything as a flat feed.',
-        entries: COMMUNITY_TOPICS,
+        entries: communityTopics,
       },
       spaces: {
         title: 'Creator spaces',
@@ -222,15 +286,14 @@ export function getConsumerExperience(
     courses: {
       storefront: {
         eyebrow: 'Course Storefront',
-        title: 'Sell structured knowledge, not merch.',
-        description:
-          'This template replaces the merch shop with a course catalog, checkout flow, and learning hub.',
+        title: storefrontTitle,
+        description: storefrontDescription,
         primaryCta: 'Open catalog',
         secondaryCta: 'View learning hub',
       },
       catalog: {
-        title: 'Course Catalog',
-        subtitle: 'Structured offers with clear outcomes and chapter flow.',
+        title: catalogTitle,
+        subtitle: catalogSubtitle,
       },
       detail: {
         learnTitle: 'What you will learn',

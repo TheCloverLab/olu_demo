@@ -39,6 +39,20 @@ describe('ConsumerExperience', () => {
         featured_creator_id: 'creator-1',
         featured_course_slug: 'community-growth',
       },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
     } as any)
     vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
       creator: { id: 'creator-1', name: 'Luna Chen' },
@@ -66,6 +80,20 @@ describe('ConsumerExperience', () => {
       consumerConfig: {
         featured_creator_id: 'creator-1',
         featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
       },
     } as any)
     vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({

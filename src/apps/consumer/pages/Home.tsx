@@ -184,7 +184,7 @@ function CommunityHome() {
               {community.topics.entries.map((topic) => (
                 <button
                   key={topic.id}
-                  onClick={() => navigate('/topics')}
+                  onClick={() => navigate(`/topics/${topic.id}`)}
                   className="w-full text-left rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/8 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">

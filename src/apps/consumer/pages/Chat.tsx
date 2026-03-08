@@ -4,11 +4,13 @@ import { motion } from 'framer-motion'
 import { Search, Send, ArrowLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
+import { useApp } from '../../../context/AppContext'
 import { addSocialChatMessage, ensureSocialChat, getSocialChatMessages, getSocialChatsByUser } from '../../../services/api'
 
 export default function Chat() {
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { consumerExperience } = useApp()
   const [selected, setSelected] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [chats, setChats] = useState<any[]>([])
@@ -73,6 +75,10 @@ export default function Chat() {
   }, [selected])
 
   const chat = useMemo(() => chats.find((c) => c.id === selected), [chats, selected])
+  const topicId = searchParams.get('topic')
+  const activeTopic = topicId
+    ? consumerExperience.community.topics.entries.find((topic) => topic.id === topicId)
+    : null
 
   const sendMessage = async () => {
     if (!input.trim() || !selected) return
@@ -150,6 +156,13 @@ export default function Chat() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <h1 className="font-black text-2xl mb-4">Messages</h1>
+      {activeTopic && (
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 mb-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Topic lobby</p>
+          <p className="font-semibold text-sm">{activeTopic.name}</p>
+          <p className="text-sm text-olu-muted mt-2">{activeTopic.description}</p>
+        </div>
+      )}
       <div className="relative mb-4">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-olu-muted" />
         <input placeholder="Search messages..." className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/15 transition-colors" />

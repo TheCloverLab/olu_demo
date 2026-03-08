@@ -1,11 +1,59 @@
 import { ChevronRight, Flame, MessageCircle, Users } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
 
 export default function Topics() {
   const navigate = useNavigate()
+  const { topicId } = useParams()
   const { consumerExperience } = useApp()
   const { topics } = consumerExperience.community
+  const activeTopic = topicId ? topics.entries.find((topic) => topic.id === topicId) : null
+
+  if (topicId && !activeTopic) {
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Topic not found.</div>
+  }
+
+  if (activeTopic) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-11 h-11 rounded-2xl bg-rose-500/15 text-rose-300 flex items-center justify-center">
+            <MessageCircle size={18} />
+          </div>
+          <div>
+            <h1 className="font-black text-2xl">{activeTopic.name}</h1>
+            <p className="text-olu-muted text-sm">{activeTopic.members} members in this circle</p>
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <Flame size={15} className="text-orange-300" />
+            <p className="font-semibold">Topic brief</p>
+          </div>
+          <p className="text-sm text-olu-muted leading-relaxed">{activeTopic.description}</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Why members join</p>
+            <p className="text-sm text-white/72 leading-relaxed">
+              This circle gives members a dedicated discussion space instead of sending every conversation into the main feed.
+            </p>
+          </div>
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">What to do next</p>
+            <button
+              onClick={() => navigate(`/chat?topic=${activeTopic.id}`)}
+              className="mt-1 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity"
+            >
+              Open discussion
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -33,7 +81,7 @@ export default function Topics() {
         {topics.entries.map((topic) => (
           <button
             key={topic.id}
-            onClick={() => navigate('/chat')}
+            onClick={() => navigate(`/topics/${topic.id}`)}
             className="w-full rounded-[24px] border border-white/10 bg-[#111111] p-5 text-left hover:bg-[#151515] transition-colors"
           >
             <div className="flex items-start justify-between gap-3">

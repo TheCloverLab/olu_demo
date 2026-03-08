@@ -3,7 +3,14 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShoppingBag, Sparkles, CheckCircle2, XCircle, ArrowRight, RefreshCcw } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
-import { getRevenueAnalytics, getViewsAnalytics, getFansByCreator, getIPLicensesByCreator, getIPInfringementsByCreator, getProductsByCreator } from '../../../services/api'
+import {
+  getCreatorCustomers,
+  getCreatorInfringements,
+  getCreatorLicenses,
+  getCreatorRevenueAnalytics,
+  getCreatorStoreProducts,
+  getCreatorViewsAnalytics,
+} from '../../../domain/business/api'
 import { getLatestBusinessCampaignForCreator, approveBusinessCampaignTarget, rejectBusinessCampaignTarget } from '../../../domain/campaign/api'
 import type { AnalyticsRevenue, AnalyticsViews, BusinessCampaignWorkflow, Fan, IPLicense, IPInfringement, Product } from '../../../lib/supabase'
 
@@ -55,12 +62,12 @@ export default function CreatorConsole() {
 
     try {
       const [revenueData, viewsData, fansData, licensesData, infringementsData, productsData, workflowData] = await Promise.all([
-        getRevenueAnalytics(user.id),
-        getViewsAnalytics(user.id),
-        getFansByCreator(user.id),
-        getIPLicensesByCreator(user.id),
-        getIPInfringementsByCreator(user.id),
-        getProductsByCreator(user.id),
+        getCreatorRevenueAnalytics(user.id),
+        getCreatorViewsAnalytics(user.id),
+        getCreatorCustomers(user.id),
+        getCreatorLicenses(user.id),
+        getCreatorInfringements(user.id),
+        getCreatorStoreProducts(user.id),
         getLatestBusinessCampaignForCreator(user.id),
       ])
 

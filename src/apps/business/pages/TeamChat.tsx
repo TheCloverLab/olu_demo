@@ -458,11 +458,11 @@ export default function TeamChat() {
   )
 
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto">
+    <div className="flex flex-col h-full max-w-3xl mx-auto px-4 md:px-0">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-olu-border flex-shrink-0">
-        <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors mr-1">
-          <ArrowLeft size={18} className="text-olu-muted" />
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-cyan-500/10 flex-shrink-0 rounded-t-[28px] bg-[linear-gradient(135deg,rgba(13,27,46,0.92),rgba(8,18,33,0.84))] shadow-[0_18px_60px_rgba(2,8,23,0.18)]">
+        <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-cyan-400/10 transition-colors mr-1">
+          <ArrowLeft size={18} className="text-cyan-100/60" />
         </button>
         <div className="relative flex-shrink-0">
           {agent.avatarImg
@@ -471,17 +471,17 @@ export default function TeamChat() {
           }
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm">{agent.name}</p>
+          <p className="font-semibold text-sm text-white">{agent.name}</p>
           <div className="flex items-center gap-1.5">
             <div className={clsx('w-1.5 h-1.5 rounded-full', loading ? 'bg-amber-400' : agent.status === 'online' ? 'bg-emerald-400' : 'bg-gray-500')} />
-            <p className="text-olu-muted text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
+            <p className="text-cyan-100/55 text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
           </div>
         </div>
         {!isGroup && tasks.length > 0 && (
           <div className="flex gap-1">
             {['chat', 'tasks'].map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-white/10 text-sky-400' : 'text-olu-muted hover:text-olu-text')}>
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/55 hover:text-white bg-[#0b1523] border border-cyan-500/10')}>
                 {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
               </button>
             ))}
@@ -505,7 +505,7 @@ export default function TeamChat() {
             </div>
           )}
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide rounded-b-[28px] bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-b border-cyan-500/10 shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
             {messages.map((msg, i) => (
               <motion.div
                 key={i}
@@ -526,20 +526,30 @@ export default function TeamChat() {
                   {msg.from !== 'user' && isGroup && msg.from !== 'agent' && (() => {
                     const participant = allAgents.find(a => a.name === msg.from)
                     return (
-                      <p className="text-xs text-olu-muted px-1">{msg.from}{participant?.role ? ` · ${participant.role}` : ''}</p>
+                      <p className="text-xs text-cyan-100/45 px-1">{msg.from}{participant?.role ? ` · ${participant.role}` : ''}</p>
                     )
                   })()}
-                  <div className={clsx('px-4 py-2.5 rounded-2xl text-sm leading-relaxed', msg.from === 'user' ? 'bg-white text-black rounded-tr-sm' : 'glass rounded-tl-sm')}>
+                  <div className={clsx(
+                    'px-5 py-3.5 rounded-[24px] text-[15px] leading-7 border shadow-[0_16px_40px_rgba(2,8,23,0.18)]',
+                    msg.from === 'user'
+                      ? 'bg-cyan-300 text-[#04111f] border-cyan-200/60 rounded-tr-[10px]'
+                      : 'bg-[#121821] text-white border-cyan-500/10 rounded-tl-[10px]'
+                  )}>
                     {msg.from === 'agent' ? (
                       msg.text ? (
-                        <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-pre:bg-white/10 prose-code:bg-white/10 prose-code:px-1 prose-code:rounded prose-headings:text-white">
+                        <div className={clsx(
+                          'prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded prose-headings:mb-2',
+                          msg.from === 'user'
+                            ? 'prose-headings:text-[#04111f] prose-p:text-[#04111f] prose-li:text-[#04111f] prose-strong:text-[#04111f] prose-code:bg-black/10 prose-code:text-[#04111f] prose-pre:bg-black/10'
+                            : 'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[#0b1523]'
+                        )}>
                           <ReactMarkdown>{preprocessMarkdown(msg.text)}</ReactMarkdown>
                         </div>
                       ) : (
                         <span className="flex gap-1 items-center h-4">
-                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-olu-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-100/45 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-100/45 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-100/45 animate-bounce" style={{ animationDelay: '300ms' }} />
                         </span>
                       )
                     ) : (isGroup && participantNames.length > 0)
@@ -547,7 +557,7 @@ export default function TeamChat() {
                       : msg.text}
                   </div>
                   {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
-                    <p className="text-olu-muted text-xs px-1">{msg.time}</p>
+                    <p className="text-cyan-100/45 text-xs px-1">{msg.time}</p>
                   )}
                 </div>
               </motion.div>
@@ -560,9 +570,9 @@ export default function TeamChat() {
                   ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
                   : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
                 }
-                <div className="px-4 py-3 glass rounded-2xl rounded-tl-sm flex items-center gap-1.5">
-                  <Loader2 size={14} className="text-olu-muted animate-spin" />
-                  <span className="text-olu-muted text-sm">Thinking...</span>
+                <div className="px-4 py-3 rounded-[24px] rounded-tl-[10px] bg-[#121821] border border-cyan-500/10 flex items-center gap-1.5 shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+                  <Loader2 size={14} className="text-cyan-100/45 animate-spin" />
+                  <span className="text-cyan-100/55 text-sm">Thinking...</span>
                 </div>
               </motion.div>
             )}
@@ -571,11 +581,11 @@ export default function TeamChat() {
 
           {/* Input */}
           {thinking && (
-            <div className="px-4 py-2 border-t border-olu-border">
-              <p className="text-olu-muted text-xs italic line-clamp-2">Thinking: {thinking}...</p>
+            <div className="px-4 py-2 border-x border-cyan-500/10 bg-[#071221]">
+              <p className="text-cyan-100/45 text-xs italic line-clamp-2">Thinking: {thinking}...</p>
             </div>
           )}
-          <div className="p-4 border-t border-olu-border flex-shrink-0">
+          <div className="p-4 border-x border-b border-cyan-500/10 rounded-b-[28px] bg-[#071221] flex-shrink-0">
             <div className="flex gap-3 items-end">
               <div className="flex-1 relative">
                 {isGroup && (
@@ -585,7 +595,7 @@ export default function TeamChat() {
                     onSelect={p => mention.accept(input, setInput, p)}
                   />
                 )}
-                <div className="glass rounded-2xl overflow-hidden border border-olu-border focus-within:border-white/20 transition-colors">
+                <div className="rounded-2xl overflow-hidden border border-cyan-500/10 bg-[#0b1523] focus-within:border-cyan-300/40 transition-colors">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -599,14 +609,14 @@ export default function TeamChat() {
                   }}
                   placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
                   rows={1}
-                  className="w-full px-4 py-3 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none resize-none"
+                  className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
                 />
                 </div>
               </div>
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || loading}
-                className="p-3 rounded-xl bg-white text-black disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
+                className="p-3 rounded-xl bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
               >
                 <Send size={16} />
               </button>

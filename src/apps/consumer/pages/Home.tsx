@@ -192,7 +192,7 @@ function PostCard({ post }: { post: any }) {
 }
 
 export default function Home() {
-  const { currentRole } = useApp()
+  const { currentRole, currentUser } = useApp()
   const navigate = useNavigate()
   const [tab, setTab] = useState('discover')
   const [filter, setFilter] = useState('All')
@@ -218,9 +218,28 @@ export default function Home() {
     loadData()
   }, [])
 
-  const filtered = creators.filter(c => filter === 'All')
-  const recent = creators.slice(0, 3)
-  const popular = [...creators].sort((a, b) => b.followers - a.followers).slice(0, 4)
+  const discoverCreators = creators.filter((creator) => creator.id !== currentUser?.id)
+
+  function matchesFilter(creator: User) {
+    if (filter === 'All') return true
+
+    const text = `${creator.name} ${creator.handle} ${creator.bio || ''}`.toLowerCase()
+    const keywordMap: Record<string, string[]> = {
+      Art: ['art', 'artist', 'design', 'illustration', 'digital artist', 'creative'],
+      Gaming: ['gaming', 'gamer', 'stream', 'esports', 'game'],
+      Music: ['music', 'musician', 'producer', 'dj', 'song', 'audio'],
+      Fashion: ['fashion', 'style', 'beauty', 'lifestyle', 'outfit'],
+      Tech: ['tech', 'technology', 'startup', 'product', 'founder', 'ai'],
+      Coding: ['coding', 'code', 'developer', 'engineer', 'programming', 'software'],
+    }
+
+    return (keywordMap[filter] || []).some((keyword) => text.includes(keyword))
+  }
+
+  const filtered = discoverCreators.filter(matchesFilter)
+  const discoverFeed = filtered.length > 0 ? filtered : filter === 'All' ? discoverCreators : []
+  const recent = discoverFeed.slice(0, 3)
+  const popular = [...discoverFeed].sort((a, b) => b.followers - a.followers).slice(0, 4)
 
   return (
     <div className="pb-24 md:pb-6">
@@ -294,6 +313,7 @@ export default function Home() {
                   <MoreHorizontal size={16} className="text-olu-muted ml-auto flex-shrink-0" />
                 </button>
               ))}
+              {recent.length === 0 && <p className="text-olu-muted text-sm">No creators match this filter yet.</p>}
             </div>
           </div>
 
@@ -309,9 +329,10 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-1">
-              {filtered.map(creator => (
+              {discoverFeed.map(creator => (
                 <CreatorCard key={creator.id} creator={creator} />
               ))}
+              {discoverFeed.length === 0 && <p className="text-olu-muted text-sm">No creators match this filter yet.</p>}
             </div>
           </div>
 
@@ -327,6 +348,7 @@ export default function Home() {
               {popular.map(creator => (
                 <CreatorRow key={creator.id} creator={creator} />
               ))}
+              {popular.length === 0 && <p className="py-4 text-olu-muted text-sm">No popular creators match this filter yet.</p>}
             </div>
           </div>
         </div>

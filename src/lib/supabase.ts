@@ -196,6 +196,32 @@ export type Campaign = {
   updated_at?: string
 }
 
+export type SupplierProduct = {
+  id: string
+  supplier_id: string
+  sku?: string
+  name: string
+  price: number
+  revenue_month?: number
+  sold_month?: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type SupplierCreatorPartnership = {
+  id: string
+  supplier_id: string
+  creator_id: string
+  status: 'active' | 'pending' | 'paused' | 'inactive'
+  channel_manager?: string | null
+  products_count?: number
+  ip_approved?: boolean
+  monthly_sales?: number
+  created_at?: string
+  updated_at?: string
+  creator?: Pick<User, 'id' | 'name' | 'handle' | 'avatar_img' | 'avatar_color' | 'initials'>
+}
+
 export type BusinessCampaign = {
   id: string
   advertiser_id: string

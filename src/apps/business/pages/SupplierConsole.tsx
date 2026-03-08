@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Package, TrendingUp, Users, DollarSign, Boxes, Link2, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
-import { getSupplierPartnershipsBySupplier, getSupplierProductsBySupplier } from '../../../services/api'
+import { getSupplierCatalog, getSupplierCreatorLinks } from '../../../domain/business/api'
+import type { SupplierCreatorPartnership, SupplierProduct } from '../../../lib/supabase'
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: TrendingUp },
@@ -31,8 +32,8 @@ function MetricCard({ label, value, icon: Icon }: { label: string; value: string
 export default function SupplierConsole() {
   const { user } = useAuth()
   const [tab, setTab] = useState<TabKey>('dashboard')
-  const [products, setProducts] = useState<any[]>([])
-  const [partnerships, setPartnerships] = useState<any[]>([])
+  const [products, setProducts] = useState<SupplierProduct[]>([])
+  const [partnerships, setPartnerships] = useState<SupplierCreatorPartnership[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -44,8 +45,8 @@ export default function SupplierConsole() {
 
       try {
         const [productsData, partnershipsData] = await Promise.all([
-          getSupplierProductsBySupplier(user.id),
-          getSupplierPartnershipsBySupplier(user.id),
+          getSupplierCatalog(user.id),
+          getSupplierCreatorLinks(user.id),
         ])
         setProducts(productsData || [])
         setPartnerships(partnershipsData || [])

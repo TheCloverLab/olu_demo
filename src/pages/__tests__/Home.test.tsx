@@ -32,6 +32,7 @@ vi.mock('react-router-dom', async () => {
 const mockCreators = [
   { id: 'c1', name: 'Luna Chen', handle: '@luna', bio: 'Digital artist', role: 'creator', followers: 5000, avatar_color: 'from-violet-500 to-purple-700', initials: 'LC', verified: true },
   { id: 'c2', name: 'Alex Park', handle: '@alex', bio: 'Gamer', role: 'creator', followers: 3000, avatar_color: 'from-pink-500 to-rose-600', initials: 'AP', verified: false },
+  { id: 'user-1', name: 'Current User', handle: '@me', bio: 'Tech creator', role: 'creator', followers: 1500, avatar_color: 'from-sky-500 to-cyan-700', initials: 'CU', verified: false },
 ]
 
 const mockPosts = [
@@ -82,6 +83,32 @@ describe('Home', () => {
       expect(screen.getByText('Recently visited')).toBeInTheDocument()
       expect(screen.getByText('Creators for you')).toBeInTheDocument()
       expect(screen.getByText('Popular this week')).toBeInTheDocument()
+    })
+  })
+
+  it('filters discover lists and excludes the current user from recently visited', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><Home /></MemoryRouter>)
+
+    await waitFor(() => {
+      expect(screen.getByText('Recently visited')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Current User')).not.toBeInTheDocument()
+
+    await user.click(screen.getByText('Music'))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('No creators match this filter yet.').length).toBeGreaterThan(0)
+      expect(screen.queryByText('Luna Chen')).not.toBeInTheDocument()
+      expect(screen.queryByText('Alex Park')).not.toBeInTheDocument()
+    })
+
+    await user.click(screen.getByText('Gaming'))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Alex Park').length).toBeGreaterThan(0)
+      expect(screen.queryByText('Current User')).not.toBeInTheDocument()
     })
   })
 

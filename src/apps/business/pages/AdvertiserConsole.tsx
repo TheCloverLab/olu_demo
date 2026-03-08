@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Megaphone, Target, DollarSign, TrendingUp, Users, Sparkles, ArrowRight, RefreshCcw, CheckCircle2, Clock3 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
-import { getCampaignsByAdvertiser, getCreators } from '../../../services/api'
+import { getBusinessCreators, getMarketingCampaignsForAdvertiser } from '../../../domain/business/api'
 import { getLatestBusinessCampaignForAdvertiser, startBusinessCampaignDemo, advanceBusinessCampaign } from '../../../domain/campaign/api'
 import type { BusinessCampaignWorkflow, Campaign, User } from '../../../lib/supabase'
 
@@ -63,10 +63,10 @@ export default function AdvertiserConsole() {
 
     try {
       const [campaignData, workflowData] = await Promise.all([
-        getCampaignsByAdvertiser(user.id),
+        getMarketingCampaignsForAdvertiser(user.id),
         getLatestBusinessCampaignForAdvertiser(user.id),
       ])
-      const creatorData = await getCreators()
+      const creatorData = await getBusinessCreators()
       setCampaigns(campaignData)
       setWorkflow(workflowData)
       setCreators(creatorData)

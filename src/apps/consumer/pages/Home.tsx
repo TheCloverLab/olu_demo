@@ -217,13 +217,13 @@ export default function Home() {
               </h1>
               <p className="text-olu-muted text-sm mt-2 max-w-2xl leading-relaxed">
                 {activeAppCount > 0
-                  ? 'Jump back into the apps you joined.'
+                  ? 'Jump back into what you joined.'
                   : 'Explore creators, communities, and academies.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
-                { label: 'Apps', value: formatNumber(activeAppCount) },
+                { label: 'Joined', value: formatNumber(activeAppCount) },
                 { label: 'Communities', value: formatNumber(joinedCommunities.length) },
                 { label: 'Academies', value: formatNumber(purchasedCourses.length) },
               ].map((item) => (
@@ -316,7 +316,7 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Updates</p>
-                <h2 className="font-bold text-xl">New from your apps</h2>
+                <h2 className="font-bold text-xl">New for you</h2>
               </div>
               <Flame size={18} className="text-orange-300" />
             </div>

@@ -103,7 +103,7 @@ describe('Home', () => {
       expect(screen.getByText('Welcome back.')).toBeInTheDocument()
       expect(screen.getAllByText('Continue learning').length).toBeGreaterThan(0)
       expect(screen.getByText('Your communities')).toBeInTheDocument()
-      expect(screen.getByText('New from your apps')).toBeInTheDocument()
+      expect(screen.getByText('New for you')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
       expect(screen.getByText('Build a Paid Fan Community')).toBeInTheDocument()
       expect(screen.getAllByText('Core').length).toBeGreaterThan(0)

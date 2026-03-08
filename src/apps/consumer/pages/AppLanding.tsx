@@ -190,7 +190,12 @@ export default function AppLanding() {
                 </div>
                 {isCommunity ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
-                    <span>Hosted by {creator.name}</span>
+                    <button
+                      onClick={() => navigate(`/people/${creator.id}`)}
+                      className="hover:text-white transition-colors"
+                    >
+                      Hosted by {creator.name}
+                    </button>
                     {canManageApp ? (
                       <button
                         onClick={() => navigate('/business/consumer')}
@@ -208,7 +213,12 @@ export default function AppLanding() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-olu-muted text-sm mt-2">{creator.handle}</p>
+                  <button
+                    onClick={() => navigate(`/people/${creator.id}`)}
+                    className="text-olu-muted text-sm mt-2 hover:text-white transition-colors"
+                  >
+                    {creator.handle}
+                  </button>
                 )}
                 <p className="text-sm text-olu-muted mt-3 leading-relaxed max-w-2xl">{creator.bio || appCopy.summary}</p>
               </div>

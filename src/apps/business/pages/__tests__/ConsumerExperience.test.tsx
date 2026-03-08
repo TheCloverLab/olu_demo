@@ -23,6 +23,7 @@ vi.mock('../../../../domain/consumer/api', () => ({
 
 vi.mock('../../../../services/api', () => ({
   updateConsumerCourse: vi.fn(),
+  updateConsumerCourseSection: vi.fn(),
 }))
 
 describe('ConsumerExperience', () => {
@@ -121,7 +122,9 @@ describe('ConsumerExperience', () => {
             students: 1240,
             completionRate: '68%',
           },
-          sections: [],
+          sections: [
+            { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+          ],
         },
       ],
       featuredCourse: {
@@ -141,7 +144,9 @@ describe('ConsumerExperience', () => {
           students: 1240,
           completionRate: '68%',
         },
-        sections: [],
+        sections: [
+          { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+        ],
       },
     } as any)
 
@@ -198,7 +203,9 @@ describe('ConsumerExperience', () => {
             students: 1240,
             completionRate: '68%',
           },
-          sections: [],
+          sections: [
+            { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+          ],
         },
       ],
       featuredCourse: {
@@ -218,7 +225,9 @@ describe('ConsumerExperience', () => {
           students: 1240,
           completionRate: '68%',
         },
-        sections: [],
+        sections: [
+          { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+        ],
       },
     } as any)
     vi.mocked(Api.updateConsumerCourse).mockResolvedValue({
@@ -241,6 +250,98 @@ describe('ConsumerExperience', () => {
         title: 'Scale a Paid Fan Community',
       }))
       expect(screen.getAllByText('Scale a Paid Fan Community').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('saves lesson copy changes', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'sell_courses',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
+      courses: [
+        {
+          id: 'course-1',
+          slug: 'community-growth',
+          title: 'Build a Paid Fan Community',
+          subtitle: 'Turn audience attention into a business.',
+          instructor: 'Luna Chen',
+          price: 129,
+          level: 'Intermediate',
+          hero: 'from-rose-600 to-orange-500',
+          headline: 'Headline',
+          description: 'Description',
+          outcomes: [],
+          stats: {
+            lessons: 18,
+            students: 1240,
+            completionRate: '68%',
+          },
+          sections: [
+            { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+          ],
+        },
+      ],
+      featuredCourse: {
+        id: 'course-1',
+        slug: 'community-growth',
+        title: 'Build a Paid Fan Community',
+        subtitle: 'Turn audience attention into a business.',
+        instructor: 'Luna Chen',
+        price: 129,
+        level: 'Intermediate',
+        hero: 'from-rose-600 to-orange-500',
+        headline: 'Headline',
+        description: 'Description',
+        outcomes: [],
+        stats: {
+          lessons: 18,
+          students: 1240,
+          completionRate: '68%',
+        },
+        sections: [
+          { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+        ],
+      },
+    } as any)
+    vi.mocked(Api.updateConsumerCourseSection).mockResolvedValue({
+      id: 'cg-1',
+      title: 'Community Positioning',
+      summary: 'Sharper lesson summary.',
+      preview: false,
+    } as any)
+
+    render(<MemoryRouter><ConsumerExperience /></MemoryRouter>)
+
+    const lessonTitle = await screen.findByDisplayValue('Positioning')
+    await user.clear(lessonTitle)
+    await user.type(lessonTitle, 'Community Positioning')
+    await user.click(screen.getByText('Save lesson copy'))
+
+    await waitFor(() => {
+      expect(Api.updateConsumerCourseSection).toHaveBeenCalledWith('cg-1', expect.objectContaining({
+        title: 'Community Positioning',
+      }))
+      expect(screen.getAllByDisplayValue('Community Positioning').length).toBeGreaterThan(0)
     })
   })
 })

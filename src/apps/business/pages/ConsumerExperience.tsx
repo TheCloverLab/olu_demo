@@ -8,7 +8,7 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
-import { updateConsumerCourse } from '../../../services/api'
+import { updateConsumerCourse, updateConsumerCourseSection } from '../../../services/api'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 
@@ -26,7 +26,15 @@ export default function ConsumerExperience() {
     headline: '',
     description: '',
   })
+  const [sectionDrafts, setSectionDrafts] = useState<Array<{
+    id: string
+    title: string
+    summary: string
+    preview: boolean
+    duration: string
+  }>>([])
   const [savingCourse, setSavingCourse] = useState(false)
+  const [savingSectionId, setSavingSectionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -55,6 +63,15 @@ export default function ConsumerExperience() {
             headline: snapshot.featuredCourse?.headline || '',
             description: snapshot.featuredCourse?.description || '',
           })
+          setSectionDrafts(
+            (snapshot.featuredCourse?.sections || []).map((section) => ({
+              id: section.id,
+              title: section.title,
+              summary: section.summary,
+              preview: !!section.preview,
+              duration: section.duration,
+            }))
+          )
           setCommunitySnapshot(null)
         }
       } catch (error) {
@@ -92,6 +109,37 @@ export default function ConsumerExperience() {
       console.error('Failed to update featured course', error)
     } finally {
       setSavingCourse(false)
+    }
+  }
+
+  async function handleSaveSection(sectionId: string) {
+    const section = sectionDrafts.find((item) => item.id === sectionId)
+    if (!section || !featuredCourse) return
+
+    setSavingSectionId(sectionId)
+    try {
+      const updated = await updateConsumerCourseSection(sectionId, {
+        title: section.title,
+        summary: section.summary,
+        preview: section.preview,
+      })
+      setFeaturedCourse((current) => current ? {
+        ...current,
+        sections: current.sections.map((item) => (
+          item.id === sectionId
+            ? {
+                ...item,
+                title: updated.title,
+                summary: updated.summary,
+                preview: updated.preview,
+              }
+            : item
+        )),
+      } : current)
+    } catch (error) {
+      console.error('Failed to update course section', error)
+    } finally {
+      setSavingSectionId(null)
     }
   }
 
@@ -309,7 +357,7 @@ export default function ConsumerExperience() {
       )}
 
       {!loading && consumerTemplate === 'sell_courses' && featuredCourse && (
-        <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+        <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] space-y-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen size={16} className="text-emerald-300" />
             <p className="font-bold">Featured course editor</p>
@@ -357,6 +405,71 @@ export default function ConsumerExperience() {
           >
             {savingCourse ? 'Saving...' : 'Save featured course copy'}
           </button>
+
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Users size={16} className="text-cyan-300" />
+              <p className="font-bold">Lesson editor</p>
+            </div>
+            <div className="space-y-3">
+              {sectionDrafts.map((section, index) => (
+                <div key={section.id} className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <p className="font-semibold text-sm">Lesson {index + 1}</p>
+                      <p className="text-xs text-cyan-100/50 mt-1">{section.duration}</p>
+                    </div>
+                    <label className="inline-flex items-center gap-2 text-xs text-cyan-100/70">
+                      <input
+                        type="checkbox"
+                        checked={section.preview}
+                        onChange={(event) => setSectionDrafts((current) => current.map((item) => (
+                          item.id === section.id
+                            ? { ...item, preview: event.target.checked }
+                            : item
+                        )))}
+                      />
+                      Preview
+                    </label>
+                  </div>
+                  <div className="grid sm:grid-cols-[0.9fr,1.1fr] gap-3">
+                    <label className="block">
+                      <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Lesson title</p>
+                      <input
+                        value={section.title}
+                        onChange={(event) => setSectionDrafts((current) => current.map((item) => (
+                          item.id === section.id
+                            ? { ...item, title: event.target.value }
+                            : item
+                        )))}
+                        className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                      />
+                    </label>
+                    <label className="block">
+                      <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Lesson summary</p>
+                      <textarea
+                        value={section.summary}
+                        onChange={(event) => setSectionDrafts((current) => current.map((item) => (
+                          item.id === section.id
+                            ? { ...item, summary: event.target.value }
+                            : item
+                        )))}
+                        rows={3}
+                        className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    onClick={() => handleSaveSection(section.id)}
+                    disabled={savingSectionId === section.id}
+                    className="mt-3 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+                  >
+                    {savingSectionId === section.id ? 'Saving lesson...' : 'Save lesson copy'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       )}
     </div>

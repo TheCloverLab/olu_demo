@@ -408,6 +408,21 @@ export async function updateConsumerCourse(
   return data as ConsumerCourse
 }
 
+export async function updateConsumerCourseSection(
+  sectionId: string,
+  updates: Partial<Pick<ConsumerCourseSection, 'title' | 'summary' | 'preview'>>
+) {
+  const { data, error } = await supabase
+    .from('consumer_course_sections')
+    .update(updates)
+    .eq('id', sectionId)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerCourseSection
+}
+
 export async function getConsumerMembership(userId: string, creatorId: string) {
   const { data, error } = await supabase
     .from('consumer_memberships')

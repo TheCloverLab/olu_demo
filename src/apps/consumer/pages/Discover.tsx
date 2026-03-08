@@ -137,23 +137,27 @@ export default function Discover() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
-      <section className="rounded-3xl border border-cyan-500/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_36%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)] p-6 md:p-7">
-        <div className="flex items-center gap-2 text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-3">
+      <section className="rounded-3xl border border-white/10 bg-[#0c1421] p-4 md:p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+        <div className="flex items-center gap-2 text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">
           <Compass size={14} />
           Discover
         </div>
-        <h1 className="font-black text-2xl md:text-4xl max-w-3xl leading-tight">Discover new apps.</h1>
-        <p className="text-cyan-100/60 text-sm md:text-base max-w-2xl mt-3">
+        <h1 className="font-black text-xl md:text-2xl max-w-3xl leading-tight">Discover new apps.</h1>
+        <p className="text-cyan-100/60 text-sm max-w-2xl mt-2">
           Browse creators, communities, and academies.
         </p>
-        <div className="flex flex-wrap gap-2 mt-5">
+          </div>
+          <div className="flex flex-wrap gap-2">
           {['Community', 'Academy', 'Creator-led'].map((chip) => (
             <span key={chip} className="rounded-full border border-cyan-500/10 bg-white/5 px-3 py-1.5 text-xs text-cyan-100/70">
               {chip}
             </span>
           ))}
         </div>
-        <div className="mt-5 rounded-2xl border border-cyan-500/10 bg-[#091422] px-4 py-3 flex items-center gap-3">
+        </div>
+        <div className="mt-4 rounded-2xl border border-cyan-500/10 bg-[#091422] px-4 py-3 flex items-center gap-3">
           <Search size={16} className="text-cyan-100/45" />
           <input
             value={query}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeCheck, BookOpen, Clock3, Settings, Share2, Sparkles, Users } from 'lucide-react'
+import { BadgeCheck, BookOpen, Clock3, ExternalLink, Settings, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
@@ -22,7 +22,7 @@ type LearningItem = {
   progress: ConsumerLessonProgress[]
 }
 
-export default function Profile() {
+export default function UserCenter() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [creators, setCreators] = useState<User[]>([])
@@ -135,11 +135,10 @@ export default function Profile() {
                   {user.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
                 </div>
                 <p className="text-olu-muted text-sm mt-1">{user.handle}</p>
-                <p className="text-sm text-olu-muted mt-2 line-clamp-2">{user.bio || 'No bio yet.'}</p>
+                <p className="text-sm text-olu-muted mt-2">Your memberships, learning, and account settings.</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="p-2 rounded-xl glass glass-hover"><Share2 size={16} className="text-olu-muted" /></button>
               <button className="p-2 rounded-xl glass glass-hover" onClick={() => navigate('/settings')}><Settings size={16} className="text-olu-muted" /></button>
             </div>
           </div>
@@ -147,15 +146,15 @@ export default function Profile() {
           <div className="mt-5 flex flex-wrap gap-2">
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(joinedCommunities.length)}</span>
-              <span className="ml-2 text-olu-muted">Communities joined</span>
+              <span className="ml-2 text-olu-muted">Memberships</span>
             </div>
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(learningItems.length)}</span>
-              <span className="ml-2 text-olu-muted">Academies in progress</span>
+              <span className="ml-2 text-olu-muted">Learning</span>
             </div>
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(recentActions.length)}</span>
-              <span className="ml-2 text-olu-muted">Recent actions</span>
+              <span className="ml-2 text-olu-muted">Recent</span>
             </div>
           </div>
         </div>
@@ -165,21 +164,21 @@ export default function Profile() {
         <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
-              <p className="font-semibold text-base mt-1">Memberships & learning</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Account</p>
+              <p className="font-semibold text-base mt-1">Memberships, learning, and settings</p>
             </div>
             <Sparkles size={18} className="text-white/45" />
           </div>
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-3 gap-3">
             <button
               onClick={() => navigate(joinedCommunities.length > 0 ? `/communities/${joinedCommunities[0].creator.id}` : '/discover')}
               className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
             >
-              <p className="font-semibold text-sm">Communities</p>
+              <p className="font-semibold text-sm">Memberships</p>
               <p className="text-xs text-olu-muted mt-1">
                 {joinedCommunities.length > 0
-                  ? `${joinedCommunities.length} joined, latest in ${joinedCommunities[0].creator.name}.`
-                  : 'No communities joined yet.'}
+                  ? `${joinedCommunities.length} active, latest in ${joinedCommunities[0].creator.name}.`
+                  : 'No active memberships yet.'}
               </p>
             </button>
             <button
@@ -191,6 +190,48 @@ export default function Profile() {
                 {learningItems.length > 0
                   ? `${learningItems.length} academy${learningItems.length > 1 ? 'ies' : ''} in progress.`
                   : 'No academy progress yet.'}
+              </p>
+            </button>
+            <button
+              onClick={() => navigate(`/people/${user.id}`)}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-semibold text-sm">Public profile</p>
+                <ExternalLink size={14} className="text-white/45" />
+              </div>
+              <p className="text-xs text-olu-muted mt-1">
+                See the public page other people can open.
+              </p>
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Billing</p>
+              <p className="font-semibold text-base mt-1">Subscriptions & account settings</p>
+            </div>
+            <Settings size={18} className="text-white/45" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate(joinedCommunities.length > 0 ? `/membership` : '/discover')}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <p className="font-semibold text-sm">Subscriptions</p>
+              <p className="text-xs text-olu-muted mt-1">
+                Review active memberships and renew what you want to keep.
+              </p>
+            </button>
+            <button
+              onClick={() => navigate('/settings')}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <p className="font-semibold text-sm">Settings</p>
+              <p className="text-xs text-olu-muted mt-1">
+                Manage your profile, sign-in, and workspace access.
               </p>
             </button>
           </div>

@@ -106,7 +106,9 @@ describe('Profile', () => {
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Memberships & learning')).toBeInTheDocument()
+      expect(screen.getByText('Memberships, learning, and settings')).toBeInTheDocument()
+      expect(screen.getByText('Subscriptions & account settings')).toBeInTheDocument()
+      expect(screen.getByText('Public profile')).toBeInTheDocument()
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getAllByText('Academies in progress').length).toBeGreaterThan(0)
       expect(screen.getByText('Jump back in')).toBeInTheDocument()
@@ -125,13 +127,13 @@ describe('Profile', () => {
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('No communities joined yet.')).toBeInTheDocument()
+      expect(screen.getByText('No active memberships yet.')).toBeInTheDocument()
       expect(screen.getByText('No academy activity yet.')).toBeInTheDocument()
       expect(screen.getByText('Nothing recent yet. Start in Discover.')).toBeInTheDocument()
     })
   })
 
-  it('shows default bio when none set', () => {
+  it('shows account-center copy when no bio is set', () => {
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { ...mockUser, bio: undefined } as any,
       session: {} as any,
@@ -142,7 +144,7 @@ describe('Profile', () => {
     } as any)
 
     render(<MemoryRouter><Profile /></MemoryRouter>)
-    expect(screen.getByText('No bio yet.')).toBeInTheDocument()
+    expect(screen.getByText('Your memberships, learning, and account settings.')).toBeInTheDocument()
   })
 
   it('shows initials when no avatar image', () => {

@@ -5,7 +5,7 @@ import AppLanding from './pages/AppLanding'
 import PublicProfile from './pages/PublicProfile'
 import ContentDetail from './pages/ContentDetail'
 import Chat from './pages/Chat'
-import Profile from './pages/Profile'
+import UserCenter from './pages/UserCenter'
 import Shop from './pages/Shop'
 import Topics from './pages/Topics'
 import Membership from './pages/Membership'
@@ -39,7 +39,7 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'learn/:courseSlug/:sectionId', element: <Learn /> },
       { path: 'checkout/:courseSlug', element: <Checkout /> },
       { path: 'learning', element: <LearningHub /> },
-      { path: 'profile', element: <Profile /> },
+      { path: 'profile', element: <UserCenter /> },
       { path: 'settings', element: <Settings /> },
       { path: 'shop', element: <Shop /> },
     ],

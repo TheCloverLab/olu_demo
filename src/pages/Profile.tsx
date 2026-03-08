@@ -1,1 +1,1 @@
-export { default } from '../apps/consumer/pages/Profile'
+export { default } from '../apps/consumer/pages/UserCenter'

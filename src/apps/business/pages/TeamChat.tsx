@@ -4,7 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { addConversationMessage, addGroupChatMessage, getAgentsWithTasks, getConversations, getGroupChatMessages, getGroupChatsByUser } from '../../../services/api'
+import { addConversationMessage, addGroupChatMessage, getConversations, getGroupChatMessages, getGroupChatsByUser } from '../../../services/api'
+import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import clsx from 'clsx'
 
 const STATUS_CONFIG = {
@@ -194,10 +195,10 @@ export default function TeamChat() {
   const [selectedAgentDbId, setSelectedAgentDbId] = useState<string | null>(null)
   const [selectedGroupDbId, setSelectedGroupDbId] = useState<string | null>(null)
   const [liveGroups, setLiveGroups] = useState<any[]>([])
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   const isGroup = agentId?.startsWith('grp-')
-  const fallbackAgents: any[] = []
-  const allAgents = liveAgents.length > 0 ? liveAgents : fallbackAgents
+  const allAgents = liveAgents
 
   let agent: any
   let tasks: any[]
@@ -228,7 +229,10 @@ export default function TeamChat() {
 
   useEffect(() => {
     async function loadLiveData() {
-      if (!user?.id) return
+      if (!user?.id) {
+        setDataLoaded(true)
+        return
+      }
 
       try {
         if (isGroup) {
@@ -246,13 +250,15 @@ export default function TeamChat() {
                 time: m.time,
               }))
             )
+            setDataLoaded(true)
             return
           }
-          setMessages(agent?.conversation || [])
+          setMessages([])
+          setDataLoaded(true)
           return
         }
 
-        const agentRows = await getAgentsWithTasks(user.id)
+        const agentRows = await getWorkspaceAgentsWithTasksForUser(user)
         const mappedAgents = (agentRows || []).map((a: any) => ({
           ...a,
           avatarImg: a.avatar_img,
@@ -263,7 +269,8 @@ export default function TeamChat() {
 
         const selected = mappedAgents.find((a: any) => a.id === agentId || a.agent_key === agentId)
         if (!selected?.id) {
-          setMessages(agent?.conversation || [])
+          setMessages([])
+          setDataLoaded(true)
           return
         }
 
@@ -276,12 +283,14 @@ export default function TeamChat() {
             time: m.time,
           }))
         )
+        setDataLoaded(true)
         return
       } catch (err) {
         console.error('Failed to load live team chat data', err)
       }
 
       setMessages([])
+      setDataLoaded(true)
     }
 
     loadLiveData()
@@ -435,6 +444,12 @@ export default function TeamChat() {
       setThinking('')
     }
   }
+
+  if (!dataLoaded && !agent) return (
+    <div className="flex items-center justify-center h-full">
+      <p className="text-olu-muted">Loading chat...</p>
+    </div>
+  )
 
   if (!agent) return (
     <div className="flex items-center justify-center h-full">

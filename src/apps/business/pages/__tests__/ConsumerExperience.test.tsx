@@ -22,6 +22,9 @@ vi.mock('../../../../domain/consumer/api', () => ({
 }))
 
 vi.mock('../../../../services/api', () => ({
+  createConsumerCourse: vi.fn(),
+  createConsumerCourseSection: vi.fn(),
+  createPost: vi.fn(),
   getPostsByCreator: vi.fn(),
   updateConsumerCourse: vi.fn(),
   updateConsumerCourseSection: vi.fn(),
@@ -205,6 +208,57 @@ describe('ConsumerExperience', () => {
         title: 'Updated member drop',
       }))
       expect(screen.getAllByDisplayValue('Updated member drop').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('creates a new community post draft', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'fan_community',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
+      creator: { id: 'creator-1', name: 'Luna Chen' },
+      tiers: [{ key: 'core', name: 'Core', price: '$9', note: 'Members-only posts', perks: ['Drops'] }],
+      totalMembers: 320,
+      activeFans: 180,
+      topFans: [],
+    } as any)
+    vi.mocked(Api.createPost).mockResolvedValue({
+      id: 'post-2',
+      title: 'New community update',
+      preview: 'Share a new members-only update, event recap, or discussion prompt.',
+      locked: false,
+      type: 'text',
+    } as any)
+
+    render(<MemoryRouter><ConsumerExperience /></MemoryRouter>)
+
+    await user.click(await screen.findByText('New post'))
+
+    await waitFor(() => {
+      expect(Api.createPost).toHaveBeenCalledWith('creator-1', expect.objectContaining({
+        title: 'New community update',
+      }))
+      expect(screen.getAllByDisplayValue('New community update').length).toBeGreaterThan(0)
     })
   })
 
@@ -469,6 +523,90 @@ describe('ConsumerExperience', () => {
         title: 'Community Positioning',
       }))
       expect(screen.getAllByDisplayValue('Community Positioning').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('creates a new lesson draft for the featured course', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'sell_courses',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
+      courses: [
+        {
+          id: 'course-1',
+          slug: 'community-growth',
+          title: 'Build a Paid Fan Community',
+          subtitle: 'Turn audience attention into a business.',
+          instructor: 'Luna Chen',
+          price: 129,
+          level: 'Intermediate',
+          hero: 'from-rose-600 to-orange-500',
+          headline: 'Headline',
+          description: 'Description',
+          outcomes: [],
+          stats: { lessons: 18, students: 1240, completionRate: '68%' },
+          sections: [
+            { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+          ],
+        },
+      ],
+      featuredCourse: {
+        id: 'course-1',
+        slug: 'community-growth',
+        title: 'Build a Paid Fan Community',
+        subtitle: 'Turn audience attention into a business.',
+        instructor: 'Luna Chen',
+        price: 129,
+        level: 'Intermediate',
+        hero: 'from-rose-600 to-orange-500',
+        headline: 'Headline',
+        description: 'Description',
+        outcomes: [],
+        stats: { lessons: 18, students: 1240, completionRate: '68%' },
+        sections: [
+          { id: 'cg-1', title: 'Positioning', duration: '14 min', preview: true, summary: 'Define positioning.' },
+        ],
+      },
+    } as any)
+    vi.mocked(Api.createConsumerCourseSection).mockResolvedValue({
+      id: 'new-lesson-id',
+      section_key: 'community-growth-2',
+      title: 'New Lesson 2',
+      duration: '10 min',
+      summary: 'Add lesson summary and key learning outcome.',
+      preview: false,
+      position: 2,
+    } as any)
+
+    render(<MemoryRouter><ConsumerExperience /></MemoryRouter>)
+
+    await user.click(await screen.findByText('New lesson'))
+
+    await waitFor(() => {
+      expect(Api.createConsumerCourseSection).toHaveBeenCalledWith(expect.objectContaining({
+        course_id: 'course-1',
+      }))
+      expect(screen.getAllByDisplayValue('New Lesson 2').length).toBeGreaterThan(0)
     })
   })
 })

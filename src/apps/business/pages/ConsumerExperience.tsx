@@ -8,10 +8,10 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
-import { getPostsByCreator, updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier, updatePost } from '../../../services/api'
+import { createConsumerCourse, createConsumerCourseSection, createPost, getPostsByCreator, updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier, updatePost } from '../../../services/api'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
-import type { Post } from '../../../lib/supabase'
+import type { ConsumerCourse, Post } from '../../../lib/supabase'
 
 export default function ConsumerExperience() {
   const navigate = useNavigate()
@@ -27,6 +27,7 @@ export default function ConsumerExperience() {
     subtitle: '',
     headline: '',
     description: '',
+    status: 'published' as ConsumerCourse['status'],
   })
   const [sectionDrafts, setSectionDrafts] = useState<Array<{
     id: string
@@ -53,6 +54,9 @@ export default function ConsumerExperience() {
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null)
   const [savingTierId, setSavingTierId] = useState<string | null>(null)
   const [savingPostId, setSavingPostId] = useState<string | null>(null)
+  const [creatingPost, setCreatingPost] = useState(false)
+  const [creatingCourse, setCreatingCourse] = useState(false)
+  const [creatingLesson, setCreatingLesson] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -102,6 +106,7 @@ export default function ConsumerExperience() {
             subtitle: snapshot.featuredCourse?.subtitle || '',
             headline: snapshot.featuredCourse?.headline || '',
             description: snapshot.featuredCourse?.description || '',
+            status: 'published',
           })
           setSectionDrafts(
             (snapshot.featuredCourse?.sections || []).map((section) => ({
@@ -151,6 +156,129 @@ export default function ConsumerExperience() {
       console.error('Failed to update featured course', error)
     } finally {
       setSavingCourse(false)
+    }
+  }
+
+  async function handleCreatePost() {
+    if (!communitySnapshot?.creator?.id) return
+    setCreatingPost(true)
+    try {
+      const created = await createPost(communitySnapshot.creator.id, {
+        title: 'New community update',
+        preview: 'Share a new members-only update, event recap, or discussion prompt.',
+        locked: false,
+        type: 'text',
+      })
+      setCommunityPosts((current) => [created, ...current])
+      setPostDrafts((current) => [{
+        id: created.id,
+        title: created.title,
+        preview: created.preview || '',
+        locked: created.locked,
+      }, ...current].slice(0, 5))
+    } catch (error) {
+      console.error('Failed to create community post', error)
+    } finally {
+      setCreatingPost(false)
+    }
+  }
+
+  async function handleCreateCourse() {
+    if (!user?.id) return
+    setCreatingCourse(true)
+    try {
+      const slugBase = `course-${Date.now()}`
+      const created = await createConsumerCourse({
+        creator_id: user.id,
+        slug: slugBase,
+        title: 'New Course',
+        subtitle: 'Define the transformation and expected learner outcome.',
+        instructor: user.name || 'Creator',
+        price: 49,
+        level: 'Beginner',
+        hero: 'from-sky-600 via-cyan-500 to-emerald-400',
+        headline: 'A new structured learning offer.',
+        description: 'Use this draft course as the starting point for a new paid knowledge product.',
+        outcomes: ['Clarify the promise', 'Map the curriculum', 'Launch the first version'],
+        status: 'published',
+      })
+      const nextCourse: Course = {
+        id: created.id,
+        slug: created.slug,
+        title: created.title,
+        subtitle: created.subtitle,
+        instructor: created.instructor,
+        price: Number(created.price),
+        level: created.level,
+        hero: created.hero,
+        headline: created.headline,
+        description: created.description,
+        outcomes: created.outcomes,
+        stats: {
+          lessons: created.lessons_count,
+          students: created.students_count,
+          completionRate: created.completion_rate,
+        },
+        sections: [],
+      }
+      setCourseLibrary((current) => [nextCourse, ...current])
+      setFeaturedCourse(nextCourse)
+      setCourseDraft({
+        title: nextCourse.title,
+        subtitle: nextCourse.subtitle,
+        headline: nextCourse.headline,
+        description: nextCourse.description,
+        status: 'published',
+      })
+      setSectionDrafts([])
+    } catch (error) {
+      console.error('Failed to create course', error)
+    } finally {
+      setCreatingCourse(false)
+    }
+  }
+
+  async function handleCreateLesson() {
+    if (!featuredCourse) return
+    setCreatingLesson(true)
+    try {
+      const position = sectionDrafts.length + 1
+      const sectionKey = `${featuredCourse.slug}-${position}`
+      const created = await createConsumerCourseSection({
+        course_id: featuredCourse.id,
+        section_key: sectionKey,
+        title: `New Lesson ${position}`,
+        duration: '10 min',
+        summary: 'Add lesson summary and key learning outcome.',
+        preview: false,
+        position,
+      })
+      const nextSection = {
+        id: created.section_key,
+        title: created.title,
+        duration: created.duration,
+        summary: created.summary,
+        preview: created.preview,
+      }
+      setFeaturedCourse((current) => current ? {
+        ...current,
+        sections: [...current.sections, nextSection],
+        stats: {
+          ...current.stats,
+          lessons: current.stats.lessons + 1,
+        },
+      } : current)
+      setSectionDrafts((current) => [...current, {
+        id: created.section_key,
+        title: created.title,
+        summary: created.summary,
+        preview: created.preview,
+        duration: created.duration,
+      }])
+    } catch (error) {
+      console.error('Failed to create lesson', error)
+    } finally {
+      setCreatingLesson(false)
     }
   }
 
@@ -463,6 +591,13 @@ export default function ConsumerExperience() {
             <MessageCircle size={16} className="text-sky-300" />
             <p className="font-bold">Community feed editor</p>
           </div>
+          <button
+            onClick={handleCreatePost}
+            disabled={creatingPost}
+            className="mb-4 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {creatingPost ? 'Creating post...' : 'New post'}
+          </button>
           <div className="space-y-4">
             {postDrafts.length === 0 && (
               <div className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-sm text-olu-muted">
@@ -581,13 +716,20 @@ export default function ConsumerExperience() {
                 courseLibrary.length > 0
                   ? `${courseLibrary.length} course entries are visible in the catalog.`
                   : 'No course entries are published yet.',
-                'Checkout and learning progress are live; payment gateway integration can stay behind MVP.',
+                `Current status: ${courseDraft.status}.`,
               ].map((item) => (
                 <div key={item} className="rounded-2xl bg-[#0d1726] border border-cyan-500/10 p-4 text-sm text-olu-muted">
                   {item}
                 </div>
               ))}
             </div>
+            <button
+              onClick={handleCreateCourse}
+              disabled={creatingCourse}
+              className="mt-4 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {creatingCourse ? 'Creating course...' : 'New course'}
+            </button>
             <Link
               to="/business/settings"
               className="mt-4 inline-flex items-center gap-2 text-sm text-cyan-200 hover:text-white transition-colors"
@@ -640,6 +782,18 @@ export default function ConsumerExperience() {
                 className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
               />
             </label>
+            <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Course status</p>
+              <select
+                value={courseDraft.status}
+                onChange={(event) => setCourseDraft((current) => ({ ...current, status: event.target.value as ConsumerCourse['status'] }))}
+                className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+              >
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+                <option value="archived">Archived</option>
+              </select>
+            </label>
           </div>
           <button
             onClick={handleSaveFeaturedCourse}
@@ -654,6 +808,13 @@ export default function ConsumerExperience() {
               <Users size={16} className="text-cyan-300" />
               <p className="font-bold">Lesson editor</p>
             </div>
+            <button
+              onClick={handleCreateLesson}
+              disabled={creatingLesson}
+              className="mb-4 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {creatingLesson ? 'Creating lesson...' : 'New lesson'}
+            </button>
             <div className="space-y-3">
               {sectionDrafts.map((section, index) => (
                 <div key={section.id} className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4">

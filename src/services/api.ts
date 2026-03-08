@@ -114,6 +114,32 @@ export async function getPostsByCreator(creatorId: string) {
   return data as Post[]
 }
 
+export async function createPost(
+  creatorId: string,
+  input: Pick<Post, 'title'> & Partial<Pick<Post, 'preview' | 'locked' | 'type'>>
+) {
+  const { data, error } = await supabase
+    .from('posts')
+    .insert({
+      creator_id: creatorId,
+      type: input.type || 'text',
+      title: input.title,
+      preview: input.preview || '',
+      likes: 0,
+      comments: 0,
+      tips: 0,
+      locked: input.locked ?? false,
+      allow_fan_creation: true,
+      sponsored: false,
+      tags: [],
+    })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as Post
+}
+
 export async function updatePost(
   postId: string,
   updates: Partial<Pick<Post, 'title' | 'preview' | 'locked'>>
@@ -385,6 +411,27 @@ export async function getConsumerCourses() {
   return data as ConsumerCourse[]
 }
 
+export async function createConsumerCourse(
+  input: Pick<ConsumerCourse, 'creator_id' | 'slug' | 'title' | 'subtitle' | 'instructor' | 'price' | 'level' | 'hero' | 'headline' | 'description'> &
+    Partial<Pick<ConsumerCourse, 'outcomes' | 'lessons_count' | 'students_count' | 'completion_rate' | 'status'>>
+) {
+  const { data, error } = await supabase
+    .from('consumer_courses')
+    .insert({
+      ...input,
+      outcomes: input.outcomes || [],
+      lessons_count: input.lessons_count ?? 0,
+      students_count: input.students_count ?? 0,
+      completion_rate: input.completion_rate ?? '0%',
+      status: input.status ?? 'published',
+    })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerCourse
+}
+
 export async function getConsumerCourseBySlug(slug: string) {
   const { data, error } = await supabase
     .from('consumer_courses')
@@ -410,7 +457,7 @@ export async function getConsumerCourseSections(courseId: string) {
 
 export async function updateConsumerCourse(
   courseId: string,
-  updates: Partial<Pick<ConsumerCourse, 'title' | 'subtitle' | 'headline' | 'description'>>
+  updates: Partial<Pick<ConsumerCourse, 'title' | 'subtitle' | 'headline' | 'description' | 'status'>>
 ) {
   const { data, error } = await supabase
     .from('consumer_courses')
@@ -423,6 +470,19 @@ export async function updateConsumerCourse(
   return data as ConsumerCourse
 }
 
+export async function createConsumerCourseSection(
+  input: Pick<ConsumerCourseSection, 'course_id' | 'section_key' | 'title' | 'duration' | 'summary' | 'preview' | 'position'>
+) {
+  const { data, error } = await supabase
+    .from('consumer_course_sections')
+    .insert(input)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerCourseSection
+}
+
 export async function updateConsumerCourseSection(
   sectionId: string,
   updates: Partial<Pick<ConsumerCourseSection, 'title' | 'summary' | 'preview'>>
@@ -430,7 +490,7 @@ export async function updateConsumerCourseSection(
   const { data, error } = await supabase
     .from('consumer_course_sections')
     .update(updates)
-    .eq('id', sectionId)
+    .or(`id.eq.${sectionId},section_key.eq.${sectionId}`)
     .select('*')
     .single()
 
@@ -678,7 +738,7 @@ export async function updateMembershipTier(
   const { data, error } = await supabase
     .from('membership_tiers')
     .update(updates)
-    .eq('id', tierId)
+    .or(`id.eq.${tierId},tier_key.eq.${tierId}`)
     .select('*')
     .single()
 

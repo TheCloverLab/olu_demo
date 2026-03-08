@@ -46,7 +46,7 @@ describe('Discover', () => {
     render(<MemoryRouter><Discover /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Find your next favorite app.')).toBeInTheDocument()
+      expect(screen.getByText('Find something new.')).toBeInTheDocument()
       expect(screen.getAllByText('Luna Chen Inner Circle').length).toBeGreaterThan(0)
       expect(screen.getAllByText('Luna Chen Academy').length).toBeGreaterThan(0)
       expect(screen.getAllByText('Community').length).toBeGreaterThan(0)
@@ -58,7 +58,7 @@ describe('Discover', () => {
     const user = userEvent.setup()
     render(<MemoryRouter><Discover /></MemoryRouter>)
 
-    await user.type(await screen.findByPlaceholderText(/Search app/i), 'academy')
+    await user.type(await screen.findByPlaceholderText(/Search creator, community, academy, or topic/i), 'academy')
 
     await waitFor(() => {
       expect(screen.queryByText('Luna Chen Inner Circle')).not.toBeInTheDocument()

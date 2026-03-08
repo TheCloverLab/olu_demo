@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Compass, Search, Sparkles } from 'lucide-react'
+import { Compass, Search } from 'lucide-react'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCreators } from '../../../services/api'
 
@@ -143,8 +143,6 @@ export default function Discover() {
 
   const recommendedCommunities = filteredApps.filter((app) => app.type === 'community').slice(0, 4)
   const recommendedAcademies = filteredApps.filter((app) => app.type === 'academy').slice(0, 4)
-  const spotlight = filteredApps.slice(0, 2)
-
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
       <section className="space-y-4">
@@ -154,7 +152,7 @@ export default function Discover() {
               <Compass size={14} />
               Discover
             </div>
-            <h1 className="font-black text-xl md:text-2xl leading-tight">Find your next favorite app.</h1>
+            <h1 className="font-black text-xl md:text-2xl leading-tight">Find something new.</h1>
             <p className="text-white/58 text-sm mt-2">
               Communities to join, academies to learn from.
             </p>
@@ -172,19 +170,11 @@ export default function Discover() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search app, creator, or theme"
+            placeholder="Search creator, community, academy, or topic"
             className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/35"
           />
         </div>
       </section>
-
-      {spotlight.length > 0 ? (
-        <section className="grid md:grid-cols-2 gap-4">
-          {spotlight.map((app) => (
-            <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
-          ))}
-        </section>
-      ) : null}
 
       <section className="space-y-6">
         <div>

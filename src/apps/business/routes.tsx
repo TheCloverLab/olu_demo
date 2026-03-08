@@ -10,6 +10,7 @@ import WalletPage from './pages/WalletPage'
 import CreatorConsole from './pages/CreatorConsole'
 import AdvertiserConsole from './pages/AdvertiserConsole'
 import SupplierConsole from './pages/SupplierConsole'
+import ConsumerExperience from './pages/ConsumerExperience'
 import RoleProtected from '../../components/auth/RoleProtected'
 
 export const businessRoutes: RouteObject[] = [
@@ -21,6 +22,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'agents', element: <AIAgentConfig /> },
+      { path: 'consumer', element: <ConsumerExperience /> },
       { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <BusinessSettings /> },
       { path: 'wallet', element: <RoleProtected requiredRole="creator"><WalletPage /></RoleProtected> },

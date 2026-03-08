@@ -123,6 +123,26 @@ export default function BusinessWorkspace() {
       </section>
 
       <section className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4">
+        <Link to="/business/consumer" className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1a2d] transition-colors">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-amber-300" />
+            <p className="font-bold">Consumer channel</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              `Active template: ${templateMeta.label}`,
+              consumerTemplate === 'fan_community'
+                ? 'Membership storefront, community circles, and creator feed are live.'
+                : 'Course catalog, checkout, and learning progress are live.',
+              'Use the consumer view to preview public-facing configuration without leaving the business app.',
+            ].map((item) => (
+              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-olu-muted border border-cyan-500/10">
+                {item}
+              </div>
+            ))}
+          </div>
+        </Link>
+
         <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={16} className="text-amber-300" />

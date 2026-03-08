@@ -219,19 +219,38 @@ export default function Home() {
   }, [])
 
   const discoverCreators = creators.filter((creator) => creator.id !== currentUser?.id)
+  const keywordMap: Record<string, string[]> = {
+    Art: ['art', 'artist', 'design', 'illustration', 'digital artist', 'creative'],
+    Gaming: ['gaming', 'gamer', 'stream', 'esports', 'game'],
+    Music: ['music', 'musician', 'producer', 'dj', 'song', 'audio'],
+    Fashion: ['fashion', 'style', 'beauty', 'lifestyle', 'outfit'],
+    Tech: ['tech', 'technology', 'startup', 'product', 'founder', 'ai'],
+    Coding: ['coding', 'code', 'developer', 'engineer', 'programming', 'software'],
+  }
 
   function matchesFilter(creator: User) {
     if (filter === 'All') return true
 
     const text = `${creator.name} ${creator.handle} ${creator.bio || ''}`.toLowerCase()
-    const keywordMap: Record<string, string[]> = {
-      Art: ['art', 'artist', 'design', 'illustration', 'digital artist', 'creative'],
-      Gaming: ['gaming', 'gamer', 'stream', 'esports', 'game'],
-      Music: ['music', 'musician', 'producer', 'dj', 'song', 'audio'],
-      Fashion: ['fashion', 'style', 'beauty', 'lifestyle', 'outfit'],
-      Tech: ['tech', 'technology', 'startup', 'product', 'founder', 'ai'],
-      Coding: ['coding', 'code', 'developer', 'engineer', 'programming', 'software'],
-    }
+    return (keywordMap[filter] || []).some((keyword) => text.includes(keyword))
+  }
+
+  function matchesPostFilter(post: any) {
+    if (filter === 'All') return true
+
+    const creator = post.creator || {}
+    const text = [
+      post.title,
+      post.preview,
+      post.type,
+      ...(post.tags || []),
+      creator.name,
+      creator.handle,
+      creator.bio,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
 
     return (keywordMap[filter] || []).some((keyword) => text.includes(keyword))
   }
@@ -240,6 +259,7 @@ export default function Home() {
   const discoverFeed = filtered.length > 0 ? filtered : filter === 'All' ? discoverCreators : []
   const recent = discoverFeed.slice(0, 3)
   const popular = [...discoverFeed].sort((a, b) => b.followers - a.followers).slice(0, 4)
+  const filteredPosts = posts.filter(matchesPostFilter)
 
   return (
     <div className="pb-24 md:pb-6">
@@ -356,10 +376,12 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 space-y-4">
           {loading ? (
             <div className="text-center py-12 text-olu-muted">Loading posts...</div>
-          ) : posts.length === 0 ? (
-            <div className="text-center py-12 text-olu-muted">No posts yet</div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-12 text-olu-muted">
+              {filter === 'All' ? 'No posts yet' : 'No posts match this filter yet.'}
+            </div>
           ) : (
-            posts.map(post => <PostCard key={post.id} post={post} />)
+            filteredPosts.map(post => <PostCard key={post.id} post={post} />)
           )}
         </div>
       )}

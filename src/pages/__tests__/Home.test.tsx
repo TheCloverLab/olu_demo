@@ -37,6 +37,7 @@ const mockCreators = [
 
 const mockPosts = [
   { id: 'p1', creator_id: 'c1', title: 'My Latest Art', preview: 'A new piece', type: 'image', likes: 42, comments: 5, tips: 10, locked: false, allow_fan_creation: true, sponsored: false, tags: ['art'], creator: mockCreators[0] },
+  { id: 'p2', creator_id: 'c2', title: 'Ranked Match Highlights', preview: 'Best gaming moments', type: 'video', likes: 18, comments: 2, tips: 1, locked: false, allow_fan_creation: true, sponsored: false, tags: ['gaming'], creator: mockCreators[1] },
 ]
 
 describe('Home', () => {
@@ -119,6 +120,26 @@ describe('Home', () => {
 
     await waitFor(() => {
       expect(screen.getByText('My Latest Art')).toBeInTheDocument()
+      expect(screen.getByText('Ranked Match Highlights')).toBeInTheDocument()
+    })
+  })
+
+  it('filters following posts by the active discover filter', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><Home /></MemoryRouter>)
+
+    await user.click(screen.getByText('Following'))
+    await user.click(screen.getByText('Gaming'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Ranked Match Highlights')).toBeInTheDocument()
+      expect(screen.queryByText('My Latest Art')).not.toBeInTheDocument()
+    })
+
+    await user.click(screen.getByText('Music'))
+
+    await waitFor(() => {
+      expect(screen.getByText('No posts match this filter yet.')).toBeInTheDocument()
     })
   })
 

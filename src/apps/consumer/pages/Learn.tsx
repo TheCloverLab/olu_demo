@@ -2,15 +2,27 @@ import { useEffect, useState } from 'react'
 import { BookOpen, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
+import { useAuth } from '../../../context/AuthContext'
 import type { Course } from '../courseData'
 import { getCourseSnapshotBySlug } from '../../../domain/consumer/api'
+import {
+  computeCourseProgress,
+  getProgressForCourse,
+  hasPurchasedCourse,
+  markLessonComplete,
+} from '../../../domain/consumer/engagement'
+import type { ConsumerLessonProgress } from '../../../lib/supabase'
 
 export default function Learn() {
   const navigate = useNavigate()
   const { courseSlug, sectionId } = useParams()
   const { consumerConfig, consumerExperience } = useApp()
+  const { user } = useAuth()
   const { detail } = consumerExperience.courses
   const [course, setCourse] = useState<Course | null | undefined>(undefined)
+  const [progress, setProgress] = useState<ConsumerLessonProgress[]>([])
+  const [purchased, setPurchased] = useState(false)
+  const [markingComplete, setMarkingComplete] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -20,6 +32,14 @@ export default function Learn() {
       const data = await getCourseSnapshotBySlug(courseSlug, consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourse(data)
+        if (data) {
+          const [courseProgress, enrolled] = await Promise.all([
+            getProgressForCourse(user as any, data),
+            hasPurchasedCourse(user as any, data),
+          ])
+          setProgress(courseProgress)
+          setPurchased(enrolled)
+        }
       }
     }
 
@@ -30,6 +50,7 @@ export default function Learn() {
   }, [courseSlug])
 
   const section = course?.sections.find((item) => item.id === sectionId)
+  const courseProgress = course ? computeCourseProgress(course, progress) : null
 
   if (course === undefined) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading lesson...</div>
@@ -37,6 +58,36 @@ export default function Learn() {
 
   if (!course || !section) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Lesson not found.</div>
+  }
+
+  if (!section.preview && !purchased) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-6">
+          <p className="font-bold text-xl mb-2">Purchase required</p>
+          <p className="text-olu-muted text-sm mb-4">This lesson is locked until you buy the course.</p>
+          <button
+            onClick={() => navigate(`/checkout/${course.slug}`)}
+            className="px-4 py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity"
+          >
+            Go to checkout
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  async function handleMarkComplete() {
+    setMarkingComplete(true)
+    try {
+      await markLessonComplete(user as any, course, section.id)
+      const nextProgress = await getProgressForCourse(user as any, course)
+      setProgress(nextProgress)
+    } catch (error) {
+      console.error('Failed to mark lesson complete', error)
+    } finally {
+      setMarkingComplete(false)
+    }
   }
 
   return (
@@ -59,6 +110,13 @@ export default function Learn() {
               <p className="text-sm text-olu-muted">Learning surface placeholder</p>
               <p className="font-semibold mt-1">This is where the video / audio / article lesson player goes.</p>
             </div>
+            <button
+              onClick={handleMarkComplete}
+              disabled={markingComplete}
+              className="mt-5 px-4 py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {markingComplete ? 'Saving...' : 'Mark lesson complete'}
+            </button>
           </div>
         </div>
         <div className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
@@ -66,6 +124,11 @@ export default function Learn() {
             <BookOpen size={16} className="text-sky-300" />
             <p className="font-semibold">{consumerExperience.courses.learning.title}</p>
           </div>
+          {courseProgress && (
+            <p className="text-xs text-olu-muted mb-3">
+              {courseProgress.completedCount}/{course.sections.length} lessons completed
+            </p>
+          )}
           <div className="space-y-3">
             {course.sections.map((item) => (
               <button
@@ -78,7 +141,7 @@ export default function Learn() {
                     <p className="font-semibold text-sm">{item.title}</p>
                     <p className="text-xs text-olu-muted mt-1">{item.duration}</p>
                   </div>
-                  {item.id === section.id && <CheckCircle2 size={16} className="text-emerald-300" />}
+                  {(courseProgress?.completedKeys.has(item.id) || item.id === section.id) && <CheckCircle2 size={16} className="text-emerald-300" />}
                 </div>
               </button>
             ))}

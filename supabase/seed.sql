@@ -7,6 +7,9 @@ TRUNCATE TABLE
   workspace_agent_tasks,
   workspace_agents,
   agent_templates,
+  consumer_lesson_progress,
+  consumer_course_purchases,
+  consumer_memberships,
   workspace_billing,
   workspace_consumer_configs,
   workspace_policies,
@@ -173,6 +176,19 @@ VALUES
   ('20600000-0000-0000-0000-000000000006', '20500000-0000-0000-0000-000000000002', 'lp-2', 'Curriculum Mapping', '24 min', 'Turn experience into a simple module structure.', false, 2),
   ('20600000-0000-0000-0000-000000000007', '20500000-0000-0000-0000-000000000002', 'lp-3', 'Launch Assets', '17 min', 'Build sales assets, social proof, and launch timing.', false, 3),
   ('20600000-0000-0000-0000-000000000008', '20500000-0000-0000-0000-000000000002', 'lp-4', 'Student Delivery', '20 min', 'Handle onboarding, learning flow, and support.', false, 4);
+
+INSERT INTO consumer_memberships (id, user_id, creator_id, tier_key, tier_name, status, joined_at)
+VALUES
+  ('20650000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'vip', 'VIP Collective', 'active', NOW() - INTERVAL '45 days');
+
+INSERT INTO consumer_course_purchases (id, user_id, course_id, status, purchased_at)
+VALUES
+  ('20660000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'purchased', NOW() - INTERVAL '10 days');
+
+INSERT INTO consumer_lesson_progress (id, user_id, course_id, section_key, completed, completed_at)
+VALUES
+  ('20670000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'cg-1', true, NOW() - INTERVAL '9 days'),
+  ('20670000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'cg-2', false, NULL);
 
 -- AI agents
 INSERT INTO ai_agents (id, user_id, agent_key, name, role, icon, avatar_img, color, status, description, last_message, last_time)

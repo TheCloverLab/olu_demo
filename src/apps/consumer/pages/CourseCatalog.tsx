@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
+import { useAuth } from '../../../context/AuthContext'
 import type { Course } from '../courseData'
 import { getCourseSnapshotBySlug } from '../../../domain/consumer/api'
+import { hasPurchasedCourse } from '../../../domain/consumer/engagement'
 
 export default function CourseCatalog() {
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { consumerConfig, consumerExperience } = useApp()
+  const { user } = useAuth()
   const { catalog } = consumerExperience.courses
   const [course, setCourse] = useState<Course | null | undefined>(undefined)
+  const [purchased, setPurchased] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -19,6 +23,10 @@ export default function CourseCatalog() {
       const data = await getCourseSnapshotBySlug(courseSlug, consumerConfig.featured_course_slug)
       if (!cancelled) {
         setCourse(data)
+        if (data) {
+          const enrolled = await hasPurchasedCourse(user as any, data)
+          setPurchased(enrolled)
+        }
       }
     }
 
@@ -44,7 +52,7 @@ export default function CourseCatalog() {
         {course.sections.map((section, index) => (
           <button
             key={section.id}
-            onClick={() => navigate(`/learn/${course.slug}/${section.id}`)}
+            onClick={() => navigate(section.preview || purchased ? `/learn/${course.slug}/${section.id}` : `/checkout/${course.slug}`)}
             className="w-full rounded-[24px] border border-white/10 bg-[#111111] p-5 text-left hover:bg-[#151515] transition-colors"
           >
             <div className="flex items-center justify-between gap-3">

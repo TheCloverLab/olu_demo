@@ -1,13 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Home from '../Home'
 import * as AppContext from '../../context/AppContext'
-import * as api from '../../services/api'
+import * as AuthContext from '../../context/AuthContext'
+import * as ConsumerApi from '../../domain/consumer/api'
+import * as Engagement from '../../domain/consumer/engagement'
+import * as ServicesApi from '../../services/api'
 
 vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
+}))
+
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/api', () => ({
+  getCommunityMembershipSnapshot: vi.fn(),
+  getCourseLibrarySnapshot: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/engagement', () => ({
+  computeCourseProgress: vi.fn(),
+  getMembershipStatus: vi.fn(),
+  getProgressForCourse: vi.fn(),
+  getPurchasedCourseSlugs: vi.fn(),
 }))
 
 vi.mock('../../services/api', () => ({
@@ -20,7 +38,6 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     button: ({ children, onClick, ...props }: any) => <button onClick={onClick} {...props}>{children}</button>,
   },
-  AnimatePresence: ({ children }: any) => children,
 }))
 
 const mockNavigate = vi.fn()
@@ -29,147 +46,215 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
+const communityExperience = {
+  profile: {
+    title: 'Community Template',
+    description: 'Community browsing',
+    ctaLabel: 'Open membership',
+    ctaHref: '/membership',
+  },
+  community: {
+    hero: {
+      eyebrow: 'Fan Community',
+      title: 'A place for members, rituals, and conversations that stay alive every week.',
+      description: 'Join creator spaces.',
+      stats: [
+        { label: 'Active members', value: '8.4K' },
+        { label: 'Live circles', value: '24' },
+        { label: 'Member renewals', value: '81%' },
+      ],
+    },
+    membership: {
+      title: 'Join a creator circle',
+      subtitle: 'A clear ladder from casual follower to committed member.',
+      ctaLabel: 'Open membership tiers',
+      tiers: [
+        { key: 'free', name: 'Free', price: '$0', note: 'Public posts', perks: [] },
+        { key: 'creator_club', name: 'Core', price: '$9', note: 'Members-only', perks: [] },
+      ],
+    },
+    topics: {
+      title: 'Browse active circles',
+      subtitle: 'Recurring discussions.',
+      whyItExists: 'Topic layer',
+      entries: [
+        { id: 'critique-room', name: 'Weekly Critique Room', members: '1.8K', description: 'Feedback every Friday.' },
+      ],
+    },
+    spaces: {
+      title: 'Creator spaces',
+      subtitle: 'Rooms members return to.',
+    },
+    feed: {
+      title: 'Recent member drops',
+      subtitle: 'Locked posts and updates.',
+    },
+  },
+  courses: {
+    storefront: {
+      eyebrow: 'Course Storefront',
+      title: 'Sell structured knowledge, not merch.',
+      description: 'Course storefront.',
+      primaryCta: 'Open catalog',
+      secondaryCta: 'View learning hub',
+    },
+    catalog: {
+      title: 'Course Catalog',
+      subtitle: 'Structured offers.',
+    },
+    detail: {
+      learnTitle: 'What you will learn',
+      actionsTitle: 'Next actions',
+      buyLabel: 'Buy course',
+      catalogLabel: 'View catalog',
+    },
+    learning: {
+      title: 'Learning',
+      subtitle: 'Progress and continue-learning entry.',
+      steps: [
+        { label: 'Start with positioning', note: 'Clarify the promise.' },
+      ],
+      shortcuts: [
+        { label: 'Catalog', href: '/courses' },
+        { label: 'My learning', href: '/learning' },
+      ],
+    },
+  },
+} as const
+
 const mockCreators = [
-  { id: 'c1', name: 'Luna Chen', handle: '@luna', bio: 'Digital artist', role: 'creator', followers: 5000, avatar_color: 'from-violet-500 to-purple-700', initials: 'LC', verified: true },
-  { id: 'c2', name: 'Alex Park', handle: '@alex', bio: 'Gamer', role: 'creator', followers: 3000, avatar_color: 'from-pink-500 to-rose-600', initials: 'AP', verified: false },
-  { id: 'user-1', name: 'Current User', handle: '@me', bio: 'Tech creator', role: 'creator', followers: 1500, avatar_color: 'from-sky-500 to-cyan-700', initials: 'CU', verified: false },
+  { id: 'creator-1', name: 'Luna Chen', bio: 'Digital artist', verified: true, avatar_color: 'from-pink-500 to-orange-500' },
 ]
 
 const mockPosts = [
-  { id: 'p1', creator_id: 'c1', title: 'My Latest Art', preview: 'A new piece', type: 'image', likes: 42, comments: 5, tips: 10, locked: false, allow_fan_creation: true, sponsored: false, tags: ['art'], creator: mockCreators[0] },
-  { id: 'p2', creator_id: 'c2', title: 'Ranked Match Highlights', preview: 'Best gaming moments', type: 'video', likes: 18, comments: 2, tips: 1, locked: false, allow_fan_creation: true, sponsored: false, tags: ['gaming'], creator: mockCreators[1] },
+  { id: 'post-1', title: 'Member drop', preview: 'New members-only update', type: 'post', locked: true, creator: { name: 'Luna Chen' } },
 ]
+
+const mockCourse = {
+  id: 'course-1',
+  slug: 'community-growth',
+  title: 'Build a Paid Fan Community',
+  subtitle: 'Turn audience attention into a membership business.',
+  instructor: 'Luna Chen',
+  price: 129,
+  level: 'Intermediate',
+  hero: 'from-rose-600 via-fuchsia-600 to-orange-500',
+  headline: 'From casual audience to paying members in 30 days.',
+  description: 'Structured knowledge for community operators.',
+  outcomes: ['Outcome 1'],
+  stats: {
+    lessons: 18,
+    students: 1240,
+    completionRate: '68%',
+  },
+  sections: [
+    { id: 'cg-1', title: 'Positioning Your Community', duration: '14 min', preview: true, summary: 'Define positioning.' },
+    { id: 'cg-2', title: 'Pricing and Tier Design', duration: '21 min', summary: 'Price well.' },
+  ],
+} as any
+
+function mockCommunityApp() {
+  vi.mocked(AppContext.useApp).mockReturnValue({
+    consumerTemplate: 'fan_community',
+    consumerConfig: {
+      featured_creator_id: 'creator-1',
+      featured_course_slug: 'community-growth',
+    },
+    consumerExperience: communityExperience,
+  } as any)
+}
+
+function mockCoursesApp() {
+  vi.mocked(AppContext.useApp).mockReturnValue({
+    consumerTemplate: 'sell_courses',
+    consumerConfig: {
+      featured_creator_id: 'creator-1',
+      featured_course_slug: 'community-growth',
+    },
+    consumerExperience: communityExperience,
+  } as any)
+}
 
 describe('Home', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: { id: 'user-1' },
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: 'user-1' },
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    } as any)
+    vi.mocked(ServicesApi.getCreators).mockResolvedValue(mockCreators as any)
+    vi.mocked(ServicesApi.getPosts).mockResolvedValue(mockPosts as any)
+    vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
+      creator: { id: 'creator-1', name: 'Luna Chen' },
+      tiers: communityExperience.community.membership.tiers,
+      totalMembers: 4200,
+      activeFans: 1800,
+      topFans: [],
+    } as any)
+    vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
+      courses: [mockCourse],
+      featuredCourse: mockCourse,
     })
-    vi.mocked(api.getCreators).mockResolvedValue(mockCreators as any)
-    vi.mocked(api.getPosts).mockResolvedValue(mockPosts as any)
-  })
-
-  it('renders search bar and filter chips', async () => {
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    expect(screen.getByPlaceholderText('Search for creators or topics')).toBeInTheDocument()
-    expect(screen.getByText('All')).toBeInTheDocument()
-    expect(screen.getByText('Art')).toBeInTheDocument()
-    expect(screen.getByText('Gaming')).toBeInTheDocument()
-  })
-
-  it('shows Discover and Following tabs', () => {
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    expect(screen.getByText('Discover')).toBeInTheDocument()
-    expect(screen.getByText('Following')).toBeInTheDocument()
-  })
-
-  it('loads and displays creators', async () => {
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    await waitFor(() => {
-      expect(screen.getAllByText('Luna Chen').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Alex Park').length).toBeGreaterThan(0)
-    })
-  })
-
-  it('shows section headings on Discover tab', async () => {
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    await waitFor(() => {
-      expect(screen.getByText('Recently visited')).toBeInTheDocument()
-      expect(screen.getByText('Creators for you')).toBeInTheDocument()
-      expect(screen.getByText('Popular this week')).toBeInTheDocument()
+    vi.mocked(Engagement.getMembershipStatus).mockResolvedValue({
+      tier_key: 'creator_club',
+      tier_name: 'Core',
+    } as any)
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue([])
+    vi.mocked(Engagement.getProgressForCourse).mockResolvedValue([])
+    vi.mocked(Engagement.computeCourseProgress).mockReturnValue({
+      completedCount: 0,
+      percent: 0,
+      nextSection: mockCourse.sections[0],
+      completedKeys: new Set(),
     })
   })
 
-  it('filters discover lists and excludes the current user from recently visited', async () => {
-    const user = userEvent.setup()
+  it('shows current community plan when membership exists', async () => {
+    mockCommunityApp()
+
     render(<MemoryRouter><Home /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Recently visited')).toBeInTheDocument()
-    })
-
-    expect(screen.queryByText('Current User')).not.toBeInTheDocument()
-
-    await user.click(screen.getByText('Music'))
-
-    await waitFor(() => {
-      expect(screen.getAllByText('No creators match this filter yet.').length).toBeGreaterThan(0)
-      expect(screen.queryByText('Luna Chen')).not.toBeInTheDocument()
-      expect(screen.queryByText('Alex Park')).not.toBeInTheDocument()
-    })
-
-    await user.click(screen.getByText('Gaming'))
-
-    await waitFor(() => {
-      expect(screen.getAllByText('Alex Park').length).toBeGreaterThan(0)
-      expect(screen.queryByText('Current User')).not.toBeInTheDocument()
+      expect(screen.getByText('Current plan: Core')).toBeInTheDocument()
+      expect(screen.getByText('You already joined as Core.')).toBeInTheDocument()
     })
   })
 
-  it('switches to Following tab and shows posts', async () => {
+  it('shows buy CTA when featured course is not purchased', async () => {
+    mockCoursesApp()
+
     render(<MemoryRouter><Home /></MemoryRouter>)
 
-    await userEvent.click(screen.getByText('Following'))
-
     await waitFor(() => {
-      expect(screen.getByText('My Latest Art')).toBeInTheDocument()
-      expect(screen.getByText('Ranked Match Highlights')).toBeInTheDocument()
+      expect(screen.getByText('Buy course')).toBeInTheDocument()
+      expect(screen.getByText('View course')).toBeInTheDocument()
     })
   })
 
-  it('filters following posts by the active discover filter', async () => {
-    const user = userEvent.setup()
-    render(<MemoryRouter><Home /></MemoryRouter>)
-
-    await user.click(screen.getByText('Following'))
-    await user.click(screen.getByText('Gaming'))
-
-    await waitFor(() => {
-      expect(screen.getByText('Ranked Match Highlights')).toBeInTheDocument()
-      expect(screen.queryByText('My Latest Art')).not.toBeInTheDocument()
+  it('shows continue-learning state when featured course is purchased', async () => {
+    mockCoursesApp()
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['community-growth'])
+    vi.mocked(Engagement.getProgressForCourse).mockResolvedValue([
+      { section_key: 'cg-1', completed: true },
+    ] as any)
+    vi.mocked(Engagement.computeCourseProgress).mockReturnValue({
+      completedCount: 1,
+      percent: 50,
+      nextSection: mockCourse.sections[1],
+      completedKeys: new Set(['cg-1']),
     })
 
-    await user.click(screen.getByText('Music'))
-
-    await waitFor(() => {
-      expect(screen.getByText('No posts match this filter yet.')).toBeInTheDocument()
-    })
-  })
-
-  it('shows empty state when no posts', async () => {
-    vi.mocked(api.getPosts).mockResolvedValue([])
-
     render(<MemoryRouter><Home /></MemoryRouter>)
-    await userEvent.click(screen.getByText('Following'))
 
     await waitFor(() => {
-      expect(screen.getByText('No posts yet')).toBeInTheDocument()
-    })
-  })
-
-  it('handles API error gracefully', async () => {
-    vi.mocked(api.getCreators).mockRejectedValue(new Error('Network error'))
-    vi.mocked(api.getPosts).mockRejectedValue(new Error('Network error'))
-
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    // Should not crash
-    await waitFor(() => {
-      expect(screen.getByText('Discover')).toBeInTheDocument()
-    })
-  })
-
-  it('calls API functions on mount', async () => {
-    render(<MemoryRouter><Home /></MemoryRouter>)
-    await waitFor(() => {
-      expect(api.getCreators).toHaveBeenCalledOnce()
-      expect(api.getPosts).toHaveBeenCalledWith(20)
+      expect(screen.getAllByText('Continue learning').length).toBeGreaterThan(0)
+      expect(screen.getByText('Purchased already · 1/2 lessons completed.')).toBeInTheDocument()
+      expect(screen.getByText('Purchased')).toBeInTheDocument()
+      expect(screen.getByText('Continue · 50%')).toBeInTheDocument()
     })
   })
 })

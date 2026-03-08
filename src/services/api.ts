@@ -1,5 +1,24 @@
 import { supabase } from '../lib/supabase'
-import type { User, Post, AIAgent, AgentTask, Conversation, Product, Fan, IPLicense, IPInfringement, AnalyticsRevenue, AnalyticsViews, Campaign, MembershipTier, ConsumerCourse, ConsumerCourseSection } from '../lib/supabase'
+import type {
+  User,
+  Post,
+  AIAgent,
+  AgentTask,
+  Conversation,
+  Product,
+  Fan,
+  IPLicense,
+  IPInfringement,
+  AnalyticsRevenue,
+  AnalyticsViews,
+  Campaign,
+  MembershipTier,
+  ConsumerCourse,
+  ConsumerCourseSection,
+  ConsumerCoursePurchase,
+  ConsumerLessonProgress,
+  ConsumerMembership,
+} from '../lib/supabase'
 export {
   advanceBusinessCampaign,
   approveBusinessCampaignTarget,
@@ -372,6 +391,115 @@ export async function getConsumerCourseSections(courseId: string) {
 
   if (error) throw error
   return data as ConsumerCourseSection[]
+}
+
+export async function getConsumerMembership(userId: string, creatorId: string) {
+  const { data, error } = await supabase
+    .from('consumer_memberships')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('creator_id', creatorId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data as ConsumerMembership | null
+}
+
+export async function upsertConsumerMembership(
+  userId: string,
+  creatorId: string,
+  tierKey: string,
+  tierName: string
+) {
+  const { data, error } = await supabase
+    .from('consumer_memberships')
+    .upsert({
+      user_id: userId,
+      creator_id: creatorId,
+      tier_key: tierKey,
+      tier_name: tierName,
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,creator_id' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerMembership
+}
+
+export async function getConsumerCoursePurchase(userId: string, courseId: string) {
+  const { data, error } = await supabase
+    .from('consumer_course_purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data as ConsumerCoursePurchase | null
+}
+
+export async function getConsumerCoursePurchases(userId: string) {
+  const { data, error } = await supabase
+    .from('consumer_course_purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'purchased')
+    .order('purchased_at', { ascending: false })
+
+  if (error) throw error
+  return data as ConsumerCoursePurchase[]
+}
+
+export async function createConsumerCoursePurchase(userId: string, courseId: string) {
+  const { data, error } = await supabase
+    .from('consumer_course_purchases')
+    .upsert({
+      user_id: userId,
+      course_id: courseId,
+      status: 'purchased',
+      purchased_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,course_id' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerCoursePurchase
+}
+
+export async function getConsumerLessonProgress(userId: string, courseId: string) {
+  const { data, error } = await supabase
+    .from('consumer_lesson_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data as ConsumerLessonProgress[]
+}
+
+export async function upsertConsumerLessonProgress(
+  userId: string,
+  courseId: string,
+  sectionKey: string,
+  completed: boolean
+) {
+  const { data, error } = await supabase
+    .from('consumer_lesson_progress')
+    .upsert({
+      user_id: userId,
+      course_id: courseId,
+      section_key: sectionKey,
+      completed,
+      completed_at: completed ? new Date().toISOString() : null,
+    }, { onConflict: 'user_id,course_id,section_key' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as ConsumerLessonProgress
 }
 
 // ============================================================================

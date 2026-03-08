@@ -13,6 +13,7 @@ import {
 import { COURSE_LIBRARY } from '../../apps/consumer/courseData'
 
 export type CommunityTier = {
+  key: string
   name: string
   price: string
   note: string
@@ -109,18 +110,21 @@ export type CourseLibrarySnapshot = {
 
 const COMMUNITY_TIERS: CommunityTier[] = [
   {
+    key: 'free',
     name: 'Free',
     price: '$0',
     note: 'Public posts, comments, community lobby',
     perks: ['Public posts', 'Community lobby', 'Weekly digest'],
   },
   {
+    key: 'creator_club',
     name: 'Core',
     price: '$9.99',
     note: 'Members-only drops, event access, private threads',
     perks: ['Members-only posts', 'Circle access', 'Early drops'],
   },
   {
+    key: 'vip',
     name: 'VIP',
     price: '$29.99',
     note: 'Direct feedback, live Q&A priority, backstage updates',
@@ -249,6 +253,7 @@ export function getConsumerExperience(
 
 function mapMembershipTier(tier: MembershipTier): CommunityTier {
   return {
+    key: tier.tier_key,
     name: tier.name,
     price: tier.price === 0 ? '$0' : `$${tier.price}`,
     note: tier.description || 'Membership tier',

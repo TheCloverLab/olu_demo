@@ -3,6 +3,7 @@ import { Crown, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getCommunityMembershipSnapshot, type CommunityTier } from '../../../domain/consumer/api'
+import { getMembershipStatus, joinMembership } from '../../../domain/consumer/engagement'
 
 export default function Membership() {
   const { consumerConfig, consumerExperience } = useApp()
@@ -13,6 +14,9 @@ export default function Membership() {
     totalMembers: 0,
     activeFans: 0,
   })
+  const [creatorId, setCreatorId] = useState<string | null>(null)
+  const [activeTierKey, setActiveTierKey] = useState<string | null>(null)
+  const [joiningTier, setJoiningTier] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -25,6 +29,7 @@ export default function Membership() {
         )
         if (!cancelled) {
           setTiers(snapshot.tiers)
+          setCreatorId(snapshot.creator?.id || null)
           setSummary({
             totalMembers: snapshot.totalMembers,
             activeFans: snapshot.activeFans,
@@ -41,6 +46,36 @@ export default function Membership() {
       cancelled = true
     }
   }, [user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMembershipStatus() {
+      if (!creatorId) return
+      const status = await getMembershipStatus(user as any, creatorId)
+      if (!cancelled) {
+        setActiveTierKey(status?.tier_key || null)
+      }
+    }
+
+    loadMembershipStatus()
+    return () => {
+      cancelled = true
+    }
+  }, [creatorId, user?.id])
+
+  async function handleJoin(tier: CommunityTier) {
+    if (!creatorId) return
+    setJoiningTier(tier.name)
+    try {
+      await joinMembership(user as any, creatorId, tier.key, tier.name)
+      setActiveTierKey(tier.key)
+    } catch (error) {
+      console.error('Failed to join membership', error)
+    } finally {
+      setJoiningTier(null)
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -86,8 +121,18 @@ export default function Membership() {
                 </div>
               ))}
             </div>
-            <button className={`mt-5 w-full py-3 rounded-2xl font-semibold transition-opacity ${index === 1 ? 'bg-black text-white hover:opacity-90' : 'bg-white text-black hover:opacity-90'}`}>
-              {tier.name === 'Free' ? 'Stay free' : `Choose ${tier.name}`}
+            <button
+              onClick={() => handleJoin(tier)}
+              disabled={joiningTier === tier.name || activeTierKey === tier.key}
+              className={`mt-5 w-full py-3 rounded-2xl font-semibold transition-opacity disabled:opacity-60 ${index === 1 ? 'bg-black text-white hover:opacity-90' : 'bg-white text-black hover:opacity-90'}`}
+            >
+              {activeTierKey === tier.key
+                ? 'Current plan'
+                : joiningTier === tier.name
+                  ? 'Joining...'
+                  : tier.name === 'Free'
+                    ? 'Stay free'
+                    : `Choose ${tier.name}`}
             </button>
           </div>
         ))}

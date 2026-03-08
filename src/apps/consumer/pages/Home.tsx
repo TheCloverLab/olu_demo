@@ -6,9 +6,15 @@ import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getCommunityMembershipSnapshot, getCourseLibrarySnapshot } from '../../../domain/consumer/api'
+import {
+  computeCourseProgress,
+  getMembershipStatus,
+  getProgressForCourse,
+  getPurchasedCourseSlugs,
+} from '../../../domain/consumer/engagement'
 import { getCreators, getPosts } from '../../../services/api'
 import { CONSUMER_TEMPLATE_META } from '../templateConfig'
-import type { User } from '../../../lib/supabase'
+import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
 function formatNumber(value: number) {
@@ -28,6 +34,8 @@ function CommunityHome() {
     totalMembers: 0,
     activeFans: 0,
   })
+  const [creatorId, setCreatorId] = useState<string | null>(null)
+  const [activeTierName, setActiveTierName] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -56,6 +64,7 @@ function CommunityHome() {
         )
         if (!cancelled) {
           setMembershipTiers(snapshot.tiers)
+          setCreatorId(snapshot.creator?.id || null)
           setMemberStats({
             totalMembers: snapshot.totalMembers,
             activeFans: snapshot.activeFans,
@@ -71,10 +80,35 @@ function CommunityHome() {
     return () => {
       cancelled = true
     }
-  }, [user?.id])
+  }, [consumerConfig.featured_creator_id, user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMembershipStatus() {
+      if (!creatorId) {
+        setActiveTierName(null)
+        return
+      }
+      try {
+        const status = await getMembershipStatus(user as any, creatorId)
+        if (!cancelled) {
+          setActiveTierName(status?.tier_name || null)
+        }
+      } catch (error) {
+        console.error('Failed to load community membership status', error)
+      }
+    }
+
+    loadMembershipStatus()
+    return () => {
+      cancelled = true
+    }
+  }, [creatorId, user?.id])
 
   const featuredCreators = creators.slice(0, 4)
   const featuredPosts = posts.slice(0, 5)
+  const membershipCtaLabel = activeTierName ? `Current plan: ${activeTierName}` : community.membership.ctaLabel
 
   return (
     <div className="pb-24 md:pb-6">
@@ -124,11 +158,16 @@ function CommunityHome() {
                 {memberStats.activeFans > 0 ? ` · ${formatNumber(memberStats.activeFans)} active fans` : ''}
               </p>
             )}
+            {activeTierName && (
+              <p className="text-xs text-emerald-300 mt-3">
+                You already joined as {activeTierName}.
+              </p>
+            )}
             <button
               onClick={() => navigate('/membership')}
               className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              {community.membership.ctaLabel}
+              {membershipCtaLabel}
               <ArrowRight size={16} />
             </button>
           </div>
@@ -230,7 +269,19 @@ function CommunityHome() {
   )
 }
 
-function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) {
+function CourseCard({
+  course,
+  purchased,
+  progress,
+  onOpen,
+}: {
+  course: Course
+  purchased: boolean
+  progress?: ConsumerLessonProgress[]
+  onOpen: () => void
+}) {
+  const courseProgress = computeCourseProgress(course, progress || [])
+
   return (
     <button
       onClick={onOpen}
@@ -265,10 +316,16 @@ function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) 
         <div className="flex items-center justify-between mt-4">
           <p className="font-black text-xl">${course.price}</p>
           <span className="inline-flex items-center gap-2 text-sm text-white/72">
-            View course
+            {purchased ? `Continue · ${courseProgress.percent}%` : 'View course'}
             <ArrowRight size={15} />
           </span>
         </div>
+        {purchased && (
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-300">
+            <PlayCircle size={13} />
+            Purchased
+          </div>
+        )}
       </div>
     </button>
   )
@@ -276,19 +333,32 @@ function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) 
 
 function CoursesHome() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { consumerConfig, consumerExperience } = useApp()
   const courses = consumerExperience.courses
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
   const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
+  const [purchasedSlugs, setPurchasedSlugs] = useState<string[]>([])
+  const [progressBySlug, setProgressBySlug] = useState<Record<string, ConsumerLessonProgress[]>>({})
 
   useEffect(() => {
     let cancelled = false
 
     async function loadCourses() {
-      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
-      if (!cancelled) {
-        setCourseLibrary(snapshot.courses)
-        setFeaturedCourse(snapshot.featuredCourse)
+      try {
+        const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
+        const purchased = await getPurchasedCourseSlugs(user as any, snapshot.courses)
+        const progressEntries = await Promise.all(
+          snapshot.courses.map(async (course) => [course.slug, await getProgressForCourse(user as any, course)] as const)
+        )
+        if (!cancelled) {
+          setCourseLibrary(snapshot.courses)
+          setFeaturedCourse(snapshot.featuredCourse)
+          setPurchasedSlugs(purchased)
+          setProgressBySlug(Object.fromEntries(progressEntries))
+        }
+      } catch (error) {
+        console.error('Failed to load courses home', error)
       }
     }
 
@@ -296,9 +366,17 @@ function CoursesHome() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [consumerConfig.featured_course_slug, user?.id])
 
   const heroCourse = featuredCourse || courseLibrary[0]
+  const heroPurchased = heroCourse ? purchasedSlugs.includes(heroCourse.slug) : false
+  const heroProgress = heroCourse ? computeCourseProgress(heroCourse, progressBySlug[heroCourse.slug] || []) : null
+  const heroPrimaryHref = heroCourse
+    ? heroPurchased
+      ? `/learn/${heroCourse.slug}/${heroProgress?.nextSection?.id || heroCourse.sections[0]?.id}`
+      : `/checkout/${heroCourse.slug}`
+    : '/courses'
+  const heroPrimaryLabel = heroPurchased ? 'Continue learning' : courses.detail.buyLabel
 
   return (
     <div className="pb-24 md:pb-6">
@@ -313,10 +391,10 @@ function CoursesHome() {
             <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">{heroCourse?.description || 'Use a course catalog, checkout flow, and learning hub to deliver structured knowledge.'}</p>
             <div className="flex flex-wrap gap-3 mt-6">
               <button
-                onClick={() => heroCourse && navigate(`/checkout/${heroCourse.slug}`)}
+                onClick={() => navigate(heroPrimaryHref)}
                 className="px-5 py-3 rounded-2xl bg-black text-white font-semibold hover:opacity-90 transition-opacity"
               >
-                {courses.detail.buyLabel}
+                {heroPrimaryLabel}
               </button>
               <button
                 onClick={() => heroCourse && navigate(`/courses/${heroCourse.slug}/catalog`)}
@@ -325,6 +403,11 @@ function CoursesHome() {
                 {courses.detail.catalogLabel}
               </button>
             </div>
+            {heroPurchased && heroProgress && (
+              <p className="text-black/70 text-sm mt-4">
+                Purchased already · {heroProgress.completedCount}/{heroCourse.sections.length} lessons completed.
+              </p>
+            )}
           </div>
         </section>
 
@@ -351,7 +434,7 @@ function CoursesHome() {
               ))}
             </div>
             <button onClick={() => navigate('/learning')} className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity">
-              Open learning dashboard
+              {purchasedSlugs.length > 0 ? 'Open learning dashboard' : 'Browse courses first'}
             </button>
           </div>
 
@@ -397,7 +480,13 @@ function CoursesHome() {
           </div>
           <div className="grid lg:grid-cols-2 gap-4">
             {courseLibrary.map((course) => (
-              <CourseCard key={course.id} course={course} onOpen={() => navigate(`/courses/${course.slug}`)} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                purchased={purchasedSlugs.includes(course.slug)}
+                progress={progressBySlug[course.slug]}
+                onOpen={() => navigate(`/courses/${course.slug}`)}
+              />
             ))}
           </div>
         </section>

@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react'
 import { GraduationCap } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
+import { useAuth } from '../../../context/AuthContext'
 import type { Course } from '../courseData'
 import { getCourseLibrarySnapshot, getCourseSnapshotBySlug } from '../../../domain/consumer/api'
+import { hasPurchasedCourse } from '../../../domain/consumer/engagement'
 
 export default function Courses() {
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { consumerConfig, consumerExperience } = useApp()
+  const { user } = useAuth()
   const { courses } = consumerExperience
   const [selected, setSelected] = useState<Course | null | undefined>(courseSlug ? undefined : null)
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+  const [purchased, setPurchased] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -21,6 +25,10 @@ export default function Courses() {
         const course = await getCourseSnapshotBySlug(courseSlug, consumerConfig.featured_course_slug)
         if (!cancelled) {
           setSelected(course)
+          if (course) {
+            const enrolled = await hasPurchasedCourse(user as any, course)
+            setPurchased(enrolled)
+          }
         }
         return
       }
@@ -80,8 +88,11 @@ export default function Courses() {
               <button onClick={() => navigate(`/courses/${selected.slug}/catalog`)} className="w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity">
                 {courses.detail.catalogLabel}
               </button>
-              <button onClick={() => navigate(`/checkout/${selected.slug}`)} className="w-full py-3 rounded-2xl bg-white/10 border border-white/10 font-semibold hover:bg-white/15 transition-colors">
-                {courses.detail.buyLabel}
+              <button
+                onClick={() => navigate(purchased ? `/learn/${selected.slug}/${selected.sections[0]?.id}` : `/checkout/${selected.slug}`)}
+                className="w-full py-3 rounded-2xl bg-white/10 border border-white/10 font-semibold hover:bg-white/15 transition-colors"
+              >
+                {purchased ? 'Continue learning' : courses.detail.buyLabel}
               </button>
             </div>
           </div>

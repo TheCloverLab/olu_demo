@@ -491,3 +491,36 @@ export type ConsumerCourseSection = {
   created_at?: string
   updated_at?: string
 }
+
+export type ConsumerMembership = {
+  id: string
+  user_id: string
+  creator_id: string
+  tier_key: string
+  tier_name: string
+  status: 'active' | 'cancelled'
+  joined_at?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type ConsumerCoursePurchase = {
+  id: string
+  user_id: string
+  course_id: string
+  status: 'purchased' | 'refunded'
+  purchased_at?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type ConsumerLessonProgress = {
+  id: string
+  user_id: string
+  course_id: string
+  section_key: string
+  completed: boolean
+  completed_at?: string | null
+  created_at?: string
+  updated_at?: string
+}

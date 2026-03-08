@@ -180,7 +180,7 @@ function renderWithMentions(text, participantNames) {
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [tab, setTab] = useState('chat')
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -335,9 +335,13 @@ export default function TeamChat() {
           })),
       ]
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
         body: JSON.stringify({ messages: apiMessages }),
       })
 

@@ -18,7 +18,6 @@ import {
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import RoleSwitcher from '../../../components/layout/RoleSwitcher'
 import { APP_VERSION } from '../../../lib/version'
 
 const BUSINESS_NAV = [
@@ -62,7 +61,7 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
 
 function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()
-  const { currentUser, availableRoles, enabledBusinessModules, setShowRoleSwitcher } = useApp()
+  const { currentUser, availableRoles } = useApp()
 
   const go = (path: string) => {
     onClose()
@@ -113,19 +112,6 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
             </div>
 
-            {enabledBusinessModules.length > 1 && (
-              <div className="p-4 border-t border-olu-border">
-                <button
-                  onClick={() => {
-                    onClose()
-                    setShowRoleSwitcher(true)
-                  }}
-                  className="w-full py-2.5 px-3 rounded-2xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted text-sm font-medium transition-colors"
-                >
-                  Switch Capability
-                </button>
-              </div>
-            )}
           </motion.div>
         </>
       )}
@@ -134,7 +120,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 }
 
 export default function BusinessLayout() {
-  const { currentUser, availableRoles, enabledBusinessModules, setShowRoleSwitcher } = useApp()
+  const { currentUser, availableRoles, enabledBusinessModules } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -186,14 +172,6 @@ export default function BusinessLayout() {
         </nav>
 
         <div className="p-3 border-t border-cyan-500/10 space-y-2">
-          {enabledBusinessModules.length > 1 && (
-            <button
-              onClick={() => setShowRoleSwitcher(true)}
-              className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
-            >
-              Switch Capability
-            </button>
-          )}
           <button
             onClick={() => window.open('/', '_blank', 'noopener,noreferrer')}
             className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
@@ -239,7 +217,6 @@ export default function BusinessLayout() {
       </main>
 
       <BusinessMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <RoleSwitcher />
     </div>
   )
 }

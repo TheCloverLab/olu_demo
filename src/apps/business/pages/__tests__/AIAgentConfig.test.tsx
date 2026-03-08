@@ -64,7 +64,7 @@ describe('AIAgentConfig', () => {
     })
 
     await user.click(screen.getByRole('button', { name: 'Hire Agent' }))
-    await user.click(screen.getByRole('button', { name: 'Hire Marketing Manager' }))
+    await user.click(screen.getByRole('button', { name: 'Confirm Hire' }))
 
     await waitFor(() => {
       expect(AgentApi.hireWorkspaceAgent).toHaveBeenCalled()

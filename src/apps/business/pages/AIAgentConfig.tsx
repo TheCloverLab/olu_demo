@@ -83,9 +83,9 @@ function HireModal({
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
             </p>
             <div className="flex gap-3">
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-cyan-500/10 text-sm font-medium text-cyan-100/60 hover:text-white transition-colors">Cancel</button>
-              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
-                {loading ? 'Hiring...' : `Hire ${name || agent.name}`}
+              <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-cyan-500/10 text-sm font-medium text-cyan-100/60 hover:text-white transition-colors">Cancel</button>
+              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
+                {loading ? 'Hiring...' : 'Confirm Hire'}
               </button>
             </div>
           </div>

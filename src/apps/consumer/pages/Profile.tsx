@@ -1,216 +1,318 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeCheck, BookOpen, CreditCard, Settings, Share2, Sparkles, Users } from 'lucide-react'
+import { BadgeCheck, BookOpen, Clock3, Settings, Share2, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { useApp } from '../../../context/AppContext'
-import { getCommunityMembershipSnapshot, getCourseLibrarySnapshot } from '../../../domain/consumer/api'
+import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
+import { getCreators } from '../../../services/api'
+import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
+import type { Course } from '../courseData'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
+type JoinedCommunity = {
+  creator: User
+  tierName: string
+}
+
+type LearningItem = {
+  course: Course
+  progress: ConsumerLessonProgress[]
+}
+
 export default function Profile() {
   const { user } = useAuth()
-  const { consumerConfig, consumerTemplate } = useApp()
   const navigate = useNavigate()
-  const [membershipName, setMembershipName] = useState<string | null>(null)
-  const [communitySummary, setCommunitySummary] = useState({
-    creatorName: '',
-    activeFans: 0,
-    totalMembers: 0,
-  })
-  const [learningSummary, setLearningSummary] = useState({
-    purchasedCount: 0,
-    featuredCourseTitle: '',
-    featuredProgressLabel: 'No learning activity yet.',
-  })
+  const [creators, setCreators] = useState<User[]>([])
+  const [joinedCommunities, setJoinedCommunities] = useState<JoinedCommunity[]>([])
+  const [learningItems, setLearningItems] = useState<LearningItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadConsumerSummary() {
+    async function loadMe() {
       if (!user?.id) return
 
-      if (consumerTemplate === 'fan_community') {
-        try {
-          const snapshot = await getCommunityMembershipSnapshot(user as any, consumerConfig.featured_creator_id)
-          const status = snapshot.creator?.id
-            ? await getMembershipStatus(user as any, snapshot.creator.id)
-            : null
-
-          if (!cancelled) {
-            setMembershipName(status?.tier_name || null)
-            setCommunitySummary({
-              creatorName: snapshot.creator?.name || 'Community',
-              activeFans: snapshot.activeFans,
-              totalMembers: snapshot.totalMembers,
-            })
-            setLearningSummary({
-              purchasedCount: 0,
-              featuredCourseTitle: '',
-              featuredProgressLabel: 'No learning activity yet.',
-            })
-          }
-        } catch (error) {
-          console.error('Failed to load community summary', error)
-        }
-        return
-      }
-
       try {
-        const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
-        const purchasedSlugs = await getPurchasedCourseSlugs(user as any, snapshot.courses)
-        const featuredCourse = snapshot.featuredCourse
-        let featuredProgressLabel = purchasedSlugs.length > 0
-          ? `${purchasedSlugs.length} course${purchasedSlugs.length > 1 ? 's' : ''} in your library`
-          : 'No courses purchased yet.'
+        const [allCreators, courseSnapshot] = await Promise.all([
+          getCreators(),
+          getCourseLibrarySnapshot(),
+        ])
 
-        if (featuredCourse && purchasedSlugs.includes(featuredCourse.slug)) {
-          const progress = await getProgressForCourse(user as any, featuredCourse)
-          const summary = computeCourseProgress(featuredCourse, progress)
-          featuredProgressLabel = `${summary.completedCount}/${featuredCourse.sections.length} lessons completed`
-        }
+        const [membershipEntries, purchasedSlugs] = await Promise.all([
+          Promise.all(
+            allCreators.map(async (creator) => {
+              const membership = await getMembershipStatus(user as any, creator.id).catch(() => null)
+              return [creator, membership] as const
+            }),
+          ),
+          getPurchasedCourseSlugs(user as any, courseSnapshot.courses).catch(() => []),
+        ])
 
-        if (!cancelled) {
-          setLearningSummary({
-            purchasedCount: purchasedSlugs.length,
-            featuredCourseTitle: featuredCourse?.title || 'Academy',
-            featuredProgressLabel,
-          })
-          setMembershipName(null)
-          setCommunitySummary({
-            creatorName: '',
-            activeFans: 0,
-            totalMembers: 0,
-          })
-        }
+        const purchasedCourses = courseSnapshot.courses.filter((course) => purchasedSlugs.includes(course.slug))
+        const progressEntries = await Promise.all(
+          purchasedCourses.map(async (course) => ({
+            course,
+            progress: await getProgressForCourse(user as any, course).catch(() => []),
+          })),
+        )
+
+        if (cancelled) return
+
+        setCreators(allCreators)
+        setJoinedCommunities(
+          membershipEntries
+            .filter(([, membership]) => !!membership?.tier_name)
+            .map(([creator, membership]) => ({
+              creator,
+              tierName: membership!.tier_name,
+            })),
+        )
+        setLearningItems(progressEntries)
       } catch (error) {
-        console.error('Failed to load learning summary', error)
+        console.error('Failed to load me', error)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
-    loadConsumerSummary()
+    loadMe()
     return () => {
       cancelled = true
     }
-  }, [consumerConfig.featured_course_slug, consumerConfig.featured_creator_id, consumerTemplate, user?.id])
+  }, [user?.id])
+
+  const recentActions = useMemo(() => {
+    const communityActions = joinedCommunities.slice(0, 2).map((item) => ({
+      id: `community-${item.creator.id}`,
+      title: item.creator.name,
+      detail: `${item.tierName} member`,
+      cta: 'Open community',
+      href: `/communities/${item.creator.id}`,
+      icon: Users,
+    }))
+
+    const academyActions = learningItems.slice(0, 2).map((item) => {
+      const summary = computeCourseProgress(item.course, item.progress)
+      return {
+        id: `course-${item.course.id}`,
+        title: item.course.title,
+        detail: `${summary.completedCount}/${item.course.sections.length} lessons completed`,
+        cta: 'Continue',
+        href: `/learn/${item.course.slug}/${summary.nextSection?.id || item.course.sections[0]?.id}`,
+        icon: BookOpen,
+      }
+    })
+
+    return [...communityActions, ...academyActions].slice(0, 4)
+  }, [joinedCommunities, learningItems])
 
   if (!user) {
-    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>
   }
 
-  const accessCards = consumerTemplate === 'fan_community'
-    ? [
-        {
-          icon: Sparkles,
-          title: membershipName ? `${membershipName} member` : 'Membership access',
-          description: membershipName
-            ? `${communitySummary.creatorName} membership is active.`
-            : 'No active membership yet.',
-          ctaLabel: membershipName ? 'Open topics' : 'Open membership',
-          ctaHref: membershipName ? '/topics' : '/membership',
-        },
-        {
-          icon: Users,
-          title: 'Community pulse',
-          description: `${formatNumber(communitySummary.activeFans)} active fans across ${formatNumber(communitySummary.totalMembers)} total members.`,
-          ctaLabel: 'Browse community',
-          ctaHref: '/',
-        },
-      ]
-    : [
-        {
-          icon: BookOpen,
-          title: learningSummary.purchasedCount > 0 ? 'My learning' : 'Course access',
-          description: learningSummary.featuredProgressLabel,
-          ctaLabel: learningSummary.purchasedCount > 0 ? 'Continue learning' : 'Browse catalog',
-          ctaHref: learningSummary.purchasedCount > 0 ? '/learning' : '/courses',
-        },
-        {
-          icon: CreditCard,
-          title: 'Library status',
-          description: learningSummary.purchasedCount > 0
-            ? `${learningSummary.purchasedCount} purchased course${learningSummary.purchasedCount > 1 ? 's' : ''}.`
-            : `${learningSummary.featuredCourseTitle} is available.`,
-          ctaLabel: learningSummary.purchasedCount > 0 ? 'View library' : 'Open checkout',
-          ctaHref: learningSummary.purchasedCount > 0 ? '/learning' : '/courses',
-        },
-      ]
-
   return (
-    <div className="max-w-2xl mx-auto pb-24 md:pb-6">
-      <div className="h-36 bg-[#1a1a1a] relative mx-4 mt-4 rounded-2xl overflow-hidden">
-        {user.cover_img && <img src={user.cover_img} alt="" className="w-full h-full object-cover" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-olu-bg/80 to-transparent" />
+    <div className="max-w-3xl mx-auto pb-24 md:pb-6">
+      <div className="px-4 pt-4">
+        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              {user.avatar_img ? (
+                <img src={user.avatar_img} alt={user.name} className="w-16 h-16 rounded-2xl object-cover" />
+              ) : (
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${user.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-xl text-white`}>
+                  {user.initials || 'U'}
+                </div>
+              )}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="font-black text-xl">{user.name}</h1>
+                  {user.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
+                </div>
+                <p className="text-olu-muted text-sm mt-1">{user.handle}</p>
+                <p className="text-sm text-olu-muted mt-2 line-clamp-2">{user.bio || 'No bio yet.'}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button className="p-2 rounded-xl glass glass-hover"><Share2 size={16} className="text-olu-muted" /></button>
+              <button className="p-2 rounded-xl glass glass-hover" onClick={() => navigate('/settings')}><Settings size={16} className="text-olu-muted" /></button>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+              <span className="font-semibold">{formatNumber(joinedCommunities.length)}</span>
+              <span className="ml-2 text-olu-muted">Communities joined</span>
+            </div>
+            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+              <span className="font-semibold">{formatNumber(learningItems.length)}</span>
+              <span className="ml-2 text-olu-muted">Academies in progress</span>
+            </div>
+            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+              <span className="font-semibold">{formatNumber(recentActions.length)}</span>
+              <span className="ml-2 text-olu-muted">Recent actions</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="px-4 -mt-8 relative">
-        <div className="flex items-end justify-between mb-4">
-          {user.avatar_img ? (
-            <img src={user.avatar_img} alt={user.name} className="w-[72px] h-[72px] rounded-2xl object-cover border-4 border-olu-bg" />
+      <div className="px-4 mt-5 space-y-5">
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
+              <p className="font-semibold text-base mt-1">Memberships & learning</p>
+            </div>
+            <Sparkles size={18} className="text-white/45" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate(joinedCommunities.length > 0 ? `/communities/${joinedCommunities[0].creator.id}` : '/discover')}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <p className="font-semibold text-sm">Communities</p>
+              <p className="text-xs text-olu-muted mt-1">
+                {joinedCommunities.length > 0
+                  ? `${joinedCommunities.length} joined, latest in ${joinedCommunities[0].creator.name}.`
+                  : 'No communities joined yet.'}
+              </p>
+            </button>
+            <button
+              onClick={() => navigate(learningItems.length > 0 ? '/learning' : '/discover')}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+            >
+              <p className="font-semibold text-sm">Learning</p>
+              <p className="text-xs text-olu-muted mt-1">
+                {learningItems.length > 0
+                  ? `${learningItems.length} academy${learningItems.length > 1 ? 'ies' : ''} in progress.`
+                  : 'No academy progress yet.'}
+              </p>
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Joined</p>
+              <p className="font-semibold text-base mt-1">Your communities</p>
+            </div>
+            <Users size={18} className="text-white/45" />
+          </div>
+
+          {joinedCommunities.length > 0 ? (
+            <div className="space-y-3">
+              {joinedCommunities.map(({ creator, tierName }) => (
+                <button
+                  key={creator.id}
+                  onClick={() => navigate(`/communities/${creator.id}`)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-sm">{creator.name} Inner Circle</p>
+                      <p className="text-xs text-olu-muted mt-1">{creator.bio || 'Community updates and private discussions.'}</p>
+                    </div>
+                    <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{tierName}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           ) : (
-            <div className={`w-[72px] h-[72px] rounded-2xl bg-gradient-to-br ${user.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-2xl text-white border-4 border-olu-bg`}>
-              {user.initials || 'U'}
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+              You have not joined any communities yet.
             </div>
           )}
-          <div className="flex gap-2 mb-1">
-            <button className="p-2 rounded-xl glass glass-hover"><Share2 size={16} className="text-olu-muted" /></button>
-            <button className="p-2 rounded-xl glass glass-hover" onClick={() => navigate('/settings')}><Settings size={16} className="text-olu-muted" /></button>
-          </div>
-        </div>
+        </section>
 
-        <div className="flex items-center gap-2 mb-1">
-          <h1 className="font-black text-xl">{user.name}</h1>
-          {user.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
-        </div>
-        <p className="text-olu-muted text-sm mb-2">{user.handle}</p>
-        <p className="text-sm text-olu-muted mb-4 leading-relaxed">{user.bio || 'No bio yet.'}</p>
-
-        <div className="flex gap-6 mb-5">
-          {[
-            { val: formatNumber(user.followers), label: 'Followers' },
-            { val: formatNumber(user.following), label: 'Following' },
-            { val: formatNumber(user.posts), label: 'Posts' },
-          ].map((s) => (
-            <div key={s.label}>
-              <p className="font-bold text-base">{s.val}</p>
-              <p className="text-olu-muted text-xs">{s.label}</p>
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Learning</p>
+              <p className="font-semibold text-base mt-1">Academies in progress</p>
             </div>
-          ))}
-        </div>
-
-        <div className="glass rounded-2xl p-4 mb-5">
-          <div className="mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
-            <p className="font-semibold text-sm mt-1">Memberships & learning</p>
+            <BookOpen size={18} className="text-white/45" />
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {accessCards.map(({ icon: Icon, title, description, ctaLabel, ctaHref }) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 rounded-2xl bg-white/8 p-2 text-white/80">
-                      <Icon size={16} />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-sm">{title}</p>
-                      <p className="text-xs text-olu-muted leading-relaxed mt-1">{description}</p>
-                    </div>
-                  </div>
+          {learningItems.length > 0 ? (
+            <div className="space-y-3">
+              {learningItems.map(({ course, progress }) => {
+                const summary = computeCourseProgress(course, progress)
+                return (
                   <button
-                    onClick={() => navigate(ctaHref)}
-                    className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-black hover:opacity-90 transition-opacity"
+                    key={course.id}
+                    onClick={() => navigate(`/learn/${course.slug}/${summary.nextSection?.id || course.sections[0]?.id}`)}
+                    className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
                   >
-                    {ctaLabel}
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-sm">{course.title}</p>
+                        <p className="text-xs text-olu-muted mt-1">{summary.completedCount}/{course.sections.length} lessons completed</p>
+                      </div>
+                      <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{summary.percent}%</span>
+                    </div>
                   </button>
-                </div>
-              </div>
-            ))}
+                )
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+              No academy activity yet.
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Recent</p>
+              <p className="font-semibold text-base mt-1">Jump back in</p>
+            </div>
+            <Clock3 size={18} className="text-white/45" />
           </div>
-        </div>
+
+          {recentActions.length > 0 ? (
+            <div className="space-y-3">
+              {recentActions.map((item) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(item.href)}
+                    className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 rounded-2xl bg-white/8 p-2 text-white/80">
+                          <Icon size={16} />
+                        </span>
+                        <div>
+                          <p className="font-semibold text-sm">{item.title}</p>
+                          <p className="text-xs text-olu-muted mt-1">{item.detail}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-white/65">{item.cta}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+              Nothing recent yet. Start in Discover.
+            </div>
+          )}
+        </section>
       </div>
+
+      {loading ? (
+        <div className="px-4 mt-4 text-sm text-olu-muted">Updating your memberships and learning…</div>
+      ) : null}
     </div>
   )
 }

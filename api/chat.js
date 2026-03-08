@@ -4,6 +4,12 @@ export default async function handler(req, res) {
   const { messages } = req.body
   const apiKey = process.env.KIMI_API_KEY
 
+  if (!apiKey) {
+    console.error('Kimi error: missing KIMI_API_KEY')
+    res.setHeader('Content-Type', 'text/event-stream')
+    return res.end('data: [ERROR:missing-api-key]\n\n')
+  }
+
   try {
     const upstream = await fetch('https://api.kimi.com/coding/v1/chat/completions', {
       method: 'POST',
@@ -26,7 +32,7 @@ export default async function handler(req, res) {
       const err = await upstream.text()
       console.error('Kimi error:', upstream.status, err)
       res.setHeader('Content-Type', 'text/event-stream')
-      return res.end(`data: [ERROR:${upstream.status}]\n\n`)
+      return res.end(`data: [ERROR:provider-http-${upstream.status}]\n\n`)
     }
 
     res.setHeader('Content-Type', 'text/event-stream')
@@ -43,6 +49,6 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error('Fetch failed:', e.message)
     res.setHeader('Content-Type', 'text/event-stream')
-    res.end(`data: [ERROR:${e.message}]\n\n`)
+    res.end(`data: [ERROR:provider-fetch-failed]\n\n`)
   }
 }

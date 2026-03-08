@@ -2,52 +2,10 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { addConversationMessage, addGroupChatMessage, getAgentsWithTasks, getConversations, getGroupChatMessages, getGroupChatsByUser } from '../../../services/api'
 import clsx from 'clsx'
-
-const FALLBACK_BY_ROLE = {
-  'IP Manager': [
-    "I'll review the licensing request and get back to you with a recommendation.",
-    "Noted. I'll check the IP status and prepare a summary.",
-    "I'll draft the counter-proposal and send it over shortly.",
-  ],
-  'Legal Officer': [
-    "I'll monitor for any new unauthorized uses and report back.",
-    "Understood. I'll prepare the DMCA takedown and file it immediately.",
-    "I'll document the infringement and recommend next steps.",
-  ],
-  'Community Manager': [
-    "I'll reach out to the top fans and keep you updated.",
-    "On it — I'll prepare the community announcement.",
-    "I'll organize the event details and share a draft with you.",
-  ],
-  'Growth Officer': [
-    "I'll analyze the latest growth metrics and prepare a report.",
-    "Understood. I'll run the campaign and track performance.",
-    "I'll identify the best channels and draft a growth plan.",
-  ],
-  'Data Analyst': [
-    "I'll pull the analytics data and prepare a summary.",
-    "Understood. I'll run the numbers and highlight key insights.",
-    "I'll generate the report and flag any anomalies.",
-  ],
-  'Creativity Officer': [
-    "I'll brainstorm content ideas based on current trends.",
-    "Got it. I'll draft a few concepts for your review.",
-    "I'll put together a content calendar with fresh ideas.",
-  ],
-}
-const FALLBACK_DEFAULT = [
-  "Got it. I'll handle that and update you shortly.",
-  "Understood. I'm on it.",
-  "Sure, I'll take care of that now.",
-]
-const fallback = (role) => {
-  const replies = FALLBACK_BY_ROLE[role] || FALLBACK_DEFAULT
-  return replies[Math.floor(Math.random() * replies.length)]
-}
 
 const STATUS_CONFIG = {
   done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
@@ -73,6 +31,20 @@ Your role: ${agent.role}
 Your specialty: ${agent.description}
 
 You are chatting with Luna Chen, a professional digital artist and creator. She is your principal. Be proactive, concise, and professional. Use brief bullet points when listing items. Don't use excessive emojis. Respond in the same language the user writes in (English or Chinese).`
+}
+
+function runtimeErrorMessage(code) {
+  const map = {
+    'missing-api-key': 'Agent runtime is unavailable because `KIMI_API_KEY` is not configured on the server.',
+    'provider-fetch-failed': 'Agent runtime could not reach the model provider. No AI reply was generated.',
+  }
+
+  if (code in map) return map[code as keyof typeof map]
+  if (code?.startsWith('provider-http-')) {
+    return `Agent runtime returned ${code.replace('provider-http-', 'HTTP ')} from the model provider. No AI reply was generated.`
+  }
+
+  return `Agent runtime failed (${code || 'unknown-error'}). No AI reply was generated.`
 }
 
 function TaskItem({ task }) {
@@ -214,6 +186,7 @@ export default function TeamChat() {
   const [loading, setLoading] = useState(false)
   const [streaming, setStreaming] = useState(false)
   const [thinking, setThinking] = useState('')
+  const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [liveAgents, setLiveAgents] = useState<any[]>([])
@@ -323,6 +296,7 @@ export default function TeamChat() {
     if (!input.trim() || loading) return
     const userText = input.trim()
     setInput('')
+    setRuntimeError(null)
 
     const userMsg = { from: 'user', text: userText, time: 'Just now' }
     const next = [...messages, userMsg]
@@ -392,13 +366,11 @@ export default function TeamChat() {
           if (!line.startsWith('data:')) continue
           const payload = line.slice(5).trim()
           if (payload === '[DONE]') break
-          if (payload.startsWith('[ERROR:') || payload === '[FALLBACK]') {
-            console.error('API error payload:', payload)
-            setMessages(prev => {
-              const msgs = [...prev]
-              msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: fallback(agent.role) }
-              return msgs
-            })
+          if (payload.startsWith('[ERROR:')) {
+            const errorCode = payload.slice(7, -1)
+            console.error('API error payload:', errorCode)
+            setRuntimeError(runtimeErrorMessage(errorCode))
+            setMessages(prev => prev.filter((msg, index) => !(index === prev.length - 1 && msg.from === 'agent' && !msg.text)))
             break
           }
           try {
@@ -429,7 +401,8 @@ export default function TeamChat() {
         }
       }
     } catch (e) {
-      setMessages(prev => [...prev, { from: 'agent', text: fallback(agent.role), time: 'Just now' }])
+      setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+      setMessages(prev => prev.filter((msg, index) => !(index === prev.length - 1 && msg.from === 'agent' && !msg.text)))
     } finally {
       setLoading(false)
       setStreaming(false)
@@ -482,6 +455,14 @@ export default function TeamChat() {
         </div>
       ) : (
         <>
+          {runtimeError && (
+            <div className="px-4 pt-4">
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-start gap-2 text-sm text-amber-100">
+                <AlertTriangle size={16} className="mt-0.5 text-amber-300 flex-shrink-0" />
+                <span>{runtimeError}</span>
+              </div>
+            </div>
+          )}
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
             {messages.map((msg, i) => (

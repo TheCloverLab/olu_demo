@@ -1,5 +1,18 @@
 import { supabase } from '../../lib/supabase'
 import type { BusinessCampaign, BusinessCampaignEvent, BusinessCampaignTarget, BusinessCampaignWorkflow } from '../../lib/supabase'
+import { ensureWorkspaceForUser } from '../workspace/api'
+
+async function getWorkspaceAgentIdByKey(workspaceId: string, agentKey: string) {
+  const { data, error } = await supabase
+    .from('workspace_agents')
+    .select('id')
+    .eq('workspace_id', workspaceId)
+    .eq('agent_key', agentKey)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.id ?? null
+}
 
 async function getCampaignTargets(campaignId: string) {
   const { data, error } = await supabase
@@ -94,12 +107,15 @@ export async function getLatestBusinessCampaignForCreator(creatorId: string) {
 }
 
 export async function startBusinessCampaignDemo(advertiserId: string, creatorId: string) {
-  const { data: agentRow } = await supabase
-    .from('ai_agents')
-    .select('id')
-    .eq('user_id', advertiserId)
-    .eq('agent_key', 'max')
-    .maybeSingle()
+  const advertiserMembership = await ensureWorkspaceForUser({
+    id: advertiserId,
+    username: '',
+    handle: '',
+    name: 'Workspace owner',
+    email: '',
+  } as any)
+
+  const advertiserAgentId = await getWorkspaceAgentIdByKey(advertiserMembership.workspace_id, 'max')
 
   const { data: creatorRow, error: creatorError } = await supabase
     .from('users')
@@ -110,18 +126,21 @@ export async function startBusinessCampaignDemo(advertiserId: string, creatorId:
   if (creatorError) throw creatorError
   if (!creatorRow?.id) throw new Error('Target creator not found')
 
-  const { data: creatorAgentRow } = await supabase
-    .from('ai_agents')
-    .select('id')
-    .eq('user_id', creatorRow.id)
-    .eq('agent_key', 'lisa')
-    .maybeSingle()
+  const creatorMembership = await ensureWorkspaceForUser({
+    id: creatorRow.id,
+    username: '',
+    handle: '',
+    name: creatorRow.name || 'Creator',
+    email: '',
+  } as any)
+
+  const creatorAgentId = await getWorkspaceAgentIdByKey(creatorMembership.workspace_id, 'lisa')
 
   const { data: campaign, error: campaignError } = await supabase
     .from('business_campaigns')
     .insert({
       advertiser_id: advertiserId,
-      agent_id: agentRow?.id ?? null,
+      agent_id: advertiserAgentId,
       name: 'Run club launch sprint',
       brand_name: 'AeroPulse',
       objective: 'Find 5 sports KOLs to promote the new performance sneaker line.',
@@ -140,7 +159,7 @@ export async function startBusinessCampaignDemo(advertiserId: string, creatorId:
     .insert({
       campaign_id: campaign.id,
       creator_id: creatorRow.id,
-      creator_agent_id: creatorAgentRow?.id ?? null,
+      creator_agent_id: creatorAgentId,
       stage: 'shortlisted',
       offer_amount: 100,
       deliverable_type: 'ai_video',

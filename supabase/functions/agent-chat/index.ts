@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${kimiApiKey}`,
-        'User-Agent': 'olu-demo/1.0.0',
-        'X-Client-Name': 'olu-demo',
+        'User-Agent': 'claude-code/1.0.0',
+        'X-Client-Name': 'claude-code',
       },
       body: JSON.stringify({
         model: 'kimi-for-coding',

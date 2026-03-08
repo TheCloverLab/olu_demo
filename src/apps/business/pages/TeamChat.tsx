@@ -345,6 +345,28 @@ export default function TeamChat() {
         body: JSON.stringify({ messages: apiMessages }),
       })
 
+      const contentType = res.headers.get('content-type') || ''
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('agent-chat http error:', res.status, errorText)
+        if (res.status === 401) {
+          setRuntimeError(runtimeErrorMessage('invalid-auth'))
+        } else if (errorText.includes('[ERROR:')) {
+          const match = errorText.match(/\[ERROR:([^\]]+)\]/)
+          setRuntimeError(runtimeErrorMessage(match?.[1] || 'provider-fetch-failed'))
+        } else {
+          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+        }
+        return
+      }
+
+      if (!contentType.includes('text/event-stream')) {
+        const errorText = await res.text()
+        console.error('agent-chat unexpected response:', contentType, errorText)
+        setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+        return
+      }
+
       if (!res.body) {
         throw new Error('Empty response body')
       }

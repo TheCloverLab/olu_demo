@@ -196,9 +196,6 @@ export default function BusinessLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden md:inline-flex px-2.5 py-1 rounded-full border border-cyan-500/15 bg-cyan-400/5 text-[11px] tracking-[0.14em] uppercase text-cyan-100/55">
-              {APP_VERSION}
-            </div>
             <button
               onClick={() => navigate('/business/settings')}
               className="hidden md:inline-flex px-3 py-2 rounded-xl bg-[#0d1a2d] text-sm text-cyan-50/72 hover:text-white transition-colors"

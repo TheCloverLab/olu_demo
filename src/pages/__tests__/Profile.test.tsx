@@ -3,21 +3,28 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Profile from '../Profile'
 import * as AuthContext from '../../context/AuthContext'
-import * as api from '../../services/api'
+import * as AppContext from '../../context/AppContext'
+import * as ConsumerApi from '../../domain/consumer/api'
+import * as Engagement from '../../domain/consumer/engagement'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
-  getPostsByCreator: vi.fn(),
+vi.mock('../../context/AppContext', () => ({
+  useApp: vi.fn(),
 }))
 
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, onClick, ...props }: any) => <button onClick={onClick} {...props}>{children}</button>,
-  },
+vi.mock('../../domain/consumer/api', () => ({
+  getCommunityMembershipSnapshot: vi.fn(),
+  getCourseLibrarySnapshot: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/engagement', () => ({
+  computeCourseProgress: vi.fn(),
+  getMembershipStatus: vi.fn(),
+  getProgressForCourse: vi.fn(),
+  getPurchasedCourseSlugs: vi.fn(),
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -41,7 +48,53 @@ const mockUser = {
 describe('Profile', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(api.getPostsByCreator).mockResolvedValue([])
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: mockUser as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'fan_community',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
+      creator: { id: 'creator-1', name: 'Luna Chen' },
+      activeFans: 1800,
+      totalMembers: 4200,
+      tiers: [],
+      topFans: [],
+    } as any)
+    vi.mocked(Engagement.getMembershipStatus).mockResolvedValue(null)
+    vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
+      courses: [
+        {
+          id: 'course-1',
+          slug: 'community-growth',
+          title: 'Build a Paid Fan Community',
+          sections: [{ id: 'cg-1' }, { id: 'cg-2' }],
+        },
+      ],
+      featuredCourse: {
+        id: 'course-1',
+        slug: 'community-growth',
+        title: 'Build a Paid Fan Community',
+        sections: [{ id: 'cg-1' }, { id: 'cg-2' }],
+      },
+    } as any)
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue([])
+    vi.mocked(Engagement.getProgressForCourse).mockResolvedValue([])
+    vi.mocked(Engagement.computeCourseProgress).mockReturnValue({
+      completedCount: 1,
+      percent: 50,
+      nextSection: { id: 'cg-2' },
+      completedKeys: new Set(['cg-1']),
+    })
   })
 
   it('shows loading state when no user', () => {
@@ -58,16 +111,7 @@ describe('Profile', () => {
     expect(screen.getByText('Loading profile...')).toBeInTheDocument()
   })
 
-  it('renders user profile info', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: mockUser as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
-
+  it('renders user profile info', () => {
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     expect(screen.getByText('Test User')).toBeInTheDocument()
@@ -75,63 +119,54 @@ describe('Profile', () => {
     expect(screen.getByText('Hello world')).toBeInTheDocument()
   })
 
-  it('shows follower/following/post stats', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: mockUser as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
-
+  it('shows consumer access summary for the community app', async () => {
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
-    expect(screen.getByText('Followers')).toBeInTheDocument()
-    expect(screen.getByText('Following')).toBeInTheDocument()
-    expect(screen.getAllByText('Posts').length).toBeGreaterThan(0)
-    expect(screen.getByText('1.2K')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('My Access')).toBeInTheDocument()
+      expect(screen.getByText('Community app')).toBeInTheDocument()
+      expect(screen.getByText('Membership access')).toBeInTheDocument()
+      expect(screen.getByText(/You are browsing the app as a visitor/)).toBeInTheDocument()
+      expect(screen.getByText(/1.8K active fans across 4.2K total members/)).toBeInTheDocument()
+    })
   })
 
-  it('shows empty posts state', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: mockUser as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
+  it('shows current membership when one exists', async () => {
+    vi.mocked(Engagement.getMembershipStatus).mockResolvedValue({
+      tier_name: 'VIP',
+      tier_key: 'vip',
+      status: 'active',
+    } as any)
 
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('No posts yet')).toBeInTheDocument()
+      expect(screen.getByText('VIP member')).toBeInTheDocument()
+      expect(screen.getByText(/You currently have access to Luna Chen's member spaces/)).toBeInTheDocument()
     })
   })
 
-  it('loads and displays posts', async () => {
-    const posts = [
-      { id: 'p1', title: 'Art #1', cover_img: null, gradient_bg: 'from-gray-700 to-gray-900', locked: false },
-    ]
-    vi.mocked(api.getPostsByCreator).mockResolvedValue(posts as any)
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: mockUser as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
+  it('shows learning summary for the course app', async () => {
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'sell_courses',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+    } as any)
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['community-growth'])
 
     render(<MemoryRouter><Profile /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(api.getPostsByCreator).toHaveBeenCalledWith('user-1')
+      expect(screen.getByText('Course app')).toBeInTheDocument()
+      expect(screen.getByText('My learning')).toBeInTheDocument()
+      expect(screen.getByText('1/2 lessons completed')).toBeInTheDocument()
+      expect(screen.getByText('1 purchased course in this app.')).toBeInTheDocument()
     })
   })
 
-  it('shows default bio when none set', async () => {
+  it('shows default bio when none set', () => {
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { ...mockUser, bio: undefined } as any,
       session: {} as any,

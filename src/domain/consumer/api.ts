@@ -228,7 +228,7 @@ export function getConsumerExperience(
   )
   const storefrontDescription = readStringOverride(
     config?.courses_storefront_description,
-    'This template replaces the merch shop with a course catalog, checkout flow, and learning hub.'
+    'This app replaces the merch shop with a course catalog, checkout flow, and learning hub.'
   )
   const catalogTitle = readStringOverride(
     config?.courses_catalog_title,
@@ -242,11 +242,11 @@ export function getConsumerExperience(
   return {
     templateKey,
     profile: {
-      title: templateKey === 'sell_courses' ? 'Course Template' : 'Community Template',
+      title: templateKey === 'sell_courses' ? 'Course App' : 'Community App',
       description:
         templateKey === 'sell_courses'
-          ? `${name} is currently browsing the course storefront experience.`
-          : `${name} is currently browsing the fan community experience.`,
+          ? `${name} is currently browsing the course app experience.`
+          : `${name} is currently browsing the community app experience.`,
       ctaLabel: templateKey === 'sell_courses' ? 'Open catalog' : 'Open membership',
       ctaHref: templateKey === 'sell_courses' ? '/courses' : '/membership',
     },
@@ -271,7 +271,7 @@ export function getConsumerExperience(
         title: topicsTitle,
         subtitle: 'Recurring discussions, creator rituals, and member-only threads.',
         whyItExists:
-          'The community template needs a first-class topic layer. This page gives members a place to enter circles instead of treating everything as a flat feed.',
+          'The community app needs a first-class topic layer. This page gives members a place to enter circles instead of treating everything as a flat feed.',
         entries: communityTopics,
       },
       spaces: {

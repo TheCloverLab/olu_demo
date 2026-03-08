@@ -62,7 +62,7 @@ export default function BusinessWorkspace() {
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-lg font-black">{templateMeta.shortLabel}</p>
-              <p className="text-xs text-cyan-100/45 mt-1">Consumer template</p>
+              <p className="text-xs text-cyan-100/45 mt-1">Consumer app</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">7</p>
@@ -134,7 +134,7 @@ export default function BusinessWorkspace() {
           </div>
           <div className="space-y-3">
             {[
-              `Active template: ${templateMeta.label}`,
+              `Active app: ${templateMeta.label}`,
               consumerTemplate === 'fan_community'
                 ? 'Membership storefront, community circles, and creator feed are live.'
                 : 'Course catalog, checkout, and learning progress are live.',

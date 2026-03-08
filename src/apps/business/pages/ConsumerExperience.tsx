@@ -379,7 +379,7 @@ export default function ConsumerExperience() {
             Consumer channel
           </div>
           <h1 className="font-black text-3xl leading-tight max-w-2xl">
-            Operate the public-facing {templateMeta.label.toLowerCase()} without leaving the business workspace.
+            Operate the public-facing {templateMeta.label.toLowerCase()} app without leaving the business workspace.
           </h1>
           <p className="text-olu-muted text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
             This page is the operator view for your consumer product. It shows what the storefront is configured to highlight right now and where to go next to tune it.
@@ -444,13 +444,13 @@ export default function ConsumerExperience() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-semibold">Open consumer app</p>
-                <p className="text-cyan-100/55 text-xs mt-1">Preview the active template in a new tab</p>
+                <p className="text-cyan-100/55 text-xs mt-1">Preview the active app in a new tab</p>
               </div>
               <ExternalLink size={16} className="text-cyan-200" />
             </div>
           </button>
           <div className="rounded-2xl bg-[#0d1726] border border-cyan-500/10 p-4 text-sm text-cyan-100/70">
-            Consumer routing is already template-aware. The remaining product work is moving more content controls from static seeds into editable merchant data.
+            Consumer routing is already app-aware. The remaining product work is moving more content controls from static seeds into editable merchant data.
           </div>
         </div>
       </section>

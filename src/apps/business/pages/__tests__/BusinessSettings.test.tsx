@@ -137,32 +137,13 @@ describe('BusinessSettings', () => {
     })
   })
 
-  it('switches the consumer template from settings', async () => {
-    const user = userEvent.setup()
-    const setConsumerTemplate = vi.fn()
-    const setConsumerConfig = vi.fn()
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
-      currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
-      enabledBusinessModules: ['creator_ops', 'marketing'],
-      consumerConfig: {},
-      consumerTemplate: 'fan_community',
-      setConsumerConfig,
-      setConsumerTemplate,
-      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
-
+  it('shows the current consumer app as read-only metadata', async () => {
     render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
 
-    await user.click(await screen.findByRole('button', { name: /Sell Courses/i }))
-
     await waitFor(() => {
-      expect(setConsumerTemplate).toHaveBeenCalledWith('sell_courses')
-      expect(screen.getByText('Active')).toBeInTheDocument()
+      expect(screen.getByText('Consumer app')).toBeInTheDocument()
+      expect(screen.getByText('Fan Community')).toBeInTheDocument()
+      expect(screen.getByText('Current app')).toBeInTheDocument()
     })
   })
 

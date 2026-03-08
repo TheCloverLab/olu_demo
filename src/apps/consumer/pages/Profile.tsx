@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BadgeCheck, Settings, Share2 } from 'lucide-react'
+import { BadgeCheck, BookOpen, CreditCard, Settings, Share2, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { useApp } from '../../../context/AppContext'
-import { getPostsByCreator } from '../../../services/api'
-import { motion } from 'framer-motion'
-import {
-  CONSUMER_TEMPLATE_META,
-  type ConsumerTemplateKey,
-} from '../templateConfig'
+import { getCommunityMembershipSnapshot, getCourseLibrarySnapshot } from '../../../domain/consumer/api'
+import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -16,29 +12,131 @@ function formatNumber(value: number) {
 
 export default function Profile() {
   const { user } = useAuth()
-  const { consumerTemplate, consumerExperience, setConsumerTemplate } = useApp()
+  const { consumerConfig, consumerTemplate } = useApp()
   const navigate = useNavigate()
-  const [myPosts, setMyPosts] = useState<any[]>([])
+  const [membershipName, setMembershipName] = useState<string | null>(null)
+  const [communitySummary, setCommunitySummary] = useState({
+    creatorName: '',
+    activeFans: 0,
+    totalMembers: 0,
+  })
+  const [learningSummary, setLearningSummary] = useState({
+    purchasedCount: 0,
+    featuredCourseTitle: '',
+    featuredProgressLabel: 'No learning activity yet.',
+  })
 
   useEffect(() => {
-    async function loadPosts() {
+    let cancelled = false
+
+    async function loadConsumerSummary() {
       if (!user?.id) return
+
+      if (consumerTemplate === 'fan_community') {
+        try {
+          const snapshot = await getCommunityMembershipSnapshot(user as any, consumerConfig.featured_creator_id)
+          const status = snapshot.creator?.id
+            ? await getMembershipStatus(user as any, snapshot.creator.id)
+            : null
+
+          if (!cancelled) {
+            setMembershipName(status?.tier_name || null)
+            setCommunitySummary({
+              creatorName: snapshot.creator?.name || 'Community',
+              activeFans: snapshot.activeFans,
+              totalMembers: snapshot.totalMembers,
+            })
+            setLearningSummary({
+              purchasedCount: 0,
+              featuredCourseTitle: '',
+              featuredProgressLabel: 'No learning activity yet.',
+            })
+          }
+        } catch (error) {
+          console.error('Failed to load community summary', error)
+        }
+        return
+      }
+
       try {
-        const data = await getPostsByCreator(user.id)
-        setMyPosts(data)
-      } catch (err) {
-        console.error('Failed to load profile posts', err)
+        const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
+        const purchasedSlugs = await getPurchasedCourseSlugs(user as any, snapshot.courses)
+        const featuredCourse = snapshot.featuredCourse
+        let featuredProgressLabel = purchasedSlugs.length > 0
+          ? `${purchasedSlugs.length} course${purchasedSlugs.length > 1 ? 's' : ''} in your library`
+          : 'No courses purchased yet.'
+
+        if (featuredCourse && purchasedSlugs.includes(featuredCourse.slug)) {
+          const progress = await getProgressForCourse(user as any, featuredCourse)
+          const summary = computeCourseProgress(featuredCourse, progress)
+          featuredProgressLabel = `${summary.completedCount}/${featuredCourse.sections.length} lessons completed`
+        }
+
+        if (!cancelled) {
+          setLearningSummary({
+            purchasedCount: purchasedSlugs.length,
+            featuredCourseTitle: featuredCourse?.title || 'Course app',
+            featuredProgressLabel,
+          })
+          setMembershipName(null)
+          setCommunitySummary({
+            creatorName: '',
+            activeFans: 0,
+            totalMembers: 0,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load learning summary', error)
       }
     }
 
-    loadPosts()
-  }, [user?.id])
+    loadConsumerSummary()
+    return () => {
+      cancelled = true
+    }
+  }, [consumerConfig.featured_course_slug, consumerConfig.featured_creator_id, consumerTemplate, user?.id])
 
   if (!user) {
     return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>
   }
 
-  const templateOptions: ConsumerTemplateKey[] = ['fan_community', 'sell_courses']
+  const accessCards = consumerTemplate === 'fan_community'
+    ? [
+        {
+          icon: Sparkles,
+          title: membershipName ? `${membershipName} member` : 'Membership access',
+          description: membershipName
+            ? `You currently have access to ${communitySummary.creatorName}'s member spaces.`
+            : 'You are browsing the app as a visitor. Upgrade to unlock member-only circles and posts.',
+          ctaLabel: membershipName ? 'Open topics' : 'Open membership',
+          ctaHref: membershipName ? '/topics' : '/membership',
+        },
+        {
+          icon: Users,
+          title: 'Community pulse',
+          description: `${formatNumber(communitySummary.activeFans)} active fans across ${formatNumber(communitySummary.totalMembers)} total members.`,
+          ctaLabel: 'Browse community',
+          ctaHref: '/',
+        },
+      ]
+    : [
+        {
+          icon: BookOpen,
+          title: learningSummary.purchasedCount > 0 ? 'My learning' : 'Course access',
+          description: learningSummary.featuredProgressLabel,
+          ctaLabel: learningSummary.purchasedCount > 0 ? 'Continue learning' : 'Browse catalog',
+          ctaHref: learningSummary.purchasedCount > 0 ? '/learning' : '/courses',
+        },
+        {
+          icon: CreditCard,
+          title: 'Library status',
+          description: learningSummary.purchasedCount > 0
+            ? `${learningSummary.purchasedCount} purchased course${learningSummary.purchasedCount > 1 ? 's' : ''} in this app.`
+            : `${learningSummary.featuredCourseTitle} is ready to purchase when you want structured lessons.`,
+          ctaLabel: learningSummary.purchasedCount > 0 ? 'View library' : 'Open checkout',
+          ctaHref: learningSummary.purchasedCount > 0 ? '/learning' : '/courses',
+        },
+      ]
 
   return (
     <div className="max-w-2xl mx-auto pb-24 md:pb-6">
@@ -83,63 +181,43 @@ export default function Profile() {
         </div>
 
         <div className="glass rounded-2xl p-4 mb-5">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Consumer Template</p>
-              <p className="font-semibold text-sm mt-1">{CONSUMER_TEMPLATE_META[consumerTemplate].label}</p>
-              <p className="text-xs text-olu-muted mt-1">{consumerExperience.profile.description}</p>
-            </div>
-            <button
-              onClick={() => navigate(consumerExperience.profile.ctaHref)}
-              className="px-3 py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity"
-            >
-              {consumerExperience.profile.ctaLabel}
-            </button>
+          <div className="mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">My Access</p>
+            <p className="font-semibold text-sm mt-1">
+              {consumerTemplate === 'fan_community' ? 'Community app' : 'Course app'}
+            </p>
+            <p className="text-xs text-olu-muted mt-1">
+              {consumerTemplate === 'fan_community'
+                ? 'Your membership, circles, and current access live here.'
+                : 'Your purchases, progress, and next learning step live here.'}
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {templateOptions.map((template) => {
-              const meta = CONSUMER_TEMPLATE_META[template]
-              const isActive = template === consumerTemplate
-              return (
-                <button
-                  key={template}
-                  onClick={() => setConsumerTemplate(template)}
-                  className={`rounded-2xl border p-4 text-left transition-all ${
-                    isActive
-                      ? 'border-white/40 bg-white/10'
-                      : 'border-white/10 bg-white/[0.03] hover:border-white/20'
-                  }`}
-                >
-                  <div className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent} mb-3`} />
-                  <p className="font-semibold text-sm mb-1">{meta.label}</p>
-                  <p className="text-xs text-olu-muted leading-relaxed">{meta.description}</p>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <p className="text-olu-muted text-xs font-semibold uppercase tracking-wider mb-3">Posts</p>
-        {myPosts.length > 0 ? (
-          <div className="grid grid-cols-3 gap-2">
-            {myPosts.map((post) => (
-              <motion.button
-                key={post.id}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => navigate(`/content/${post.id}`)}
-                className="aspect-square rounded-xl overflow-hidden bg-[#1c1c1c] relative"
-              >
-                {post.cover_img ? <img src={post.cover_img} alt={post.title} className="w-full h-full object-cover" /> : <div className={`w-full h-full bg-gradient-to-br ${post.gradient_bg || 'from-gray-700 to-gray-900'}`} />}
-                {post.locked && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><span className="text-white text-xs font-semibold">Locked</span></div>}
-              </motion.button>
+          <div className="grid grid-cols-1 gap-3">
+            {accessCards.map(({ icon: Icon, title, description, ctaLabel, ctaHref }) => (
+              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 rounded-2xl bg-white/8 p-2 text-white/80">
+                      <Icon size={16} />
+                    </span>
+                    <div>
+                      <p className="font-semibold text-sm">{title}</p>
+                      <p className="text-xs text-olu-muted leading-relaxed mt-1">{description}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(ctaHref)}
+                    className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-black hover:opacity-90 transition-opacity"
+                  >
+                    {ctaLabel}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-10 text-olu-muted text-sm">No posts yet</div>
-        )}
+        </div>
       </div>
-
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
 import type { BusinessModuleKey, ConsumerCourse, User, WorkspaceSettingsData } from '../../../lib/supabase'
-import { CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../../consumer/templateConfig'
+import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 import { getCreators, getConsumerCourses } from '../../../services/api'
 
 const MODULE_METADATA: Array<{
@@ -40,15 +40,15 @@ const MODULE_METADATA: Array<{
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
-  const { consumerConfig, consumerTemplate, currentUser, reloadBusinessModules, setConsumerConfig, setConsumerTemplate } = useApp()
+  const { consumerConfig, consumerTemplate, currentUser, reloadBusinessModules, setConsumerConfig } = useApp()
   const { user } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
-  const [savingConsumerTemplate, setSavingConsumerTemplate] = useState<ConsumerTemplateKey | null>(null)
   const [creatorOptions, setCreatorOptions] = useState<User[]>([])
   const [courseOptions, setCourseOptions] = useState<ConsumerCourse[]>([])
   const currentConsumerConfig = settings?.consumerConfig?.config_json || consumerConfig
+  const activeConsumerApp = CONSUMER_TEMPLATE_META[(settings?.consumerConfig?.template_key || consumerTemplate)]
 
   useEffect(() => {
     let cancelled = false
@@ -155,39 +155,6 @@ export default function BusinessSettings() {
       console.error('Failed to update workspace module', error)
     } finally {
       setSavingModule(null)
-    }
-  }
-
-  async function handleSelectConsumerTemplate(templateKey: ConsumerTemplateKey) {
-    if (!user || templateKey === consumerTemplate) return
-
-    setSavingConsumerTemplate(templateKey)
-    try {
-      setConsumerTemplate(templateKey)
-      setSettings((current) => current ? {
-        ...current,
-        consumerConfig: current.consumerConfig
-          ? {
-              ...current.consumerConfig,
-              template_key: templateKey,
-              config_json: {
-                ...(current.consumerConfig.config_json || {}),
-                featured_template: templateKey,
-              },
-            }
-          : {
-              id: 'local-consumer-config',
-              workspace_id: current.workspace.id,
-              template_key: templateKey,
-              config_json: {
-                featured_template: templateKey,
-              },
-            },
-      } : current)
-    } catch (error) {
-      console.error('Failed to update consumer template', error)
-    } finally {
-      setSavingConsumerTemplate(null)
     }
   }
 
@@ -415,38 +382,22 @@ export default function BusinessSettings() {
                 <Sparkles size={18} />
               </span>
               <div>
-                <p className="font-bold">Consumer template</p>
-                <p className="text-cyan-100/55 text-xs">Choose the public-facing consumer experience for this workspace</p>
+                <p className="font-bold">Consumer app</p>
+                <p className="text-cyan-100/55 text-xs">This workspace already has a public-facing app type. Configure its content and featured surfaces below.</p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {(['fan_community', 'sell_courses'] as ConsumerTemplateKey[]).map((templateKey) => {
-                const meta = CONSUMER_TEMPLATE_META[templateKey]
-                const selected = (settings?.consumerConfig?.template_key || consumerTemplate) === templateKey
-                const saving = savingConsumerTemplate === templateKey
-                return (
-                  <button
-                    key={templateKey}
-                    type="button"
-                    disabled={saving}
-                    onClick={() => handleSelectConsumerTemplate(templateKey)}
-                    className={`rounded-2xl border p-4 text-left transition-colors ${
-                      selected
-                        ? 'border-cyan-300/40 bg-cyan-400/10'
-                        : 'border-cyan-500/10 bg-[#0d1726] hover:bg-[#112034]'
-                    } disabled:opacity-60`}
-                  >
-                    <div className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent} mb-3`} />
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-semibold text-sm">{meta.label}</p>
-                      <span className={`text-[11px] uppercase tracking-[0.16em] ${selected ? 'text-cyan-200' : 'text-cyan-100/50'}`}>
-                        {saving ? 'Saving' : selected ? 'Active' : 'Available'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-cyan-100/60 mt-2">{meta.description}</p>
-                  </button>
-                )
-              })}
+            <div className="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+              <div className={`h-1.5 rounded-full bg-gradient-to-r ${activeConsumerApp.accent} mb-3`} />
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-sm">{activeConsumerApp.label}</p>
+                  <p className="text-xs text-cyan-100/60 mt-2">{activeConsumerApp.description}</p>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.16em] text-cyan-200">Current app</span>
+              </div>
+              <p className="text-[11px] text-cyan-100/45 mt-3">
+                App type is treated as the merchant&apos;s public product shape. Switch it only during onboarding or an explicit migration flow, not from day-to-day settings.
+              </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-3 mt-4">
               <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">

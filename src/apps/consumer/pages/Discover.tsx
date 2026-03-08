@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Compass, Crown, Search, Sparkles } from 'lucide-react'
+import { Compass, Search, Sparkles } from 'lucide-react'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCreators } from '../../../services/api'
 
@@ -27,29 +27,29 @@ function DiscoverCard({
   return (
     <button
       onClick={onOpen}
-      className="w-full overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#0d1726] text-left hover:bg-[#112034] transition-colors"
+      className="w-full overflow-hidden rounded-[28px] border border-white/8 bg-[#111318] text-left hover:-translate-y-0.5 transition-all"
     >
       <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
         {app.coverImg ? <img src={app.coverImg} alt={app.title} className="h-full w-full object-cover" /> : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06101d] via-[#06101d]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/55">{app.type === 'community' ? 'Community' : 'Academy'}</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">{app.type === 'community' ? 'Community' : 'Academy'}</p>
               <p className="mt-1 text-lg font-black text-white">{app.title}</p>
-              <p className="mt-1 text-xs text-cyan-100/55">{app.creatorName}</p>
+              <p className="mt-1 text-xs text-white/60">{app.creatorName}</p>
             </div>
-            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] text-white/75">
+            <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] text-white/75">
               {app.priceLabel}
             </span>
           </div>
         </div>
       </div>
       <div className="p-4">
-        <p className="text-sm text-cyan-50/75 line-clamp-2">{app.summary}</p>
+        <p className="text-sm text-white/72 line-clamp-2">{app.summary}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {app.highlights.map((item) => (
-            <span key={item} className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/70">
+            <span key={item} className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] text-white/68">
               {item}
             </span>
           ))}
@@ -134,106 +134,82 @@ export default function Discover() {
 
   const recommendedCommunities = filteredApps.filter((app) => app.type === 'community').slice(0, 4)
   const recommendedAcademies = filteredApps.filter((app) => app.type === 'academy').slice(0, 4)
+  const spotlight = filteredApps.slice(0, 2)
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-[#0c1421] p-4 md:p-5">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <section className="space-y-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-        <div className="flex items-center gap-2 text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">
-          <Compass size={14} />
-          Discover
-        </div>
-        <h1 className="font-black text-xl md:text-2xl max-w-3xl leading-tight">Discover new apps.</h1>
-        <p className="text-cyan-100/60 text-sm max-w-2xl mt-2">
-          Browse creators, communities, and academies.
-        </p>
+            <div className="flex items-center gap-2 text-white/45 text-xs uppercase tracking-[0.18em] mb-2">
+              <Compass size={14} />
+              Discover
+            </div>
+            <h1 className="font-black text-xl md:text-2xl leading-tight">Find your next favorite app.</h1>
+            <p className="text-white/58 text-sm mt-2">
+              Communities to join, academies to learn from.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
-          {['Community', 'Academy', 'Creator-led'].map((chip) => (
-            <span key={chip} className="rounded-full border border-cyan-500/10 bg-white/5 px-3 py-1.5 text-xs text-cyan-100/70">
+            {['Community', 'Academy', 'Creator-led'].map((chip) => (
+            <span key={chip} className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/68">
               {chip}
             </span>
           ))}
         </div>
         </div>
-        <div className="mt-4 rounded-2xl border border-cyan-500/10 bg-[#091422] px-4 py-3 flex items-center gap-3">
-          <Search size={16} className="text-cyan-100/45" />
+        <div className="rounded-2xl border border-white/10 bg-[#101217] px-4 py-3 flex items-center gap-3">
+          <Search size={16} className="text-white/35" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search app, creator, or theme"
-            className="w-full bg-transparent outline-none text-sm text-white placeholder:text-cyan-100/35"
+            className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/35"
           />
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Crown size={16} className="text-amber-300" />
-            <p className="font-bold">Community apps</p>
+      {spotlight.length > 0 ? (
+        <section className="grid md:grid-cols-2 gap-4">
+          {spotlight.map((app) => (
+            <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
+          ))}
+        </section>
+      ) : null}
+
+      <section className="space-y-6">
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-bold text-lg">Communities</p>
+            <span className="text-xs text-white/45">{recommendedCommunities.length} results</span>
           </div>
-          <div className="space-y-3">
+          <div className="grid md:grid-cols-2 gap-4">
             {recommendedCommunities.map((app) => (
               <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
             ))}
-            {!loading && recommendedCommunities.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
-                No community apps matched your search.
-              </div>
-            ) : null}
           </div>
+          {!loading && recommendedCommunities.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-white/45">
+              No communities matched your search.
+            </div>
+          ) : null}
         </div>
 
-        <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen size={16} className="text-emerald-300" />
-            <p className="font-bold">Academy apps</p>
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-bold text-lg">Academies</p>
+            <span className="text-xs text-white/45">{recommendedAcademies.length} results</span>
           </div>
-          <div className="space-y-3">
+          <div className="grid md:grid-cols-2 gap-4">
             {recommendedAcademies.map((app) => (
               <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
             ))}
-            {!loading && recommendedAcademies.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-cyan-500/15 px-4 py-6 text-sm text-cyan-100/50">
-                No academy apps matched your search.
-              </div>
-            ) : null}
           </div>
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles size={16} className="text-cyan-300" />
-          <p className="font-bold">Recommended right now</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-3">
-          {filteredApps.slice(0, 3).map((app) => (
-            <button
-              key={app.id}
-              onClick={() => navigate(app.href)}
-              className="overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#0d1726] text-left hover:bg-[#112034] transition-colors"
-            >
-              <div className={`relative h-32 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
-                {app.coverImg ? <img src={app.coverImg} alt={app.title} className="h-full w-full object-cover" /> : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#06101d] via-[#06101d]/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-sm text-white">{app.title}</p>
-                    <span className="rounded-full border border-cyan-500/10 bg-white/5 px-2.5 py-1 text-[11px] text-cyan-100/65">
-                      {app.type === 'community' ? 'Community' : 'Academy'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-xs text-cyan-100/45">{app.creatorName}</p>
-                <p className="text-sm text-cyan-50/75 mt-3 line-clamp-2">{app.summary}</p>
-              </div>
-            </button>
-          ))}
+          {!loading && recommendedAcademies.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-white/45">
+              No academies matched your search.
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

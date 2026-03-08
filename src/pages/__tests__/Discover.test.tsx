@@ -46,7 +46,7 @@ describe('Discover', () => {
     render(<MemoryRouter><Discover /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Discover new apps.')).toBeInTheDocument()
+      expect(screen.getByText('Find your next favorite app.')).toBeInTheDocument()
       expect(screen.getAllByText('Luna Chen Inner Circle').length).toBeGreaterThan(0)
       expect(screen.getAllByText('Luna Chen Academy').length).toBeGreaterThan(0)
       expect(screen.getAllByText('Community').length).toBeGreaterThan(0)

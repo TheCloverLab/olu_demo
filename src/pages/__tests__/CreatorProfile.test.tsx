@@ -68,6 +68,7 @@ describe('AppLanding', () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
       consumerTemplate: 'fan_community',
       currentUser: { id: 'user-1' },
+      enabledBusinessModules: [],
     } as any)
 
     renderPage()
@@ -84,6 +85,7 @@ describe('AppLanding', () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
       consumerTemplate: 'sell_courses',
       currentUser: { id: 'user-1' },
+      enabledBusinessModules: [],
     } as any)
 
     renderPage()
@@ -93,6 +95,21 @@ describe('AppLanding', () => {
       expect(screen.getByText('Luna Chen Academy')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Browse catalog/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Curriculum/i })).toBeInTheDocument()
+    })
+  })
+
+  it('shows owner tools entry for the app owner', async () => {
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'fan_community',
+      currentUser: { id: 'creator-1' },
+      enabledBusinessModules: ['creator_ops'],
+    } as any)
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Manage community/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Message host/i })).not.toBeInTheDocument()
     })
   })
 })

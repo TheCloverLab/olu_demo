@@ -14,7 +14,7 @@ function formatNumber(value: number) {
 export default function AppLanding() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { consumerTemplate, currentUser } = useApp()
+  const { consumerTemplate, currentUser, enabledBusinessModules } = useApp()
 
   const [creator, setCreator] = useState<any | null>(null)
   const [posts, setPosts] = useState<any[]>([])
@@ -29,6 +29,8 @@ export default function AppLanding() {
   const [hasCourseAccess, setHasCourseAccess] = useState(false)
   const avatarSrc = creator?.avatar_img || creator?.avatarImg
   const isCommunity = consumerTemplate === 'fan_community'
+  const isOwner = !!creator?.id && currentUser?.id === creator.id
+  const canManageApp = isOwner && enabledBusinessModules.includes('creator_ops')
 
   useEffect(() => {
     async function load() {
@@ -189,12 +191,21 @@ export default function AppLanding() {
                 {isCommunity ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
                     <span>Hosted by {creator.name}</span>
-                    <button
-                      onClick={() => navigate(`/chat?with=${creator.id}`)}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
-                    >
-                      Message host
-                    </button>
+                    {canManageApp ? (
+                      <button
+                        onClick={() => navigate('/business/consumer')}
+                        className="rounded-full border border-sky-400/25 bg-sky-400/10 px-3 py-1 text-xs text-sky-200 hover:bg-sky-400/15 transition-colors"
+                      >
+                        Manage community
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => navigate(`/chat?with=${creator.id}`)}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
+                      >
+                        Message host
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <p className="text-olu-muted text-sm mt-2">{creator.handle}</p>
@@ -368,13 +379,15 @@ export default function AppLanding() {
         )}
 
         <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => navigate(`/chat?with=${creator.id}`)}
-            className="rounded-xl px-4 py-2.5 text-sm font-semibold glass glass-hover text-olu-muted flex items-center gap-2"
-          >
-            <MessageCircle size={15} />
-            Message creator
-          </button>
+          {canManageApp ? null : (
+            <button
+              onClick={() => navigate(`/chat?with=${creator.id}`)}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold glass glass-hover text-olu-muted flex items-center gap-2"
+            >
+              <MessageCircle size={15} />
+              Message creator
+            </button>
+          )}
         </div>
       </div>
     </div>

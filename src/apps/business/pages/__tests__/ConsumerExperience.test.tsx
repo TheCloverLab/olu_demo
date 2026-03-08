@@ -24,6 +24,7 @@ vi.mock('../../../../domain/consumer/api', () => ({
 vi.mock('../../../../services/api', () => ({
   updateConsumerCourse: vi.fn(),
   updateConsumerCourseSection: vi.fn(),
+  updateMembershipTier: vi.fn(),
 }))
 
 describe('ConsumerExperience', () => {
@@ -78,6 +79,63 @@ describe('ConsumerExperience', () => {
       expect(screen.getByText('Membership surface')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen')).toBeInTheDocument()
       expect(screen.getByText('320')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Core')).toBeInTheDocument()
+    })
+  })
+
+  it('saves membership tier changes', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'fan_community',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
+      creator: { id: 'creator-1', name: 'Luna Chen' },
+      tiers: [
+        { key: 'core', name: 'Core', price: '$9', note: 'Members-only posts', perks: ['Drops'] },
+      ],
+      totalMembers: 320,
+      activeFans: 180,
+      topFans: [],
+    } as any)
+    vi.mocked(Api.updateMembershipTier).mockResolvedValue({
+      id: 'core',
+      name: 'Core Plus',
+      price: 12,
+      description: 'Updated members-only posts',
+      perks: ['Drops', 'Priority chat'],
+    } as any)
+
+    render(<MemoryRouter><ConsumerExperience /></MemoryRouter>)
+
+    const tierNameInput = await screen.findByDisplayValue('Core')
+    await user.clear(tierNameInput)
+    await user.type(tierNameInput, 'Core Plus')
+    await user.click(screen.getByText('Save tier'))
+
+    await waitFor(() => {
+      expect(Api.updateMembershipTier).toHaveBeenCalledWith('core', expect.objectContaining({
+        name: 'Core Plus',
+      }))
+      expect(screen.getAllByDisplayValue('Core Plus').length).toBeGreaterThan(0)
     })
   })
 

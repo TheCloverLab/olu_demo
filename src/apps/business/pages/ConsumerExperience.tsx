@@ -8,7 +8,7 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
-import { updateConsumerCourse, updateConsumerCourseSection } from '../../../services/api'
+import { updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier } from '../../../services/api'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 
@@ -33,8 +33,17 @@ export default function ConsumerExperience() {
     preview: boolean
     duration: string
   }>>([])
+  const [tierDrafts, setTierDrafts] = useState<Array<{
+    id: string
+    key: string
+    name: string
+    price: string
+    note: string
+    perksText: string
+  }>>([])
   const [savingCourse, setSavingCourse] = useState(false)
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null)
+  const [savingTierId, setSavingTierId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,6 +56,16 @@ export default function ConsumerExperience() {
           const snapshot = await getCommunityMembershipSnapshot(user as any, consumerConfig.featured_creator_id)
           if (!cancelled) {
             setCommunitySnapshot(snapshot)
+            setTierDrafts(
+              snapshot.tiers.map((tier) => ({
+                id: tier.key,
+                key: tier.key,
+                name: tier.name,
+                price: tier.price.replace('$', ''),
+                note: tier.note,
+                perksText: tier.perks.join('\n'),
+              }))
+            )
             setCourseLibrary([])
             setFeaturedCourse(null)
           }
@@ -143,6 +162,40 @@ export default function ConsumerExperience() {
     }
   }
 
+  async function handleSaveTier(tierId: string) {
+    const tier = tierDrafts.find((item) => item.id === tierId)
+    if (!tier || !communitySnapshot?.creator?.id) return
+
+    const parsedPrice = Number.parseFloat(tier.price)
+    setSavingTierId(tierId)
+    try {
+      const updated = await updateMembershipTier(tierId, {
+        name: tier.name,
+        price: Number.isFinite(parsedPrice) ? parsedPrice : 0,
+        description: tier.note,
+        perks: tier.perksText.split('\n').map((item) => item.trim()).filter(Boolean),
+      })
+      setCommunitySnapshot((current) => current ? {
+        ...current,
+        tiers: current.tiers.map((item) => (
+          item.key === tier.key
+            ? {
+                ...item,
+                name: updated.name,
+                price: updated.price === 0 ? '$0' : `$${updated.price}`,
+                note: updated.description || '',
+                perks: updated.perks || [],
+              }
+            : item
+        )),
+      } : current)
+    } catch (error) {
+      console.error('Failed to update membership tier', error)
+    } finally {
+      setSavingTierId(null)
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
       <section className="grid lg:grid-cols-[1.2fr,0.8fr] gap-4">
@@ -232,7 +285,9 @@ export default function ConsumerExperience() {
         <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] text-cyan-100/60">
           Loading consumer channel...
         </div>
-      ) : consumerTemplate === 'fan_community' ? (
+      ) : null}
+
+      {!loading && consumerTemplate === 'fan_community' && (
         <section className="grid lg:grid-cols-[1fr,1fr] gap-4">
           <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
             <div className="flex items-center gap-2 mb-4">
@@ -288,7 +343,75 @@ export default function ConsumerExperience() {
             </div>
           </div>
         </section>
-      ) : (
+      )}
+
+      {!loading && consumerTemplate === 'fan_community' && communitySnapshot && (
+        <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+          <div className="flex items-center gap-2 mb-4">
+            <Crown size={16} className="text-amber-300" />
+            <p className="font-bold">Membership tier editor</p>
+          </div>
+          <div className="space-y-4">
+            {tierDrafts.map((tier) => (
+              <div key={tier.id} className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Tier name</p>
+                    <input
+                      value={tier.name}
+                      onChange={(event) => setTierDrafts((current) => current.map((item) => (
+                        item.id === tier.id ? { ...item, name: event.target.value } : item
+                      )))}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                    />
+                  </label>
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Monthly price</p>
+                    <input
+                      value={tier.price}
+                      onChange={(event) => setTierDrafts((current) => current.map((item) => (
+                        item.id === tier.id ? { ...item, price: event.target.value } : item
+                      )))}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                    />
+                  </label>
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Tier description</p>
+                    <textarea
+                      value={tier.note}
+                      onChange={(event) => setTierDrafts((current) => current.map((item) => (
+                        item.id === tier.id ? { ...item, note: event.target.value } : item
+                      )))}
+                      rows={3}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                    />
+                  </label>
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Perks</p>
+                    <textarea
+                      value={tier.perksText}
+                      onChange={(event) => setTierDrafts((current) => current.map((item) => (
+                        item.id === tier.id ? { ...item, perksText: event.target.value } : item
+                      )))}
+                      rows={3}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                    />
+                  </label>
+                </div>
+                <button
+                  onClick={() => handleSaveTier(tier.id)}
+                  disabled={savingTierId === tier.id}
+                  className="mt-3 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {savingTierId === tier.id ? 'Saving tier...' : 'Save tier'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!loading && consumerTemplate !== 'fan_community' && (
         <section className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4">
           <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
             <div className="flex items-center gap-2 mb-4">

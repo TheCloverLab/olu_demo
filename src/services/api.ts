@@ -655,3 +655,18 @@ export async function getMembershipTiersByCreator(creatorId: string) {
   if (error) throw error
   return data as MembershipTier[]
 }
+
+export async function updateMembershipTier(
+  tierId: string,
+  updates: Partial<Pick<MembershipTier, 'name' | 'price' | 'description' | 'perks'>>
+) {
+  const { data, error } = await supabase
+    .from('membership_tiers')
+    .update(updates)
+    .eq('id', tierId)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as MembershipTier
+}

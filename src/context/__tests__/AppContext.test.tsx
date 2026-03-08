@@ -11,19 +11,33 @@ vi.mock('../AuthContext', () => ({
 
 vi.mock('../../domain/workspace/api', () => ({
   getEnabledBusinessModulesForUser: vi.fn(),
+  getConsumerTemplateForUser: vi.fn(),
+  updateWorkspaceConsumerTemplateForUser: vi.fn(),
 }))
 
 function TestConsumer() {
-  const { currentRole, availableRoles, enabledBusinessModules, reloadBusinessModules, switchRole, showRoleSwitcher, setShowRoleSwitcher } = useApp()
+  const {
+    currentRole,
+    availableRoles,
+    enabledBusinessModules,
+    consumerTemplate,
+    reloadBusinessModules,
+    switchRole,
+    showRoleSwitcher,
+    setShowRoleSwitcher,
+    setConsumerTemplate,
+  } = useApp()
   return (
     <div>
       <span data-testid="role">{currentRole}</span>
       <span data-testid="roles">{availableRoles.join(',')}</span>
       <span data-testid="modules">{enabledBusinessModules.join(',')}</span>
+      <span data-testid="template">{consumerTemplate}</span>
       <span data-testid="switcher">{showRoleSwitcher ? 'open' : 'closed'}</span>
       <button onClick={() => reloadBusinessModules()}>Reload Modules</button>
       <button onClick={() => switchRole('creator')}>Switch to Creator</button>
       <button onClick={() => switchRole('advertiser')}>Switch to Advertiser</button>
+      <button onClick={() => setConsumerTemplate('sell_courses')}>Switch to Courses</button>
       <button onClick={() => setShowRoleSwitcher(true)}>Open Switcher</button>
     </div>
   )
@@ -32,7 +46,15 @@ function TestConsumer() {
 describe('AppContext', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    window.localStorage.clear()
     vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops', 'marketing', 'supply_chain'])
+    vi.mocked(WorkspaceApi.getConsumerTemplateForUser).mockResolvedValue('fan_community')
+    vi.mocked(WorkspaceApi.updateWorkspaceConsumerTemplateForUser).mockResolvedValue({
+      id: 'cfg-1',
+      workspace_id: 'ws-1',
+      template_key: 'sell_courses',
+      config_json: { featured_template: 'sell_courses' },
+    } as any)
   })
 
   it('defaults to fan role when no user', () => {
@@ -54,6 +76,7 @@ describe('AppContext', () => {
     expect(screen.getByTestId('role')).toHaveTextContent('fan')
     expect(screen.getByTestId('roles')).toHaveTextContent('fan')
     expect(screen.getByTestId('modules')).toHaveTextContent('')
+    expect(screen.getByTestId('template')).toHaveTextContent('fan_community')
   })
 
   it('sets initial role from user profile', () => {
@@ -219,5 +242,51 @@ describe('AppContext', () => {
 
     await screen.findByText('Reload Modules')
     expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops,marketing')
+  })
+
+  it('persists consumer template selection', async () => {
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: null,
+      session: null,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+
+    render(
+      <AppProvider>
+        <TestConsumer />
+      </AppProvider>
+    )
+
+    expect(screen.getByTestId('template')).toHaveTextContent('fan_community')
+    await userEvent.click(screen.getByText('Switch to Courses'))
+    expect(screen.getByTestId('template')).toHaveTextContent('sell_courses')
+    expect(window.localStorage.getItem('olu.consumerTemplate')).toBe('sell_courses')
+  })
+
+  it('hydrates consumer template from workspace config for authenticated users', async () => {
+    vi.mocked(WorkspaceApi.getConsumerTemplateForUser).mockResolvedValue('sell_courses')
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: '1', username: 'alice', handle: '@alice', name: 'Alice', email: 'alice@example.com', roles: ['creator'] } as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+
+    render(
+      <AppProvider>
+        <TestConsumer />
+      </AppProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByTestId('template')).toHaveTextContent('sell_courses')
   })
 })

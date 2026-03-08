@@ -1,390 +1,360 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Heart, MessageCircle, Gift, Lock, Repeat2, Search, BadgeCheck, ChevronRight, MoreHorizontal } from 'lucide-react'
+import { ArrowRight, BadgeCheck, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, MessageCircle, PlayCircle, Search, Sparkles, Users } from 'lucide-react'
+import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { getCreators, getPosts } from '../../../services/api'
-import type { User, Post } from '../../../lib/supabase'
-import clsx from 'clsx'
+import { FEATURED_COURSE, COURSE_LIBRARY } from '../courseData'
+import { CONSUMER_TEMPLATE_META } from '../templateConfig'
+import type { Post, User } from '../../../lib/supabase'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
-const FILTERS = ['All', 'Art', 'Gaming', 'Music', 'Fashion', 'Tech', 'Coding']
-
-function SafeImage({ src, alt, className, fallback }: { src?: string; alt: string; className: string; fallback: any }) {
-  const [broken, setBroken] = useState(false)
-
-  if (!src || broken) return fallback
-
-  return <img src={src} alt={alt} className={className} onError={() => setBroken(true)} />
-}
-
-// Patreon-style: image-first card, name + tagline below
-function CreatorCard({ creator }: { creator: User }) {
+function CommunityHome() {
   const navigate = useNavigate()
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => navigate(`/creator/${creator.id}`)}
-      className="cursor-pointer flex-shrink-0 w-44"
-    >
-      {/* Square image */}
-      <div className={`w-full aspect-square rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} overflow-hidden relative mb-2.5`}>
-        <SafeImage
-          src={creator.cover_img}
-          alt={creator.name}
-          className="w-full h-full object-cover"
-          fallback={<div className="w-full h-full" />}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <button
-          onClick={e => e.stopPropagation()}
-          className="absolute top-2 right-2 p-1"
-        >
-  <MoreHorizontal size={16} className="text-white/80" />
-        </button>
-      </div>
-      <p className="font-bold text-sm leading-tight mb-0.5 line-clamp-1">{creator.name}</p>
-      <p className="text-olu-muted text-xs line-clamp-2 leading-snug">{creator.bio}</p>
-    </motion.div>
-  )
-}
-
-// Patreon "Popular this week" list row
-function CreatorRow({ creator }: { creator: User }) {
-  const navigate = useNavigate()
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={() => navigate(`/creator/${creator.id}`)}
-      className="w-full flex items-center gap-3 py-3"
-    >
-      {/* Square thumbnail */}
-      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex-shrink-0 overflow-hidden`}>
-        <SafeImage
-          src={creator.avatar_img}
-          alt={creator.name}
-          className="w-full h-full object-cover"
-          fallback={<span className="w-full h-full flex items-center justify-center font-bold text-white">{creator.initials}</span>}
-        />
-      </div>
-      <div className="flex-1 text-left min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <p className="font-semibold text-sm">{creator.name}</p>
-          {creator.verified && <BadgeCheck size={13} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
-        </div>
-        <p className="text-olu-muted text-xs line-clamp-1">{creator.bio}</p>
-      </div>
-      <span className="p-1 flex-shrink-0" aria-hidden="true">
-        <MoreHorizontal size={18} className="text-olu-muted" />
-      </span>
-      {/* Thumbnail preview */}
-      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex-shrink-0 overflow-hidden`}>
-        <SafeImage
-          src={creator.cover_img}
-          alt=""
-          className="w-full h-full object-cover opacity-80"
-          fallback={<div className="w-full h-full" />}
-        />
-      </div>
-    </motion.button>
-  )
-}
-
-function PostCard({ post }: { post: any }) {
-  const { currentUser } = useApp()
-  const navigate = useNavigate()
-  const [liked, setLiked] = useState(false)
-  const [tipped, setTipped] = useState(false)
-  
-  const creator = post.creator
-  const creatorAvatar = creator?.avatar_img || creator?.avatarImg || (creator?.id === currentUser?.id ? (currentUser?.avatar_img || currentUser?.avatarImg) : null)
-  const timeAgo = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-[#111111] rounded-2xl overflow-hidden"
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 pb-3">
-        <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
-          <SafeImage
-            src={creatorAvatar}
-            alt={creator?.name || 'Creator'}
-            className="w-9 h-9 rounded-full object-cover"
-            fallback={<div className={`w-9 h-9 rounded-full bg-gradient-to-br ${creator?.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-xs`}>{creator?.initials || '?'}</div>}
-          />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => navigate(`/creator/${post.creator_id}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{creator?.name || 'Unknown'}</button>
-            {creator?.verified && <BadgeCheck size={13} className="text-sky-400" fill="currentColor" />}
-          </div>
-          <div className="flex items-center gap-2">
-            <p className="text-olu-muted text-xs">{timeAgo}</p>
-            {post.sponsored && <span className="text-xs bg-[#2a2a2a] text-olu-muted px-1.5 py-0.5 rounded font-medium">Sponsored</span>}
-          </div>
-        </div>
-        <button className="p-1"><MoreHorizontal size={18} className="text-olu-muted" /></button>
-      </div>
-
-      {/* Cover image */}
-      <button onClick={() => navigate(`/content/${post.id}`)} className="w-full">
-        <div className={`mx-3 rounded-xl overflow-hidden h-48 bg-gradient-to-br ${post.gradient_bg || 'from-gray-800 to-gray-900'} relative`}>
-          {post.cover_img && <img src={post.cover_img} alt={post.title} className="w-full h-full object-cover" />}
-          {post.locked && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Lock size={20} className="text-white" />
-              <span className="text-white text-sm font-semibold">Unlock for ${post.lock_price}</span>
-            </div>
-          )}
-          <div className="absolute top-2 right-2">
-            <span className="text-xs bg-black/50 text-white/80 px-2 py-0.5 rounded-full capitalize font-medium">{post.type}</span>
-          </div>
-        </div>
-
-        <div className="px-4 pt-3 pb-1 text-left">
-          <p className="font-bold text-sm mb-1">{post.title}</p>
-          <p className="text-olu-muted text-xs leading-relaxed line-clamp-2">{post.preview}</p>
-        </div>
-      </button>
-
-      {/* Actions */}
-      <div className="flex items-center gap-0.5 px-3 py-3 mt-1">
-        <button
-          onClick={() => setLiked(!liked)}
-          className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all', liked ? 'text-pink-400' : 'text-olu-muted hover:text-white')}
-        >
-          <Heart size={15} fill={liked ? 'currentColor' : 'none'} />
-          {formatNumber(post.likes + (liked ? 1 : 0))}
-        </button>
-        <button
-          onClick={() => navigate(`/content/${post.id}`)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-olu-muted hover:text-white transition-colors"
-        >
-          <MessageCircle size={15} />
-          {formatNumber(post.comments)}
-        </button>
-        {post.allow_fan_creation && (
-          <button
-            onClick={() => navigate(`/content/${post.id}`)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-olu-muted hover:text-white transition-colors"
-          >
-            <Repeat2 size={15} />
-            Customer Create
-          </button>
-        )}
-        <button
-          onClick={() => setTipped(!tipped)}
-          className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ml-auto', tipped ? 'text-amber-400' : 'text-olu-muted hover:text-amber-400')}
-        >
-          <Gift size={15} />
-          {tipped ? 'Tipped!' : 'Tip'}
-        </button>
-      </div>
-    </motion.div>
-  )
-}
-
-export default function Home() {
-  const { currentRole, currentUser } = useApp()
-  const navigate = useNavigate()
-  const [tab, setTab] = useState('discover')
-  const [filter, setFilter] = useState('All')
+  const { consumerExperience } = useApp()
   const [creators, setCreators] = useState<User[]>([])
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const community = consumerExperience.community
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [creatorsData, postsData] = await Promise.all([
-          getCreators(),
-          getPosts(20)
-        ])
+        const [creatorsData, postsData] = await Promise.all([getCreators(), getPosts(12)])
         setCreators(creatorsData)
         setPosts(postsData)
       } catch (error) {
-        console.error('Error loading data:', error)
+        console.error('Error loading community home:', error)
       } finally {
         setLoading(false)
       }
     }
+
     loadData()
   }, [])
 
-  const discoverCreators = creators.filter((creator) => creator.id !== currentUser?.id)
-  const keywordMap: Record<string, string[]> = {
-    Art: ['art', 'artist', 'design', 'illustration', 'digital artist', 'creative'],
-    Gaming: ['gaming', 'gamer', 'stream', 'esports', 'game'],
-    Music: ['music', 'musician', 'producer', 'dj', 'song', 'audio'],
-    Fashion: ['fashion', 'style', 'beauty', 'lifestyle', 'outfit'],
-    Tech: ['tech', 'technology', 'startup', 'product', 'founder', 'ai'],
-    Coding: ['coding', 'code', 'developer', 'engineer', 'programming', 'software'],
-  }
-
-  function matchesFilter(creator: User) {
-    if (filter === 'All') return true
-
-    const text = `${creator.name} ${creator.handle} ${creator.bio || ''}`.toLowerCase()
-    return (keywordMap[filter] || []).some((keyword) => text.includes(keyword))
-  }
-
-  function matchesPostFilter(post: any) {
-    if (filter === 'All') return true
-
-    const creator = post.creator || {}
-    const text = [
-      post.title,
-      post.preview,
-      post.type,
-      ...(post.tags || []),
-      creator.name,
-      creator.handle,
-      creator.bio,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-
-    return (keywordMap[filter] || []).some((keyword) => text.includes(keyword))
-  }
-
-  const filtered = discoverCreators.filter(matchesFilter)
-  const discoverFeed = filtered.length > 0 ? filtered : filter === 'All' ? discoverCreators : []
-  const recent = discoverFeed.slice(0, 3)
-  const popular = [...discoverFeed].sort((a, b) => b.followers - a.followers).slice(0, 4)
-  const filteredPosts = posts.filter(matchesPostFilter)
+  const featuredCreators = creators.slice(0, 4)
+  const featuredPosts = posts.slice(0, 5)
 
   return (
     <div className="pb-24 md:pb-6">
-      {/* Constrained container for desktop */}
-      <div className="max-w-2xl mx-auto">
-        {/* Search bar */}
-        <div className="px-4 pt-4 pb-3">
-          <div className="flex items-center gap-3 bg-[#1c1c1c] rounded-full px-4 py-2.5">
-            <Search size={16} className="text-olu-muted flex-shrink-0" />
-            <input
-              placeholder="Search for creators or topics"
-              className="flex-1 bg-transparent text-sm placeholder:text-olu-muted focus:outline-none"
-            />
+      <div className="max-w-3xl mx-auto px-4 py-4 space-y-6">
+        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,113,133,0.18),transparent_34%),linear-gradient(135deg,#18111b,#0c0a10)] p-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-4">
+            <Users size={13} />
+            {community.hero.eyebrow}
           </div>
-        </div>
+          <h1 className="font-black text-3xl leading-tight max-w-xl">{community.hero.title}</h1>
+          <p className="text-olu-muted text-sm mt-3 max-w-xl leading-relaxed">
+            {community.hero.description}
+          </p>
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            {community.hero.stats.map((item) => (
+              <div key={item.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                <p className="font-black text-2xl">{item.value}</p>
+                <p className="text-xs text-white/60 mt-1">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Filter chips */}
-        <div className="flex gap-2 px-4 pb-4 overflow-x-auto scrollbar-hide">
-          {FILTERS.map(f => (
+        <section className="grid md:grid-cols-[1.15fr,0.85fr] gap-4">
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Membership</p>
+                <h2 className="font-bold text-xl">{community.membership.title}</h2>
+              </div>
+              <Crown size={18} className="text-amber-300" />
+            </div>
+            <div className="space-y-3">
+              {community.membership.tiers.map((item, index) => (
+                <div key={item.name} className={clsx('rounded-2xl p-4 border', index === 1 ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10')}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="font-black">{item.price}</p>
+                  </div>
+                  <p className={clsx('text-sm', index === 1 ? 'text-black/70' : 'text-olu-muted')}>{item.note}</p>
+                </div>
+              ))}
+            </div>
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={clsx('chip flex-shrink-0', filter === f ? 'chip-active' : 'chip-inactive')}
+              onClick={() => navigate('/membership')}
+              className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              {f}
+              {community.membership.ctaLabel}
+              <ArrowRight size={16} />
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Tab switcher */}
-        <div className="flex gap-1 mx-4 mb-5 p-1 bg-[#1a1a1a] rounded-full">
-          {[
-            { key: 'discover', label: 'Discover' },
-            { key: 'following', label: 'Following' },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={clsx('flex-1 py-2 rounded-full text-sm font-semibold transition-all', tab === key ? 'bg-white text-black' : 'text-olu-muted hover:text-white')}
-            >
-              {label}
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Topics</p>
+                <h2 className="font-bold text-xl">{community.topics.title}</h2>
+              </div>
+              <MessageCircle size={18} className="text-sky-300" />
+            </div>
+            <div className="space-y-3">
+              {community.topics.entries.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => navigate('/topics')}
+                  className="w-full text-left rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/8 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-sm">{topic.name}</p>
+                    <ChevronRight size={14} className="text-olu-muted" />
+                  </div>
+                  <p className="text-xs text-olu-muted mt-1">{topic.members} members</p>
+                  <p className="text-sm text-white/72 mt-2">{topic.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Creator spaces</p>
+              <h2 className="font-bold text-xl">{community.spaces.title}</h2>
+            </div>
+            <button onClick={() => navigate('/topics')} className="text-sm text-white/72 hover:text-white transition-colors">
+              View all
             </button>
-          ))}
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {featuredCreators.map((creator) => (
+              <button
+                key={creator.id}
+                onClick={() => navigate(`/creator/${creator.id}`)}
+                className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden text-left hover:bg-white/8 transition-colors"
+              >
+                <div className={`h-28 bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'}`}>
+                  {creator.cover_img && <img src={creator.cover_img} alt={creator.name} className="w-full h-full object-cover" />}
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="font-semibold text-sm">{creator.name}</p>
+                    {creator.verified && <BadgeCheck size={13} className="text-sky-400" fill="currentColor" />}
+                  </div>
+                  <p className="text-xs text-olu-muted line-clamp-2">{creator.bio}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Feed</p>
+              <h2 className="font-bold text-xl">{community.feed.title}</h2>
+            </div>
+            <Flame size={18} className="text-orange-300" />
+          </div>
+          <p className="text-sm text-olu-muted mb-4">{community.feed.subtitle}</p>
+          {loading ? (
+            <div className="text-olu-muted py-6 text-sm">Loading community feed...</div>
+          ) : (
+            <div className="space-y-3">
+              {featuredPosts.map((post) => (
+                <button
+                  key={post.id}
+                  onClick={() => navigate(`/content/${post.id}`)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-sm">{post.title}</p>
+                      <p className="text-xs text-olu-muted mt-1">{post.creator?.name || 'Community host'} · {post.type}</p>
+                    </div>
+                    {post.locked && <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> Members</span>}
+                  </div>
+                  <p className="text-sm text-white/72 mt-3 line-clamp-2">{post.preview}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}
+
+function CourseCard({ course, onOpen }: { course: typeof COURSE_LIBRARY[number]; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="rounded-[24px] overflow-hidden border border-white/10 bg-[#111111] text-left hover:-translate-y-0.5 transition-all"
+    >
+      <div className={`h-40 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-between`}>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-black/15 px-3 py-1 text-xs font-medium text-black/75">
+          <GraduationCap size={13} />
+          {course.level}
+        </span>
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-black/60">{course.instructor}</p>
+          <h3 className="font-black text-2xl text-black mt-2 leading-tight">{course.title}</h3>
         </div>
       </div>
+      <div className="p-5">
+        <p className="text-sm text-olu-muted line-clamp-2">{course.subtitle}</p>
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+            <p className="font-bold text-sm">{course.stats.lessons}</p>
+            <p className="text-[11px] text-olu-muted">Lessons</p>
+          </div>
+          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+            <p className="font-bold text-sm">{formatNumber(course.stats.students)}</p>
+            <p className="text-[11px] text-olu-muted">Students</p>
+          </div>
+          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+            <p className="font-bold text-sm">{course.stats.completionRate}</p>
+            <p className="text-[11px] text-olu-muted">Completion</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-4">
+          <p className="font-black text-xl">${course.price}</p>
+          <span className="inline-flex items-center gap-2 text-sm text-white/72">
+            View course
+            <ArrowRight size={15} />
+          </span>
+        </div>
+      </div>
+    </button>
+  )
+}
 
-      {tab === 'discover' ? (
-        <div className="max-w-2xl mx-auto">
-          {/* Recently visited */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between px-4 mb-3">
-              <h2 className="font-bold text-lg">Recently visited</h2>
-              <button className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center">
-                <ChevronRight size={16} className="text-olu-muted" />
+function CoursesHome() {
+  const navigate = useNavigate()
+  const { consumerExperience } = useApp()
+  const courses = consumerExperience.courses
+
+  return (
+    <div className="pb-24 md:pb-6">
+      <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
+        <section className={`rounded-[28px] overflow-hidden border border-white/10 bg-gradient-to-br ${FEATURED_COURSE.hero} p-6 md:p-8`}>
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/15 text-xs text-black/70 mb-4">
+              <BookOpen size={13} />
+              {courses.catalog.title}
+            </div>
+            <h1 className="font-black text-4xl leading-tight text-black max-w-xl">{FEATURED_COURSE.headline}</h1>
+            <p className="text-black/70 text-base mt-4 max-w-xl leading-relaxed">{FEATURED_COURSE.description}</p>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button
+                onClick={() => navigate(`/checkout/${FEATURED_COURSE.slug}`)}
+                className="px-5 py-3 rounded-2xl bg-black text-white font-semibold hover:opacity-90 transition-opacity"
+              >
+                {courses.detail.buyLabel}
+              </button>
+              <button
+                onClick={() => navigate(`/courses/${FEATURED_COURSE.slug}/catalog`)}
+                className="px-5 py-3 rounded-2xl bg-white/70 text-black font-semibold hover:bg-white transition-colors"
+              >
+                {courses.detail.catalogLabel}
               </button>
             </div>
-            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
-              {recent.map(creator => (
-                <button
-                  key={creator.id}
-                  onClick={() => navigate(`/creator/${creator.id}`)}
-                  className="flex-shrink-0 flex items-center gap-3 bg-[#1c1c1c] rounded-2xl px-3 py-2.5 min-w-[160px] hover:bg-[#242424] transition-colors"
-                >
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${creator.avatar_color} flex-shrink-0 overflow-hidden`}>
-                    {creator.avatar_img
-                      ? <img src={creator.avatar_img} alt={creator.name} className="w-full h-full object-cover" />
-                      : <span className="w-full h-full flex items-center justify-center font-bold text-white text-sm">{creator.initials}</span>
-                    }
-                  </div>
-                  <span className="font-semibold text-sm truncate">{creator.name}</span>
-                  <MoreHorizontal size={16} className="text-olu-muted ml-auto flex-shrink-0" />
-                </button>
-              ))}
-              {recent.length === 0 && <p className="text-olu-muted text-sm">No creators match this filter yet.</p>}
-            </div>
           </div>
+        </section>
 
-          {/* Creators for you */}
-          <div className="mb-6">
-            <div className="px-4 mb-3">
-              <p className="text-olu-muted text-xs mb-0.5">Based on your memberships</p>
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-lg">Creators for you</h2>
-                <button className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center">
-                  <ChevronRight size={16} className="text-olu-muted" />
-                </button>
+        <section className="grid md:grid-cols-[1.1fr,0.9fr] gap-4">
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Learning path</p>
+                <h2 className="font-bold text-xl">Start, continue, complete</h2>
               </div>
+              <PlayCircle size={18} className="text-emerald-300" />
             </div>
-            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-1">
-              {discoverFeed.map(creator => (
-                <CreatorCard key={creator.id} creator={creator} />
+            <div className="space-y-3">
+              {courses.learning.steps.map((step, index) => (
+                <div key={step.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm font-black">{index + 1}</div>
+                    <div>
+                      <p className="font-semibold text-sm">{step.label}</p>
+                      <p className="text-xs text-olu-muted mt-1">{step.note}</p>
+                    </div>
+                  </div>
+                </div>
               ))}
-              {discoverFeed.length === 0 && <p className="text-olu-muted text-sm">No creators match this filter yet.</p>}
             </div>
+            <button onClick={() => navigate('/learning')} className="mt-4 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity">
+              Open learning dashboard
+            </button>
           </div>
 
-          {/* Popular this week */}
-          <div>
-            <div className="flex items-center justify-between px-4 mb-1">
-              <h2 className="font-bold text-lg">Popular this week</h2>
-              <button className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center">
-                <ChevronRight size={16} className="text-olu-muted" />
-              </button>
+          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Search</p>
+                <h2 className="font-bold text-xl">Find a course quickly</h2>
+              </div>
+              <Search size={18} className="text-sky-300" />
             </div>
-            <div className="px-4 divide-y divide-[#1c1c1c]">
-              {popular.map(creator => (
-                <CreatorRow key={creator.id} creator={creator} />
+            <div className="rounded-2xl bg-white/5 border border-white/10 px-4 py-3 flex items-center gap-3">
+              <Search size={16} className="text-olu-muted" />
+              <input
+                placeholder="Search curriculum, outcomes, or instructor"
+                className="bg-transparent flex-1 text-sm placeholder:text-olu-muted focus:outline-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              {[...courses.learning.shortcuts, { label: 'Featured course', href: `/courses/${FEATURED_COURSE.slug}` }, { label: 'Checkout', href: `/checkout/${FEATURED_COURSE.slug}` }].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => navigate(item.href)}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                >
+                  <p className="font-semibold text-sm">{item.label}</p>
+                  <p className="text-xs text-olu-muted mt-1">Open page</p>
+                </button>
               ))}
-              {popular.length === 0 && <p className="py-4 text-olu-muted text-sm">No popular creators match this filter yet.</p>}
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto px-4 space-y-4">
-          {loading ? (
-            <div className="text-center py-12 text-olu-muted">Loading posts...</div>
-          ) : filteredPosts.length === 0 ? (
-            <div className="text-center py-12 text-olu-muted">
-              {filter === 'All' ? 'No posts yet' : 'No posts match this filter yet.'}
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Catalog</p>
+              <h2 className="font-bold text-2xl">Featured courses</h2>
             </div>
-          ) : (
-            filteredPosts.map(post => <PostCard key={post.id} post={post} />)
-          )}
+            <button onClick={() => navigate('/courses')} className="text-sm text-white/72 hover:text-white transition-colors">
+              Open full catalog
+            </button>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-4">
+            {COURSE_LIBRARY.map((course) => (
+              <CourseCard key={course.id} course={course} onOpen={() => navigate(`/courses/${course.slug}`)} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+export default function Home() {
+  const { consumerTemplate } = useApp()
+  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
+
+  return (
+    <div>
+      <div className="max-w-5xl mx-auto px-4 pt-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70">
+          <Sparkles size={13} />
+          {templateMeta.label}
         </div>
-      )}
+      </div>
+      {consumerTemplate === 'sell_courses' ? <CoursesHome /> : <CommunityHome />}
     </div>
   )
 }

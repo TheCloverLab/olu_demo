@@ -21,6 +21,32 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => vi.fn() }
 })
 
+function mockUseApp(overrides: Record<string, any> = {}) {
+  vi.mocked(AppContext.useApp).mockReturnValue({
+    currentRole: 'fan',
+    currentUser: { id: 'user-1' },
+    availableRoles: ['fan'],
+    enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+    consumerTemplate: 'fan_community',
+    consumerExperience: {
+      courses: {
+        storefront: {
+          eyebrow: 'Course Storefront',
+          title: 'Sell structured knowledge, not merch.',
+          description: 'This template replaces the merch shop with a course catalog, checkout flow, and learning hub.',
+          primaryCta: 'Open catalog',
+          secondaryCta: 'View learning hub',
+        },
+      },
+    },
+    setConsumerTemplate: vi.fn(),
+    switchRole: vi.fn(),
+    showRoleSwitcher: false,
+    setShowRoleSwitcher: vi.fn(),
+    ...overrides,
+  } as any)
+}
+
 describe('Shop', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -28,15 +54,7 @@ describe('Shop', () => {
 
   describe('as Fan (User view)', () => {
     beforeEach(() => {
-      vi.mocked(AppContext.useApp).mockReturnValue({
-        currentRole: 'fan',
-        currentUser: { id: 'user-1' },
-        availableRoles: ['fan'],
-        enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-        switchRole: vi.fn(),
-        showRoleSwitcher: false,
-        setShowRoleSwitcher: vi.fn(),
-      })
+      mockUseApp()
     })
 
     it('renders shop heading with browse description', () => {
@@ -66,14 +84,10 @@ describe('Shop', () => {
 
   describe('as Creator', () => {
     beforeEach(() => {
-      vi.mocked(AppContext.useApp).mockReturnValue({
+      mockUseApp({
         currentRole: 'creator',
         currentUser: { id: 'creator-1' },
         availableRoles: ['fan', 'creator'],
-        enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-        switchRole: vi.fn(),
-        showRoleSwitcher: false,
-        setShowRoleSwitcher: vi.fn(),
       })
     })
 
@@ -105,5 +119,15 @@ describe('Shop', () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
       expect(screen.getByText('My Products')).toBeInTheDocument()
     })
+  })
+
+  it('renders course storefront when consumer template is sell_courses', () => {
+    mockUseApp({
+      consumerTemplate: 'sell_courses',
+    })
+
+    render(<MemoryRouter><Shop /></MemoryRouter>)
+    expect(screen.getByText('Sell structured knowledge, not merch.')).toBeInTheDocument()
+    expect(screen.getByText('Open catalog')).toBeInTheDocument()
   })
 })

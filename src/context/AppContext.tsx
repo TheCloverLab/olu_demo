@@ -1,6 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
-import { getEnabledBusinessModulesForUser } from '../domain/workspace/api'
+import {
+  getConsumerTemplateForUser,
+  getEnabledBusinessModulesForUser,
+  updateWorkspaceConsumerTemplateForUser,
+} from '../domain/workspace/api'
+import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
+import { getConsumerExperience, type ConsumerExperience } from '../domain/consumer/api'
 
 type RoleType = 'creator' | 'fan' | 'advertiser' | 'supplier'
 type BusinessModule = 'creator_ops' | 'marketing' | 'supply_chain'
@@ -16,6 +22,9 @@ interface AppContextType {
   currentUser: any
   availableRoles: RoleType[]
   enabledBusinessModules: BusinessModule[]
+  consumerTemplate: ConsumerTemplateKey
+  consumerExperience: ConsumerExperience
+  setConsumerTemplate: (template: ConsumerTemplateKey) => void
   reloadBusinessModules: () => Promise<void>
   switchRole: (role: RoleType) => void
   showRoleSwitcher: boolean
@@ -33,6 +42,11 @@ export function AppProvider({ children }: AppProviderProps) {
   const [currentRole, setCurrentRole] = useState<RoleType>('fan')
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false)
   const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModule[]>([])
+  const [consumerTemplate, setConsumerTemplateState] = useState<ConsumerTemplateKey>(() => {
+    if (typeof window === 'undefined') return 'fan_community'
+    const saved = window.localStorage.getItem('olu.consumerTemplate')
+    return saved === 'sell_courses' ? 'sell_courses' : 'fan_community'
+  })
 
   // Get available roles from authenticated user or default to all roles
   const availableRoles: RoleType[] = authUser?.roles || ['fan']
@@ -70,16 +84,23 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     let cancelled = false
 
-    async function syncWorkspaceModules() {
+    async function syncWorkspaceState() {
       if (!authUser) {
         setEnabledBusinessModules([])
         return
       }
 
       try {
-        const modules = await getEnabledBusinessModulesForUser(authUser)
+        const [modules, persistedTemplate] = await Promise.all([
+          getEnabledBusinessModulesForUser(authUser),
+          getConsumerTemplateForUser(authUser),
+        ])
         if (!cancelled) {
           setEnabledBusinessModules(modules)
+          setConsumerTemplateState(persistedTemplate)
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('olu.consumerTemplate', persistedTemplate)
+          }
         }
       } catch (error) {
         console.error('Failed to load workspace modules', error)
@@ -89,7 +110,7 @@ export function AppProvider({ children }: AppProviderProps) {
       }
     }
 
-    syncWorkspaceModules()
+    syncWorkspaceState()
 
     return () => {
       cancelled = true
@@ -118,12 +139,29 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }
 
+  const setConsumerTemplate = (template: ConsumerTemplateKey) => {
+    setConsumerTemplateState(template)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('olu.consumerTemplate', template)
+    }
+    if (authUser) {
+      updateWorkspaceConsumerTemplateForUser(authUser, template).catch((error) => {
+        console.error('Failed to persist consumer template', error)
+      })
+    }
+  }
+
+  const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name)
+
   return (
     <AppContext.Provider value={{
       currentRole,
       currentUser,
       availableRoles,
       enabledBusinessModules,
+      consumerTemplate,
+      consumerExperience,
+      setConsumerTemplate,
       reloadBusinessModules: loadWorkspaceModules,
       switchRole,
       showRoleSwitcher,

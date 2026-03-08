@@ -42,6 +42,8 @@ describe('BusinessSettings', () => {
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerTemplate: 'fan_community',
+      setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
       switchRole: vi.fn(),
       showRoleSwitcher: false,
@@ -68,6 +70,7 @@ describe('BusinessSettings', () => {
         notification_policy: { route_publish_events_to_workspace: true },
       },
       billing: { id: 'b1', workspace_id: 'ws-1', plan: 'starter', status: 'trial', billing_email: 'alice@example.com' },
+      consumerConfig: { id: 'cc1', workspace_id: 'ws-1', template_key: 'fan_community', config_json: { featured_template: 'fan_community' } },
     } as any)
   })
 
@@ -90,6 +93,8 @@ describe('BusinessSettings', () => {
       currentUser: { name: 'Alice' },
       availableRoles: ['creator', 'advertiser'],
       enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerTemplate: 'fan_community',
+      setConsumerTemplate: vi.fn(),
       reloadBusinessModules,
       switchRole: vi.fn(),
       showRoleSwitcher: false,
@@ -113,6 +118,32 @@ describe('BusinessSettings', () => {
         true
       )
       expect(reloadBusinessModules).toHaveBeenCalled()
+    })
+  })
+
+  it('switches the consumer template from settings', async () => {
+    const user = userEvent.setup()
+    const setConsumerTemplate = vi.fn()
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'creator',
+      currentUser: { name: 'Alice' },
+      availableRoles: ['creator', 'advertiser'],
+      enabledBusinessModules: ['creator_ops', 'marketing'],
+      consumerTemplate: 'fan_community',
+      setConsumerTemplate,
+      reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+
+    render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
+
+    await user.click(await screen.findByRole('button', { name: /Sell Courses/i }))
+
+    await waitFor(() => {
+      expect(setConsumerTemplate).toHaveBeenCalledWith('sell_courses')
+      expect(screen.getByText('Active')).toBeInTheDocument()
     })
   })
 })

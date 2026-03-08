@@ -377,6 +377,15 @@ export type WorkspaceBilling = {
   updated_at?: string
 }
 
+export type WorkspaceConsumerConfig = {
+  id: string
+  workspace_id: string
+  template_key: 'fan_community' | 'sell_courses'
+  config_json: Record<string, any>
+  created_at?: string
+  updated_at?: string
+}
+
 export type WorkspaceSettingsData = {
   workspace: Workspace
   membership: WorkspaceMembership
@@ -385,6 +394,7 @@ export type WorkspaceSettingsData = {
   integrations: WorkspaceIntegration[]
   policies: WorkspacePolicy | null
   billing: WorkspaceBilling | null
+  consumerConfig: WorkspaceConsumerConfig | null
 }
 
 export type AgentTemplate = {

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Plus, Package, DollarSign, TrendingUp } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
+import { COURSE_LIBRARY } from '../courseData'
 
 interface Product {
   id: string
@@ -215,8 +216,63 @@ function UserShopView() {
 }
 
 export default function Shop() {
-  const { currentRole } = useApp()
+  const { currentRole, consumerTemplate, consumerExperience } = useApp()
   const isCreator = currentRole === 'creator'
+
+  if (consumerTemplate === 'sell_courses') {
+    const storefront = consumerExperience.courses.storefront
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
+        <div className="glass rounded-3xl p-6 md:p-8 overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-500/15 via-cyan-400/10 to-emerald-400/15" />
+          <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-olu-muted mb-3">{storefront.eyebrow}</p>
+              <h1 className="font-black text-3xl md:text-4xl mb-3">{storefront.title}</h1>
+              <p className="text-sm md:text-base text-olu-muted leading-relaxed">{storefront.description}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/courses"
+                className="px-4 py-3 rounded-2xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity"
+              >
+                {storefront.primaryCta}
+              </Link>
+              <Link
+                to="/learning"
+                className="px-4 py-3 rounded-2xl border border-white/15 bg-white/5 text-sm font-semibold hover:border-white/30 transition-colors"
+              >
+                {storefront.secondaryCta}
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {COURSE_LIBRARY.map((course) => (
+            <Link
+              key={course.id}
+              to={`/courses/${course.slug}`}
+              className="glass glass-hover rounded-3xl p-5 block"
+            >
+              <div className={`h-32 rounded-2xl bg-gradient-to-br ${course.hero} mb-4`} />
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p className="font-semibold text-lg">{course.title}</p>
+                  <p className="text-sm text-olu-muted mt-1">{course.subtitle}</p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-white/10 text-xs font-semibold">{course.level}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-4">
+                <span className="text-olu-muted">{course.stats.lessons} lessons</span>
+                <span className="font-semibold">${course.price}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">

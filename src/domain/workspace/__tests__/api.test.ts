@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { supabase } from '../../../lib/supabase'
-import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser, getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../api'
+import {
+  ensureWorkspaceForUser,
+  getConsumerTemplateForUser,
+  getEnabledBusinessModulesForUser,
+  getWorkspaceSettingsForUser,
+  updateWorkspaceConsumerTemplateForUser,
+  updateWorkspaceModuleForUser,
+} from '../api'
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -13,6 +20,7 @@ function createChain({ data = null, error = null }: { data?: any; error?: any } 
   chain.select = vi.fn().mockReturnValue(chain)
   chain.insert = vi.fn().mockReturnValue(chain)
   chain.update = vi.fn().mockReturnValue(chain)
+  chain.upsert = vi.fn().mockReturnValue(chain)
   chain.eq = vi.fn().mockReturnValue(chain)
   chain.order = vi.fn().mockReturnValue(chain)
   chain.limit = vi.fn().mockReturnValue(chain)
@@ -39,6 +47,7 @@ describe('workspace api', () => {
     const integrationsInsert = createChain({ data: [] })
     const policiesInsert = createChain({ data: [] })
     const billingInsert = createChain({ data: [] })
+    const consumerConfigInsert = createChain({ data: [] })
 
     vi.mocked(supabase.from)
       .mockReturnValueOnce(membershipLookup)
@@ -49,6 +58,7 @@ describe('workspace api', () => {
       .mockReturnValueOnce(integrationsInsert)
       .mockReturnValueOnce(policiesInsert)
       .mockReturnValueOnce(billingInsert)
+      .mockReturnValueOnce(consumerConfigInsert)
 
     const result = await ensureWorkspaceForUser({
       id: 'user-1',
@@ -98,6 +108,7 @@ describe('workspace api', () => {
     const integrationsLookup = createChain({ data: [{ id: 'i1', workspace_id: 'ws-1', provider: 'Shopify', status: 'connected', config_json: {}, last_sync_at: null }] })
     const policiesLookup = createChain({ data: { id: 'po1', workspace_id: 'ws-1', approval_policy: { publish_requires_marketer_approval: true }, sandbox_policy: { takeover_mode: 'manual' }, notification_policy: { route_publish_events_to_workspace: true } } })
     const billingLookup = createChain({ data: { id: 'b1', workspace_id: 'ws-1', plan: 'starter', status: 'trial', billing_email: 'alice@example.com' } })
+    const consumerConfigLookup = createChain({ data: { id: 'cc1', workspace_id: 'ws-1', template_key: 'sell_courses', config_json: { featured_template: 'sell_courses' } } })
 
     vi.mocked(supabase.from)
       .mockReturnValueOnce(membershipLookup)
@@ -107,6 +118,7 @@ describe('workspace api', () => {
       .mockReturnValueOnce(integrationsLookup)
       .mockReturnValueOnce(policiesLookup)
       .mockReturnValueOnce(billingLookup)
+      .mockReturnValueOnce(consumerConfigLookup)
 
     const result = await getWorkspaceSettingsForUser({
       id: 'user-1',
@@ -120,6 +132,7 @@ describe('workspace api', () => {
     expect(result.modules).toHaveLength(1)
     expect(result.integrations[0].provider).toBe('Shopify')
     expect(result.billing?.plan).toBe('starter')
+    expect(result.consumerConfig?.template_key).toBe('sell_courses')
   })
 
   it('updates a workspace module for the current user', async () => {
@@ -144,5 +157,58 @@ describe('workspace api', () => {
 
     expect(moduleUpdate.update).toHaveBeenCalledWith({ enabled: false })
     expect(result.enabled).toBe(false)
+  })
+
+  it('returns the consumer template configured for the workspace', async () => {
+    const membershipLookup = createChain({
+      data: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' },
+    })
+    const consumerConfigLookup = createChain({
+      data: { id: 'cc1', workspace_id: 'ws-1', template_key: 'sell_courses', config_json: { featured_template: 'sell_courses' } },
+    })
+
+    vi.mocked(supabase.from)
+      .mockReturnValueOnce(membershipLookup)
+      .mockReturnValueOnce(consumerConfigLookup)
+
+    const result = await getConsumerTemplateForUser({
+      id: 'user-1',
+      username: 'alice',
+      handle: '@alice',
+      name: 'Alice',
+      email: 'alice@example.com',
+    } as any)
+
+    expect(result).toBe('sell_courses')
+  })
+
+  it('updates workspace consumer template for the current user', async () => {
+    const membershipLookup = createChain({
+      data: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' },
+    })
+    const consumerConfigUpdate = createChain({
+      data: { id: 'cc1', workspace_id: 'ws-1', template_key: 'sell_courses', config_json: { featured_template: 'sell_courses' } },
+    })
+
+    vi.mocked(supabase.from)
+      .mockReturnValueOnce(membershipLookup)
+      .mockReturnValueOnce(consumerConfigUpdate)
+
+    const result = await updateWorkspaceConsumerTemplateForUser({
+      id: 'user-1',
+      username: 'alice',
+      handle: '@alice',
+      name: 'Alice',
+      email: 'alice@example.com',
+    } as any, 'sell_courses')
+
+    expect(consumerConfigUpdate.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: 'ws-1',
+        template_key: 'sell_courses',
+      }),
+      { onConflict: 'workspace_id' }
+    )
+    expect(result.template_key).toBe('sell_courses')
   })
 })

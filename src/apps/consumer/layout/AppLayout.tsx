@@ -1,27 +1,13 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, MessageCircle, User, Settings, ChevronRight, Menu, X, Zap, ShoppingBag, LogIn, Briefcase } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import RoleSwitcher from '../../../components/layout/RoleSwitcher'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-
-// Consumer app navigation
-const MOBILE_NAV = [
-  { to: '/', icon: Home, exact: true },
-  { to: '/chat', icon: MessageCircle },
-  { to: '/shop', icon: ShoppingBag },
-  { to: '/profile', icon: User },
-]
-
-const SIDEBAR_NAV = [
-  { to: '/', icon: Home, label: 'Home', exact: true },
-  { to: '/chat', icon: MessageCircle, label: 'Chat' },
-  { to: '/shop', icon: ShoppingBag, label: 'Shop' },
-  { to: '/profile', icon: User, label: 'Me' },
-]
+import { CONSUMER_NAV, CONSUMER_TEMPLATE_META, TEMPLATE_QUICK_LINKS } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -53,10 +39,12 @@ function MenuItem({ icon: Icon, label, onClick }) {
 }
 
 function MoreMenu({ open, onClose }) {
-  const { currentUser } = useApp()
+  const { currentUser, consumerTemplate } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
+  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
+  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   return (
     <AnimatePresence>
@@ -100,6 +88,16 @@ function MoreMenu({ open, onClose }) {
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+              <div className="px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted mb-2">Template</p>
+                <div className={`rounded-2xl p-3 bg-gradient-to-br ${templateMeta.accent}`}>
+                  <p className="font-bold text-black text-sm">{templateMeta.label}</p>
+                  <p className="text-black/70 text-xs mt-1">{templateMeta.description}</p>
+                </div>
+              </div>
+              {quickLinks.map(({ to, icon, label }) => (
+                <MenuItem key={to} icon={icon} label={label} onClick={() => go(to)} />
+              ))}
               <MenuItem icon={Briefcase} label="Business Workspace" onClick={() => go('/business')} />
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
@@ -111,10 +109,13 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser } = useApp()
+  const { currentUser, consumerTemplate } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
+  const navItems = CONSUMER_NAV[consumerTemplate]
+  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
+  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -124,7 +125,10 @@ export default function AppLayout() {
           <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
             <Zap size={14} className="text-black" fill="black" />
           </div>
-          <span className="font-black text-lg">OLU</span>
+          <div>
+            <span className="font-black text-lg block leading-none">OLU</span>
+            <span className="text-[10px] text-olu-muted tracking-[0.18em] uppercase">{templateMeta.shortLabel}</span>
+          </div>
         </div>
 
         {authUser ? (
@@ -156,7 +160,7 @@ export default function AppLayout() {
         )}
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {SIDEBAR_NAV.map(({ to, icon: Icon, label, exact }) => (
+          {navItems.map(({ to, icon: Icon, label, exact }) => (
             <NavLink
               key={to}
               to={to}
@@ -170,6 +174,23 @@ export default function AppLayout() {
               {label}
             </NavLink>
           ))}
+
+          <div className="pt-4">
+            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Template</p>
+            {quickLinks.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => clsx(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                  isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
+                )}
+              >
+                <Icon size={18} />
+                {label}
+              </NavLink>
+            ))}
+          </div>
 
           <div className="pt-4">
             <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Workspace</p>
@@ -210,7 +231,7 @@ export default function AppLayout() {
           </button>
           <div className="text-center">
             <span className="font-black text-lg block leading-none">OLU</span>
-            <span className="text-[10px] text-olu-muted tracking-wide">{APP_VERSION}</span>
+            <span className="text-[10px] text-olu-muted tracking-wide">{templateMeta.shortLabel} · {APP_VERSION}</span>
           </div>
           <button onClick={() => navigate('/profile')} className="relative">
             <Avatar user={currentUser} />
@@ -224,7 +245,7 @@ export default function AppLayout() {
 
         {/* Mobile Bottom Nav — icon-only like Patreon */}
         <nav className="md:hidden flex items-center bg-olu-bg border-t border-olu-border flex-shrink-0">
-          {MOBILE_NAV.map(({ to, icon: Icon, exact }) => (
+          {navItems.map(({ to, icon: Icon, exact }) => (
             <NavLink
               key={to}
               to={to}

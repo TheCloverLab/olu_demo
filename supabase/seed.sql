@@ -8,6 +8,7 @@ TRUNCATE TABLE
   workspace_agents,
   agent_templates,
   workspace_billing,
+  workspace_consumer_configs,
   workspace_policies,
   workspace_integrations,
   workspace_permissions,
@@ -105,6 +106,12 @@ VALUES
   ('05600000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'starter', 'trial', 'luna@example.com'),
   ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'growth', 'active', 'finance@gameverse.example.com'),
   ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'starter', 'active', 'ops@artisancraft.example.com');
+
+INSERT INTO workspace_consumer_configs (id, workspace_id, template_key, config_json)
+VALUES
+  ('05650000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'fan_community', '{"featured_template":"fan_community"}'::jsonb),
+  ('05650000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'sell_courses', '{"featured_template":"sell_courses"}'::jsonb),
+  ('05650000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'fan_community', '{"featured_template":"fan_community"}'::jsonb);
 
 INSERT INTO agent_templates (id, template_key, name, role, avatar_img, color, category, pricing_model, price_label, model, cost_per_1k, rating, reviews, description, status)
 VALUES

@@ -5,6 +5,7 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
 import type { BusinessModuleKey, WorkspaceSettingsData } from '../../../lib/supabase'
+import { CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../../consumer/templateConfig'
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
@@ -38,11 +39,12 @@ const MODULE_METADATA: Array<{
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
-  const { currentUser, reloadBusinessModules } = useApp()
+  const { consumerTemplate, currentUser, reloadBusinessModules, setConsumerTemplate } = useApp()
   const { user } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
+  const [savingConsumerTemplate, setSavingConsumerTemplate] = useState<ConsumerTemplateKey | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -125,6 +127,39 @@ export default function BusinessSettings() {
       console.error('Failed to update workspace module', error)
     } finally {
       setSavingModule(null)
+    }
+  }
+
+  async function handleSelectConsumerTemplate(templateKey: ConsumerTemplateKey) {
+    if (!user || templateKey === consumerTemplate) return
+
+    setSavingConsumerTemplate(templateKey)
+    try {
+      setConsumerTemplate(templateKey)
+      setSettings((current) => current ? {
+        ...current,
+        consumerConfig: current.consumerConfig
+          ? {
+              ...current.consumerConfig,
+              template_key: templateKey,
+              config_json: {
+                ...(current.consumerConfig.config_json || {}),
+                featured_template: templateKey,
+              },
+            }
+          : {
+              id: 'local-consumer-config',
+              workspace_id: current.workspace.id,
+              template_key: templateKey,
+              config_json: {
+                featured_template: templateKey,
+              },
+            },
+      } : current)
+    } catch (error) {
+      console.error('Failed to update consumer template', error)
+    } finally {
+      setSavingConsumerTemplate(null)
     }
   }
 
@@ -267,6 +302,47 @@ export default function BusinessSettings() {
                   </span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-10 h-10 rounded-2xl bg-fuchsia-500/15 text-fuchsia-300 flex items-center justify-center">
+                <Sparkles size={18} />
+              </span>
+              <div>
+                <p className="font-bold">Consumer template</p>
+                <p className="text-cyan-100/55 text-xs">Choose the public-facing consumer experience for this workspace</p>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {(['fan_community', 'sell_courses'] as ConsumerTemplateKey[]).map((templateKey) => {
+                const meta = CONSUMER_TEMPLATE_META[templateKey]
+                const selected = (settings?.consumerConfig?.template_key || consumerTemplate) === templateKey
+                const saving = savingConsumerTemplate === templateKey
+                return (
+                  <button
+                    key={templateKey}
+                    type="button"
+                    disabled={saving}
+                    onClick={() => handleSelectConsumerTemplate(templateKey)}
+                    className={`rounded-2xl border p-4 text-left transition-colors ${
+                      selected
+                        ? 'border-cyan-300/40 bg-cyan-400/10'
+                        : 'border-cyan-500/10 bg-[#0d1726] hover:bg-[#112034]'
+                    } disabled:opacity-60`}
+                  >
+                    <div className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent} mb-3`} />
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-semibold text-sm">{meta.label}</p>
+                      <span className={`text-[11px] uppercase tracking-[0.16em] ${selected ? 'text-cyan-200' : 'text-cyan-100/50'}`}>
+                        {saving ? 'Saving' : selected ? 'Active' : 'Available'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-cyan-100/60 mt-2">{meta.description}</p>
+                  </button>
+                )
+              })}
             </div>
           </div>
 

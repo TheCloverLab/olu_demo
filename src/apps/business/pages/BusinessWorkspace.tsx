@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import { Bot, Briefcase, Cable, LayoutDashboard, Megaphone, Package, ShieldCheck, Sparkles, Users } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
+import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 
 const PLATFORM_CONNECTORS = ['Shopify', 'Temu', 'SHEIN', 'Zendesk', 'Mixpanel', 'Google Play', 'App Store']
 
 export default function BusinessWorkspace() {
-  const { currentUser, enabledBusinessModules } = useApp()
+  const { consumerTemplate, currentUser, enabledBusinessModules } = useApp()
+  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   const modules = useMemo(() => {
     return [
@@ -59,8 +61,8 @@ export default function BusinessWorkspace() {
               <p className="text-xs text-olu-muted mt-1">Capabilities</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-              <p className="text-2xl font-black">7</p>
-              <p className="text-xs text-olu-muted mt-1">Planned connectors</p>
+              <p className="text-lg font-black">{templateMeta.shortLabel}</p>
+              <p className="text-xs text-olu-muted mt-1">Consumer template</p>
             </div>
           </div>
         </div>

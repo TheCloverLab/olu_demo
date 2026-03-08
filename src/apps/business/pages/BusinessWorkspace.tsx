@@ -136,7 +136,7 @@ export default function BusinessWorkspace() {
             {[
               `Active app: ${templateMeta.label}`,
               consumerTemplate === 'fan_community'
-                ? 'Membership storefront, community circles, and creator feed are live.'
+                ? 'Membership storefront, community topics, and creator feed are live.'
                 : 'Course catalog, checkout, and learning progress are live.',
               'Use the consumer view to preview public-facing configuration without leaving the business app.',
             ].map((item) => (

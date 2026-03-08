@@ -230,7 +230,7 @@ export default function AppLanding() {
                 <div className="space-y-2 text-sm text-olu-muted">
                   {(consumerTemplate === 'fan_community'
                     ? [
-                        'Member-only circles and recurring discussion rooms.',
+                        'Member-only community rooms and recurring discussion spaces.',
                         'Membership tiers with different levels of access.',
                         'Recent creator drops and recurring community rituals.',
                       ]

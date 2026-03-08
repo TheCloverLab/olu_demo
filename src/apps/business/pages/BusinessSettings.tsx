@@ -211,7 +211,7 @@ export default function BusinessSettings() {
       ...entries,
       {
         id: `custom-topic-${Date.now()}`,
-        name: 'New circle',
+        name: 'New topic',
         members: '0',
         description: 'Describe what members gather here to do together.',
       },
@@ -459,7 +459,7 @@ export default function BusinessSettings() {
                   aria-label="Membership title"
                   value={currentConsumerConfig.community_membership_title || ''}
                   onChange={(event) => handleConsumerConfigChange({ community_membership_title: event.target.value })}
-                  placeholder="Join a creator circle"
+                  placeholder="Join the community"
                   className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
                 />
               </label>
@@ -481,7 +481,7 @@ export default function BusinessSettings() {
                   aria-label="Topics title"
                   value={currentConsumerConfig.community_topics_title || ''}
                   onChange={(event) => handleConsumerConfigChange({ community_topics_title: event.target.value })}
-                  placeholder="Browse active circles"
+                  placeholder="Browse active topics"
                   className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
                 />
               </label>
@@ -489,7 +489,7 @@ export default function BusinessSettings() {
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55">Community topics</p>
-                    <p className="text-[11px] text-cyan-100/45 mt-1">Create, reorder, and remove the circles shown on the public community page.</p>
+                    <p className="text-[11px] text-cyan-100/45 mt-1">Create, reorder, and remove the topics shown on the public community page.</p>
                   </div>
                   <button
                     type="button"

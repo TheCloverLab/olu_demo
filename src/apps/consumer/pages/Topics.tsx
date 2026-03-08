@@ -22,7 +22,7 @@ export default function Topics() {
           </div>
           <div>
             <h1 className="font-black text-2xl">{activeTopic.name}</h1>
-            <p className="text-olu-muted text-sm">{activeTopic.members} members in this circle</p>
+            <p className="text-olu-muted text-sm">{activeTopic.members} members in this topic</p>
           </div>
         </div>
 
@@ -38,7 +38,7 @@ export default function Topics() {
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Why members join</p>
             <p className="text-sm text-white/72 leading-relaxed">
-              This circle gives members a dedicated discussion space instead of sending every conversation into the main feed.
+              This topic gives members a dedicated discussion space instead of sending every conversation into the main feed.
             </p>
           </div>
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
@@ -70,7 +70,7 @@ export default function Topics() {
       <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
         <div className="flex items-center gap-2 mb-2">
           <Flame size={15} className="text-orange-300" />
-          <p className="font-semibold">Why this page exists</p>
+          <p className="font-semibold">How topics work</p>
         </div>
         <p className="text-sm text-olu-muted leading-relaxed">
           {topics.whyItExists}

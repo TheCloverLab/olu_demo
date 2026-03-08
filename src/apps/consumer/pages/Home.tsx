@@ -308,7 +308,7 @@ export default function Home() {
                 >
                   <p className="font-semibold text-sm">{creator.name} Inner Circle</p>
                   <p className="text-xs text-olu-muted mt-1">Community</p>
-                  <p className="text-sm text-white/72 mt-2 line-clamp-2">{creator.bio || 'Membership, circles, and recurring updates.'}</p>
+                  <p className="text-sm text-white/72 mt-2 line-clamp-2">{creator.bio || 'Membership, community access, and recurring updates.'}</p>
                 </button>
               ))}
               {!loading && recommendedCommunities.length === 0 ? (

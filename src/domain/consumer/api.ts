@@ -211,7 +211,7 @@ export function getConsumerExperience(
   )
   const membershipTitle = readStringOverride(
     config?.community_membership_title,
-    'Join a creator circle'
+    'Join the community'
   )
   const membershipSubtitle = readStringOverride(
     config?.community_membership_subtitle,
@@ -219,7 +219,7 @@ export function getConsumerExperience(
   )
   const topicsTitle = readStringOverride(
     config?.community_topics_title,
-    'Browse active circles'
+    'Browse active topics'
   )
   const communityTopics = readTopicOverrides(config?.community_topic_entries)
   const storefrontTitle = readStringOverride(
@@ -257,7 +257,7 @@ export function getConsumerExperience(
         description: communityHeroDescription,
         stats: [
           { label: 'Active members', value: '8.4K' },
-          { label: 'Live circles', value: '24' },
+          { label: 'Live topics', value: '24' },
           { label: 'Member renewals', value: '81%' },
         ],
       },
@@ -271,12 +271,12 @@ export function getConsumerExperience(
         title: topicsTitle,
         subtitle: 'Recurring discussions, creator rituals, and member-only threads.',
         whyItExists:
-          'The community app needs a first-class topic layer. This page gives members a place to enter circles instead of treating everything as a flat feed.',
+          'Enter focused member discussions instead of dropping every conversation into one flat feed.',
         entries: communityTopics,
       },
       spaces: {
-        title: 'Creator spaces',
-        subtitle: 'The rooms members actually come back to every week.',
+        title: 'Community spaces',
+        subtitle: 'The discussions members actually come back to every week.',
       },
       feed: {
         title: 'Recent member drops',

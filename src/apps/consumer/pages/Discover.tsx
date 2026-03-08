@@ -37,7 +37,7 @@ export default function Discover() {
           type: 'community',
           title: `${creator.name} Inner Circle`,
           creatorName: creator.name,
-          summary: creator.bio || 'Membership, recurring circles, and creator-only drops.',
+          summary: creator.bio || 'Membership, recurring community discussions, and creator-only drops.',
           priceLabel: 'Membership',
           href: `/creator/${creator.id}`,
         }))

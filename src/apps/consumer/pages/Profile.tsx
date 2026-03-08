@@ -107,7 +107,7 @@ export default function Profile() {
           title: membershipName ? `${membershipName} member` : 'Membership access',
           description: membershipName
             ? `You currently have access to ${communitySummary.creatorName}'s member spaces.`
-            : 'You are browsing the app as a visitor. Upgrade to unlock member-only circles and posts.',
+            : 'You are browsing the app as a visitor. Upgrade to unlock member-only community spaces and posts.',
           ctaLabel: membershipName ? 'Open topics' : 'Open membership',
           ctaHref: membershipName ? '/topics' : '/membership',
         },
@@ -188,7 +188,7 @@ export default function Profile() {
             </p>
             <p className="text-xs text-olu-muted mt-1">
               {consumerTemplate === 'fan_community'
-                ? 'Your membership, circles, and current access live here.'
+                ? 'Your membership, topics, and current access live here.'
                 : 'Your purchases, progress, and next learning step live here.'}
             </p>
           </div>

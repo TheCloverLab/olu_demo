@@ -28,7 +28,7 @@ export default function Signup() {
         return
       }
 
-      navigate('/business')
+      navigate('/')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')
     } finally {

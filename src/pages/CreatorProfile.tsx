@@ -1,1 +1,1 @@
-export { default } from '../apps/consumer/pages/CreatorProfile'
+export { default } from '../apps/consumer/pages/AppLanding'

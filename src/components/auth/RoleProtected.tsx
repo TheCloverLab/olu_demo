@@ -10,11 +10,18 @@ type RoleProtectedProps = {
   requireAuth?: boolean
   requiredRole?: AppRole
   bypassOnboarding?: boolean
+  businessOnly?: boolean
 }
 
-export default function RoleProtected({ children, requireAuth = true, requiredRole, bypassOnboarding = false }: RoleProtectedProps) {
+export default function RoleProtected({
+  children,
+  requireAuth = true,
+  requiredRole,
+  bypassOnboarding = false,
+  businessOnly = false,
+}: RoleProtectedProps) {
   const { user, loading } = useAuth()
-  const { availableRoles } = useApp()
+  const { availableRoles, enabledBusinessModules } = useApp()
   const location = useLocation()
 
   if (loading) return null
@@ -25,6 +32,10 @@ export default function RoleProtected({ children, requireAuth = true, requiredRo
 
   if (requiredRole && !availableRoles.includes(requiredRole)) {
     return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/settings'} replace />
+  }
+
+  if (businessOnly && enabledBusinessModules.length === 0) {
+    return <Navigate to="/" replace />
   }
 
   if (!bypassOnboarding && user && user.onboarding_completed === false && location.pathname !== '/onboarding') {

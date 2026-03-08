@@ -14,7 +14,7 @@ vi.mock('../../../context/AppContext', () => ({
 }))
 
 function renderProtected(
-  props: { requireAuth?: boolean; requiredRole?: any; bypassOnboarding?: boolean } = {},
+  props: { requireAuth?: boolean; requiredRole?: any; bypassOnboarding?: boolean; businessOnly?: boolean } = {},
   initialPath = '/'
 ) {
   return render(
@@ -30,6 +30,7 @@ function renderProtected(
         />
         <Route path="/login" element={<div>Login Page</div>} />
         <Route path="/settings" element={<div>Settings Page</div>} />
+        <Route path="/business" element={<div>Business Page</div>} />
         <Route path="/onboarding" element={<div>Onboarding Page</div>} />
       </Routes>
     </MemoryRouter>
@@ -200,6 +201,50 @@ describe('RoleProtected', () => {
 
     renderProtected({ bypassOnboarding: true })
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+
+  it('redirects consumer-only users away from business workspace', () => {
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: '1', onboarding_completed: true } as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      currentRole: 'fan',
+      currentUser: {},
+      availableRoles: ['fan'],
+      enabledBusinessModules: [],
+      consumerTemplate: 'fan_community',
+      consumerConfig: {},
+      consumerExperience: {} as any,
+      setConsumerTemplate: vi.fn(),
+      setConsumerConfig: vi.fn(),
+      reloadBusinessModules: vi.fn(),
+      switchRole: vi.fn(),
+      showRoleSwitcher: false,
+      setShowRoleSwitcher: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/business']}>
+        <Routes>
+          <Route
+            path="/business"
+            element={
+              <RoleProtected businessOnly>
+                <div>Business Content</div>
+              </RoleProtected>
+            }
+          />
+          <Route path="/" element={<div>Consumer Home</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText('Consumer Home')).toBeInTheDocument()
   })
 
   it('allows unauthenticated access when requireAuth is false', () => {

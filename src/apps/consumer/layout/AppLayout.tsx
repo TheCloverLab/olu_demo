@@ -39,7 +39,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
 }
 
 function MoreMenu({ open, onClose }) {
-  const { currentUser, consumerTemplate } = useApp()
+  const { currentUser, consumerTemplate, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
@@ -98,7 +98,9 @@ function MoreMenu({ open, onClose }) {
               {quickLinks.map(({ to, icon, label }) => (
                 <MenuItem key={to} icon={icon} label={label} onClick={() => go(to)} />
               ))}
-              <MenuItem icon={Briefcase} label="Business Workspace" onClick={() => go('/business')} />
+              {enabledBusinessModules.length > 0 ? (
+                <MenuItem icon={Briefcase} label="Business Workspace" onClick={() => go('/business')} />
+              ) : null}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
@@ -109,7 +111,7 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, consumerTemplate } = useApp()
+  const { currentUser, consumerTemplate, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
@@ -192,17 +194,19 @@ export default function AppLayout() {
             ))}
           </div>
 
-          <div className="pt-4">
-            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Workspace</p>
-            <a
-              href="/business"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer text-olu-muted hover:text-white hover:bg-[#1c1c1c]"
-            >
-              <Briefcase size={18} />Business Workspace
-            </a>
-          </div>
+          {enabledBusinessModules.length > 0 ? (
+            <div className="pt-4">
+              <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">Workspace</p>
+              <a
+                href="/business"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer text-olu-muted hover:text-white hover:bg-[#1c1c1c]"
+              >
+                <Briefcase size={18} />Business Workspace
+              </a>
+            </div>
+          ) : null}
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">

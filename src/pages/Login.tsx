@@ -13,7 +13,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const nextPath = (location.state as { from?: string } | null)?.from || '/business'
+  const nextPath = (location.state as { from?: string } | null)?.from || '/'
 
   useEffect(() => {
     if (!authLoading && user) {

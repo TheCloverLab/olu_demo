@@ -16,7 +16,7 @@ import RoleProtected from '../../components/auth/RoleProtected'
 export const businessRoutes: RouteObject[] = [
   {
     path: '/business',
-    element: <RoleProtected><BusinessLayout /></RoleProtected>,
+    element: <RoleProtected businessOnly><BusinessLayout /></RoleProtected>,
     children: [
       { index: true, element: <BusinessWorkspace /> },
       { path: 'team', element: <Team /> },

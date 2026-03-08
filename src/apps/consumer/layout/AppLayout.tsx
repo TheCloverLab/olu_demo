@@ -7,7 +7,7 @@ import { useAuth } from '../../../context/AuthContext'
 import RoleSwitcher from '../../../components/layout/RoleSwitcher'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-import { CONSUMER_NAV, CONSUMER_TEMPLATE_META, TEMPLATE_QUICK_LINKS } from '../templateConfig'
+import { CONSUMER_NAV } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -39,12 +39,10 @@ function MenuItem({ icon: Icon, label, onClick }) {
 }
 
 function MoreMenu({ open, onClose }) {
-  const { currentUser, consumerTemplate } = useApp()
+  const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
-  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
-  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   return (
     <AnimatePresence>
@@ -88,16 +86,6 @@ function MoreMenu({ open, onClose }) {
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <div className="px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted mb-2">App</p>
-                <div className={`rounded-2xl p-3 bg-gradient-to-br ${templateMeta.accent}`}>
-                  <p className="font-bold text-black text-sm">{templateMeta.label}</p>
-                  <p className="text-black/70 text-xs mt-1">{templateMeta.description}</p>
-                </div>
-              </div>
-              {quickLinks.map(({ to, icon, label }) => (
-                <MenuItem key={to} icon={icon} label={label} onClick={() => go(to)} />
-              ))}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
@@ -113,8 +101,6 @@ export default function AppLayout() {
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[consumerTemplate]
-  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
-  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -124,10 +110,7 @@ export default function AppLayout() {
           <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
             <Zap size={14} className="text-black" fill="black" />
           </div>
-          <div>
-            <span className="font-black text-lg block leading-none">OLU</span>
-            <span className="text-[10px] text-olu-muted tracking-[0.18em] uppercase">{templateMeta.shortLabel}</span>
-          </div>
+          <span className="font-black text-lg block leading-none">OLU</span>
         </div>
 
         {authUser ? (
@@ -174,23 +157,6 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
-          <div className="pt-4">
-            <p className="text-olu-muted text-[11px] font-semibold uppercase tracking-wider px-3 mb-1">App</p>
-            {quickLinks.map(({ to, icon: Icon, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => clsx(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                  isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
-                )}
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
-            ))}
-          </div>
-
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
@@ -219,7 +185,7 @@ export default function AppLayout() {
           </button>
           <div className="text-center">
             <span className="font-black text-lg block leading-none">OLU</span>
-            <span className="text-[10px] text-olu-muted tracking-wide">{templateMeta.shortLabel} · {APP_VERSION}</span>
+            <span className="text-[10px] text-olu-muted tracking-wide">{APP_VERSION}</span>
           </div>
           <button onClick={() => navigate('/profile')} className="relative">
             <Avatar user={currentUser} />

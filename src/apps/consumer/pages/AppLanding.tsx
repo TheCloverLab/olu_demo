@@ -28,6 +28,7 @@ export default function AppLanding() {
   const [membershipStatus, setMembershipStatus] = useState<{ tier_name?: string } | null>(null)
   const [hasCourseAccess, setHasCourseAccess] = useState(false)
   const avatarSrc = creator?.avatar_img || creator?.avatarImg
+  const isCommunity = consumerTemplate === 'fan_community'
 
   useEffect(() => {
     async function load() {
@@ -62,7 +63,7 @@ export default function AppLanding() {
     async function loadAccess() {
       if (!id) return
 
-      if (consumerTemplate === 'fan_community') {
+      if (isCommunity) {
         const status = await getMembershipStatus(currentUser?.id ? currentUser as any : null, id).catch(() => null)
         setMembershipStatus(status)
         setHasCourseAccess(false)
@@ -75,10 +76,10 @@ export default function AppLanding() {
     }
 
     loadAccess()
-  }, [consumerTemplate, currentUser, id])
+  }, [isCommunity, currentUser, id])
 
   const appCopy = useMemo(() => {
-    if (consumerTemplate === 'fan_community') {
+    if (isCommunity) {
       return {
         eyebrow: 'Community',
         titleSuffix: 'Inner Circle',
@@ -139,7 +140,7 @@ export default function AppLanding() {
         'Learning hub with next-lesson flow',
       ],
     }
-  }, [consumerTemplate, membershipStatus, hasCourseAccess, tiers, posts.length, products.length, creator?.followers])
+  }, [isCommunity, membershipStatus, hasCourseAccess, tiers, posts, products, creator?.followers])
 
   if (loading) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading app...</div>
   if (!creator) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">App not found.</div>
@@ -168,20 +169,34 @@ export default function AppLanding() {
         <div className="rounded-3xl border border-white/10 bg-[#111111]/90 backdrop-blur p-5 md:p-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
             <div className="flex gap-4">
-              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-2xl text-white border-4 border-olu-bg shadow-xl overflow-hidden flex-shrink-0`}>
-                {avatarSrc && !avatarBroken ? (
-                  <img src={avatarSrc} alt={creator.name} className="w-full h-full object-cover" onError={() => setAvatarBroken(true)} />
-                ) : (
-                  creator.initials
-                )}
-              </div>
+              {isCommunity ? null : (
+                <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-2xl text-white border-4 border-olu-bg shadow-xl overflow-hidden flex-shrink-0`}>
+                  {avatarSrc && !avatarBroken ? (
+                    <img src={avatarSrc} alt={creator.name} className="w-full h-full object-cover" onError={() => setAvatarBroken(true)} />
+                  ) : (
+                    creator.initials
+                  )}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">{appCopy.eyebrow}</p>
                 <div className="flex items-center gap-2">
                   <h1 className="font-black text-2xl md:text-3xl">{creator.name} {appCopy.titleSuffix}</h1>
                   {creator.verified && <BadgeCheck size={18} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
                 </div>
-                <p className="text-olu-muted text-sm mt-2">{creator.handle}</p>
+                {isCommunity ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
+                    <span>Hosted by {creator.name}</span>
+                    <button
+                      onClick={() => navigate(`/chat?with=${creator.id}`)}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
+                    >
+                      Message host
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-olu-muted text-sm mt-2">{creator.handle}</p>
+                )}
                 <p className="text-sm text-olu-muted mt-3 leading-relaxed max-w-2xl">{creator.bio || appCopy.summary}</p>
               </div>
             </div>
@@ -201,15 +216,17 @@ export default function AppLanding() {
                 <Send size={14} />
                 {appCopy.secondaryCta}
               </button>
-              <button
-                onClick={() => setFollowing(!following)}
-                className={clsx(
-                  'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                  following ? 'bg-white/10 text-sky-400 border border-white/10' : 'glass glass-hover text-olu-muted'
-                )}
-              >
-                {following ? 'Following' : 'Follow'}
-              </button>
+              {isCommunity ? null : (
+                <button
+                  onClick={() => setFollowing(!following)}
+                  className={clsx(
+                    'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                    following ? 'bg-white/10 text-sky-400 border border-white/10' : 'glass glass-hover text-olu-muted'
+                  )}
+                >
+                  {following ? 'Following' : 'Follow'}
+                </button>
+              )}
             </div>
           </div>
 

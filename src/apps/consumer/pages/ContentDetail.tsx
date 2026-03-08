@@ -238,7 +238,7 @@ export default function ContentDetail() {
       <div className="px-4">
         {/* Creator row */}
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate(`/creator/${post.creator_id}`)}>
+          <button onClick={() => navigate(`/communities/${post.creator_id}`)}>
             {post.creator?.avatar_img ? (
               <img src={post.creator.avatar_img} alt={post.creator?.name || 'Creator'} className="w-9 h-9 rounded-full object-cover" />
             ) : (
@@ -249,7 +249,7 @@ export default function ContentDetail() {
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <button onClick={() => navigate(`/creator/${post.creator_id}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creator?.name || 'Creator'}</button>
+              <button onClick={() => navigate(`/communities/${post.creator_id}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creator?.name || 'Creator'}</button>
               {post.creator?.verified && <BadgeCheck size={14} className="text-sky-400" fill="currentColor" />}
             </div>
             <p className="text-olu-muted text-xs">{post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'}</p>

@@ -205,30 +205,34 @@ export default function Home() {
   return (
     <div className="pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),linear-gradient(135deg,#131825,#090c12)] p-6 md:p-7">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-4">
+        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(135deg,#131825,#090c12)] p-4 md:p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-3">
             <Sparkles size={13} />
             Home
-          </div>
-          <h1 className="font-black text-3xl leading-tight max-w-2xl">
-            {activeAppCount > 0 ? 'Welcome back.' : 'Find something worth joining.'}
-          </h1>
-          <p className="text-olu-muted text-sm mt-3 max-w-2xl leading-relaxed">
-            {activeAppCount > 0
-              ? 'Your recent apps, access, and updates are all here.'
-              : 'Explore creators, communities, and academies to build your app library.'}
-          </p>
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            {[
-              { label: 'Active apps', value: formatNumber(activeAppCount) },
-              { label: 'Communities', value: formatNumber(joinedCommunities.length) },
-              { label: 'Academies', value: formatNumber(purchasedCourses.length) },
-            ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                <p className="font-black text-2xl">{item.value}</p>
-                <p className="text-xs text-white/60 mt-1">{item.label}</p>
               </div>
-            ))}
+              <h1 className="font-black text-2xl leading-tight max-w-2xl">
+                {activeAppCount > 0 ? 'Welcome back.' : 'Find something worth joining.'}
+              </h1>
+              <p className="text-olu-muted text-sm mt-2 max-w-2xl leading-relaxed">
+                {activeAppCount > 0
+                  ? 'Jump back into the apps you joined.'
+                  : 'Explore creators, communities, and academies.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Apps', value: formatNumber(activeAppCount) },
+                { label: 'Communities', value: formatNumber(joinedCommunities.length) },
+                { label: 'Academies', value: formatNumber(purchasedCourses.length) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-full border border-white/10 bg-white/5 px-3 py-2">
+                  <span className="font-semibold text-sm">{item.value}</span>
+                  <span className="ml-2 text-xs text-white/60">{item.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -273,7 +277,7 @@ export default function Home() {
               {joinedCommunities.slice(0, 3).map(({ creator, tierName }) => (
                 <button
                   key={creator.id}
-                  onClick={() => navigate(`/creator/${creator.id}`)}
+                  onClick={() => navigate(`/communities/${creator.id}`)}
                   className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   <AppCover
@@ -356,7 +360,7 @@ export default function Home() {
               {recommendedCommunities.map((creator) => (
                 <button
                   key={creator.id}
-                  onClick={() => navigate(`/creator/${creator.id}`)}
+                  onClick={() => navigate(`/communities/${creator.id}`)}
                   className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   <AppCover

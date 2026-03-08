@@ -24,6 +24,7 @@ export const consumerRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Home /> },
       { path: 'discover', element: <Discover /> },
+      { path: 'communities/:id', element: <AppLanding /> },
       { path: 'creator/:id', element: <AppLanding /> },
       { path: 'content/:id', element: <ContentDetail /> },
       { path: 'chat', element: <Chat /> },

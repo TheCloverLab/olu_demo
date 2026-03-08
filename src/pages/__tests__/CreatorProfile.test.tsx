@@ -56,9 +56,9 @@ describe('AppLanding', () => {
 
   function renderPage() {
     return render(
-      <MemoryRouter initialEntries={['/creator/creator-1']}>
+      <MemoryRouter initialEntries={['/communities/creator-1']}>
         <Routes>
-          <Route path="/creator/:id" element={<AppLanding />} />
+          <Route path="/communities/:id" element={<AppLanding />} />
         </Routes>
       </MemoryRouter>
     )

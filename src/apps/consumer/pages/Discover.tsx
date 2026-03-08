@@ -86,7 +86,7 @@ export default function Discover() {
           creatorName: creator.name,
           summary: creator.bio || 'Membership, recurring community discussions, and creator-only drops.',
           priceLabel: 'Membership',
-          href: `/creator/${creator.id}`,
+          href: `/communities/${creator.id}`,
           coverImg: creator.cover_img,
           gradient: creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500',
           highlights: ['Weekly drops', 'Private topics', 'Live sessions'],

@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
-import { ChevronLeft, LogOut, ShieldCheck } from 'lucide-react'
+import { Briefcase, ChevronLeft, LogOut, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function Settings() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { availableRoles } = useApp()
+  const { availableRoles, enabledBusinessModules } = useApp()
   const [savingProfile, setSavingProfile] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
@@ -204,6 +204,24 @@ export default function Settings() {
                 </p>
               </div>
             </div>
+
+            {enabledBusinessModules.length > 0 ? (
+              <button
+                onClick={() => navigate('/business')}
+                className="w-full mt-4 rounded-2xl border border-white/10 bg-[#161616] hover:bg-[#1d1d1d] transition-colors px-4 py-3 text-left flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-2xl bg-white/8 flex items-center justify-center flex-shrink-0">
+                    <Briefcase size={18} />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-sm">Open business workspace</p>
+                    <p className="text-olu-muted text-xs mt-1">Modules, approvals, operators, and AI agents</p>
+                  </div>
+                </div>
+                <span className="text-xs text-olu-muted">Open</span>
+              </button>
+            ) : null}
           </div>
 
           <div className="bg-[#111111] rounded-2xl p-6">

@@ -85,6 +85,7 @@ describe('Settings', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Business capabilities moved out of consumer settings')).toBeInTheDocument()
+      expect(screen.getByText('Open business workspace')).toBeInTheDocument()
       expect(screen.queryByText('Apply')).not.toBeInTheDocument()
     })
   })

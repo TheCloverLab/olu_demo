@@ -95,6 +95,39 @@ export async function getCreators() {
   return (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
 }
 
+type DiscoverQueryOptions = {
+  query?: string
+  page?: number
+  pageSize?: number
+}
+
+function buildDiscoverPattern(query?: string) {
+  return (query || '').trim().replaceAll(',', ' ').replaceAll('%', '').replaceAll('*', '')
+}
+
+export async function getCreatorsForDiscover(options: DiscoverQueryOptions = {}) {
+  const page = options.page ?? 0
+  const pageSize = options.pageSize ?? 6
+  const from = page * pageSize
+  const to = from + pageSize - 1
+  const pattern = buildDiscoverPattern(options.query)
+
+  let request = supabase
+    .from('users')
+    .select('*')
+    .eq('role', 'creator')
+    .order('followers', { ascending: false })
+    .range(from, to)
+
+  if (pattern) {
+    request = request.or(`name.ilike.%${pattern}%,handle.ilike.%${pattern}%,bio.ilike.%${pattern}%`)
+  }
+
+  const { data, error } = await request
+  if (error) throw error
+  return (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
+}
+
 // ============================================================================
 // POSTS
 // ============================================================================
@@ -424,6 +457,29 @@ export async function getConsumerCourses() {
     .eq('status', 'published')
     .order('created_at', { ascending: true })
 
+  if (error) throw error
+  return data as ConsumerCourse[]
+}
+
+export async function getConsumerCoursesForDiscover(options: DiscoverQueryOptions = {}) {
+  const page = options.page ?? 0
+  const pageSize = options.pageSize ?? 6
+  const from = page * pageSize
+  const to = from + pageSize - 1
+  const pattern = buildDiscoverPattern(options.query)
+
+  let request = supabase
+    .from('consumer_courses')
+    .select('*')
+    .eq('status', 'published')
+    .order('students_count', { ascending: false })
+    .range(from, to)
+
+  if (pattern) {
+    request = request.or(`title.ilike.%${pattern}%,subtitle.ilike.%${pattern}%,instructor.ilike.%${pattern}%,headline.ilike.%${pattern}%,description.ilike.%${pattern}%`)
+  }
+
+  const { data, error } = await request
   if (error) throw error
   return data as ConsumerCourse[]
 }

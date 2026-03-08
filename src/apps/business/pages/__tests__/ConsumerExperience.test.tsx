@@ -22,9 +22,11 @@ vi.mock('../../../../domain/consumer/api', () => ({
 }))
 
 vi.mock('../../../../services/api', () => ({
+  getPostsByCreator: vi.fn(),
   updateConsumerCourse: vi.fn(),
   updateConsumerCourseSection: vi.fn(),
   updateMembershipTier: vi.fn(),
+  updatePost: vi.fn(),
 }))
 
 describe('ConsumerExperience', () => {
@@ -38,6 +40,7 @@ describe('ConsumerExperience', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
+    vi.mocked(Api.getPostsByCreator).mockResolvedValue([])
   })
 
   it('renders membership operations when template is fan community', async () => {
@@ -116,6 +119,7 @@ describe('ConsumerExperience', () => {
       activeFans: 180,
       topFans: [],
     } as any)
+    vi.mocked(Api.getPostsByCreator).mockResolvedValue([])
     vi.mocked(Api.updateMembershipTier).mockResolvedValue({
       id: 'core',
       name: 'Core Plus',
@@ -136,6 +140,71 @@ describe('ConsumerExperience', () => {
         name: 'Core Plus',
       }))
       expect(screen.getAllByDisplayValue('Core Plus').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('saves community post changes', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(AppContext.useApp).mockReturnValue({
+      consumerTemplate: 'fan_community',
+      consumerConfig: {
+        featured_creator_id: 'creator-1',
+        featured_course_slug: 'community-growth',
+      },
+      consumerExperience: {
+        community: {
+          hero: {
+            title: 'Members first community',
+            description: 'Custom community copy',
+          },
+        },
+        courses: {
+          storefront: {
+            title: 'Structured learning storefront',
+            description: 'Custom course copy',
+          },
+        },
+      },
+    } as any)
+    vi.mocked(ConsumerApi.getCommunityMembershipSnapshot).mockResolvedValue({
+      creator: { id: 'creator-1', name: 'Luna Chen' },
+      tiers: [
+        { key: 'core', name: 'Core', price: '$9', note: 'Members-only posts', perks: ['Drops'] },
+      ],
+      totalMembers: 320,
+      activeFans: 180,
+      topFans: [],
+    } as any)
+    vi.mocked(Api.getPostsByCreator).mockResolvedValue([
+      {
+        id: 'post-1',
+        title: 'Member drop',
+        preview: 'Initial preview',
+        locked: true,
+        type: 'text',
+      },
+    ] as any)
+    vi.mocked(Api.updatePost).mockResolvedValue({
+      id: 'post-1',
+      title: 'Updated member drop',
+      preview: 'Updated preview',
+      locked: false,
+      type: 'text',
+    } as any)
+
+    render(<MemoryRouter><ConsumerExperience /></MemoryRouter>)
+
+    const postTitleInput = await screen.findByDisplayValue('Member drop')
+    await user.clear(postTitleInput)
+    await user.type(postTitleInput, 'Updated member drop')
+    await user.click(screen.getByText('Save post'))
+
+    await waitFor(() => {
+      expect(Api.updatePost).toHaveBeenCalledWith('post-1', expect.objectContaining({
+        title: 'Updated member drop',
+      }))
+      expect(screen.getAllByDisplayValue('Updated member drop').length).toBeGreaterThan(0)
     })
   })
 

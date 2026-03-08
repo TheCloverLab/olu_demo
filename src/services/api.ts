@@ -114,6 +114,21 @@ export async function getPostsByCreator(creatorId: string) {
   return data as Post[]
 }
 
+export async function updatePost(
+  postId: string,
+  updates: Partial<Pick<Post, 'title' | 'preview' | 'locked'>>
+) {
+  const { data, error } = await supabase
+    .from('posts')
+    .update(updates)
+    .eq('id', postId)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as Post
+}
+
 export async function getPostById(postId: string) {
   const { data, error } = await supabase
     .from('posts')

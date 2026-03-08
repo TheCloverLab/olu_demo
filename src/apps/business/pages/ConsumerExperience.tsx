@@ -8,9 +8,10 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
-import { updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier } from '../../../services/api'
+import { getPostsByCreator, updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier, updatePost } from '../../../services/api'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
+import type { Post } from '../../../lib/supabase'
 
 export default function ConsumerExperience() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ export default function ConsumerExperience() {
   const { consumerConfig, consumerExperience, consumerTemplate } = useApp()
   const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
   const [communitySnapshot, setCommunitySnapshot] = useState<CommunityMembershipSnapshot | null>(null)
+  const [communityPosts, setCommunityPosts] = useState<Post[]>([])
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
   const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null)
   const [courseDraft, setCourseDraft] = useState({
@@ -41,9 +43,16 @@ export default function ConsumerExperience() {
     note: string
     perksText: string
   }>>([])
+  const [postDrafts, setPostDrafts] = useState<Array<{
+    id: string
+    title: string
+    preview: string
+    locked: boolean
+  }>>([])
   const [savingCourse, setSavingCourse] = useState(false)
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null)
   const [savingTierId, setSavingTierId] = useState<string | null>(null)
+  const [savingPostId, setSavingPostId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,8 +63,12 @@ export default function ConsumerExperience() {
       try {
         if (consumerTemplate === 'fan_community') {
           const snapshot = await getCommunityMembershipSnapshot(user as any, consumerConfig.featured_creator_id)
+          const posts = snapshot.creator?.id
+            ? await getPostsByCreator(snapshot.creator.id).catch(() => [] as Post[])
+            : []
           if (!cancelled) {
             setCommunitySnapshot(snapshot)
+            setCommunityPosts(posts)
             setTierDrafts(
               snapshot.tiers.map((tier) => ({
                 id: tier.key,
@@ -64,6 +77,14 @@ export default function ConsumerExperience() {
                 price: tier.price.replace('$', ''),
                 note: tier.note,
                 perksText: tier.perks.join('\n'),
+              }))
+            )
+            setPostDrafts(
+              posts.slice(0, 4).map((post) => ({
+                id: post.id,
+                title: post.title,
+                preview: post.preview || '',
+                locked: post.locked,
               }))
             )
             setCourseLibrary([])
@@ -92,6 +113,8 @@ export default function ConsumerExperience() {
             }))
           )
           setCommunitySnapshot(null)
+          setCommunityPosts([])
+          setPostDrafts([])
         }
       } catch (error) {
         console.error('Failed to load consumer experience', error)
@@ -193,6 +216,29 @@ export default function ConsumerExperience() {
       console.error('Failed to update membership tier', error)
     } finally {
       setSavingTierId(null)
+    }
+  }
+
+  async function handleSavePost(postId: string) {
+    const post = postDrafts.find((item) => item.id === postId)
+    if (!post) return
+
+    setSavingPostId(postId)
+    try {
+      const updated = await updatePost(postId, {
+        title: post.title,
+        preview: post.preview,
+        locked: post.locked,
+      })
+      setCommunityPosts((current) => current.map((item) => (
+        item.id === postId
+          ? { ...item, ...updated }
+          : item
+      )))
+    } catch (error) {
+      console.error('Failed to update community post', error)
+    } finally {
+      setSavingPostId(null)
     }
   }
 
@@ -404,6 +450,80 @@ export default function ConsumerExperience() {
                   className="mt-3 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
                   {savingTierId === tier.id ? 'Saving tier...' : 'Save tier'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!loading && consumerTemplate === 'fan_community' && (
+        <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageCircle size={16} className="text-sky-300" />
+            <p className="font-bold">Community feed editor</p>
+          </div>
+          <div className="space-y-4">
+            {postDrafts.length === 0 && (
+              <div className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 text-sm text-olu-muted">
+                No creator posts available yet for this community surface.
+              </div>
+            )}
+            {postDrafts.map((post, index) => (
+              <div key={post.id} className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="font-semibold text-sm">Feed item {index + 1}</p>
+                    <p className="text-xs text-cyan-100/50 mt-1">
+                      {communityPosts.find((item) => item.id === post.id)?.type || 'post'}
+                    </p>
+                  </div>
+                  <label className="inline-flex items-center gap-2 text-xs text-cyan-100/70">
+                    <input
+                      type="checkbox"
+                      checked={post.locked}
+                      onChange={(event) => setPostDrafts((current) => current.map((item) => (
+                        item.id === post.id
+                          ? { ...item, locked: event.target.checked }
+                          : item
+                      )))}
+                    />
+                    Members only
+                  </label>
+                </div>
+                <div className="grid sm:grid-cols-[0.8fr,1.2fr] gap-3">
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Post title</p>
+                    <input
+                      value={post.title}
+                      onChange={(event) => setPostDrafts((current) => current.map((item) => (
+                        item.id === post.id
+                          ? { ...item, title: event.target.value }
+                          : item
+                      )))}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none"
+                    />
+                  </label>
+                  <label className="block">
+                    <p className="text-xs uppercase tracking-[0.16em] text-cyan-100/55 mb-2">Post preview</p>
+                    <textarea
+                      value={post.preview}
+                      onChange={(event) => setPostDrafts((current) => current.map((item) => (
+                        item.id === post.id
+                          ? { ...item, preview: event.target.value }
+                          : item
+                      )))}
+                      rows={3}
+                      className="w-full rounded-xl bg-[#091422] border border-cyan-500/10 px-3 py-2 text-sm outline-none resize-none"
+                    />
+                  </label>
+                </div>
+                <button
+                  onClick={() => handleSavePost(post.id)}
+                  disabled={savingPostId === post.id}
+                  className="mt-3 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {savingPostId === post.id ? 'Saving post...' : 'Save post'}
                 </button>
               </div>
             ))}

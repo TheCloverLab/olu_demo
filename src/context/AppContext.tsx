@@ -5,6 +5,12 @@ import { getEnabledBusinessModulesForUser } from '../domain/workspace/api'
 type RoleType = 'creator' | 'fan' | 'advertiser' | 'supplier'
 type BusinessModule = 'creator_ops' | 'marketing' | 'supply_chain'
 
+const MODULE_TO_ROLE: Record<BusinessModule, Exclude<RoleType, 'fan'>> = {
+  creator_ops: 'creator',
+  marketing: 'advertiser',
+  supply_chain: 'supplier',
+}
+
 interface AppContextType {
   currentRole: RoleType
   currentUser: any
@@ -36,6 +42,15 @@ export function AppProvider({ children }: AppProviderProps) {
       setCurrentRole(authUser.roles[0])
     }
   }, [authUser])
+
+  useEffect(() => {
+    const enabledCapabilityRoles = enabledBusinessModules.map((module) => MODULE_TO_ROLE[module])
+    if (enabledCapabilityRoles.length === 0) return
+
+    if (currentRole === 'fan' || !enabledCapabilityRoles.includes(currentRole as Exclude<RoleType, 'fan'>)) {
+      setCurrentRole(enabledCapabilityRoles[0])
+    }
+  }, [enabledBusinessModules, currentRole])
 
   async function loadWorkspaceModules() {
     if (!authUser) {
@@ -96,7 +111,8 @@ export function AppProvider({ children }: AppProviderProps) {
   }
 
   const switchRole = (role: RoleType) => {
-    if (availableRoles.includes(role)) {
+    const enabledCapabilityRoles = enabledBusinessModules.map((module) => MODULE_TO_ROLE[module])
+    if (role === 'fan' ? availableRoles.includes(role) : enabledCapabilityRoles.includes(role as Exclude<RoleType, 'fan'>) || availableRoles.includes(role)) {
       setCurrentRole(role)
       setShowRoleSwitcher(false)
     }

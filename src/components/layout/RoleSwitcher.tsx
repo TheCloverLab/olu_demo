@@ -31,8 +31,13 @@ const ROLE_OPTIONS = [
 ] as const
 
 export default function RoleSwitcher() {
-  const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole, availableRoles } = useApp()
-  const userRoleOptions = ROLE_OPTIONS.filter((role) => availableRoles.includes(role.key as any))
+  const { showRoleSwitcher, setShowRoleSwitcher, currentRole, switchRole, enabledBusinessModules } = useApp()
+  const userRoleOptions = ROLE_OPTIONS.filter((role) => {
+    if (role.key === 'creator') return enabledBusinessModules.includes('creator_ops')
+    if (role.key === 'advertiser') return enabledBusinessModules.includes('marketing')
+    if (role.key === 'supplier') return enabledBusinessModules.includes('supply_chain')
+    return false
+  })
 
   return (
     <AnimatePresence>

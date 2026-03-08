@@ -7,7 +7,7 @@ import { useApp } from '../../../context/AppContext'
 const PLATFORM_CONNECTORS = ['Shopify', 'Temu', 'SHEIN', 'Zendesk', 'Mixpanel', 'Google Play', 'App Store']
 
 export default function BusinessWorkspace() {
-  const { availableRoles, currentUser, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
 
   const modules = useMemo(() => {
     return [
@@ -55,7 +55,7 @@ export default function BusinessWorkspace() {
               <p className="text-xs text-olu-muted mt-1">Active modules</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-              <p className="text-2xl font-black">{availableRoles.length}</p>
+              <p className="text-2xl font-black">{enabledBusinessModules.length}</p>
               <p className="text-xs text-olu-muted mt-1">Capabilities</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">

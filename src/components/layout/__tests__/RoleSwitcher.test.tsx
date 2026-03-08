@@ -63,13 +63,14 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+      enabledBusinessModules: ['creator_ops'],
       currentUser: {},
     })
 
     render(<RoleSwitcher />)
-    expect(screen.queryByText('Creator Ops')).not.toBeInTheDocument()
+    expect(screen.getByText('Creator Ops')).toBeInTheDocument()
     expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
+    expect(screen.queryByText('Supply Chain')).not.toBeInTheDocument()
   })
 
   it('calls switchRole when a role card is clicked', async () => {
@@ -78,8 +79,8 @@ describe('RoleSwitcher', () => {
       setShowRoleSwitcher: mockSetShowRoleSwitcher,
       currentRole: 'fan',
       switchRole: mockSwitchRole,
-      availableRoles: ['creator'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+      availableRoles: ['fan'],
+      enabledBusinessModules: ['creator_ops'],
       currentUser: {},
     })
 
@@ -113,7 +114,7 @@ describe('RoleSwitcher', () => {
       currentRole: 'fan',
       switchRole: mockSwitchRole,
       availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+      enabledBusinessModules: ['creator_ops'],
       currentUser: {},
     })
 

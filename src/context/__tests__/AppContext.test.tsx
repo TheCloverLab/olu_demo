@@ -97,6 +97,7 @@ describe('AppContext', () => {
   })
 
   it('does not switch to unauthorized role', async () => {
+    vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops'])
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { id: '1', roles: ['fan'] } as any,
       session: {} as any,
@@ -113,7 +114,7 @@ describe('AppContext', () => {
     )
 
     await userEvent.click(screen.getByText('Switch to Advertiser'))
-    expect(screen.getByTestId('role')).toHaveTextContent('fan')
+    expect(screen.getByTestId('role')).toHaveTextContent('creator')
   })
 
   it('toggles role switcher visibility', async () => {

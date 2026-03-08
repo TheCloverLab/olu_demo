@@ -62,7 +62,7 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
 
 function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()
-  const { currentUser, availableRoles, setShowRoleSwitcher } = useApp()
+  const { currentUser, availableRoles, enabledBusinessModules, setShowRoleSwitcher } = useApp()
 
   const go = (path: string) => {
     onClose()
@@ -113,7 +113,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
             </div>
 
-            {availableRoles.length > 1 && (
+            {enabledBusinessModules.length > 1 && (
               <div className="p-4 border-t border-olu-border">
                 <button
                   onClick={() => {
@@ -134,7 +134,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 }
 
 export default function BusinessLayout() {
-  const { currentUser, availableRoles, setShowRoleSwitcher } = useApp()
+  const { currentUser, availableRoles, enabledBusinessModules, setShowRoleSwitcher } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -161,7 +161,7 @@ export default function BusinessLayout() {
             <Avatar user={currentUser} size="md" />
             <div className="min-w-0">
               <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-              <p className="text-cyan-100/60 text-xs truncate">{availableRoles.length} capabilities enabled</p>
+              <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} capabilities enabled</p>
             </div>
           </button>
         </div>
@@ -186,7 +186,7 @@ export default function BusinessLayout() {
         </nav>
 
         <div className="p-3 border-t border-cyan-500/10 space-y-2">
-          {availableRoles.length > 1 && (
+          {enabledBusinessModules.length > 1 && (
             <button
               onClick={() => setShowRoleSwitcher(true)}
               className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"

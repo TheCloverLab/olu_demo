@@ -173,6 +173,12 @@ export default function BusinessLayout() {
 
         <div className="p-3 border-t border-cyan-500/10 space-y-2">
           <button
+            onClick={() => navigate('/business/settings')}
+            className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
+          >
+            Settings
+          </button>
+          <button
             onClick={() => window.open('/', '_blank', 'noopener,noreferrer')}
             className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
           >
@@ -197,17 +203,7 @@ export default function BusinessLayout() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/business/settings')}
-              className="hidden md:inline-flex px-3 py-2 rounded-xl bg-[#0d1a2d] text-sm text-cyan-50/72 hover:text-white transition-colors"
-            >
-              Settings
-            </button>
-            <button onClick={() => navigate('/business/account')}>
-              <Avatar user={currentUser} />
-            </button>
-          </div>
+          <div className="flex items-center gap-2" />
         </header>
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">

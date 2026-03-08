@@ -28,7 +28,7 @@ function AgentCard({
       <div className="flex items-center gap-1 mb-2">
         <Star size={11} className="text-amber-400" fill="currentColor" />
         <span className="text-xs font-semibold">{agent.rating}</span>
-        <span className="text-olu-muted text-xs">({agent.reviews.toLocaleString()})</span>
+        <span className="text-cyan-100/45 text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
       <p className="text-cyan-100/60 text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
       <div className="flex items-center gap-2 mb-3 text-xs">
@@ -40,7 +40,7 @@ function AgentCard({
         disabled={hired}
         className={clsx(
           'w-full py-2 rounded-xl text-xs font-semibold transition-opacity flex items-center justify-center gap-1.5',
-          hired ? 'bg-emerald-500/15 text-emerald-300 cursor-default' : 'bg-white text-black hover:opacity-90'
+          hired ? 'bg-emerald-500/15 text-emerald-300 cursor-default' : 'bg-cyan-300 text-[#04111f] hover:opacity-90'
         )}
       >
         {hired ? <Check size={12} /> : <Plus size={12} />}
@@ -69,23 +69,23 @@ function HireModal({
         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-sm bg-[#08111d] border border-cyan-500/10 rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="p-5 border-b border-cyan-500/10">
             <h3 className="font-bold">Hire {agent.name}</h3>
-            <p className="text-olu-muted text-xs mt-0.5">Give your new AI teammate a workspace name</p>
+            <p className="text-cyan-100/45 text-xs mt-0.5">Give your new AI teammate a workspace name</p>
           </div>
           <div className="p-5">
             <img src={agent.avatar_img || ''} alt={agent.name} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4" />
-            <label className="text-xs font-semibold text-olu-muted uppercase tracking-wider block mb-2">Agent Name</label>
+            <label className="text-xs font-semibold text-cyan-100/45 uppercase tracking-wider block mb-2">Agent Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Give your agent a name, like Ashley, Ada, or Luca."
               className="w-full p-3 bg-[#0d1726] rounded-xl text-sm focus:outline-none border border-cyan-500/10 focus:border-cyan-300/30 transition-colors mb-4 placeholder:text-cyan-100/35"
             />
-            <p className="text-xs text-olu-muted mb-4">
+            <p className="text-xs text-cyan-100/55 mb-4">
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
             </p>
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-cyan-500/10 text-sm font-medium text-cyan-100/60 hover:text-white transition-colors">Cancel</button>
-              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
+              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
                 {loading ? 'Hiring...' : 'Confirm Hire'}
               </button>
             </div>

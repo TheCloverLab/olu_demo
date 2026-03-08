@@ -46,21 +46,21 @@ export default function BusinessWorkspace() {
           <h2 className="font-black text-3xl leading-tight max-w-2xl">
             One merchant workspace for human employees, AI agents, and connected platforms.
           </h2>
-          <p className="text-olu-muted text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
+          <p className="text-cyan-100/55 text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
             This shell replaces role-first navigation. Each merchant enables the modules they need and runs workflows from one operational surface.
           </p>
           <div className="grid grid-cols-3 gap-3 mt-6">
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">{modules.filter((item) => item.enabled).length}</p>
-              <p className="text-xs text-olu-muted mt-1">Active modules</p>
+              <p className="text-xs text-cyan-100/45 mt-1">Active modules</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">{enabledBusinessModules.length}</p>
-              <p className="text-xs text-olu-muted mt-1">Capabilities</p>
+              <p className="text-xs text-cyan-100/45 mt-1">Capabilities</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">7</p>
-              <p className="text-xs text-olu-muted mt-1">Planned connectors</p>
+              <p className="text-xs text-cyan-100/45 mt-1">Planned connectors</p>
             </div>
           </div>
         </div>
@@ -72,21 +72,21 @@ export default function BusinessWorkspace() {
             </div>
             <div>
               <p className="font-bold">Agent control plane</p>
-              <p className="text-olu-muted text-xs">Human + AI mixed workforce</p>
+              <p className="text-cyan-100/45 text-xs">Human + AI mixed workforce</p>
             </div>
           </div>
           <div className="space-y-3 text-sm">
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">{currentUser.name}</p>
-              <p className="text-olu-muted text-xs">Workspace owner with unified visibility across modules and approvals.</p>
+              <p className="text-cyan-100/45 text-xs">Workspace owner with unified visibility across modules and approvals.</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">AI employees</p>
-              <p className="text-olu-muted text-xs">Operate in platform-native views first, with future Slack / TG / WhatsApp bridge support.</p>
+              <p className="text-cyan-100/45 text-xs">Operate in platform-native views first, with future Slack / TG / WhatsApp bridge support.</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="font-semibold mb-1">Sandbox mode</p>
-              <p className="text-olu-muted text-xs">Remote monitoring and remote takeover are designed as first-class controls.</p>
+              <p className="text-cyan-100/45 text-xs">Remote monitoring and remote takeover are designed as first-class controls.</p>
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function BusinessWorkspace() {
                   {enabled ? 'Enabled' : 'Coming soon'}
                 </span>
               </div>
-              <p className="text-olu-muted text-sm leading-relaxed mt-2">{description}</p>
+              <p className="text-cyan-100/55 text-sm leading-relaxed mt-2">{description}</p>
             </>
           )
 
@@ -133,7 +133,7 @@ export default function BusinessWorkspace() {
               'KOL-side business agent receives a promotion request and requests approval.',
               'Once approved, content is scheduled and campaign progress returns to the marketer.',
             ].map((item) => (
-              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-olu-muted border border-cyan-500/10">
+              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-cyan-100/55 border border-cyan-500/10">
                 {item}
               </div>
             ))}
@@ -156,12 +156,12 @@ export default function BusinessWorkspace() {
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <Users size={16} className="text-white mb-2" />
               <p className="font-semibold text-sm">Existing team tools</p>
-              <p className="text-olu-muted text-xs mt-1">Bridge AI employees into the merchant's existing workflows.</p>
+              <p className="text-cyan-100/45 text-xs mt-1">Bridge AI employees into the merchant's existing workflows.</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <ShieldCheck size={16} className="text-white mb-2" />
               <p className="font-semibold text-sm">Controlled delivery</p>
-              <p className="text-olu-muted text-xs mt-1">Approval, payment, and sandbox visibility remain first-class constraints.</p>
+              <p className="text-cyan-100/45 text-xs mt-1">Approval, payment, and sandbox visibility remain first-class constraints.</p>
             </div>
           </div>
         </div>

@@ -66,12 +66,12 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-semibold text-sm">{agent.name}</span>
-          <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-olu-muted bg-white/05')}>
+          <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-cyan-100/55 bg-cyan-500/10')}>
             {agent.role}
           </span>
         </div>
-        <p className="text-olu-muted text-xs line-clamp-1 mb-1">{agent.last_message || 'No messages yet'}</p>
-        <p className="text-olu-muted text-xs">{agent.last_time || '—'}</p>
+        <p className="text-cyan-100/45 text-xs line-clamp-1 mb-1">{agent.last_message || 'No messages yet'}</p>
+        <p className="text-cyan-100/45 text-xs">{agent.last_time || '—'}</p>
       </div>
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         {pendingTasks > 0 && (
@@ -79,7 +79,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
             {pendingTasks}
           </span>
         )}
-        <ChevronRight size={16} className="text-olu-muted" />
+        <ChevronRight size={16} className="text-cyan-100/45" />
       </div>
     </motion.button>
   )
@@ -104,10 +104,10 @@ function GroupRow({ group }: { group: GroupChat }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm mb-0.5">{group.name}</p>
-        <p className="text-olu-muted text-xs line-clamp-1">{group.last_message || 'No messages yet'}</p>
-        <p className="text-olu-muted text-xs mt-0.5">{group.last_time || '—'}</p>
+        <p className="text-cyan-100/45 text-xs line-clamp-1">{group.last_message || 'No messages yet'}</p>
+        <p className="text-cyan-100/45 text-xs mt-0.5">{group.last_time || '—'}</p>
       </div>
-      <ChevronRight size={16} className="text-olu-muted flex-shrink-0" />
+      <ChevronRight size={16} className="text-cyan-100/45 flex-shrink-0" />
     </motion.button>
   )
 }
@@ -154,7 +154,7 @@ export default function Team() {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex items-center justify-center">
-        <p className="text-olu-muted text-sm">Loading team...</p>
+        <p className="text-cyan-100/60 text-sm">Loading team...</p>
       </div>
     )
   }
@@ -164,14 +164,14 @@ export default function Team() {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center text-4xl mb-4">🤖</div>
         <h2 className="font-bold text-xl mb-2">No AI Agents Yet</h2>
-        <p className="text-olu-muted text-sm max-w-xs mb-6">
+        <p className="text-cyan-100/55 text-sm max-w-xs mb-6">
           You do not have AI agents configured yet. Open AI Config to start building your team.
         </p>
         <button
           onClick={() => {
             window.location.href = '/business/agents'
           }}
-          className="px-6 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:opacity-90 transition-opacity"
+          className="px-6 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] font-semibold text-sm hover:opacity-90 transition-opacity"
         >
           Browse AI Agent Marketplace
         </button>

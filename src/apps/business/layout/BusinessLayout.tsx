@@ -50,11 +50,11 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#1c1c1c] transition-colors text-left rounded-xl"
+      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#0d1a2d] transition-colors text-left rounded-xl"
     >
-      <Icon size={20} className="text-olu-muted" />
+      <Icon size={20} className="text-cyan-100/55" />
       <span className="text-sm font-medium">{label}</span>
-      <ChevronRight size={16} className="text-olu-muted ml-auto" />
+      <ChevronRight size={16} className="text-cyan-100/45 ml-auto" />
     </button>
   )
 }
@@ -84,12 +84,12 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.22 }}
-            className="fixed top-0 left-0 bottom-0 w-72 bg-olu-surface z-50 flex flex-col"
+            className="fixed top-0 left-0 bottom-0 w-72 bg-[#07111f] z-50 flex flex-col border-r border-cyan-500/10"
           >
-            <div className="flex items-center justify-between px-4 py-4 border-b border-olu-border">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-cyan-500/10">
               <span className="font-black text-xl tracking-tight">OLU Business</span>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors">
-                <X size={18} className="text-olu-muted" />
+              <button onClick={onClose} className="p-2 rounded-full hover:bg-[#0d1a2d] transition-colors">
+                <X size={18} className="text-cyan-100/45" />
               </button>
             </div>
 

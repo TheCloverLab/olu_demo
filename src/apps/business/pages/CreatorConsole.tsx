@@ -140,7 +140,7 @@ export default function CreatorConsole() {
   }
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto px-4 py-8 text-olu-muted">Loading creator console...</div>
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-cyan-100/60">Loading creator console...</div>
   }
 
   return (
@@ -227,7 +227,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleApprove}
                 disabled={!hasIncomingCampaign || actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-white text-black text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
               >
                 <CheckCircle2 size={16} />
                 Approve campaign

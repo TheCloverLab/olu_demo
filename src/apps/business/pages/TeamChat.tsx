@@ -25,13 +25,13 @@ function preprocessMarkdown(text) {
   return text.replace(/([^\n])\s*•\s*/g, '$1\n- ').replace(/^\s*•\s*/gm, '- ')
 }
 
-function buildSystemPrompt(agent) {
+function buildSystemPrompt(agent, principalName) {
   return `You are ${agent.name}, an AI agent on the OLU platform — a next-gen creator economy platform.
 
 Your role: ${agent.role}
 Your specialty: ${agent.description}
 
-You are chatting with Luna Chen, a professional digital artist and creator. She is your principal. Be proactive, concise, and professional. Use brief bullet points when listing items. Don't use excessive emojis. Respond in the same language the user writes in (English or Chinese).`
+You are chatting with ${principalName || 'the workspace owner'}. They are your principal. Be proactive, concise, and professional. Use brief bullet points when listing items. Don't use excessive emojis. Respond in the same language the user writes in (English or Chinese).`
 }
 
 function runtimeErrorMessage(code) {
@@ -334,7 +334,7 @@ export default function TeamChat() {
       }
 
       const apiMessages = [
-        { role: 'system', content: buildSystemPrompt(agent) },
+        { role: 'system', content: buildSystemPrompt(agent, user?.name) },
         ...next
           .filter(m => m.text && m.text.trim())
           .slice(-20) // keep last 20 messages max

@@ -113,7 +113,7 @@ export default function BusinessWorkspace() {
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-bold text-lg">{title}</h3>
                 <span className={enabled ? 'text-emerald-300 text-xs' : 'text-amber-300 text-xs'}>
-                  {enabled ? 'Enabled' : 'Coming soon'}
+                  {enabled ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
               <p className="text-cyan-100/55 text-sm leading-relaxed mt-2">{description}</p>

@@ -8,7 +8,7 @@ import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connector
 import { getPublicCreators } from '../../../domain/profile/api'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
 import type { BusinessModuleKey, ConsumerCourse, User, WorkspaceSettingsData } from '../../../lib/supabase'
-import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
+import { CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../../consumer/templateConfig'
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
@@ -42,7 +42,7 @@ const MODULE_METADATA: Array<{
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
-  const { consumerConfig, consumerTemplate, currentUser, reloadBusinessModules, setConsumerConfig } = useApp()
+  const { consumerConfig, consumerTemplate, currentUser, reloadBusinessModules, setConsumerConfig, setConsumerTemplate } = useApp()
   const { user } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -408,21 +408,32 @@ export default function BusinessSettings() {
               </span>
               <div>
                 <p className="font-bold">Consumer app</p>
-                <p className="text-cyan-100/55 text-xs">This workspace already has a public-facing app type. Configure its content and featured surfaces below.</p>
+                <p className="text-cyan-100/55 text-xs">Choose which app type your consumers see. Configure content and featured surfaces below.</p>
               </div>
             </div>
-            <div className="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
-              <div className={`h-1.5 rounded-full bg-gradient-to-r ${activeConsumerApp.accent} mb-3`} />
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-sm">{activeConsumerApp.label}</p>
-                  <p className="text-xs text-cyan-100/60 mt-2">{activeConsumerApp.description}</p>
-                </div>
-                <span className="text-[11px] uppercase tracking-[0.16em] text-cyan-200">Current app</span>
-              </div>
-              <p className="text-[11px] text-cyan-100/45 mt-3">
-                App type is treated as the merchant&apos;s public product shape. Switch it only during onboarding or an explicit migration flow, not from day-to-day settings.
-              </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {Object.entries(CONSUMER_TEMPLATE_META).map(([key, meta]) => {
+                const isActive = (settings?.consumerConfig?.template_key || consumerTemplate) === key
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setConsumerTemplate(key as ConsumerTemplateKey)}
+                    className={`rounded-2xl p-4 text-left transition-colors ${
+                      isActive
+                        ? 'border border-cyan-300/25 bg-cyan-400/10'
+                        : 'border border-cyan-500/10 bg-[#0d1726] hover:bg-[#12213a]'
+                    }`}
+                  >
+                    <div className={`h-1.5 rounded-full bg-gradient-to-r ${meta.accent} mb-3`} />
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-semibold text-sm">{meta.label}</p>
+                      {isActive && <span className="text-[11px] uppercase tracking-[0.16em] text-cyan-200">Active</span>}
+                    </div>
+                    <p className="text-xs text-cyan-100/60 mt-2">{meta.description}</p>
+                  </button>
+                )
+              })}
             </div>
             <div className="grid sm:grid-cols-2 gap-3 mt-4">
               <label className="rounded-2xl border border-cyan-500/10 bg-[#0d1726] p-4 block">

@@ -141,13 +141,14 @@ describe('BusinessSettings', () => {
     })
   })
 
-  it('shows the current consumer app as read-only metadata', async () => {
+  it('shows template selector with active indicator', async () => {
     render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
 
     await waitFor(() => {
       expect(screen.getByText('Consumer app')).toBeInTheDocument()
       expect(screen.getByText('Community')).toBeInTheDocument()
-      expect(screen.getByText('Current app')).toBeInTheDocument()
+      expect(screen.getByText('Academy')).toBeInTheDocument()
+      expect(screen.getByText('Active')).toBeInTheDocument()
     })
   })
 

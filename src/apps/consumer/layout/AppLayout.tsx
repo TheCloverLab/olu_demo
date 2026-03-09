@@ -43,6 +43,7 @@ function MoreMenu({ open, onClose }) {
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
+  const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   return (
     <AnimatePresence>
@@ -66,7 +67,7 @@ function MoreMenu({ open, onClose }) {
             </div>
 
             {authUser ? (
-              <button onClick={() => go('/profile')} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
+              <button onClick={() => go(publicProfilePath)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
                 <Avatar user={currentUser} size="md" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm">{currentUser.name}</p>
@@ -101,6 +102,7 @@ export default function AppLayout() {
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[consumerTemplate]
+  const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -115,7 +117,7 @@ export default function AppLayout() {
 
         {authUser ? (
           <div className="px-3 pb-3">
-            <button onClick={() => navigate('/profile')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
+            <button onClick={() => navigate(publicProfilePath)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
               <Avatar user={currentUser} size="md" />
               <div className="min-w-0 text-left">
                 <p className="font-semibold text-sm truncate">{currentUser.name}</p>
@@ -187,7 +189,7 @@ export default function AppLayout() {
             <span className="font-black text-lg block leading-none">OLU</span>
             <span className="text-[10px] text-olu-muted tracking-wide">{APP_VERSION}</span>
           </div>
-          <button onClick={() => navigate('/profile')} className="relative">
+          <button onClick={() => navigate(publicProfilePath)} className="relative">
             <Avatar user={currentUser} />
           </button>
         </header>

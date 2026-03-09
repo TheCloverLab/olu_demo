@@ -7,7 +7,6 @@ import {
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 import { getTeamEmployeesForUser } from '../../../domain/team/api'
 import { getOwnedConsumerApps } from '../../../domain/consumer/apps'
 import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
@@ -16,9 +15,8 @@ import type { ConsumerApp } from '../../../lib/supabase'
 import type { ConnectorSummary } from '../../../domain/connectors/types'
 
 export default function BusinessWorkspace() {
-  const { consumerTemplate, currentUser, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
-  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
 
   const [employees, setEmployees] = useState<EmployeeWithTasks[]>([])
   const [apps, setApps] = useState<ConsumerApp[]>([])
@@ -274,20 +272,18 @@ export default function BusinessWorkspace() {
         </div>
       </section>
 
-      {/* Consumer channel + demo journey */}
+      {/* Apps + demo journey */}
       <section className="grid lg:grid-cols-2 gap-4">
-        <Link to="/business/consumer" className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1a2d] transition-colors">
+        <Link to="/business/apps" className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1a2d] transition-colors">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-amber-300" />
-            <p className="font-bold">Consumer channel</p>
+            <AppWindow size={16} className="text-amber-300" />
+            <p className="font-bold">Apps</p>
           </div>
           <div className="space-y-3">
             {[
-              `Active template: ${templateMeta.label}`,
-              consumerTemplate === 'fan_community'
-                ? 'Membership storefront, community topics, and creator feed.'
-                : 'Course catalog, checkout, and learning progress.',
-              'Open Consumer channel to preview the public storefront.',
+              `${apps.length} consumer app${apps.length === 1 ? '' : 's'} configured`,
+              'Manage communities, academies, and other consumer-facing products.',
+              'Open Apps to configure and publish your consumer storefront.',
             ].map((item) => (
               <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-cyan-100/55 border border-cyan-500/10">
                 {item}

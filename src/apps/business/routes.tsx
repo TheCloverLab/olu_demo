@@ -10,7 +10,6 @@ import WalletPage from './pages/WalletPage'
 import CreatorConsole from './pages/CreatorConsole'
 import AdvertiserConsole from './pages/AdvertiserConsole'
 import SupplierConsole from './pages/SupplierConsole'
-import ConsumerExperience from './pages/ConsumerExperience'
 import TaskCenter from './pages/TaskCenter'
 import ApprovalCenter from './pages/ApprovalCenter'
 import HumanEmployees from './pages/HumanEmployees'
@@ -28,7 +27,6 @@ export const businessRoutes: RouteObject[] = [
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'team/humans', element: <HumanEmployees /> },
       { path: 'agents', element: <AIAgentConfig /> },
-      { path: 'consumer', element: <ConsumerExperience /> },
       { path: 'apps', element: <AppManagement /> },
       { path: 'connectors', element: <Connectors /> },
       { path: 'tasks', element: <TaskCenter /> },

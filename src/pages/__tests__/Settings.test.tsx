@@ -55,13 +55,9 @@ describe('Settings', () => {
       signOut: mockSignOut,
     })
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
       currentUser: {},
-      availableRoles: ['fan'],
       enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
+      hasModule: () => true,
     })
   })
 
@@ -84,7 +80,7 @@ describe('Settings', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Business capabilities moved out of consumer settings')).toBeInTheDocument()
+      expect(screen.getByText('Business modules moved out of consumer settings')).toBeInTheDocument()
       expect(screen.getByText('Open business workspace')).toBeInTheDocument()
       expect(screen.queryByText('Apply')).not.toBeInTheDocument()
     })

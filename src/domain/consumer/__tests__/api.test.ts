@@ -6,16 +6,20 @@ import {
   getCourseSnapshotBySlug,
   resolveFeaturedCommunityCreator,
 } from '../api'
-import * as Api from '../../../services/api'
+import * as ConsumerData from '../data'
+import * as ProfileApi from '../../profile/api'
 
-vi.mock('../../../services/api', () => ({
-  getCreators: vi.fn(),
-  getConsumerCourseBySlug: vi.fn(),
-  getConsumerCourses: vi.fn(),
-  getConsumerCourseSections: vi.fn(),
-  getFansByCreator: vi.fn(),
-  getMembershipTiersByCreator: vi.fn(),
-  getUserById: vi.fn(),
+vi.mock('../data', () => ({
+  getCommunityFans: vi.fn(),
+  getCommunityMembershipTiers: vi.fn(),
+  getConsumerCourseDetail: vi.fn(),
+  getConsumerCourseDetailSections: vi.fn(),
+  getPublishedConsumerCourses: vi.fn(),
+}))
+
+vi.mock('../../profile/api', () => ({
+  getProfileById: vi.fn(),
+  getPublicCreators: vi.fn(),
 }))
 
 describe('consumer domain api', () => {
@@ -24,7 +28,7 @@ describe('consumer domain api', () => {
   })
 
   it('uses the viewer when the viewer is a creator', async () => {
-    vi.mocked(Api.getUserById).mockResolvedValue({
+    vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'creator-1',
       role: 'creator',
       name: 'Luna',
@@ -35,12 +39,12 @@ describe('consumer domain api', () => {
       role: 'creator',
     } as any)
 
-    expect(Api.getUserById).toHaveBeenCalledWith('creator-1')
+    expect(ProfileApi.getProfileById).toHaveBeenCalledWith('creator-1')
     expect(result?.id).toBe('creator-1')
   })
 
   it('falls back to the first creator when the viewer is not a creator', async () => {
-    vi.mocked(Api.getCreators).mockResolvedValue([
+    vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue([
       { id: 'creator-1', role: 'creator', name: 'Luna' },
       { id: 'creator-2', role: 'creator', name: 'Kai' },
     ] as any)
@@ -50,15 +54,15 @@ describe('consumer domain api', () => {
       role: 'fan',
     } as any)
 
-    expect(Api.getCreators).toHaveBeenCalled()
+    expect(ProfileApi.getPublicCreators).toHaveBeenCalled()
     expect(result?.id).toBe('creator-1')
   })
 
   it('builds a membership snapshot from real tiers and fans', async () => {
-    vi.mocked(Api.getCreators).mockResolvedValue([
+    vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue([
       { id: 'creator-1', role: 'creator', name: 'Luna' },
     ] as any)
-    vi.mocked(Api.getMembershipTiersByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getCommunityMembershipTiers).mockResolvedValue([
       {
         id: 'tier-1',
         creator_id: 'creator-1',
@@ -78,7 +82,7 @@ describe('consumer domain api', () => {
         subscriber_count: 10,
       },
     ] as any)
-    vi.mocked(Api.getFansByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getCommunityFans).mockResolvedValue([
       { id: 'fan-1', status: 'active' },
       { id: 'fan-2', status: 'active' },
       { id: 'fan-3', status: 'churned' },
@@ -96,7 +100,7 @@ describe('consumer domain api', () => {
   })
 
   it('builds a course library snapshot from persisted course records', async () => {
-    vi.mocked(Api.getConsumerCourses).mockResolvedValue([
+    vi.mocked(ConsumerData.getPublishedConsumerCourses).mockResolvedValue([
       {
         id: 'course-1',
         slug: 'community-growth',
@@ -114,7 +118,7 @@ describe('consumer domain api', () => {
         completion_rate: '68%',
       },
     ] as any)
-    vi.mocked(Api.getConsumerCourseSections).mockResolvedValue([
+    vi.mocked(ConsumerData.getConsumerCourseDetailSections).mockResolvedValue([
       {
         id: 'sec-1',
         section_key: 'cg-1',
@@ -134,7 +138,7 @@ describe('consumer domain api', () => {
   })
 
   it('loads a single course snapshot by slug', async () => {
-    vi.mocked(Api.getConsumerCourseBySlug).mockResolvedValue({
+    vi.mocked(ConsumerData.getConsumerCourseDetail).mockResolvedValue({
       id: 'course-1',
       slug: 'community-growth',
       title: 'Build a Paid Fan Community',
@@ -150,7 +154,7 @@ describe('consumer domain api', () => {
       students_count: 100,
       completion_rate: '68%',
     } as any)
-    vi.mocked(Api.getConsumerCourseSections).mockResolvedValue([
+    vi.mocked(ConsumerData.getConsumerCourseDetailSections).mockResolvedValue([
       {
         id: 'sec-1',
         section_key: 'cg-1',

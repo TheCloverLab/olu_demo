@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Heart, MessageCircle, Share2, Gift, Lock, Repeat2, BadgeCheck, Check, X, Send } from 'lucide-react'
-import { getPostById } from '../../../services/api'
+import { getCommunityPostDetail } from '../../../domain/consumer/data'
 import clsx from 'clsx'
 
 function formatNumber(value: number) {
@@ -177,7 +177,7 @@ export default function ContentDetail() {
       }
 
       try {
-        const data = await getPostById(id)
+        const data = await getCommunityPostDetail(id)
         setPost(data)
       } catch (err) {
         console.error('Failed loading content detail', err)

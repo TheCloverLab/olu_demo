@@ -7,18 +7,18 @@ This script is designed for live demos with realistic data and minimal switching
 - Open app: `http://localhost:5175/`
 - Confirm key pages load: Home, Chat, Team, Profile, Settings
 - Keep these accounts ready:
-  - Creator: `luna.demo@olu.app` / `Demo123!Creator`
-  - Fan: `alex.demo@olu.app` / `Demo123!Fan`
-  - Advertiser: `gameverse.demo@olu.app` / `Demo123!Ads`
-  - Supplier: `artisan.demo@olu.app` / `Demo123!Supply`
-  - Multi-role: `maya.demo@olu.app` / `Demo123!Hybrid`
+  - Creator: `luna.demo@olu.app` / `Demo123!`
+  - Fan: `alex.demo@olu.app` / `Demo123!`
+  - Advertiser: `gameverse.demo@olu.app` / `Demo123!`
+  - Supplier: `artisan.demo@olu.app` / `Demo123!`
+  - Multi-role: `maya.demo@olu.app` / `Demo123!`
 
 ---
 
 ## 1) Creator flow (Luna) — 3 to 4 mins
 
 Login with:
-- `luna.demo@olu.app` / `Demo123!Creator`
+- `luna.demo@olu.app` / `Demo123!`
 
 Show in order:
 1. **Sidebar identity + role**
@@ -40,7 +40,7 @@ Talk track:
 ## 2) Fan flow (Alex) — 2 to 3 mins
 
 Sign out in Settings, then login:
-- `alex.demo@olu.app` / `Demo123!Fan`
+- `alex.demo@olu.app` / `Demo123!`
 
 Show in order:
 1. **No creator-only console entries in sidebar**
@@ -59,7 +59,7 @@ Talk track:
 ## 3) Advertiser flow (GameVerse) — 2 to 3 mins
 
 Login with:
-- `gameverse.demo@olu.app` / `Demo123!Ads`
+- `gameverse.demo@olu.app` / `Demo123!`
 
 Show in order:
 1. **Advertiser Console**
@@ -75,7 +75,7 @@ Talk track:
 ## 4) Supplier flow (ArtisanCraft) — 2 to 3 mins
 
 Login with:
-- `artisan.demo@olu.app` / `Demo123!Supply`
+- `artisan.demo@olu.app` / `Demo123!`
 
 Show in order:
 1. **Supplier Console dashboard**
@@ -91,7 +91,7 @@ Talk track:
 ## 5) Multi-role flow (Maya) — 2 mins
 
 Login with:
-- `maya.demo@olu.app` / `Demo123!Hybrid`
+- `maya.demo@olu.app` / `Demo123!`
 
 Show in order:
 1. **Switch Role visible only for multi-role users**

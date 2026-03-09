@@ -6,7 +6,9 @@ import BusinessSettings from '../BusinessSettings'
 import * as AuthContext from '../../../../context/AuthContext'
 import * as AppContext from '../../../../context/AppContext'
 import * as WorkspaceApi from '../../../../domain/workspace/api'
-import * as Api from '../../../../services/api'
+import * as ConsumerData from '../../../../domain/consumer/data'
+import * as ProfileApi from '../../../../domain/profile/api'
+import * as ConnectorsApi from '../../../../domain/connectors/api'
 
 vi.mock('../../../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -21,9 +23,16 @@ vi.mock('../../../../domain/workspace/api', () => ({
   updateWorkspaceModuleForUser: vi.fn(),
 }))
 
-vi.mock('../../../../services/api', () => ({
-  getCreators: vi.fn(),
-  getConsumerCourses: vi.fn(),
+vi.mock('../../../../domain/consumer/data', () => ({
+  getPublishedConsumerCourses: vi.fn(),
+}))
+
+vi.mock('../../../../domain/profile/api', () => ({
+  getPublicCreators: vi.fn(),
+}))
+
+vi.mock('../../../../domain/connectors/api', () => ({
+  getWorkspaceConnectorSummariesForUser: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -44,18 +53,14 @@ describe('BusinessSettings', () => {
       signOut: vi.fn(),
     })
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
       currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
+      hasModule: (key: string) => ['creator_ops', 'marketing'].includes(key),
       enabledBusinessModules: ['creator_ops', 'marketing'],
       consumerConfig: {},
       consumerTemplate: 'fan_community',
       setConsumerConfig: vi.fn(),
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
     vi.mocked(WorkspaceApi.getWorkspaceSettingsForUser).mockResolvedValue({
       workspace: { id: 'ws-1', name: 'Alice Workspace', slug: 'alice-workspace', owner_user_id: 'user-1', status: 'active' },
@@ -80,11 +85,14 @@ describe('BusinessSettings', () => {
       billing: { id: 'b1', workspace_id: 'ws-1', plan: 'starter', status: 'trial', billing_email: 'alice@example.com' },
       consumerConfig: { id: 'cc1', workspace_id: 'ws-1', template_key: 'fan_community', config_json: { featured_template: 'fan_community' } },
     } as any)
-    vi.mocked(Api.getCreators).mockResolvedValue([
+    vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue([
       { id: 'creator-1', name: 'Luna Chen' },
     ] as any)
-    vi.mocked(Api.getConsumerCourses).mockResolvedValue([
+    vi.mocked(ConsumerData.getPublishedConsumerCourses).mockResolvedValue([
       { id: 'course-1', slug: 'community-growth', title: 'Build a Paid Fan Community' },
+    ] as any)
+    vi.mocked(ConnectorsApi.getWorkspaceConnectorSummariesForUser).mockResolvedValue([
+      { provider: 'Shopify', status: 'connected', label: 'Shopify' },
     ] as any)
   })
 
@@ -99,22 +107,18 @@ describe('BusinessSettings', () => {
     })
   })
 
-  it('updates a workspace capability from settings', async () => {
+  it('updates a workspace module from settings', async () => {
     const user = userEvent.setup()
     const reloadBusinessModules = vi.fn().mockResolvedValue(undefined)
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
       currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
+      hasModule: (key: string) => ['creator_ops', 'marketing'].includes(key),
       enabledBusinessModules: ['creator_ops', 'marketing'],
       consumerConfig: {},
       consumerTemplate: 'fan_community',
       setConsumerConfig: vi.fn(),
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules,
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
     vi.mocked(WorkspaceApi.updateWorkspaceModuleForUser).mockResolvedValue({
       id: 'm3',
@@ -151,18 +155,14 @@ describe('BusinessSettings', () => {
     const user = userEvent.setup()
     const setConsumerConfig = vi.fn()
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
       currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
+      hasModule: (key: string) => ['creator_ops', 'marketing'].includes(key),
       enabledBusinessModules: ['creator_ops', 'marketing'],
       consumerConfig: {},
       consumerTemplate: 'fan_community',
       setConsumerConfig,
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
 
     render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
@@ -178,18 +178,14 @@ describe('BusinessSettings', () => {
     const user = userEvent.setup()
     const setConsumerConfig = vi.fn()
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
       currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
+      hasModule: (key: string) => ['creator_ops', 'marketing'].includes(key),
       enabledBusinessModules: ['creator_ops', 'marketing'],
       consumerConfig: {},
       consumerTemplate: 'fan_community',
       setConsumerConfig,
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
 
     render(<MemoryRouter><BusinessSettings /></MemoryRouter>)
@@ -222,9 +218,8 @@ describe('BusinessSettings', () => {
     const user = userEvent.setup()
     const setConsumerConfig = vi.fn()
     vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
       currentUser: { name: 'Alice' },
-      availableRoles: ['creator', 'advertiser'],
+      hasModule: (key: string) => ['creator_ops', 'marketing'].includes(key),
       enabledBusinessModules: ['creator_ops', 'marketing'],
       consumerConfig: {
         community_topic_entries: [
@@ -236,9 +231,6 @@ describe('BusinessSettings', () => {
       setConsumerConfig,
       setConsumerTemplate: vi.fn(),
       reloadBusinessModules: vi.fn().mockResolvedValue(undefined),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
     vi.mocked(WorkspaceApi.getWorkspaceSettingsForUser).mockResolvedValue({
       workspace: { id: 'ws-1', name: 'Alice Workspace', slug: 'alice-workspace', owner_user_id: 'user-1', status: 'active' },

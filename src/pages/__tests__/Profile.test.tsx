@@ -5,7 +5,7 @@ import Profile from '../Profile'
 import * as AuthContext from '../../context/AuthContext'
 import * as ConsumerApi from '../../domain/consumer/api'
 import * as Engagement from '../../domain/consumer/engagement'
-import * as ServicesApi from '../../services/api'
+import * as ProfileApi from '../../domain/profile/api'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -22,8 +22,8 @@ vi.mock('../../domain/consumer/engagement', () => ({
   getPurchasedCourseSlugs: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
-  getCreators: vi.fn(),
+vi.mock('../../domain/profile/api', () => ({
+  getPublicCreators: vi.fn(),
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -66,7 +66,7 @@ describe('Profile', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     } as any)
-    vi.mocked(ServicesApi.getCreators).mockResolvedValue(mockCreators as any)
+    vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue(mockCreators as any)
     vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
       courses: [mockCourse],
       featuredCourse: mockCourse,

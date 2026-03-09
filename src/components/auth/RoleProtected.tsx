@@ -2,13 +2,12 @@ import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useApp } from '../../context/AppContext'
-
-type AppRole = 'creator' | 'fan' | 'advertiser' | 'supplier'
+import type { BusinessModuleKey } from '../../lib/supabase'
 
 type RoleProtectedProps = {
   children: ReactNode
   requireAuth?: boolean
-  requiredRole?: AppRole
+  requiredModule?: BusinessModuleKey
   bypassOnboarding?: boolean
   businessOnly?: boolean
 }
@@ -16,12 +15,12 @@ type RoleProtectedProps = {
 export default function RoleProtected({
   children,
   requireAuth = true,
-  requiredRole,
+  requiredModule,
   bypassOnboarding = false,
   businessOnly = false,
 }: RoleProtectedProps) {
   const { user, loading } = useAuth()
-  const { availableRoles, enabledBusinessModules } = useApp()
+  const { enabledBusinessModules } = useApp()
   const location = useLocation()
 
   if (loading) return null
@@ -30,8 +29,8 @@ export default function RoleProtected({
     return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
   }
 
-  if (requiredRole && !availableRoles.includes(requiredRole)) {
-    return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/settings'} replace />
+  if (requiredModule && !enabledBusinessModules.includes(requiredModule)) {
+    return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/'} replace />
   }
 
   if (businessOnly && enabledBusinessModules.length === 0) {

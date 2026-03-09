@@ -21,15 +21,20 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { APP_VERSION } from '../../../lib/version'
 
-const BUSINESS_NAV = [
+import type { BusinessModuleKey } from '../../../lib/supabase'
+
+const CORE_NAV = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/consumer', icon: BookOpen, label: 'Consumer' },
   { to: '/business/team', icon: Users, label: 'Team' },
   { to: '/business/agents', icon: Bot, label: 'Agents' },
-  { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops' },
-  { to: '/business/modules/marketing', icon: Megaphone, label: 'Marketing' },
-  { to: '/business/modules/supply', icon: Package, label: 'Supply Chain' },
 ] as const
+
+const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
+  { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops', moduleKey: 'creator_ops' },
+  { to: '/business/modules/marketing', icon: Megaphone, label: 'Marketing', moduleKey: 'marketing' },
+  { to: '/business/modules/supply', icon: Package, label: 'Supply Chain', moduleKey: 'supply_chain' },
+]
 
 function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -63,7 +68,7 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
 
 function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()
-  const { currentUser, availableRoles } = useApp()
+  const { currentUser, hasModule } = useApp()
 
   const go = (path: string) => {
     onClose()
@@ -108,10 +113,10 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={BookOpen} label="Consumer" onClick={() => go('/business/consumer')} />
               <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
-              <MenuItem icon={LayoutDashboard} label="Creator Ops" onClick={() => go('/business/modules/creator')} />
-              <MenuItem icon={Megaphone} label="Marketing" onClick={() => go('/business/modules/marketing')} />
-              <MenuItem icon={Package} label="Supply Chain" onClick={() => go('/business/modules/supply')} />
-              {availableRoles.includes('creator') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
+              {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
+                <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
+              ))}
+              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
             </div>
 
@@ -123,12 +128,13 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 }
 
 export default function BusinessLayout() {
-  const { currentUser, availableRoles, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
-  const activeModuleLabel = BUSINESS_NAV.find(({ to, exact }) =>
+  const allNav = [...CORE_NAV, ...MODULE_NAV]
+  const activeModuleLabel = allNav.find(({ to, exact }) =>
     exact ? location.pathname === to : location.pathname.startsWith(to)
   )?.label
 
@@ -150,28 +156,39 @@ export default function BusinessLayout() {
             <Avatar user={currentUser} size="md" />
             <div className="min-w-0">
               <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-              <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} capabilities enabled</p>
+              <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} modules enabled</p>
             </div>
           </button>
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {BUSINESS_NAV.map(({ to, icon: Icon, label, exact }) => {
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                end={exact}
-                className={({ isActive }) => clsx(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                  isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
-                )}
-              >
-                <Icon size={18} />
-                {label}
-              </NavLink>
-            )
-          })}
+          {CORE_NAV.map(({ to, icon: Icon, label, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              className={({ isActive }) => clsx(
+                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+              )}
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
+          {MODULE_NAV.filter((m) => enabledBusinessModules.includes(m.moduleKey)).map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) => clsx(
+                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+              )}
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="p-3 border-t border-cyan-500/10 space-y-2">

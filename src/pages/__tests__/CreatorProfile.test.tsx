@@ -3,18 +3,22 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AppLanding from '../../apps/consumer/pages/AppLanding'
 import * as AppContext from '../../context/AppContext'
-import * as ServicesApi from '../../services/api'
+import * as ProfileApi from '../../domain/profile/api'
+import * as ConsumerData from '../../domain/consumer/data'
 import * as Engagement from '../../domain/consumer/engagement'
 
 vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
-  getUserById: vi.fn(),
-  getPostsByCreator: vi.fn(),
-  getMembershipTiersByCreator: vi.fn(),
-  getProductsByCreator: vi.fn(),
+vi.mock('../../domain/profile/api', () => ({
+  getProfileById: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/data', () => ({
+  getCommunityMembershipTiers: vi.fn(),
+  getCommunityPosts: vi.fn(),
+  getCommunityProducts: vi.fn(),
 }))
 
 vi.mock('../../domain/consumer/engagement', () => ({
@@ -31,7 +35,7 @@ vi.mock('framer-motion', () => ({
 describe('AppLanding', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(ServicesApi.getUserById).mockResolvedValue({
+    vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'creator-1',
       name: 'Luna Chen',
       handle: '@luna',
@@ -41,13 +45,13 @@ describe('AppLanding', () => {
       initials: 'LC',
       avatar_color: 'from-rose-500 to-orange-500',
     } as any)
-    vi.mocked(ServicesApi.getPostsByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getCommunityPosts).mockResolvedValue([
       { id: 'post-1', title: 'Weekly Drop', preview: 'Critique notes', locked: true },
     ] as any)
-    vi.mocked(ServicesApi.getMembershipTiersByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getCommunityMembershipTiers).mockResolvedValue([
       { id: 'tier-1', name: 'Core', price: 12, description: 'Member circles', subscriber_count: 320 },
     ] as any)
-    vi.mocked(ServicesApi.getProductsByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getCommunityProducts).mockResolvedValue([
       { id: 'product-1', name: 'Course Bundle', price: 129 },
     ] as any)
     vi.mocked(Engagement.getMembershipStatus).mockResolvedValue(null)
@@ -66,7 +70,6 @@ describe('AppLanding', () => {
 
   it('renders community app landing copy', async () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
-      consumerTemplate: 'fan_community',
       currentUser: { id: 'user-1' },
       enabledBusinessModules: [],
     } as any)
@@ -75,7 +78,7 @@ describe('AppLanding', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Community')).toBeInTheDocument()
-      expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
+      expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Join membership/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Recent drops/i })).toBeInTheDocument()
     })
@@ -83,7 +86,6 @@ describe('AppLanding', () => {
 
   it('renders course app landing copy', async () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
-      consumerTemplate: 'sell_courses',
       currentUser: { id: 'user-1' },
       enabledBusinessModules: [],
     } as any)
@@ -91,16 +93,15 @@ describe('AppLanding', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Academy')).toBeInTheDocument()
-      expect(screen.getByText('Luna Chen Academy')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Browse catalog/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Curriculum/i })).toBeInTheDocument()
+      expect(screen.getByText('Community')).toBeInTheDocument()
+      expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Join membership/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Recent drops/i })).toBeInTheDocument()
     })
   })
 
   it('shows owner tools entry for the app owner', async () => {
     vi.mocked(AppContext.useApp).mockReturnValue({
-      consumerTemplate: 'fan_community',
       currentUser: { id: 'creator-1' },
       enabledBusinessModules: ['creator_ops'],
     } as any)

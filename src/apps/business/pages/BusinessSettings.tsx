@@ -3,10 +3,12 @@ import { Bell, Cable, ChevronLeft, CreditCard, KeyRound, ShieldCheck, Users, Wre
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
+import { getPublishedConsumerCourses } from '../../../domain/consumer/data'
+import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
+import { getPublicCreators } from '../../../domain/profile/api'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
 import type { BusinessModuleKey, ConsumerCourse, User, WorkspaceSettingsData } from '../../../lib/supabase'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
-import { getCreators, getConsumerCourses } from '../../../services/api'
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
@@ -85,8 +87,8 @@ export default function BusinessSettings() {
     async function loadConsumerOptions() {
       try {
         const [creators, courses] = await Promise.all([
-          getCreators(),
-          getConsumerCourses(),
+          getPublicCreators(),
+          getPublishedConsumerCourses(),
         ])
         if (!cancelled) {
           setCreatorOptions(creators)
@@ -109,9 +111,32 @@ export default function BusinessSettings() {
     setSettings(data)
   }
 
+  const [connectorSummaries, setConnectorSummaries] = useState<Array<{ provider: string; status: string; label: string }>>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadConnectors() {
+      if (!user) return
+      try {
+        const summaries = await getWorkspaceConnectorSummariesForUser(user)
+        if (!cancelled) {
+          setConnectorSummaries(summaries)
+        }
+      } catch (error) {
+        console.error('Failed to load connector summaries', error)
+      }
+    }
+
+    loadConnectors()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, settings?.workspace?.id])
+
   const connectors = useMemo(() => {
-    return (settings?.integrations || []).map((integration) => ({
-      name: integration.provider,
+    return connectorSummaries.map((integration) => ({
+      name: integration.label,
       status: integration.status === 'connected' ? 'Connected' : integration.status === 'planned' ? 'Planned' : integration.status === 'error' ? 'Error' : 'Disconnected',
       tone:
         integration.status === 'connected'
@@ -120,7 +145,7 @@ export default function BusinessSettings() {
             ? 'bg-red-500/15 text-red-300 border-red-500/20'
             : 'bg-white/8 text-cyan-100/60 border-cyan-500/10',
     }))
-  }, [settings?.integrations])
+  }, [connectorSummaries])
 
   const approvalRules = useMemo(() => {
     const approval = settings?.policies?.approval_policy || {}
@@ -249,9 +274,9 @@ export default function BusinessSettings() {
         </button>
         <div>
           <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Workspace Settings</p>
-          <h1 className="font-black text-2xl md:text-3xl">Business operating rules and system controls</h1>
+          <h1 className="font-black text-2xl md:text-3xl">Settings</h1>
           <p className="text-cyan-100/60 text-sm md:text-base mt-2 max-w-3xl">
-            This page controls how the workspace runs. It is intentionally separate from account identity, which lives in business account.
+            Workspace modules, policies, integrations, and billing.
           </p>
         </div>
       </div>
@@ -275,7 +300,7 @@ export default function BusinessSettings() {
               <p className="text-cyan-100/50 text-xs mt-1">{user?.email}</p>
             </div>
             <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-              <p className="text-cyan-100/55 text-xs mb-1">Capabilities</p>
+              <p className="text-cyan-100/55 text-xs mb-1">Modules</p>
               <p className="font-black text-2xl">{settings?.modules.filter((module) => module.enabled).length ?? 0}</p>
               <p className="text-cyan-100/50 text-xs mt-1">Modules enabled</p>
             </div>
@@ -314,7 +339,7 @@ export default function BusinessSettings() {
                 <Sparkles size={18} />
               </span>
               <div>
-                <p className="font-bold">Capabilities</p>
+                <p className="font-bold">Modules</p>
                 <p className="text-cyan-100/55 text-xs">Enable the operator surfaces available in this workspace</p>
               </div>
             </div>

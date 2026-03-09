@@ -25,7 +25,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'consumer', element: <ConsumerExperience /> },
       { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <BusinessSettings /> },
-      { path: 'wallet', element: <RoleProtected requiredRole="creator"><WalletPage /></RoleProtected> },
+      { path: 'wallet', element: <RoleProtected requiredModule="creator_ops"><WalletPage /></RoleProtected> },
       { path: 'modules/creator', element: <CreatorConsole /> },
       { path: 'modules/marketing', element: <AdvertiserConsole /> },
       { path: 'modules/supply', element: <SupplierConsole /> },

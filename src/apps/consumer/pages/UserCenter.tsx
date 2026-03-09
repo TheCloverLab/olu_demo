@@ -4,7 +4,7 @@ import { BadgeCheck, BookOpen, Clock3, ExternalLink, Settings, Sparkles, Users }
 import { useAuth } from '../../../context/AuthContext'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
-import { getCreators } from '../../../services/api'
+import { getPublicCreators } from '../../../domain/profile/api'
 import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
@@ -38,7 +38,7 @@ export default function UserCenter() {
 
       try {
         const [allCreators, courseSnapshot] = await Promise.all([
-          getCreators(),
+          getPublicCreators(),
           getCourseLibrarySnapshot(),
         ])
 

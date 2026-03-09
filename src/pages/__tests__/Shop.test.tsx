@@ -22,11 +22,11 @@ vi.mock('react-router-dom', async () => {
 })
 
 function mockUseApp(overrides: Record<string, any> = {}) {
+  const modules: string[] = overrides.enabledBusinessModules || []
   vi.mocked(AppContext.useApp).mockReturnValue({
-    currentRole: 'fan',
+    hasModule: (key: string) => modules.includes(key),
     currentUser: { id: 'user-1' },
-    availableRoles: ['fan'],
-    enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+    enabledBusinessModules: modules,
     consumerConfig: {},
     consumerTemplate: 'fan_community',
     consumerExperience: {
@@ -41,9 +41,6 @@ function mockUseApp(overrides: Record<string, any> = {}) {
       },
     },
     setConsumerTemplate: vi.fn(),
-    switchRole: vi.fn(),
-    showRoleSwitcher: false,
-    setShowRoleSwitcher: vi.fn(),
     ...overrides,
   } as any)
 }
@@ -86,9 +83,8 @@ describe('Shop', () => {
   describe('as Creator', () => {
     beforeEach(() => {
       mockUseApp({
-        currentRole: 'creator',
+        enabledBusinessModules: ['creator_ops'],
         currentUser: { id: 'creator-1' },
-        availableRoles: ['fan', 'creator'],
       })
     })
 

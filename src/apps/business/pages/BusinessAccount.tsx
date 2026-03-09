@@ -13,9 +13,9 @@ export default function BusinessAccount() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-2">Workspace Account</p>
-          <h1 className="font-black text-2xl">Business identity and operator settings</h1>
+          <h1 className="font-black text-2xl">Account</h1>
           <p className="text-cyan-100/55 text-sm mt-2 max-w-2xl">
-            This page belongs to the merchant workspace, not the consumer app. It is where the operator reviews workspace identity, enabled capabilities, and operational controls.
+            Workspace identity, enabled modules, and connected platforms.
           </p>
         </div>
         <button
@@ -92,7 +92,7 @@ export default function BusinessAccount() {
               </div>
             </div>
             <p className="text-sm text-cyan-100/55 leading-relaxed">
-              Human employees, AI employees, and capability switching all belong to the workspace layer.
+              Human employees, AI employees, and module switching all belong to the workspace layer.
             </p>
           </div>
 

@@ -4,8 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { addConversationMessage, addGroupChatMessage, getConversations, getGroupChatMessages, getGroupChatsByUser } from '../../../services/api'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
+import {
+  getAgentConversation,
+  getWorkspaceGroupChatsForUser,
+  getWorkspaceGroupMessages,
+  postAgentConversationMessage,
+  postWorkspaceGroupMessage,
+} from '../../../domain/team/api'
 import clsx from 'clsx'
 
 const STATUS_CONFIG = {
@@ -237,12 +243,12 @@ export default function TeamChat() {
       try {
         if (isGroup) {
           const groupKey = (agentId || '').replace('grp-', '')
-          const groups = await getGroupChatsByUser(user.id)
+          const groups = await getWorkspaceGroupChatsForUser(user.id)
           setLiveGroups(groups || [])
           const group = (groups || []).find((g: any) => g.chat_key === groupKey || g.id === groupKey)
           if (group?.id) {
             setSelectedGroupDbId(group.id)
-            const groupMessages = await getGroupChatMessages(group.id)
+            const groupMessages = await getWorkspaceGroupMessages(group.id)
             setMessages(
               (groupMessages || []).map((m: any) => ({
                 from: m.from_name === 'You' ? 'user' : m.from_name,
@@ -275,7 +281,7 @@ export default function TeamChat() {
         }
 
         setSelectedAgentDbId(selected.id)
-        const conv = await getConversations(selected.id)
+        const conv = await getAgentConversation(selected.id)
         setMessages(
           (conv || []).map((m: any) => ({
             from: m.from_type === 'user' ? 'user' : 'agent',
@@ -314,7 +320,7 @@ export default function TeamChat() {
     if (isGroup) {
       if (selectedGroupDbId) {
         try {
-          await addGroupChatMessage(selectedGroupDbId, 'You', userText)
+          await postWorkspaceGroupMessage(selectedGroupDbId, 'You', userText)
         } catch (err) {
           console.error('Failed saving group message', err)
         }
@@ -327,7 +333,7 @@ export default function TeamChat() {
     try {
       if (selectedAgentDbId) {
         try {
-          await addConversationMessage(selectedAgentDbId, 'user', userText, 'Just now')
+          await postAgentConversationMessage(selectedAgentDbId, 'user', userText, 'Just now')
         } catch (err) {
           console.error('Failed saving user message', err)
         }
@@ -430,7 +436,7 @@ export default function TeamChat() {
 
       if (selectedAgentDbId && assistantText.trim()) {
         try {
-          await addConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
         } catch (err) {
           console.error('Failed saving assistant message', err)
         }

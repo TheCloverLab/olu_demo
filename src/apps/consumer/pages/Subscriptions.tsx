@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Crown, RefreshCcw } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
+import { getCommunityMembershipTiers } from '../../../domain/consumer/data'
 import { getMembershipStatus } from '../../../domain/consumer/engagement'
-import { getCreators, getMembershipTiersByCreator } from '../../../services/api'
+import { getPublicCreators } from '../../../domain/profile/api'
 import type { MembershipTier, User } from '../../../lib/supabase'
 
 type ActiveSubscription = {
@@ -25,13 +26,13 @@ export default function Subscriptions() {
       if (!user?.id) return
 
       try {
-        const creators = await getCreators()
+        const creators = await getPublicCreators()
         const entries = await Promise.all(
           creators.map(async (creator) => {
             const membership = await getMembershipStatus(user as any, creator.id).catch(() => null)
             if (!membership?.tier_name) return null
 
-            const tiers = await getMembershipTiersByCreator(creator.id).catch(() => [] as MembershipTier[])
+            const tiers = await getCommunityMembershipTiers(creator.id).catch(() => [] as MembershipTier[])
             const tier = tiers.find((item) => item.key === membership.tier_key || item.name === membership.tier_name) || null
 
             return {
@@ -86,7 +87,7 @@ export default function Subscriptions() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-sm">{creator.name} Inner Circle</p>
+                    <p className="font-semibold text-sm">{creator.name} Community</p>
                     <p className="text-xs text-olu-muted mt-1">{membership?.tier_name || 'Active member'}</p>
                     <p className="text-xs text-olu-muted mt-2">{creator.bio || 'Membership access and recurring community drops.'}</p>
                   </div>

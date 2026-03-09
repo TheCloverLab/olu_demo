@@ -391,6 +391,29 @@ export type WorkspaceConsumerConfig = {
   updated_at?: string
 }
 
+export type ConsumerAppType = 'community' | 'academy'
+
+export type ConsumerAppVisibility = 'public' | 'private'
+
+export type ConsumerAppStatus = 'draft' | 'published' | 'archived'
+
+export type ConsumerApp = {
+  id: string
+  owner_user_id: string
+  app_type: ConsumerAppType
+  title: string
+  slug: string
+  summary?: string | null
+  status: ConsumerAppStatus
+  visibility: ConsumerAppVisibility
+  source: 'workspace_config' | 'course'
+  template_key?: WorkspaceConsumerConfig['template_key'] | null
+  linked_course_id?: string | null
+  linked_course_slug?: string | null
+  cover_img?: string | null
+  config_json?: Record<string, any> | null
+}
+
 export type WorkspaceSettingsData = {
   workspace: Workspace
   membership: WorkspaceMembership

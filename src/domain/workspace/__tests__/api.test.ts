@@ -186,12 +186,16 @@ describe('workspace api', () => {
     const membershipLookup = createChain({
       data: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' },
     })
+    const currentConfigLookup = createChain({
+      data: { id: 'cc1', workspace_id: 'ws-1', template_key: 'fan_community', config_json: { featured_template: 'fan_community' } },
+    })
     const consumerConfigUpdate = createChain({
       data: { id: 'cc1', workspace_id: 'ws-1', template_key: 'sell_courses', config_json: { featured_template: 'sell_courses' } },
     })
 
     vi.mocked(supabase.from)
       .mockReturnValueOnce(membershipLookup)
+      .mockReturnValueOnce(currentConfigLookup)
       .mockReturnValueOnce(consumerConfigUpdate)
 
     const result = await updateWorkspaceConsumerTemplateForUser({

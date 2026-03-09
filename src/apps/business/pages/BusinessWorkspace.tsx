@@ -46,10 +46,10 @@ export default function BusinessWorkspace() {
             Business entrypoint
           </div>
           <h2 className="font-black text-3xl leading-tight max-w-2xl">
-            One merchant workspace for human employees, AI agents, and connected platforms.
+            Workspace
           </h2>
           <p className="text-cyan-100/55 text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
-            This shell replaces role-first navigation. Each merchant enables the modules they need and runs workflows from one operational surface.
+            Modules, team, and connected platforms — all in one place.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
@@ -58,7 +58,7 @@ export default function BusinessWorkspace() {
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-2xl font-black">{enabledBusinessModules.length}</p>
-              <p className="text-xs text-cyan-100/45 mt-1">Capabilities</p>
+              <p className="text-xs text-cyan-100/45 mt-1">Modules</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
               <p className="text-lg font-black">{templateMeta.shortLabel}</p>
@@ -138,7 +138,7 @@ export default function BusinessWorkspace() {
               consumerTemplate === 'fan_community'
                 ? 'Membership storefront, community topics, and creator feed are live.'
                 : 'Course catalog, checkout, and learning progress are live.',
-              'Use the consumer view to preview public-facing configuration without leaving the business app.',
+              'Open Consumer channel to preview and configure the public storefront.',
             ].map((item) => (
               <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-olu-muted border border-cyan-500/10">
                 {item}

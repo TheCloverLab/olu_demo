@@ -1,73 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Compass, Search } from 'lucide-react'
-import {
-  getConsumerCoursesForDiscover,
-  getCreatorsForDiscover,
-} from '../../../services/api'
-import type { ConsumerCourse, User } from '../../../lib/supabase'
-
-type DiscoverApp = {
-  id: string
-  type: 'community' | 'academy'
-  title: string
-  creatorName: string
-  summary: string
-  priceLabel: string
-  href: string
-  coverImg?: string
-  gradient: string
-  highlights: string[]
-}
+import { getDiscoverConsumerAppCards, type ConsumerAppCard } from '../../../domain/consumer/apps'
 
 const PAGE_SIZE = 4
-
-function buildCommunityApp(creator: User): DiscoverApp {
-  return {
-    id: `community-${creator.id}`,
-    type: 'community',
-    title: `${creator.name} Inner Circle`,
-    creatorName: creator.name,
-    summary: creator.bio || 'Membership, recurring community discussions, and creator-only drops.',
-    priceLabel: 'Membership',
-    href: `/communities/${creator.id}`,
-    coverImg: creator.cover_img,
-    gradient: creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500',
-    highlights: ['Weekly drops', 'Private topics', 'Live sessions'],
-  }
-}
-
-function buildAcademyApp(course: ConsumerCourse, creatorByName: Map<string, User>): DiscoverApp {
-  const creator = creatorByName.get(course.instructor)
-  return {
-    id: `academy-${course.id}`,
-    type: 'academy',
-    title: `${course.instructor} Academy`,
-    creatorName: course.instructor,
-    summary: course.subtitle,
-    priceLabel: `$${Number(course.price)}`,
-    href: `/courses/${course.slug}`,
-    coverImg: creator?.cover_img,
-    gradient: course.hero,
-    highlights: course.outcomes?.slice(0, 3) || ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
-  }
-}
-
-function interleaveApps(communities: DiscoverApp[], academies: DiscoverApp[]) {
-  const merged: DiscoverApp[] = []
-  const max = Math.max(communities.length, academies.length)
-  for (let i = 0; i < max; i += 1) {
-    if (communities[i]) merged.push(communities[i])
-    if (academies[i]) merged.push(academies[i])
-  }
-  return merged
-}
 
 function DiscoverCard({
   app,
   onOpen,
 }: {
-  app: DiscoverApp
+  app: ConsumerAppCard
   onOpen: () => void
 }) {
   const [coverBroken, setCoverBroken] = useState(false)
@@ -77,10 +19,10 @@ function DiscoverCard({
       onClick={onOpen}
       className="w-full overflow-hidden rounded-[28px] border border-white/8 bg-[#111318] text-left hover:-translate-y-0.5 transition-all"
     >
-      <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${app.gradient}`}>
-        {app.coverImg && !coverBroken ? (
+      <div className="relative h-44 overflow-hidden bg-[#171b22]">
+        {app.cover_img && !coverBroken ? (
           <img
-            src={app.coverImg}
+            src={app.cover_img}
             alt={app.title}
             className="h-full w-full object-cover"
             onError={() => setCoverBroken(true)}
@@ -90,12 +32,12 @@ function DiscoverCard({
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">{app.type === 'community' ? 'Community' : 'Academy'}</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">{app.app_type === 'community' ? 'Community' : 'Academy'}</p>
               <p className="mt-1 text-lg font-black text-white">{app.title}</p>
-              <p className="mt-1 text-xs text-white/60">{app.creatorName}</p>
+              <p className="mt-1 text-xs text-white/60">{app.owner_name}</p>
             </div>
             <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] text-white/75">
-              {app.priceLabel}
+              {app.price_label}
             </span>
           </div>
         </div>
@@ -118,7 +60,7 @@ export default function Discover() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [apps, setApps] = useState<DiscoverApp[]>([])
+  const [apps, setApps] = useState<ConsumerAppCard[]>([])
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -151,25 +93,16 @@ export default function Discover() {
       }
 
       try {
-        const [creators, courses] = await Promise.all([
-          getCreatorsForDiscover({ query: debouncedQuery, page, pageSize: PAGE_SIZE }),
-          getConsumerCoursesForDiscover({ query: debouncedQuery, page, pageSize: PAGE_SIZE }),
-        ])
+        const nextItems = await getDiscoverConsumerAppCards({ query: debouncedQuery, page, pageSize: PAGE_SIZE })
 
         if (cancelled) return
-
-        const creatorByName = new Map(creators.map((creator) => [creator.name, creator]))
-        const nextItems = interleaveApps(
-          creators.map(buildCommunityApp),
-          courses.map((course) => buildAcademyApp(course, creatorByName)),
-        )
 
         setApps((current) => {
           if (page === 0) return nextItems
           const seen = new Set(current.map((item) => item.id))
           return [...current, ...nextItems.filter((item) => !seen.has(item.id))]
         })
-        setHasMore(creators.length === PAGE_SIZE || courses.length === PAGE_SIZE)
+        setHasMore(nextItems.length >= PAGE_SIZE)
       } catch (error) {
         console.error('Failed to load discover', error)
       } finally {

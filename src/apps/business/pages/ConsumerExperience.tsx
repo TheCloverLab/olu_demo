@@ -8,7 +8,7 @@ import {
   getCourseLibrarySnapshot,
   type CommunityMembershipSnapshot,
 } from '../../../domain/consumer/api'
-import { createConsumerCourse, createConsumerCourseSection, createPost, getPostsByCreator, updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier, updatePost } from '../../../services/api'
+import { createConsumerCourse, createConsumerCourseSection, createPost, getPostsByCreator, updateConsumerCourse, updateConsumerCourseSection, updateMembershipTier, updatePost } from '../../../domain/consumer/data'
 import type { Course } from '../../consumer/courseData'
 import { CONSUMER_TEMPLATE_META } from '../../consumer/templateConfig'
 import type { ConsumerCourse, Post } from '../../../lib/supabase'
@@ -379,10 +379,10 @@ export default function ConsumerExperience() {
             Consumer channel
           </div>
           <h1 className="font-black text-3xl leading-tight max-w-2xl">
-            Operate the public-facing {templateMeta.label.toLowerCase()} app without leaving the business workspace.
+            {templateMeta.label}
           </h1>
           <p className="text-olu-muted text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
-            This page is the operator view for your consumer product. It shows what the storefront is configured to highlight right now and where to go next to tune it.
+            Your live consumer storefront. Review what's highlighted, tune the configuration, and manage content.
           </p>
           <div className="grid sm:grid-cols-3 gap-3 mt-6">
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, BookOpen, Users } from 'lucide-react'
-import { getPublicConsumerAppsForUser, getUserById } from '../../../services/api'
-import type { ConsumerCourse, User } from '../../../lib/supabase'
+import type { ConsumerAppCard } from '../../../domain/consumer/apps'
+import { getPublicProfileConsumerApps } from '../../../domain/consumer/apps'
+import { getProfileById } from '../../../domain/profile/api'
+import type { User } from '../../../lib/supabase'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -12,8 +14,7 @@ export default function PublicProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [creator, setCreator] = useState<User | null>(null)
-  const [hasCommunity, setHasCommunity] = useState(false)
-  const [courses, setCourses] = useState<ConsumerCourse[]>([])
+  const [publicApps, setPublicApps] = useState<ConsumerAppCard[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,15 +25,14 @@ export default function PublicProfile() {
 
       try {
         const [creatorData, publicApps] = await Promise.all([
-          getUserById(id),
-          getPublicConsumerAppsForUser(id),
+          getProfileById(id),
+          getPublicProfileConsumerApps(id),
         ])
 
         if (cancelled) return
 
         setCreator(creatorData)
-        setHasCommunity(publicApps.hasCommunity)
-        setCourses(publicApps.courses)
+        setPublicApps(publicApps)
       } catch (error) {
         console.error('Failed to load public profile', error)
       } finally {
@@ -48,31 +48,7 @@ export default function PublicProfile() {
     }
   }, [id])
 
-  const creatorApps = useMemo(() => {
-    if (!creator) return []
-    const communityApps = hasCommunity
-      ? [{
-          id: `community-${creator.id}`,
-          type: 'Community',
-          title: `${creator.name} Inner Circle`,
-          subtitle: creator.bio || 'Membership, discussion, and recurring drops.',
-          cta: 'Open community',
-          href: `/communities/${creator.id}`,
-        }]
-      : []
-
-    return [
-      ...communityApps,
-      ...courses.map((course) => ({
-        id: `academy-${course.id}`,
-        type: 'Academy',
-        title: course.title,
-        subtitle: course.subtitle,
-        cta: 'Open academy',
-        href: `/courses/${course.slug}`,
-      })),
-    ]
-  }, [creator, courses, hasCommunity])
+  const creatorApps = useMemo(() => publicApps, [publicApps])
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>
@@ -141,11 +117,11 @@ export default function PublicProfile() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-white/45">{app.type}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/45">{app.app_type === 'community' ? 'Community' : 'Academy'}</p>
                       <p className="font-semibold text-sm mt-1">{app.title}</p>
-                      <p className="text-xs text-olu-muted mt-1">{app.subtitle}</p>
+                      <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
                     </div>
-                    <span className="text-xs text-white/65">{app.cta}</span>
+                    <span className="text-xs text-white/65">{app.price_label}</span>
                   </div>
                 </button>
               ))}
@@ -161,7 +137,7 @@ export default function PublicProfile() {
           </section>
         )}
 
-        {courses.length > 0 ? (
+        {creatorApps.some((app) => app.app_type === 'academy') ? (
           <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -171,18 +147,18 @@ export default function PublicProfile() {
               <BookOpen size={18} className="text-white/45" />
             </div>
             <div className="space-y-3">
-              {courses.map((course) => (
+              {creatorApps.filter((app) => app.app_type === 'academy').map((app) => (
                 <button
-                  key={course.id}
-                  onClick={() => navigate(`/courses/${course.slug}`)}
+                  key={app.id}
+                  onClick={() => navigate(app.href)}
                   className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-sm">{course.title}</p>
-                      <p className="text-xs text-olu-muted mt-1">{course.subtitle}</p>
+                      <p className="font-semibold text-sm">{app.title}</p>
+                      <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
                     </div>
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">${Number(course.price)}</span>
+                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{app.price_label}</span>
                   </div>
                 </button>
               ))}

@@ -9,10 +9,12 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const admin = createClient(supabaseUrl, serviceRoleKey)
 
+const DEMO_PASSWORD = 'Demo123!'
+
 const ACCOUNTS = [
   {
     email: 'luna.demo@olu.app',
-    password: 'Demo123!Creator',
+    password: DEMO_PASSWORD,
     profileHandle: '@lunachen',
     role: 'creator',
     roles: ['creator', 'fan'],
@@ -20,7 +22,7 @@ const ACCOUNTS = [
   },
   {
     email: 'alex.demo@olu.app',
-    password: 'Demo123!Fan',
+    password: DEMO_PASSWORD,
     profileHandle: '@alexpark',
     role: 'fan',
     roles: ['fan'],
@@ -28,7 +30,7 @@ const ACCOUNTS = [
   },
   {
     email: 'gameverse.demo@olu.app',
-    password: 'Demo123!Ads',
+    password: DEMO_PASSWORD,
     profileHandle: '@gameverse',
     role: 'advertiser',
     roles: ['advertiser', 'fan'],
@@ -36,7 +38,7 @@ const ACCOUNTS = [
   },
   {
     email: 'artisan.demo@olu.app',
-    password: 'Demo123!Supply',
+    password: DEMO_PASSWORD,
     profileHandle: '@artisancraft',
     role: 'supplier',
     roles: ['supplier', 'fan'],
@@ -44,7 +46,7 @@ const ACCOUNTS = [
   },
   {
     email: 'maya.demo@olu.app',
-    password: 'Demo123!Hybrid',
+    password: DEMO_PASSWORD,
     profileHandle: '@mayarivers',
     role: 'fan',
     roles: ['fan', 'creator', 'advertiser'],
@@ -68,7 +70,11 @@ async function getAuthUserByEmail(email) {
 
 async function ensureAuthUser({ email, password, fullName }) {
   const existing = await getAuthUserByEmail(email)
-  if (existing) return existing
+  if (existing) {
+    // Update password to match the unified demo password
+    await admin.auth.admin.updateUserById(existing.id, { password })
+    return existing
+  }
 
   const { data, error } = await admin.auth.admin.createUser({
     email,

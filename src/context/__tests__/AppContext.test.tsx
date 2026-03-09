@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { AppProvider, useApp } from '../AppContext'
 import * as AuthContext from '../AuthContext'
 import * as WorkspaceApi from '../../domain/workspace/api'
+import * as ConsumerApps from '../../domain/consumer/apps'
 
 vi.mock('../AuthContext', () => ({
   useAuth: vi.fn(),
@@ -17,30 +18,31 @@ vi.mock('../../domain/workspace/api', () => ({
   updateWorkspaceConsumerTemplateForUser: vi.fn(),
 }))
 
+vi.mock('../../domain/consumer/apps', () => ({
+  getOwnedConsumerApps: vi.fn(),
+  getPrimaryConsumerApp: vi.fn(),
+}))
+
 function TestConsumer() {
   const {
-    currentRole,
-    availableRoles,
     enabledBusinessModules,
+    hasModule,
     consumerTemplate,
+    consumerApps,
+    primaryConsumerApp,
     reloadBusinessModules,
-    switchRole,
-    showRoleSwitcher,
-    setShowRoleSwitcher,
     setConsumerTemplate,
   } = useApp()
   return (
     <div>
-      <span data-testid="role">{currentRole}</span>
-      <span data-testid="roles">{availableRoles.join(',')}</span>
       <span data-testid="modules">{enabledBusinessModules.join(',')}</span>
+      <span data-testid="has-creator">{hasModule('creator_ops') ? 'yes' : 'no'}</span>
+      <span data-testid="has-marketing">{hasModule('marketing') ? 'yes' : 'no'}</span>
       <span data-testid="template">{consumerTemplate}</span>
-      <span data-testid="switcher">{showRoleSwitcher ? 'open' : 'closed'}</span>
+      <span data-testid="consumer-apps">{consumerApps.map((app) => app.app_type).join(',')}</span>
+      <span data-testid="primary-app">{primaryConsumerApp?.app_type || 'none'}</span>
       <button onClick={() => reloadBusinessModules()}>Reload Modules</button>
-      <button onClick={() => switchRole('creator')}>Switch to Creator</button>
-      <button onClick={() => switchRole('advertiser')}>Switch to Advertiser</button>
       <button onClick={() => setConsumerTemplate('sell_courses')}>Switch to Courses</button>
-      <button onClick={() => setShowRoleSwitcher(true)}>Open Switcher</button>
     </div>
   )
 }
@@ -57,6 +59,19 @@ describe('AppContext', () => {
       template_key: 'fan_community',
       config_json: { featured_template: 'fan_community' },
     } as any)
+    vi.mocked(ConsumerApps.getOwnedConsumerApps).mockResolvedValue([
+      {
+        id: 'community:1',
+        owner_user_id: '1',
+        app_type: 'community',
+        title: 'Creator Community',
+        slug: 'creator-community',
+        status: 'published',
+        visibility: 'public',
+        source: 'workspace_config',
+      },
+    ] as any)
+    vi.mocked(ConsumerApps.getPrimaryConsumerApp).mockImplementation((apps) => apps[0] || null)
     vi.mocked(WorkspaceApi.updateWorkspaceConsumerTemplateForUser).mockResolvedValue({
       id: 'cfg-1',
       workspace_id: 'ws-1',
@@ -71,7 +86,7 @@ describe('AppContext', () => {
     } as any)
   })
 
-  it('defaults to fan role when no user', () => {
+  it('defaults to empty modules when no user', () => {
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: null,
       session: null,
@@ -87,13 +102,15 @@ describe('AppContext', () => {
       </AppProvider>
     )
 
-    expect(screen.getByTestId('role')).toHaveTextContent('fan')
-    expect(screen.getByTestId('roles')).toHaveTextContent('fan')
     expect(screen.getByTestId('modules')).toHaveTextContent('')
+    expect(screen.getByTestId('has-creator')).toHaveTextContent('no')
     expect(screen.getByTestId('template')).toHaveTextContent('fan_community')
+    expect(screen.getByTestId('consumer-apps')).toHaveTextContent('')
+    expect(screen.getByTestId('primary-app')).toHaveTextContent('none')
   })
 
-  it('sets initial role from user profile', () => {
+  it('loads modules for authenticated user', async () => {
+    vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops', 'marketing'])
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { id: '1', roles: ['creator', 'fan'] } as any,
       session: {} as any,
@@ -109,31 +126,16 @@ describe('AppContext', () => {
       </AppProvider>
     )
 
-    expect(screen.getByTestId('role')).toHaveTextContent('creator')
-    expect(screen.getByTestId('roles')).toHaveTextContent('creator,fan')
-  })
-
-  it('switches role when user has permission', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: { id: '1', roles: ['fan', 'creator'] } as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
+    await act(async () => {
+      await Promise.resolve()
     })
 
-    render(
-      <AppProvider>
-        <TestConsumer />
-      </AppProvider>
-    )
-
-    await userEvent.click(screen.getByText('Switch to Creator'))
-    expect(screen.getByTestId('role')).toHaveTextContent('creator')
+    expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops,marketing')
+    expect(screen.getByTestId('has-creator')).toHaveTextContent('yes')
+    expect(screen.getByTestId('has-marketing')).toHaveTextContent('yes')
   })
 
-  it('does not switch to unauthorized role', async () => {
+  it('hasModule returns false for disabled modules', async () => {
     vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops'])
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { id: '1', roles: ['fan'] } as any,
@@ -150,52 +152,12 @@ describe('AppContext', () => {
       </AppProvider>
     )
 
-    await userEvent.click(screen.getByText('Switch to Advertiser'))
-    expect(screen.getByTestId('role')).toHaveTextContent('creator')
-  })
-
-  it('toggles role switcher visibility', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: null,
-      session: null,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
+    await act(async () => {
+      await Promise.resolve()
     })
 
-    render(
-      <AppProvider>
-        <TestConsumer />
-      </AppProvider>
-    )
-
-    expect(screen.getByTestId('switcher')).toHaveTextContent('closed')
-    await userEvent.click(screen.getByText('Open Switcher'))
-    expect(screen.getByTestId('switcher')).toHaveTextContent('open')
-  })
-
-  it('closes role switcher after switching role', async () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: { id: '1', roles: ['fan', 'creator'] } as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
-
-    render(
-      <AppProvider>
-        <TestConsumer />
-      </AppProvider>
-    )
-
-    await userEvent.click(screen.getByText('Open Switcher'))
-    expect(screen.getByTestId('switcher')).toHaveTextContent('open')
-
-    await userEvent.click(screen.getByText('Switch to Creator'))
-    expect(screen.getByTestId('switcher')).toHaveTextContent('closed')
+    expect(screen.getByTestId('has-creator')).toHaveTextContent('yes')
+    expect(screen.getByTestId('has-marketing')).toHaveTextContent('no')
   })
 
   it('provides guest user when not authenticated', () => {
@@ -225,7 +187,7 @@ describe('AppContext', () => {
   it('throws when useApp is used outside provider', () => {
     expect(() => {
       render(<TestConsumer />)
-    }).toThrow('useApp must be used within AppProvider')
+    }).toThrow('useSession must be used within SessionProvider')
   })
 
   it('reloads workspace modules on demand', async () => {
@@ -302,5 +264,29 @@ describe('AppContext', () => {
     })
 
     expect(screen.getByTestId('template')).toHaveTextContent('sell_courses')
+  })
+
+  it('hydrates owned consumer apps for authenticated users', async () => {
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: '1', username: 'maya', handle: '@maya', name: 'Maya', email: 'maya@example.com', roles: ['creator'] } as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
+
+    render(
+      <AppProvider>
+        <TestConsumer />
+      </AppProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByTestId('consumer-apps')).toHaveTextContent('community')
+    expect(screen.getByTestId('primary-app')).toHaveTextContent('community')
   })
 })

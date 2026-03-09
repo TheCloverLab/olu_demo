@@ -3,11 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Discover from '../../apps/consumer/pages/Discover'
-import * as Api from '../../services/api'
+import * as ConsumerApps from '../../domain/consumer/apps'
 
-vi.mock('../../services/api', () => ({
-  getCreatorsForDiscover: vi.fn(),
-  getConsumerCoursesForDiscover: vi.fn(),
+vi.mock('../../domain/consumer/apps', () => ({
+  getDiscoverConsumerAppCards: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -19,20 +18,29 @@ vi.mock('react-router-dom', async () => {
 describe('Discover', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(Api.getCreatorsForDiscover).mockResolvedValue([
-      { id: 'creator-1', name: 'Luna Chen', handle: '@luna', bio: 'Membership-first digital artist community' },
-      { id: 'creator-2', name: 'Ryu Codes', handle: '@ryu', bio: 'Course launches for indie builders' },
-    ] as any)
-    vi.mocked(Api.getConsumerCoursesForDiscover).mockResolvedValue([
+    vi.mocked(ConsumerApps.getDiscoverConsumerAppCards).mockResolvedValue([
       {
-        id: 'course-1',
-        slug: 'community-growth',
+        id: 'community:creator-1',
+        owner_user_id: 'creator-1',
+        app_type: 'community',
+        title: 'Luna Chen Community',
+        owner_name: 'Luna Chen',
+        summary: 'Membership-first digital artist community',
+        price_label: 'Membership',
+        href: '/communities/creator-1',
+        highlights: ['Weekly drops', 'Private topics', 'Live sessions'],
+      },
+      {
+        id: 'academy:course-1',
+        owner_user_id: 'creator-1',
+        app_type: 'academy',
         title: 'Build a Paid Fan Community',
-        subtitle: 'Turn audience attention into a membership business.',
-        instructor: 'Luna Chen',
-        price: 129,
-        hero: 'from-rose-600 via-fuchsia-600 to-orange-500',
+        owner_name: 'Luna Chen',
+        summary: 'Turn audience attention into a membership business.',
+        price_label: '$129',
+        href: '/courses/community-growth',
         outcomes: ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
+        highlights: ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
       },
     ] as any)
   })
@@ -42,8 +50,8 @@ describe('Discover', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Find something new.')).toBeInTheDocument()
-      expect(screen.getAllByText('Luna Chen Inner Circle').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Luna Chen Academy').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Luna Chen Community').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Build a Paid Fan Community').length).toBeGreaterThan(0)
       expect(screen.getByText('Recommended for you')).toBeInTheDocument()
       expect(screen.getAllByText('$129').length).toBeGreaterThan(0)
     })
@@ -56,8 +64,7 @@ describe('Discover', () => {
     await user.type(await screen.findByPlaceholderText(/Search creator, community, academy, or topic/i), 'academy')
 
     await waitFor(() => {
-      expect(Api.getCreatorsForDiscover).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'academy' }))
-      expect(Api.getConsumerCoursesForDiscover).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'academy' }))
+      expect(ConsumerApps.getDiscoverConsumerAppCards).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'academy' }))
     })
   })
 })

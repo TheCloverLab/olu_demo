@@ -217,8 +217,8 @@ function UserShopView() {
 }
 
 export default function Shop() {
-  const { consumerConfig, currentRole, consumerTemplate, consumerExperience } = useApp()
-  const isCreator = currentRole === 'creator'
+  const { consumerConfig, hasModule, consumerTemplate, consumerExperience } = useApp()
+  const isCreator = hasModule('creator_ops')
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
 
   useEffect(() => {

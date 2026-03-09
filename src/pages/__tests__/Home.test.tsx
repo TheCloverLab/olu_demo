@@ -5,7 +5,9 @@ import Home from '../Home'
 import * as AuthContext from '../../context/AuthContext'
 import * as ConsumerApi from '../../domain/consumer/api'
 import * as Engagement from '../../domain/consumer/engagement'
-import * as ServicesApi from '../../services/api'
+import * as ProfileApi from '../../domain/profile/api'
+import * as ConsumerData from '../../domain/consumer/data'
+import * as ProfileData from '../../domain/profile/data'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -15,6 +17,10 @@ vi.mock('../../domain/consumer/api', () => ({
   getCourseLibrarySnapshot: vi.fn(),
 }))
 
+vi.mock('../../domain/profile/api', () => ({
+  getPublicCreators: vi.fn(),
+}))
+
 vi.mock('../../domain/consumer/engagement', () => ({
   computeCourseProgress: vi.fn(),
   getMembershipStatus: vi.fn(),
@@ -22,10 +28,12 @@ vi.mock('../../domain/consumer/engagement', () => ({
   getPurchasedCourseSlugs: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
-  getCreators: vi.fn(),
-  getPublicCommunityCreatorIds: vi.fn(),
+vi.mock('../../domain/consumer/data', () => ({
   getPosts: vi.fn(),
+}))
+
+vi.mock('../../domain/profile/data', () => ({
+  getPublicCommunityCreatorIds: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -74,9 +82,9 @@ describe('Home', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     } as any)
-    vi.mocked(ServicesApi.getCreators).mockResolvedValue(mockCreators as any)
-    vi.mocked(ServicesApi.getPublicCommunityCreatorIds).mockResolvedValue(new Set(['creator-1', 'creator-2']))
-    vi.mocked(ServicesApi.getPosts).mockResolvedValue(mockPosts as any)
+    vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue(mockCreators as any)
+    vi.mocked(ProfileData.getPublicCommunityCreatorIds).mockResolvedValue(new Set(['creator-1', 'creator-2']))
+    vi.mocked(ConsumerData.getPosts).mockResolvedValue(mockPosts as any)
     vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
       courses: [mockCourse],
       featuredCourse: mockCourse,
@@ -106,7 +114,7 @@ describe('Home', () => {
       expect(screen.getAllByText('Continue learning').length).toBeGreaterThan(0)
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getByText('New for you')).toBeInTheDocument()
-      expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
+      expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
       expect(screen.getByText('Build a Paid Fan Community')).toBeInTheDocument()
       expect(screen.getAllByText('Core').length).toBeGreaterThan(0)
     })

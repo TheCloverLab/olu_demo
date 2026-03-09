@@ -2,17 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import PublicProfile from '../../apps/consumer/pages/PublicProfile'
-import * as ServicesApi from '../../services/api'
+import * as ConsumerApps from '../../domain/consumer/apps'
+import * as ProfileApi from '../../domain/profile/api'
 
-vi.mock('../../services/api', () => ({
-  getUserById: vi.fn(),
-  getPublicConsumerAppsForUser: vi.fn(),
+vi.mock('../../domain/consumer/apps', () => ({
+  getPublicProfileConsumerApps: vi.fn(),
+}))
+
+vi.mock('../../domain/profile/api', () => ({
+  getProfileById: vi.fn(),
 }))
 
 describe('PublicProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(ServicesApi.getUserById).mockResolvedValue({
+    vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'creator-1',
       name: 'Luna Chen',
       handle: '@luna',
@@ -23,19 +27,26 @@ describe('PublicProfile', () => {
       initials: 'LC',
       avatar_color: 'from-rose-500 to-orange-500',
     } as any)
-    vi.mocked(ServicesApi.getPublicConsumerAppsForUser).mockResolvedValue({
-      hasCommunity: true,
-      courses: [
-        {
-          id: 'course-1',
-          creator_id: 'creator-1',
-          slug: 'community-growth',
-          title: 'Build a Paid Fan Community',
-          subtitle: 'Turn audience attention into a membership business.',
-          price: 129,
-        },
-      ],
-    } as any)
+    vi.mocked(ConsumerApps.getPublicProfileConsumerApps).mockResolvedValue([
+      {
+        id: 'community:creator-1',
+        owner_user_id: 'creator-1',
+        app_type: 'community',
+        title: 'Luna Chen Community',
+        summary: 'Digital artist & gamer',
+        price_label: 'Open community',
+        href: '/communities/creator-1',
+      },
+      {
+        id: 'academy:course-1',
+        owner_user_id: 'creator-1',
+        app_type: 'academy',
+        title: 'Build a Paid Fan Community',
+        summary: 'Turn audience attention into a membership business.',
+        price_label: '$129',
+        href: '/courses/community-growth',
+      },
+    ] as any)
   })
 
   it('shows the creator public profile and open apps', async () => {
@@ -50,13 +61,13 @@ describe('PublicProfile', () => {
     await waitFor(() => {
       expect(screen.getByText('Luna Chen')).toBeInTheDocument()
       expect(screen.getByText('Open with Luna Chen')).toBeInTheDocument()
-      expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
+      expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
       expect(screen.getAllByText('Build a Paid Fan Community').length).toBeGreaterThan(0)
     })
   })
 
   it('does not invent creator apps for a pure consumer', async () => {
-    vi.mocked(ServicesApi.getUserById).mockResolvedValue({
+    vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'fan-1',
       name: 'Alex Park',
       handle: '@alexpark',
@@ -67,10 +78,7 @@ describe('PublicProfile', () => {
       avatar_color: 'from-pink-500 to-rose-600',
       role: 'fan',
     } as any)
-    vi.mocked(ServicesApi.getPublicConsumerAppsForUser).mockResolvedValue({
-      hasCommunity: false,
-      courses: [],
-    } as any)
+    vi.mocked(ConsumerApps.getPublicProfileConsumerApps).mockResolvedValue([])
 
     render(
       <MemoryRouter initialEntries={['/people/fan-1']}>
@@ -83,7 +91,7 @@ describe('PublicProfile', () => {
     await waitFor(() => {
       expect(screen.getByText('Alex Park')).toBeInTheDocument()
       expect(screen.getByText('No public communities or academies yet')).toBeInTheDocument()
-      expect(screen.queryByText('Alex Park Inner Circle')).not.toBeInTheDocument()
+      expect(screen.queryByText('Alex Park Community')).not.toBeInTheDocument()
       expect(screen.queryByText('Open with Alex Park')).not.toBeInTheDocument()
     })
   })

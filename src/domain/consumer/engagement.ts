@@ -8,7 +8,7 @@ import {
   getConsumerMembership,
   upsertConsumerLessonProgress,
   upsertConsumerMembership,
-} from '../../services/api'
+} from './data'
 
 const COURSE_PURCHASES_KEY = 'olu.consumer.coursePurchases'
 const COURSE_PROGRESS_KEY = 'olu.consumer.courseProgress'

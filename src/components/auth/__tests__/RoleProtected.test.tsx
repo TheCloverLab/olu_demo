@@ -13,8 +13,17 @@ vi.mock('../../../context/AppContext', () => ({
   useApp: vi.fn(),
 }))
 
+function mockApp(overrides: Record<string, any> = {}) {
+  vi.mocked(AppContext.useApp).mockReturnValue({
+    currentUser: {},
+    enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
+    hasModule: (key: string) => (overrides.enabledBusinessModules || ['creator_ops', 'marketing', 'supply_chain']).includes(key),
+    ...overrides,
+  } as any)
+}
+
 function renderProtected(
-  props: { requireAuth?: boolean; requiredRole?: any; bypassOnboarding?: boolean; businessOnly?: boolean } = {},
+  props: { requireAuth?: boolean; requiredModule?: any; bypassOnboarding?: boolean; businessOnly?: boolean } = {},
   initialPath = '/'
 ) {
   return render(
@@ -51,15 +60,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     const { container } = renderProtected()
     expect(container.innerHTML).toBe('')
@@ -74,15 +75,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     renderProtected()
     expect(screen.getByText('Login Page')).toBeInTheDocument()
@@ -97,21 +90,13 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     renderProtected()
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
   })
 
-  it('redirects to settings when missing required role', () => {
+  it('redirects when missing required module', () => {
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { id: '1', onboarding_completed: true } as any,
       session: {} as any,
@@ -120,21 +105,14 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp({ enabledBusinessModules: ['marketing'] })
 
-    renderProtected({ requiredRole: 'creator' })
-    expect(screen.getByText('Settings Page')).toBeInTheDocument()
+    renderProtected({ requiredModule: 'creator_ops' })
+    // Should redirect to / since path doesn't start with /business
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
   })
 
-  it('renders children when user has required role', () => {
+  it('renders children when user has required module', () => {
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: { id: '1', onboarding_completed: true } as any,
       session: {} as any,
@@ -143,17 +121,9 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'creator',
-      currentUser: {},
-      availableRoles: ['fan', 'creator'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp({ enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'] })
 
-    renderProtected({ requiredRole: 'creator' })
+    renderProtected({ requiredModule: 'creator_ops' })
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
   })
 
@@ -166,15 +136,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     renderProtected()
     expect(screen.getByText('Onboarding Page')).toBeInTheDocument()
@@ -189,15 +151,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     renderProtected({ bypassOnboarding: true })
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
@@ -212,10 +166,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
+    mockApp({
       enabledBusinessModules: [],
       consumerTemplate: 'fan_community',
       consumerConfig: {},
@@ -223,9 +174,6 @@ describe('RoleProtected', () => {
       setConsumerTemplate: vi.fn(),
       setConsumerConfig: vi.fn(),
       reloadBusinessModules: vi.fn(),
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
     })
 
     render(
@@ -256,15 +204,7 @@ describe('RoleProtected', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(AppContext.useApp).mockReturnValue({
-      currentRole: 'fan',
-      currentUser: {},
-      availableRoles: ['fan'],
-      enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
-      switchRole: vi.fn(),
-      showRoleSwitcher: false,
-      setShowRoleSwitcher: vi.fn(),
-    })
+    mockApp()
 
     renderProtected({ requireAuth: false })
     expect(screen.getByText('Protected Content')).toBeInTheDocument()

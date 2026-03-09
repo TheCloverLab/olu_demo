@@ -6,7 +6,7 @@ import ConsumerExperience from '../ConsumerExperience'
 import * as AuthContext from '../../../../context/AuthContext'
 import * as AppContext from '../../../../context/AppContext'
 import * as ConsumerApi from '../../../../domain/consumer/api'
-import * as Api from '../../../../services/api'
+import * as ConsumerData from '../../../../domain/consumer/data'
 
 vi.mock('../../../../context/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('../../../../domain/consumer/api', () => ({
   getCourseLibrarySnapshot: vi.fn(),
 }))
 
-vi.mock('../../../../services/api', () => ({
+vi.mock('../../../../domain/consumer/data', () => ({
   createConsumerCourse: vi.fn(),
   createConsumerCourseSection: vi.fn(),
   createPost: vi.fn(),
@@ -43,7 +43,7 @@ describe('ConsumerExperience', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
     })
-    vi.mocked(Api.getPostsByCreator).mockResolvedValue([])
+    vi.mocked(ConsumerData.getPostsByCreator).mockResolvedValue([])
   })
 
   it('renders membership operations when template is fan community', async () => {
@@ -122,8 +122,8 @@ describe('ConsumerExperience', () => {
       activeFans: 180,
       topFans: [],
     } as any)
-    vi.mocked(Api.getPostsByCreator).mockResolvedValue([])
-    vi.mocked(Api.updateMembershipTier).mockResolvedValue({
+    vi.mocked(ConsumerData.getPostsByCreator).mockResolvedValue([])
+    vi.mocked(ConsumerData.updateMembershipTier).mockResolvedValue({
       id: 'core',
       name: 'Core Plus',
       price: 12,
@@ -139,7 +139,7 @@ describe('ConsumerExperience', () => {
     await user.click(screen.getByText('Save tier'))
 
     await waitFor(() => {
-      expect(Api.updateMembershipTier).toHaveBeenCalledWith('core', expect.objectContaining({
+      expect(ConsumerData.updateMembershipTier).toHaveBeenCalledWith('core', expect.objectContaining({
         name: 'Core Plus',
       }))
       expect(screen.getAllByDisplayValue('Core Plus').length).toBeGreaterThan(0)
@@ -179,7 +179,7 @@ describe('ConsumerExperience', () => {
       activeFans: 180,
       topFans: [],
     } as any)
-    vi.mocked(Api.getPostsByCreator).mockResolvedValue([
+    vi.mocked(ConsumerData.getPostsByCreator).mockResolvedValue([
       {
         id: 'post-1',
         title: 'Member drop',
@@ -188,7 +188,7 @@ describe('ConsumerExperience', () => {
         type: 'text',
       },
     ] as any)
-    vi.mocked(Api.updatePost).mockResolvedValue({
+    vi.mocked(ConsumerData.updatePost).mockResolvedValue({
       id: 'post-1',
       title: 'Updated member drop',
       preview: 'Updated preview',
@@ -204,7 +204,7 @@ describe('ConsumerExperience', () => {
     await user.click(screen.getByText('Save post'))
 
     await waitFor(() => {
-      expect(Api.updatePost).toHaveBeenCalledWith('post-1', expect.objectContaining({
+      expect(ConsumerData.updatePost).toHaveBeenCalledWith('post-1', expect.objectContaining({
         title: 'Updated member drop',
       }))
       expect(screen.getAllByDisplayValue('Updated member drop').length).toBeGreaterThan(0)
@@ -242,7 +242,7 @@ describe('ConsumerExperience', () => {
       activeFans: 180,
       topFans: [],
     } as any)
-    vi.mocked(Api.createPost).mockResolvedValue({
+    vi.mocked(ConsumerData.createPost).mockResolvedValue({
       id: 'post-2',
       title: 'New community update',
       preview: 'Share a new members-only update, event recap, or discussion prompt.',
@@ -255,7 +255,7 @@ describe('ConsumerExperience', () => {
     await user.click(await screen.findByText('New post'))
 
     await waitFor(() => {
-      expect(Api.createPost).toHaveBeenCalledWith('creator-1', expect.objectContaining({
+      expect(ConsumerData.createPost).toHaveBeenCalledWith('creator-1', expect.objectContaining({
         title: 'New community update',
       }))
       expect(screen.getAllByDisplayValue('New community update').length).toBeGreaterThan(0)
@@ -411,7 +411,7 @@ describe('ConsumerExperience', () => {
         ],
       },
     } as any)
-    vi.mocked(Api.updateConsumerCourse).mockResolvedValue({
+    vi.mocked(ConsumerData.updateConsumerCourse).mockResolvedValue({
       id: 'course-1',
       title: 'Scale a Paid Fan Community',
       subtitle: 'Updated subtitle',
@@ -427,7 +427,7 @@ describe('ConsumerExperience', () => {
     await user.click(screen.getByText('Save featured course copy'))
 
     await waitFor(() => {
-      expect(Api.updateConsumerCourse).toHaveBeenCalledWith('course-1', expect.objectContaining({
+      expect(ConsumerData.updateConsumerCourse).toHaveBeenCalledWith('course-1', expect.objectContaining({
         title: 'Scale a Paid Fan Community',
       }))
       expect(screen.getAllByText('Scale a Paid Fan Community').length).toBeGreaterThan(0)
@@ -504,7 +504,7 @@ describe('ConsumerExperience', () => {
         ],
       },
     } as any)
-    vi.mocked(Api.updateConsumerCourseSection).mockResolvedValue({
+    vi.mocked(ConsumerData.updateConsumerCourseSection).mockResolvedValue({
       id: 'cg-1',
       title: 'Community Positioning',
       summary: 'Sharper lesson summary.',
@@ -519,7 +519,7 @@ describe('ConsumerExperience', () => {
     await user.click(screen.getByText('Save lesson copy'))
 
     await waitFor(() => {
-      expect(Api.updateConsumerCourseSection).toHaveBeenCalledWith('cg-1', expect.objectContaining({
+      expect(ConsumerData.updateConsumerCourseSection).toHaveBeenCalledWith('cg-1', expect.objectContaining({
         title: 'Community Positioning',
       }))
       expect(screen.getAllByDisplayValue('Community Positioning').length).toBeGreaterThan(0)
@@ -588,7 +588,7 @@ describe('ConsumerExperience', () => {
         ],
       },
     } as any)
-    vi.mocked(Api.createConsumerCourseSection).mockResolvedValue({
+    vi.mocked(ConsumerData.createConsumerCourseSection).mockResolvedValue({
       id: 'new-lesson-id',
       section_key: 'community-growth-2',
       title: 'New Lesson 2',
@@ -603,7 +603,7 @@ describe('ConsumerExperience', () => {
     await user.click(await screen.findByText('New lesson'))
 
     await waitFor(() => {
-      expect(Api.createConsumerCourseSection).toHaveBeenCalledWith(expect.objectContaining({
+      expect(ConsumerData.createConsumerCourseSection).toHaveBeenCalledWith(expect.objectContaining({
         course_id: 'course-1',
       }))
       expect(screen.getAllByDisplayValue('New Lesson 2').length).toBeGreaterThan(0)

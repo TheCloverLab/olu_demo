@@ -5,7 +5,12 @@ import { Search, Send, ArrowLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { useApp } from '../../../context/AppContext'
-import { addSocialChatMessage, ensureSocialChat, getSocialChatMessages, getSocialChatsByUser } from '../../../services/api'
+import {
+  ensureDirectSocialChat,
+  getDirectSocialChats,
+  getDirectSocialMessages,
+  postDirectSocialMessage,
+} from '../../../domain/social/api'
 
 export default function Chat() {
   const [searchParams] = useSearchParams()
@@ -27,10 +32,10 @@ export default function Chat() {
       try {
         const targetUserId = searchParams.get('with')
         if (targetUserId && targetUserId !== user.id) {
-          await ensureSocialChat(user.id, targetUserId)
+          await ensureDirectSocialChat(user.id, targetUserId)
         }
 
-        const data = await getSocialChatsByUser(user.id)
+        const data = await getDirectSocialChats(user.id)
         setChats(data || [])
 
         if (targetUserId) {
@@ -57,7 +62,7 @@ export default function Chat() {
       }
 
       try {
-        const data = await getSocialChatMessages(selected)
+        const data = await getDirectSocialMessages(selected)
         setMessages(
           (data || []).map((m: any) => ({
             from: m.from_type === 'user' ? 'user' : 'other',
@@ -88,7 +93,7 @@ export default function Chat() {
     setInput('')
 
     try {
-      await addSocialChatMessage(selected, 'user', text, 'Just now')
+      await postDirectSocialMessage(selected, 'user', text, 'Just now')
     } catch (err) {
       console.error('Failed to send message', err)
     }

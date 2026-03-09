@@ -7,9 +7,9 @@ import {
   markLessonComplete,
   purchaseCourse,
 } from '../engagement'
-import * as Api from '../../../services/api'
+import * as ConsumerData from '../data'
 
-vi.mock('../../../services/api', () => ({
+vi.mock('../data', () => ({
   createConsumerCoursePurchase: vi.fn(),
   getConsumerCoursePurchase: vi.fn(),
   getConsumerCoursePurchases: vi.fn(),
@@ -57,14 +57,14 @@ describe('consumer engagement', () => {
   })
 
   it('uses backend membership APIs for authenticated users', async () => {
-    vi.mocked(Api.upsertConsumerMembership).mockResolvedValue({
+    vi.mocked(ConsumerData.upsertConsumerMembership).mockResolvedValue({
       id: 'membership-1',
       tier_key: 'vip',
     } as any)
 
     await joinMembership({ id: 'user-1' } as any, 'creator-1', 'vip', 'VIP')
 
-    expect(Api.upsertConsumerMembership).toHaveBeenCalledWith('user-1', 'creator-1', 'vip', 'VIP')
+    expect(ConsumerData.upsertConsumerMembership).toHaveBeenCalledWith('user-1', 'creator-1', 'vip', 'VIP')
   })
 
   it('computes progress summary from completed sections', () => {

@@ -9,11 +9,16 @@ import { supabase } from '../lib/supabase'
 export default function Settings() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { availableRoles, enabledBusinessModules } = useApp()
+  const { enabledBusinessModules } = useApp()
   const [savingProfile, setSavingProfile] = useState(false)
+  const [savingPassword, setSavingPassword] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const [message, setMessage] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [name, setName] = useState(user?.name || '')
   const [handle, setHandle] = useState((user?.handle || '').replace(/^@/, ''))
   const [bio, setBio] = useState(user?.bio || '')
@@ -94,6 +99,43 @@ export default function Settings() {
       setMessage(err.message || 'Failed to update profile')
     } finally {
       setSavingProfile(false)
+    }
+  }
+
+  async function handleChangePassword() {
+    if (!user?.email) return
+    setSavingPassword(true)
+    setPasswordMessage('')
+
+    try {
+      if (!newPassword || newPassword.length < 6) {
+        throw new Error('New password must be at least 6 characters')
+      }
+      if (newPassword !== confirmPassword) {
+        throw new Error('Passwords do not match')
+      }
+
+      // Verify current password by signing in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      })
+      if (verifyError) throw new Error('Current password is incorrect')
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      if (updateError) throw updateError
+
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordMessage('Password updated successfully')
+    } catch (err: any) {
+      setPasswordMessage(err.message || 'Failed to update password')
+    } finally {
+      setSavingPassword(false)
     }
   }
 
@@ -186,6 +228,51 @@ export default function Settings() {
           </div>
 
           <div className="bg-[#111111] rounded-2xl p-6">
+            <h2 className="font-semibold mb-4">Password</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-olu-muted text-xs mb-1">Current Password</p>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                />
+              </div>
+              <div>
+                <p className="text-olu-muted text-xs mb-1">New Password</p>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                />
+              </div>
+              <div>
+                <p className="text-olu-muted text-xs mb-1">Confirm New Password</p>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                />
+              </div>
+              {passwordMessage && (
+                <p className={`text-sm ${passwordMessage.includes('success') ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {passwordMessage}
+                </p>
+              )}
+              <button
+                onClick={handleChangePassword}
+                disabled={savingPassword || !currentPassword || !newPassword}
+                className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50"
+              >
+                {savingPassword ? 'Updating...' : 'Change Password'}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[#111111] rounded-2xl p-6">
             <div className="mb-4">
               <h2 className="font-semibold mb-1">Account Scope</h2>
               <p className="text-olu-muted text-sm">
@@ -198,9 +285,9 @@ export default function Settings() {
                 <ShieldCheck size={20} />
               </span>
               <div>
-                <p className="font-semibold text-base">Business capabilities moved out of consumer settings</p>
+                <p className="font-semibold text-base">Business modules moved out of consumer settings</p>
                 <p className="text-olu-muted text-sm mt-1 leading-relaxed">
-                  Use the business workspace for capability switching, module access, approvals, and operator controls. Your current account supports {availableRoles.length} signed-in context{availableRoles.length > 1 ? 's' : ''}, but they are no longer managed from this page.
+                  Use the business workspace for module switching, access controls, approvals, and operator controls. Your current account supports 1 signed-in context, but they are no longer managed from this page.
                 </p>
               </div>
             </div>

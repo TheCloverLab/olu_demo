@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getGroupChatsByUser } from '../../../services/api'
-import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
+import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
 import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
 import clsx from 'clsx'
 
@@ -128,12 +127,9 @@ export default function Team() {
       }
 
       try {
-        const [agentsData, groupsData] = await Promise.all([
-          getWorkspaceAgentsWithTasksForUser(user),
-          getGroupChatsByUser(user.id),
-        ])
-        setAgents(agentsData)
-        setGroups((groupsData || []) as GroupChat[])
+        const team = await getWorkspaceTeamSnapshotForUser(user)
+        setAgents(team.agents)
+        setGroups((team.groups || []) as GroupChat[])
       } catch (error) {
         console.error('Failed to load team data', error)
         setAgents([])

@@ -4,7 +4,10 @@ import { ArrowRight, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, 
 import { useAuth } from '../../../context/AuthContext'
 import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
-import { getCreators, getPosts, getPublicCommunityCreatorIds } from '../../../services/api'
+import { buildAcademyCardFromCourse, buildCommunityCardFromCreator } from '../../../domain/consumer/apps'
+import { getPublicCreators } from '../../../domain/profile/api'
+import { getPosts } from '../../../domain/consumer/data'
+import { getPublicCommunityCreatorIds } from '../../../domain/profile/data'
 import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
@@ -121,7 +124,7 @@ export default function Home() {
     async function loadHome() {
       try {
         const [creatorsData, postsData, courseSnapshot] = await Promise.all([
-          getCreators(),
+          getPublicCreators(),
           getPosts(16),
           getCourseLibrarySnapshot(),
         ])
@@ -195,6 +198,10 @@ export default function Home() {
     return creators.filter((creator) => publicCommunityCreatorIds.has(creator.id))
   }, [creators, publicCommunityCreatorIds])
 
+  const communityCardsById = useMemo(() => {
+    return new Map(publicCommunityCreators.map((creator) => [creator.id, buildCommunityCardFromCreator(creator as any)]))
+  }, [publicCommunityCreators])
+
   const recommendedCommunities = useMemo(() => {
     const joinedIds = new Set(joinedCommunities.map((item) => item.creator.id))
     return publicCommunityCreators.filter((creator) => !joinedIds.has(creator.id)).slice(0, 3)
@@ -210,6 +217,10 @@ export default function Home() {
   const creatorByName = useMemo(() => {
     return new Map(creators.map((creator) => [creator.name, creator]))
   }, [creators])
+
+  const recommendedAcademyCards = useMemo(() => {
+    return recommendedAcademies.map((course) => buildAcademyCardFromCourse(course as any, creatorByName.get(course.instructor)))
+  }, [recommendedAcademies, creatorByName])
 
   const [brokenPostCovers, setBrokenPostCovers] = useState<Record<string, boolean>>({})
 
@@ -288,17 +299,22 @@ export default function Home() {
               {joinedCommunities.slice(0, 3).map(({ creator, tierName }) => (
                 <button
                   key={creator.id}
-                  onClick={() => navigate(`/communities/${creator.id}`)}
+                  onClick={() => navigate(communityCardsById.get(creator.id)?.href || `/communities/${creator.id}`)}
                   className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
+                  {(() => {
+                    const communityApp = communityCardsById.get(creator.id)
+                    return (
                   <AppCover
-                    src={creator.cover_img}
+                    src={communityApp?.cover_img || creator.cover_img}
                     alt={`${creator.name} community`}
                     gradient={creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500'}
                     eyebrow="Community"
-                    title={`${creator.name} Inner Circle`}
-                    subtitle={creator.bio || 'Member updates, private topics, and recurring drops.'}
+                    title={communityApp?.title || `${creator.name} Community`}
+                    subtitle={communityApp?.summary || creator.bio || 'Member updates, private topics, and recurring drops.'}
                   />
+                    )
+                  })()}
                   <div className="p-4">
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{tierName}</span>
@@ -378,17 +394,22 @@ export default function Home() {
               {recommendedCommunities.map((creator) => (
                 <button
                   key={creator.id}
-                  onClick={() => navigate(`/communities/${creator.id}`)}
+                  onClick={() => navigate(communityCardsById.get(creator.id)?.href || `/communities/${creator.id}`)}
                   className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
+                  {(() => {
+                    const communityApp = communityCardsById.get(creator.id)
+                    return (
                   <AppCover
-                    src={creator.cover_img}
+                    src={communityApp?.cover_img || creator.cover_img}
                     alt={`${creator.name} community`}
                     gradient={creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500'}
                     eyebrow="Community"
-                    title={`${creator.name} Inner Circle`}
-                    subtitle={creator.bio || 'Membership, access, and recurring updates.'}
+                    title={communityApp?.title || `${creator.name} Community`}
+                    subtitle={communityApp?.summary || creator.bio || 'Membership, access, and recurring updates.'}
                   />
+                    )
+                  })()}
                   <div className="p-4">
                     <div className="flex flex-wrap gap-2">
                       {['Weekly drops', 'Private Q&A', 'Community chat'].map((item) => (
@@ -417,31 +438,31 @@ export default function Home() {
               <BookOpen size={18} className="text-emerald-300" />
             </div>
             <div className="space-y-3">
-              {recommendedAcademies.map((course) => {
-                const host = creatorByName.get(course.instructor)
+              {recommendedAcademyCards.map((academyApp) => {
+                const host = creatorByName.get(academyApp.owner_name)
                 return (
                   <button
-                    key={course.id}
-                    onClick={() => navigate(`/courses/${course.slug}`)}
+                    key={academyApp.id}
+                    onClick={() => navigate(academyApp.href)}
                     className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
                   >
                     <AppCover
-                      src={host?.cover_img}
-                      alt={`${course.title} academy`}
-                      gradient={course.hero}
+                      src={academyApp.cover_img || host?.cover_img}
+                      alt={`${academyApp.title} academy`}
+                      gradient="from-sky-500 via-cyan-500 to-emerald-400"
                       eyebrow="Academy"
-                      title={`${course.instructor} Academy`}
-                      subtitle={course.title}
+                      title={academyApp.title}
+                      subtitle={academyApp.summary || academyApp.owner_name}
                     />
                     <div className="p-4">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-white/72 line-clamp-2">{course.subtitle}</p>
-                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">${course.price}</span>
+                        <p className="text-sm text-white/72 line-clamp-2">{academyApp.summary}</p>
+                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{academyApp.price_label}</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {course.sections.slice(0, 2).map((section) => (
-                          <span key={section.id} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
-                            {section.title}
+                        {academyApp.highlights.slice(0, 2).map((item) => (
+                          <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                            {item}
                           </span>
                         ))}
                       </div>

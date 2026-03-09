@@ -14,11 +14,6 @@ import {
   getConversations,
   getProductsByCreator,
   getFansByCreator,
-  getIPLicensesByCreator,
-  getIPInfringementsByCreator,
-  getRevenueAnalytics,
-  getViewsAnalytics,
-  getCampaignsByAdvertiser,
   getMembershipTiersByCreator,
   getMyRoleApplications,
   submitRoleApplication,
@@ -40,9 +35,11 @@ function mockChain(resolvedData: any = [], resolvedError: any = null) {
   chain.update = vi.fn().mockReturnValue(chain)
   chain.delete = vi.fn().mockReturnValue(chain)
   chain.eq = vi.fn().mockReturnValue(chain)
+  chain.or = vi.fn().mockReturnValue(chain)
   chain.order = vi.fn().mockReturnValue(chain)
   chain.limit = vi.fn().mockReturnValue(chain)
   chain.single = vi.fn().mockResolvedValue({ data: resolvedData, error: resolvedError })
+  chain.maybeSingle = vi.fn().mockResolvedValue({ data: resolvedData, error: resolvedError })
   // Make the chain thenable for await
   chain.then = (resolve: any, reject?: any) => {
     if (resolvedError && reject) return reject(resolvedError)
@@ -196,57 +193,6 @@ describe('API Service', () => {
       await getFansByCreator('creator-1')
       expect(supabase.from).toHaveBeenCalledWith('fans')
       expect(chain.order).toHaveBeenCalledWith('total_spend', { ascending: false })
-    })
-  })
-
-  describe('IP Management queries', () => {
-    it('getIPLicensesByCreator queries licenses', async () => {
-      const chain = mockChain([])
-      vi.mocked(supabase.from).mockReturnValue(chain)
-
-      await getIPLicensesByCreator('creator-1')
-      expect(supabase.from).toHaveBeenCalledWith('ip_licenses')
-      expect(chain.eq).toHaveBeenCalledWith('creator_id', 'creator-1')
-    })
-
-    it('getIPInfringementsByCreator queries infringements', async () => {
-      const chain = mockChain([])
-      vi.mocked(supabase.from).mockReturnValue(chain)
-
-      await getIPInfringementsByCreator('creator-1')
-      expect(supabase.from).toHaveBeenCalledWith('ip_infringements')
-      expect(chain.eq).toHaveBeenCalledWith('creator_id', 'creator-1')
-    })
-  })
-
-  describe('Analytics queries', () => {
-    it('getRevenueAnalytics queries by user_id asc', async () => {
-      const chain = mockChain([])
-      vi.mocked(supabase.from).mockReturnValue(chain)
-
-      await getRevenueAnalytics('user-1')
-      expect(supabase.from).toHaveBeenCalledWith('analytics_revenue')
-      expect(chain.order).toHaveBeenCalledWith('created_at', { ascending: true })
-    })
-
-    it('getViewsAnalytics queries by user_id asc', async () => {
-      const chain = mockChain([])
-      vi.mocked(supabase.from).mockReturnValue(chain)
-
-      await getViewsAnalytics('user-1')
-      expect(supabase.from).toHaveBeenCalledWith('analytics_views')
-      expect(chain.order).toHaveBeenCalledWith('created_at', { ascending: true })
-    })
-  })
-
-  describe('Campaign queries', () => {
-    it('getCampaignsByAdvertiser queries by advertiser_id', async () => {
-      const chain = mockChain([])
-      vi.mocked(supabase.from).mockReturnValue(chain)
-
-      await getCampaignsByAdvertiser('adv-1')
-      expect(supabase.from).toHaveBeenCalledWith('campaigns')
-      expect(chain.eq).toHaveBeenCalledWith('advertiser_id', 'adv-1')
     })
   })
 

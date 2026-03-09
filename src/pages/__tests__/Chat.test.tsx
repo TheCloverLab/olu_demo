@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import Chat from '../Chat'
 import * as AppContext from '../../context/AppContext'
 import * as AuthContext from '../../context/AuthContext'
-import * as Api from '../../services/api'
+import * as SocialApi from '../../domain/social/api'
 
 vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
@@ -14,11 +14,11 @@ vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('../../services/api', () => ({
-  addSocialChatMessage: vi.fn(),
-  ensureSocialChat: vi.fn(),
-  getSocialChatMessages: vi.fn(),
-  getSocialChatsByUser: vi.fn(),
+vi.mock('../../domain/social/api', () => ({
+  postDirectSocialMessage: vi.fn(),
+  ensureDirectSocialChat: vi.fn(),
+  getDirectSocialMessages: vi.fn(),
+  getDirectSocialChats: vi.fn(),
 }))
 
 vi.mock('framer-motion', () => ({
@@ -55,7 +55,7 @@ describe('Chat', () => {
         },
       },
     } as any)
-    vi.mocked(Api.getSocialChatsByUser).mockResolvedValue([])
+    vi.mocked(SocialApi.getDirectSocialChats).mockResolvedValue([])
   })
 
   it('shows topic lobby context when opened with a topic query', async () => {

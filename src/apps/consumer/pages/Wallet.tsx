@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, BookOpen, CreditCard, Crown, ReceiptText } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
+import { getCommunityMembershipTiers } from '../../../domain/consumer/data'
 import { getMembershipStatus, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
-import { getCreators, getMembershipTiersByCreator } from '../../../services/api'
+import { getPublicCreators } from '../../../domain/profile/api'
 import type { Course } from '../courseData'
 
 type ChargeItem = {
@@ -36,7 +37,7 @@ export default function Wallet() {
 
       try {
         const [creators, courseSnapshot] = await Promise.all([
-          getCreators(),
+          getPublicCreators(),
           getCourseLibrarySnapshot(),
         ])
 
@@ -45,12 +46,12 @@ export default function Wallet() {
             const membership = await getMembershipStatus(user as any, creator.id).catch(() => null)
             if (!membership?.tier_name) return null
 
-            const tiers = await getMembershipTiersByCreator(creator.id).catch(() => [])
+            const tiers = await getCommunityMembershipTiers(creator.id).catch(() => [])
             const tier = tiers.find((item) => item.key === membership.tier_key || item.name === membership.tier_name) || null
 
             return {
               id: `membership-${creator.id}`,
-              label: `${creator.name} Inner Circle`,
+              label: `${creator.name} Community`,
               detail: membership.tier_name,
               amount: tier ? `$${tier.price}/mo` : 'Active',
               href: `/communities/${creator.id}`,

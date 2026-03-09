@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, BadgeCheck, BookOpen, Crown, FileText, Lock, MessageCircle, Send, ShoppingBag, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
+import { getCommunityMembershipTiers, getCommunityPosts, getCommunityProducts } from '../../../domain/consumer/data'
 import { getMembershipStatus, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
-import { getMembershipTiersByCreator, getPostsByCreator, getProductsByCreator, getUserById } from '../../../services/api'
+import { getProfileById } from '../../../domain/profile/api'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -14,7 +15,7 @@ function formatNumber(value: number) {
 export default function AppLanding() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { consumerTemplate, currentUser, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
 
   const [creator, setCreator] = useState<any | null>(null)
   const [posts, setPosts] = useState<any[]>([])
@@ -28,7 +29,7 @@ export default function AppLanding() {
   const [membershipStatus, setMembershipStatus] = useState<{ tier_name?: string } | null>(null)
   const [hasCourseAccess, setHasCourseAccess] = useState(false)
   const avatarSrc = creator?.avatar_img || creator?.avatarImg
-  const isCommunity = consumerTemplate === 'fan_community'
+  const isCommunity = true
   const isOwner = !!creator?.id && currentUser?.id === creator.id
   const canManageApp = isOwner && enabledBusinessModules.includes('creator_ops')
 
@@ -41,10 +42,10 @@ export default function AppLanding() {
 
       try {
         const [creatorData, postData, tierData, productData] = await Promise.all([
-          getUserById(id),
-          getPostsByCreator(id),
-          getMembershipTiersByCreator(id),
-          getProductsByCreator(id),
+          getProfileById(id),
+          getCommunityPosts(id),
+          getCommunityMembershipTiers(id),
+          getCommunityProducts(id),
         ])
 
         setCreator(creatorData)
@@ -185,7 +186,7 @@ export default function AppLanding() {
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">{appCopy.eyebrow}</p>
                 <div className="flex items-center gap-2">
-                  <h1 className={clsx('font-black', isCommunity ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl')}>{creator.name} {appCopy.titleSuffix}</h1>
+                <h1 className={clsx('font-black', isCommunity ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl')}>{creator.name} Community</h1>
                   {creator.verified && <BadgeCheck size={18} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
                 </div>
                 {isCommunity ? (
@@ -343,7 +344,7 @@ export default function AppLanding() {
                   {post.locked && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
                       <Lock size={16} className="text-white" />
-                      <span className="text-white text-sm font-medium">{consumerTemplate === 'fan_community' ? 'Members only' : 'Purchase to unlock'}</span>
+                        <span className="text-white text-sm font-medium">Members only</span>
                     </div>
                   )}
                 </div>
@@ -358,7 +359,7 @@ export default function AppLanding() {
 
         {tab === 'access' && (
           <div className="space-y-3">
-            {consumerTemplate === 'fan_community' ? (
+            {isCommunity ? (
               tiers.length > 0 ? tiers.map((tier) => (
                 <div key={tier.id} className="glass rounded-2xl p-4">
                   <div className="flex items-center justify-between mb-1">

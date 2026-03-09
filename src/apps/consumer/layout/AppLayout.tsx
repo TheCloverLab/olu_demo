@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, ChevronRight, Menu, X, Zap, LogIn } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import RoleSwitcher from '../../../components/layout/RoleSwitcher'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
 import { CONSUMER_NAV } from '../templateConfig'
@@ -220,7 +219,6 @@ export default function AppLayout() {
       </main>
 
       <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} />
-      <RoleSwitcher />
     </div>
   )
 }

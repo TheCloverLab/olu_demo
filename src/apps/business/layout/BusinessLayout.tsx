@@ -217,7 +217,7 @@ export default function BusinessLayout() {
             onClick={() => window.open('/', '_blank', 'noopener,noreferrer')}
             className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
           >
-            Open Consumer App
+            Open OLU
           </button>
           <div className="px-3 py-2 rounded-2xl border border-cyan-500/10 bg-[#0a1525] text-[11px] text-cyan-100/55 text-center tracking-[0.16em] uppercase">
             {APP_VERSION}

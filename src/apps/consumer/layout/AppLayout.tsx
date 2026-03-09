@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn, Users, GraduationCap } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
@@ -96,21 +96,12 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, consumerTemplate, consumerApps } = useApp()
+  const { currentUser, consumerTemplate } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[consumerTemplate]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
-
-  // Build quick links from the user's joined/owned consumer apps
-  const appLinks = (consumerApps || [])
-    .filter((app) => app.status === 'published')
-    .map((app) => ({
-      to: app.app_type === 'community' ? `/communities/${app.owner_user_id}` : `/courses/${app.slug}`,
-      icon: app.app_type === 'community' ? Users : GraduationCap,
-      label: app.title,
-    }))
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -167,26 +158,6 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
-          {appLinks.length > 0 && (
-            <>
-              <div className="pt-3 pb-1 px-3">
-                <p className="text-[11px] uppercase tracking-wider text-olu-muted">My apps</p>
-              </div>
-              {appLinks.map(({ to, icon: Icon, label }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) => clsx(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                    isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
-                  )}
-                >
-                  <Icon size={18} />
-                  <span className="truncate">{label}</span>
-                </NavLink>
-              ))}
-            </>
-          )}
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">

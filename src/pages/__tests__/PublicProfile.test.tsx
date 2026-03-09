@@ -16,6 +16,7 @@ describe('PublicProfile', () => {
       id: 'creator-1',
       name: 'Luna Chen',
       handle: '@luna',
+      role: 'creator',
       bio: 'Digital artist & gamer',
       followers: 4200,
       verified: true,
@@ -48,6 +49,36 @@ describe('PublicProfile', () => {
       expect(screen.getByText('Open with Luna Chen')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Inner Circle')).toBeInTheDocument()
       expect(screen.getAllByText('Build a Paid Fan Community').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('does not invent creator apps for a pure consumer', async () => {
+    vi.mocked(ServicesApi.getUserById).mockResolvedValue({
+      id: 'fan-1',
+      name: 'Alex Park',
+      handle: '@alexpark',
+      bio: 'Superfan of Luna Chen',
+      followers: 89,
+      verified: false,
+      initials: 'AP',
+      avatar_color: 'from-pink-500 to-rose-600',
+      role: 'fan',
+    } as any)
+    vi.mocked(ServicesApi.getConsumerCourses).mockResolvedValue([] as any)
+
+    render(
+      <MemoryRouter initialEntries={['/people/fan-1']}>
+        <Routes>
+          <Route path="/people/:id" element={<PublicProfile />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Alex Park')).toBeInTheDocument()
+      expect(screen.getByText('No public communities or academies yet')).toBeInTheDocument()
+      expect(screen.queryByText('Alex Park Inner Circle')).not.toBeInTheDocument()
+      expect(screen.queryByText('Open with Alex Park')).not.toBeInTheDocument()
     })
   })
 })

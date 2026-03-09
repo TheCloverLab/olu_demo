@@ -49,15 +49,20 @@ export default function PublicProfile() {
   const creatorApps = useMemo(() => {
     if (!creator) return []
 
+    const hasCreatorRole = creator.role === 'creator' || creator.roles?.includes('creator')
+    const communityApps = hasCreatorRole
+      ? [{
+          id: `community-${creator.id}`,
+          type: 'Community',
+          title: `${creator.name} Inner Circle`,
+          subtitle: creator.bio || 'Membership, discussion, and recurring drops.',
+          cta: 'Open community',
+          href: `/communities/${creator.id}`,
+        }]
+      : []
+
     return [
-      {
-        id: `community-${creator.id}`,
-        type: 'Community',
-        title: `${creator.name} Inner Circle`,
-        subtitle: creator.bio || 'Membership, discussion, and recurring drops.',
-        cta: 'Open community',
-        href: `/communities/${creator.id}`,
-      },
+      ...communityApps,
       ...courses.map((course) => ({
         id: `academy-${course.id}`,
         type: 'Academy',
@@ -117,34 +122,44 @@ export default function PublicProfile() {
           </div>
         </section>
 
-        <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Apps</p>
-              <p className="font-semibold text-base mt-1">Open with {creator.name}</p>
+        {creatorApps.length > 0 ? (
+          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Apps</p>
+                <p className="font-semibold text-base mt-1">Open with {creator.name}</p>
+              </div>
+              <Users size={18} className="text-white/45" />
             </div>
-            <Users size={18} className="text-white/45" />
-          </div>
 
-          <div className="space-y-3">
-            {creatorApps.map((app) => (
-              <button
-                key={app.id}
-                onClick={() => navigate(app.href)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/45">{app.type}</p>
-                    <p className="font-semibold text-sm mt-1">{app.title}</p>
-                    <p className="text-xs text-olu-muted mt-1">{app.subtitle}</p>
+            <div className="space-y-3">
+              {creatorApps.map((app) => (
+                <button
+                  key={app.id}
+                  onClick={() => navigate(app.href)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/45">{app.type}</p>
+                      <p className="font-semibold text-sm mt-1">{app.title}</p>
+                      <p className="text-xs text-olu-muted mt-1">{app.subtitle}</p>
+                    </div>
+                    <span className="text-xs text-white/65">{app.cta}</span>
                   </div>
-                  <span className="text-xs text-white/65">{app.cta}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Profile</p>
+            <p className="font-semibold text-base mt-1">No public communities or academies yet</p>
+            <p className="text-sm text-olu-muted mt-2">
+              {creator.name} does not have any public apps open right now.
+            </p>
+          </section>
+        )}
 
         {courses.length > 0 ? (
           <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">

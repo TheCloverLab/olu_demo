@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
-import { Briefcase, ChevronLeft, LogOut, ShieldCheck } from 'lucide-react'
+import { Briefcase, ChevronLeft, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -272,44 +272,25 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-[#111111] rounded-2xl p-6">
-            <div className="mb-4">
-              <h2 className="font-semibold mb-1">Account Scope</h2>
-              <p className="text-olu-muted text-sm">
-                Product roles and business modules now live in the workspace layer. This page only manages your personal identity and sign-in state.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-olu-border bg-black/30 p-4 flex items-start gap-4">
-              <span className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                <ShieldCheck size={20} />
-              </span>
-              <div>
-                <p className="font-semibold text-base">Business modules moved out of consumer settings</p>
-                <p className="text-olu-muted text-sm mt-1 leading-relaxed">
-                  Use the business workspace for module switching, access controls, approvals, and operator controls. Your current account supports 1 signed-in context, but they are no longer managed from this page.
-                </p>
-              </div>
-            </div>
-
-            {enabledBusinessModules.length > 0 ? (
+          {enabledBusinessModules.length > 0 ? (
+            <div className="bg-[#111111] rounded-2xl p-6">
               <button
                 onClick={() => navigate('/business')}
-                className="w-full mt-4 rounded-2xl border border-white/10 bg-[#161616] hover:bg-[#1d1d1d] transition-colors px-4 py-3 text-left flex items-center justify-between gap-3"
+                className="w-full rounded-2xl border border-white/10 bg-[#161616] hover:bg-[#1d1d1d] transition-colors px-4 py-3 text-left flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3">
                   <span className="w-10 h-10 rounded-2xl bg-white/8 flex items-center justify-center flex-shrink-0">
                     <Briefcase size={18} />
                   </span>
                   <div>
-                    <p className="font-semibold text-sm">Open business workspace</p>
+                    <p className="font-semibold text-sm">Business workspace</p>
                     <p className="text-olu-muted text-xs mt-1">Modules, approvals, operators, and AI agents</p>
                   </div>
                 </div>
                 <span className="text-xs text-olu-muted">Open</span>
               </button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           <div className="bg-[#111111] rounded-2xl p-6">
             <h2 className="font-semibold mb-3">Session</h2>

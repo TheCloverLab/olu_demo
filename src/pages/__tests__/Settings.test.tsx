@@ -65,7 +65,6 @@ describe('Settings', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
     expect(screen.getByText('Account Settings')).toBeInTheDocument()
     expect(screen.getByText('Profile')).toBeInTheDocument()
-    expect(screen.getByText('Account Scope')).toBeInTheDocument()
     expect(screen.getByText('Session')).toBeInTheDocument()
   })
 
@@ -76,21 +75,11 @@ describe('Settings', () => {
     expect(screen.getByDisplayValue('testuser')).toBeInTheDocument()
   })
 
-  it('shows workspace-scope explanation instead of role application controls', async () => {
+  it('shows business workspace link when modules are enabled', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Business modules moved out of consumer settings')).toBeInTheDocument()
-      expect(screen.getByText('Open business workspace')).toBeInTheDocument()
-      expect(screen.queryByText('Apply')).not.toBeInTheDocument()
-    })
-  })
-
-  it('mentions signed-in contexts count in account scope message', async () => {
-    render(<MemoryRouter><Settings /></MemoryRouter>)
-
-    await waitFor(() => {
-      expect(screen.getByText(/supports 1 signed-in context/i)).toBeInTheDocument()
+      expect(screen.getByText('Business workspace')).toBeInTheDocument()
     })
   })
 

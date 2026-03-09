@@ -28,17 +28,17 @@ import { APP_VERSION } from '../../../lib/version'
 
 import type { BusinessModuleKey } from '../../../lib/supabase'
 
-const CORE_NAV = [
+const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: string; exact?: boolean }> = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/apps', icon: AppWindow, label: 'Apps' },
   { to: '/business/consumer', icon: BookOpen, label: 'Consumer' },
-  { to: '/business/team', icon: Users, label: 'Team' },
+  { to: '/business/team', icon: Users, label: 'Team', exact: true },
   { to: '/business/team/humans', icon: UserRound, label: 'People' },
   { to: '/business/agents', icon: Bot, label: 'AI Agents' },
   { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
   { to: '/business/connectors', icon: Cable, label: 'Connectors' },
-] as const
+]
 
 const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
   { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops', moduleKey: 'creator_ops' },
@@ -149,8 +149,8 @@ export default function BusinessLayout() {
   const location = useLocation()
 
   const allNav = [...CORE_NAV, ...MODULE_NAV]
-  const activeModuleLabel = allNav.find(({ to, exact }) =>
-    exact ? location.pathname === to : location.pathname.startsWith(to)
+  const activeModuleLabel = allNav.find((item) =>
+    ('exact' in item && item.exact) ? location.pathname === item.to : location.pathname.startsWith(item.to)
   )?.label
 
   return (

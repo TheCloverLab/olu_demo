@@ -15,6 +15,10 @@ import {
   ChevronRight,
   PanelsTopLeft,
   Wallet,
+  ListTodo,
+  ShieldCheck,
+  UserRound,
+  AppWindow,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -25,9 +29,13 @@ import type { BusinessModuleKey } from '../../../lib/supabase'
 
 const CORE_NAV = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
+  { to: '/business/apps', icon: AppWindow, label: 'Apps' },
   { to: '/business/consumer', icon: BookOpen, label: 'Consumer' },
   { to: '/business/team', icon: Users, label: 'Team' },
-  { to: '/business/agents', icon: Bot, label: 'Agents' },
+  { to: '/business/team/humans', icon: UserRound, label: 'People' },
+  { to: '/business/agents', icon: Bot, label: 'AI Agents' },
+  { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
+  { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
 ] as const
 
 const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
@@ -110,9 +118,13 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
+              <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />
               <MenuItem icon={BookOpen} label="Consumer" onClick={() => go('/business/consumer')} />
               <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
+              <MenuItem icon={UserRound} label="People" onClick={() => go('/business/team/humans')} />
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
+              <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />
+              <MenuItem icon={ShieldCheck} label="Approvals" onClick={() => go('/business/approvals')} />
               {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
                 <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
               ))}

@@ -11,6 +11,10 @@ import CreatorConsole from './pages/CreatorConsole'
 import AdvertiserConsole from './pages/AdvertiserConsole'
 import SupplierConsole from './pages/SupplierConsole'
 import ConsumerExperience from './pages/ConsumerExperience'
+import TaskCenter from './pages/TaskCenter'
+import ApprovalCenter from './pages/ApprovalCenter'
+import HumanEmployees from './pages/HumanEmployees'
+import AppManagement from './pages/AppManagement'
 import RoleProtected from '../../components/auth/RoleProtected'
 
 export const businessRoutes: RouteObject[] = [
@@ -21,8 +25,12 @@ export const businessRoutes: RouteObject[] = [
       { index: true, element: <BusinessWorkspace /> },
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
+      { path: 'team/humans', element: <HumanEmployees /> },
       { path: 'agents', element: <AIAgentConfig /> },
       { path: 'consumer', element: <ConsumerExperience /> },
+      { path: 'apps', element: <AppManagement /> },
+      { path: 'tasks', element: <TaskCenter /> },
+      { path: 'approvals', element: <ApprovalCenter /> },
       { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <BusinessSettings /> },
       { path: 'wallet', element: <RoleProtected requiredModule="creator_ops"><WalletPage /></RoleProtected> },

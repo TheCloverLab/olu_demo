@@ -24,6 +24,7 @@ vi.mock('../../domain/consumer/engagement', () => ({
 
 vi.mock('../../services/api', () => ({
   getCreators: vi.fn(),
+  getPublicCommunityCreatorIds: vi.fn(),
   getPosts: vi.fn(),
 }))
 
@@ -74,6 +75,7 @@ describe('Home', () => {
       signOut: vi.fn(),
     } as any)
     vi.mocked(ServicesApi.getCreators).mockResolvedValue(mockCreators as any)
+    vi.mocked(ServicesApi.getPublicCommunityCreatorIds).mockResolvedValue(new Set(['creator-1', 'creator-2']))
     vi.mocked(ServicesApi.getPosts).mockResolvedValue(mockPosts as any)
     vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
       courses: [mockCourse],

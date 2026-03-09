@@ -18,6 +18,8 @@ import type {
   ConsumerCoursePurchase,
   ConsumerLessonProgress,
   ConsumerMembership,
+  WorkspaceConsumerConfig,
+  Workspace,
 } from '../lib/supabase'
 export {
   advanceBusinessCampaign,
@@ -105,11 +107,64 @@ function buildDiscoverPattern(query?: string) {
   return (query || '').trim().replaceAll(',', ' ').replaceAll('%', '').replaceAll('*', '')
 }
 
+async function getWorkspaceConsumerConfigsForOwnerIds(ownerUserIds: string[]) {
+  if (ownerUserIds.length === 0) return [] as Array<Pick<WorkspaceConsumerConfig, 'workspace_id' | 'template_key' | 'config_json'> & { workspace: Pick<Workspace, 'owner_user_id'> | null }>
+
+  const { data: workspaces, error: workspaceError } = await supabase
+    .from('workspaces')
+    .select('id, owner_user_id')
+    .in('owner_user_id', ownerUserIds)
+
+  if (workspaceError) throw workspaceError
+  if (!workspaces || workspaces.length === 0) return []
+
+  const workspaceById = new Map(workspaces.map((workspace) => [workspace.id, workspace]))
+  const { data: configs, error: configError } = await supabase
+    .from('workspace_consumer_configs')
+    .select('workspace_id, template_key, config_json')
+    .in('workspace_id', workspaces.map((workspace) => workspace.id))
+
+  if (configError) throw configError
+
+  return (configs || []).map((config) => ({
+    ...config,
+    workspace: workspaceById.get(config.workspace_id) || null,
+  })) as Array<Pick<WorkspaceConsumerConfig, 'workspace_id' | 'template_key' | 'config_json'> & { workspace: Pick<Workspace, 'owner_user_id'> | null }>
+}
+
+export async function getPublicCommunityCreatorIds(ownerUserIds: string[]) {
+  const configs = await getWorkspaceConsumerConfigsForOwnerIds(ownerUserIds)
+
+  return new Set(
+    configs
+      .filter((config) => {
+        const ownerUserId = config.workspace?.owner_user_id
+        if (!ownerUserId) return false
+        return (
+          config.template_key === 'fan_community' ||
+          config.config_json?.featured_template === 'fan_community' ||
+          config.config_json?.featured_creator_id === ownerUserId
+        )
+      })
+      .map((config) => config.workspace!.owner_user_id),
+  )
+}
+
+export async function getPublicConsumerAppsForUser(userId: string) {
+  const [communityOwnerIds, courses] = await Promise.all([
+    getPublicCommunityCreatorIds([userId]),
+    getConsumerCourses(),
+  ])
+
+  return {
+    hasCommunity: communityOwnerIds.has(userId),
+    courses: courses.filter((course) => course.creator_id === userId),
+  }
+}
+
 export async function getCreatorsForDiscover(options: DiscoverQueryOptions = {}) {
   const page = options.page ?? 0
   const pageSize = options.pageSize ?? 6
-  const from = page * pageSize
-  const to = from + pageSize - 1
   const pattern = buildDiscoverPattern(options.query)
 
   let request = supabase
@@ -117,7 +172,6 @@ export async function getCreatorsForDiscover(options: DiscoverQueryOptions = {})
     .select('*')
     .eq('role', 'creator')
     .order('followers', { ascending: false })
-    .range(from, to)
 
   if (pattern) {
     request = request.or(`name.ilike.%${pattern}%,handle.ilike.%${pattern}%,bio.ilike.%${pattern}%`)
@@ -125,7 +179,12 @@ export async function getCreatorsForDiscover(options: DiscoverQueryOptions = {})
 
   const { data, error } = await request
   if (error) throw error
-  return (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
+  const creators = (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
+  const publicCommunityCreatorIds = await getPublicCommunityCreatorIds(creators.map((creator) => creator.id))
+  const filtered = creators.filter((creator) => publicCommunityCreatorIds.has(creator.id))
+  const from = page * pageSize
+  const to = from + pageSize
+  return filtered.slice(from, to)
 }
 
 // ============================================================================

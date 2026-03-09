@@ -6,7 +6,7 @@ import * as ServicesApi from '../../services/api'
 
 vi.mock('../../services/api', () => ({
   getUserById: vi.fn(),
-  getConsumerCourses: vi.fn(),
+  getPublicConsumerAppsForUser: vi.fn(),
 }))
 
 describe('PublicProfile', () => {
@@ -23,16 +23,19 @@ describe('PublicProfile', () => {
       initials: 'LC',
       avatar_color: 'from-rose-500 to-orange-500',
     } as any)
-    vi.mocked(ServicesApi.getConsumerCourses).mockResolvedValue([
-      {
-        id: 'course-1',
-        creator_id: 'creator-1',
-        slug: 'community-growth',
-        title: 'Build a Paid Fan Community',
-        subtitle: 'Turn audience attention into a membership business.',
-        price: 129,
-      },
-    ] as any)
+    vi.mocked(ServicesApi.getPublicConsumerAppsForUser).mockResolvedValue({
+      hasCommunity: true,
+      courses: [
+        {
+          id: 'course-1',
+          creator_id: 'creator-1',
+          slug: 'community-growth',
+          title: 'Build a Paid Fan Community',
+          subtitle: 'Turn audience attention into a membership business.',
+          price: 129,
+        },
+      ],
+    } as any)
   })
 
   it('shows the creator public profile and open apps', async () => {
@@ -64,7 +67,10 @@ describe('PublicProfile', () => {
       avatar_color: 'from-pink-500 to-rose-600',
       role: 'fan',
     } as any)
-    vi.mocked(ServicesApi.getConsumerCourses).mockResolvedValue([] as any)
+    vi.mocked(ServicesApi.getPublicConsumerAppsForUser).mockResolvedValue({
+      hasCommunity: false,
+      courses: [],
+    } as any)
 
     render(
       <MemoryRouter initialEntries={['/people/fan-1']}>

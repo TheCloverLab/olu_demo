@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, 
 import { useAuth } from '../../../context/AuthContext'
 import { computeCourseProgress, getMembershipStatus, getProgressForCourse, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
-import { getCreators, getPosts } from '../../../services/api'
+import { getCreators, getPosts, getPublicCommunityCreatorIds } from '../../../services/api'
 import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
@@ -109,6 +109,7 @@ export default function Home() {
   const [creators, setCreators] = useState<User[]>([])
   const [posts, setPosts] = useState<any[]>([])
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+  const [publicCommunityCreatorIds, setPublicCommunityCreatorIds] = useState<Set<string>>(new Set())
   const [purchasedSlugs, setPurchasedSlugs] = useState<string[]>([])
   const [progressBySlug, setProgressBySlug] = useState<Record<string, ConsumerLessonProgress[]>>({})
   const [memberships, setMemberships] = useState<Record<string, { tier_name: string }>>({})
@@ -124,6 +125,7 @@ export default function Home() {
           getPosts(16),
           getCourseLibrarySnapshot(),
         ])
+        const publicCommunityIds = await getPublicCommunityCreatorIds(creatorsData.map((creator) => creator.id))
 
         const [membershipEntries, purchased, progressEntries] = await Promise.all([
           Promise.all(
@@ -143,6 +145,7 @@ export default function Home() {
         setCreators(creatorsData)
         setPosts(postsData)
         setCourseLibrary(courseSnapshot.courses)
+        setPublicCommunityCreatorIds(publicCommunityIds)
         setPurchasedSlugs(purchased)
         setProgressBySlug(Object.fromEntries(progressEntries))
         setMemberships(
@@ -188,10 +191,14 @@ export default function Home() {
     return filtered.slice(0, 5)
   }, [joinedCommunities, posts])
 
+  const publicCommunityCreators = useMemo(() => {
+    return creators.filter((creator) => publicCommunityCreatorIds.has(creator.id))
+  }, [creators, publicCommunityCreatorIds])
+
   const recommendedCommunities = useMemo(() => {
     const joinedIds = new Set(joinedCommunities.map((item) => item.creator.id))
-    return creators.filter((creator) => !joinedIds.has(creator.id)).slice(0, 3)
-  }, [creators, joinedCommunities])
+    return publicCommunityCreators.filter((creator) => !joinedIds.has(creator.id)).slice(0, 3)
+  }, [publicCommunityCreators, joinedCommunities])
 
   const recommendedAcademies = useMemo(() => {
     const purchased = new Set(purchasedSlugs)

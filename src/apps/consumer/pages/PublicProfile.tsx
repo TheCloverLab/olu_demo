@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, BookOpen, Users } from 'lucide-react'
-import { getConsumerCourses, getUserById } from '../../../services/api'
+import { getPublicConsumerAppsForUser, getUserById } from '../../../services/api'
 import type { ConsumerCourse, User } from '../../../lib/supabase'
 
 function formatNumber(value: number) {
@@ -12,6 +12,7 @@ export default function PublicProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [creator, setCreator] = useState<User | null>(null)
+  const [hasCommunity, setHasCommunity] = useState(false)
   const [courses, setCourses] = useState<ConsumerCourse[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -22,15 +23,16 @@ export default function PublicProfile() {
       if (!id) return
 
       try {
-        const [creatorData, courseRows] = await Promise.all([
+        const [creatorData, publicApps] = await Promise.all([
           getUserById(id),
-          getConsumerCourses(),
+          getPublicConsumerAppsForUser(id),
         ])
 
         if (cancelled) return
 
         setCreator(creatorData)
-        setCourses(courseRows.filter((course) => course.creator_id === id))
+        setHasCommunity(publicApps.hasCommunity)
+        setCourses(publicApps.courses)
       } catch (error) {
         console.error('Failed to load public profile', error)
       } finally {
@@ -48,9 +50,7 @@ export default function PublicProfile() {
 
   const creatorApps = useMemo(() => {
     if (!creator) return []
-
-    const hasCreatorRole = creator.role === 'creator' || creator.roles?.includes('creator')
-    const communityApps = hasCreatorRole
+    const communityApps = hasCommunity
       ? [{
           id: `community-${creator.id}`,
           type: 'Community',
@@ -72,7 +72,7 @@ export default function PublicProfile() {
         href: `/courses/${course.slug}`,
       })),
     ]
-  }, [creator, courses])
+  }, [creator, courses, hasCommunity])
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>

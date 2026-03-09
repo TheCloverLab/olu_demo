@@ -15,6 +15,7 @@ import TaskCenter from './pages/TaskCenter'
 import ApprovalCenter from './pages/ApprovalCenter'
 import HumanEmployees from './pages/HumanEmployees'
 import AppManagement from './pages/AppManagement'
+import Connectors from './pages/Connectors'
 import RoleProtected from '../../components/auth/RoleProtected'
 
 export const businessRoutes: RouteObject[] = [
@@ -29,6 +30,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'agents', element: <AIAgentConfig /> },
       { path: 'consumer', element: <ConsumerExperience /> },
       { path: 'apps', element: <AppManagement /> },
+      { path: 'connectors', element: <Connectors /> },
       { path: 'tasks', element: <TaskCenter /> },
       { path: 'approvals', element: <ApprovalCenter /> },
       { path: 'account', element: <BusinessAccount /> },

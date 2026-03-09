@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserRound, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
 import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
@@ -179,14 +179,23 @@ export default function Team() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-black text-2xl">My Team</h1>
+          <h1 className="font-black text-2xl">Workforce</h1>
           <p className="text-cyan-100/60 text-sm mt-0.5">
-            {agents.length} AI Agent{agents.length > 1 ? 's' : ''} ·{' '}
+            {agents.length} AI agent{agents.length > 1 ? 's' : ''} ·{' '}
             {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
-          <Bot size={18} className="text-cyan-200" />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/business/team/humans')}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors"
+          >
+            <UserRound size={14} />
+            People
+          </button>
+          <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+            <Users size={18} className="text-cyan-200" />
+          </div>
         </div>
       </div>
 

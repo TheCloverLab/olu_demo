@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Compass, Search } from 'lucide-react'
+import clsx from 'clsx'
 import { getDiscoverConsumerAppCards, type ConsumerAppCard } from '../../../domain/consumer/apps'
 
 const PAGE_SIZE = 4
@@ -56,6 +57,8 @@ function DiscoverCard({
   )
 }
 
+type CategoryFilter = 'all' | 'community' | 'academy'
+
 export default function Discover() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
@@ -65,6 +68,7 @@ export default function Discover() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [category, setCategory] = useState<CategoryFilter>('all')
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -134,6 +138,11 @@ export default function Discover() {
     return () => observer.disconnect()
   }, [hasMore, loading, loadingMore, apps.length])
 
+  const filteredApps = useMemo(() => {
+    if (category === 'all') return apps
+    return apps.filter((app) => app.app_type === category)
+  }, [apps, category])
+
   const emptyLabel = useMemo(() => {
     if (!debouncedQuery) return 'Nothing new right now.'
     return 'No results matched that search.'
@@ -164,20 +173,35 @@ export default function Discover() {
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="font-bold text-lg">{debouncedQuery ? 'Results' : 'Recommended for you'}</p>
-          <span className="text-xs text-white/45">{apps.length} shown</span>
+          <div className="flex items-center gap-2">
+            {([['all', 'All'], ['community', 'Communities'], ['academy', 'Academies']] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setCategory(key)}
+                className={clsx(
+                  'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                  category === key
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/55 border border-white/10 hover:bg-white/10'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {apps.length > 0 ? (
+        {filteredApps.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-4">
-            {apps.map((app) => (
+            {filteredApps.map((app) => (
               <DiscoverCard key={app.id} app={app} onOpen={() => navigate(app.href)} />
             ))}
           </div>
         ) : null}
 
-        {!loading && apps.length === 0 ? (
+        {!loading && filteredApps.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-sm text-white/45">
             {emptyLabel}
           </div>

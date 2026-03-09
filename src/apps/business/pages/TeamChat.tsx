@@ -312,6 +312,7 @@ export default function TeamChat() {
     const userText = input.trim()
     setInput('')
     setRuntimeError(null)
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
 
     const userMsg = { from: 'user', text: userText, time: 'Just now' }
     const next = [...messages, userMsg]
@@ -608,6 +609,9 @@ export default function TeamChat() {
                   onChange={e => {
                     setInput(e.target.value)
                     if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
+                    // Auto-resize
+                    e.target.style.height = 'auto'
+                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
                   }}
                   onKeyDown={e => {
                     if (isGroup && mention.handleKey(e, input, setInput)) return
@@ -616,6 +620,7 @@ export default function TeamChat() {
                   placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
                   rows={1}
                   className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
+                  style={{ maxHeight: 120 }}
                 />
                 </div>
               </div>

@@ -6,7 +6,7 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-import { CONSUMER_NAV } from '../templateConfig'
+import { CONSUMER_NAV, TEMPLATE_QUICK_LINKS, CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -96,11 +96,14 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, consumerTemplate } = useApp()
+  const { currentUser, consumerTemplate, setConsumerTemplate } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[consumerTemplate]
+  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
+  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
+  const templateKeys = Object.keys(CONSUMER_TEMPLATE_META) as ConsumerTemplateKey[]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   return (
@@ -158,6 +161,48 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
+          {quickLinks.length > 0 && (
+            <>
+              <div className="pt-3 pb-1 px-3">
+                <p className="text-[11px] uppercase tracking-wider text-olu-muted">{templateMeta.shortLabel}</p>
+              </div>
+              {quickLinks.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => clsx(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                    isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
+                  )}
+                >
+                  <Icon size={18} />
+                  {label}
+                </NavLink>
+              ))}
+            </>
+          )}
+
+          {templateKeys.length > 1 && (
+            <>
+              <div className="pt-3 pb-1 px-3">
+                <p className="text-[11px] uppercase tracking-wider text-olu-muted">Switch app</p>
+              </div>
+              <div className="flex gap-1 px-1">
+                {templateKeys.map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setConsumerTemplate(key)}
+                    className={clsx(
+                      'flex-1 py-1.5 rounded-xl text-xs font-medium transition-colors',
+                      consumerTemplate === key ? 'bg-white text-black' : 'bg-[#1c1c1c] text-olu-muted hover:text-white'
+                    )}
+                  >
+                    {CONSUMER_TEMPLATE_META[key].shortLabel}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">

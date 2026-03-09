@@ -1,12 +1,12 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Users, GraduationCap } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-import { CONSUMER_NAV, TEMPLATE_QUICK_LINKS, CONSUMER_TEMPLATE_META, type ConsumerTemplateKey } from '../templateConfig'
+import { CONSUMER_NAV } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -96,15 +96,21 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, consumerTemplate, setConsumerTemplate } = useApp()
+  const { currentUser, consumerTemplate, consumerApps } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[consumerTemplate]
-  const quickLinks = TEMPLATE_QUICK_LINKS[consumerTemplate]
-  const templateMeta = CONSUMER_TEMPLATE_META[consumerTemplate]
-  const templateKeys = Object.keys(CONSUMER_TEMPLATE_META) as ConsumerTemplateKey[]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
+
+  // Build quick links from the user's joined/owned consumer apps
+  const appLinks = (consumerApps || [])
+    .filter((app) => app.status === 'published')
+    .map((app) => ({
+      to: app.app_type === 'community' ? `/communities/${app.owner_user_id}` : `/courses/${app.slug}`,
+      icon: app.app_type === 'community' ? Users : GraduationCap,
+      label: app.title,
+    }))
 
   return (
     <div className="flex h-screen overflow-hidden bg-olu-bg">
@@ -161,12 +167,12 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
-          {quickLinks.length > 0 && (
+          {appLinks.length > 0 && (
             <>
               <div className="pt-3 pb-1 px-3">
-                <p className="text-[11px] uppercase tracking-wider text-olu-muted">{templateMeta.shortLabel}</p>
+                <p className="text-[11px] uppercase tracking-wider text-olu-muted">My apps</p>
               </div>
-              {quickLinks.map(({ to, icon: Icon, label }) => (
+              {appLinks.map(({ to, icon: Icon, label }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -176,31 +182,9 @@ export default function AppLayout() {
                   )}
                 >
                   <Icon size={18} />
-                  {label}
+                  <span className="truncate">{label}</span>
                 </NavLink>
               ))}
-            </>
-          )}
-
-          {templateKeys.length > 1 && (
-            <>
-              <div className="pt-3 pb-1 px-3">
-                <p className="text-[11px] uppercase tracking-wider text-olu-muted">Switch app</p>
-              </div>
-              <div className="flex gap-1 px-1">
-                {templateKeys.map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setConsumerTemplate(key)}
-                    className={clsx(
-                      'flex-1 py-1.5 rounded-xl text-xs font-medium transition-colors',
-                      consumerTemplate === key ? 'bg-white text-black' : 'bg-[#1c1c1c] text-olu-muted hover:text-white'
-                    )}
-                  >
-                    {CONSUMER_TEMPLATE_META[key].shortLabel}
-                  </button>
-                ))}
-              </div>
             </>
           )}
         </nav>

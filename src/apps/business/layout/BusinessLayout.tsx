@@ -32,7 +32,7 @@ const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: s
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/apps', icon: AppWindow, label: 'Apps' },
   { to: '/business/consumer', icon: BookOpen, label: 'Consumer' },
-  { to: '/business/team', icon: Users, label: 'Team', exact: true },
+  { to: '/business/team', icon: Users, label: 'Workforce', exact: true },
   { to: '/business/team/humans', icon: UserRound, label: 'People' },
   { to: '/business/agents', icon: Bot, label: 'AI Agents' },
   { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
@@ -122,7 +122,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
               <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />
               <MenuItem icon={BookOpen} label="Consumer" onClick={() => go('/business/consumer')} />
-              <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
+              <MenuItem icon={Users} label="Workforce" onClick={() => go('/business/team')} />
               <MenuItem icon={UserRound} label="People" onClick={() => go('/business/team/humans')} />
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
               <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />

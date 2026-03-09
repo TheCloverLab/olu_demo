@@ -72,7 +72,7 @@ export default function HumanEmployees() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-2">Workspace</p>
-          <h1 className="font-black text-2xl">Human Team</h1>
+          <h1 className="font-black text-2xl">People</h1>
           <p className="text-cyan-100/55 text-sm mt-1">
             {employees.length} members · {employees.filter((e) => e.status === 'online').length} online
           </p>

@@ -1,21 +1,109 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, BookOpen, Users } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, BookOpen, Pencil, Save, Users, X } from 'lucide-react'
+import { useAuth } from '../../../context/AuthContext'
 import type { ConsumerAppCard } from '../../../domain/consumer/apps'
 import { getPublicProfileConsumerApps } from '../../../domain/consumer/apps'
 import { getProfileById } from '../../../domain/profile/api'
+import { supabase } from '../../../lib/supabase'
 import type { User } from '../../../lib/supabase'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
+function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState(user.name)
+  const [bio, setBio] = useState(user.bio || '')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  async function handleSave() {
+    setSaving(true)
+    setMessage('')
+    try {
+      const ownerFolder = user.auth_id || user.id
+      let avatarUrl: string | undefined
+      let coverUrl: string | undefined
+
+      if (avatarFile) {
+        const ext = avatarFile.name.split('.').pop() || 'jpg'
+        const path = `${ownerFolder}/avatar-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true, contentType: avatarFile.type })
+        if (error) throw error
+        avatarUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+      }
+      if (coverFile) {
+        const ext = coverFile.name.split('.').pop() || 'jpg'
+        const path = `${ownerFolder}/cover-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('covers').upload(path, coverFile, { upsert: true, contentType: coverFile.type })
+        if (error) throw error
+        coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      }
+
+      const initials = name.trim().split(' ').filter(Boolean).map((p) => p[0]).join('').toUpperCase().slice(0, 2) || 'U'
+      const updates: any = { name: name.trim(), bio: bio.trim() || null, initials }
+      if (avatarUrl) updates.avatar_img = avatarUrl
+      if (coverUrl) updates.cover_img = coverUrl
+
+      const { error } = await supabase.from('users').update(updates).eq('id', user.id)
+      if (error) throw error
+
+      setMessage('Saved! Refreshing...')
+      setTimeout(() => { onSaved(); window.location.reload() }, 500)
+    } catch (err: any) {
+      setMessage(err.message || 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-base">Edit Profile</h2>
+        <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-white/[0.06] transition-colors">
+          <X size={16} className="text-olu-muted" />
+        </button>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <p className="text-olu-muted text-xs mb-1">Display Name</p>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-white/30" />
+        </div>
+        <div>
+          <p className="text-olu-muted text-xs mb-1">Bio</p>
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-white/30 resize-none" />
+        </div>
+        <div>
+          <p className="text-olu-muted text-xs mb-1">Avatar (optional)</p>
+          <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
+        </div>
+        <div>
+          <p className="text-olu-muted text-xs mb-1">Cover Image (optional)</p>
+          <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
+        </div>
+        {message && <p className={`text-sm ${message.includes('Saved') ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
+        <button onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+          <Save size={14} />
+          {saving ? 'Saving...' : 'Save Profile'}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 export default function PublicProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user: authUser } = useAuth()
   const [creator, setCreator] = useState<User | null>(null)
   const [publicApps, setPublicApps] = useState<ConsumerAppCard[]>([])
   const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const isOwn = !!(authUser && creator && authUser.id === creator.id)
 
   useEffect(() => {
     let cancelled = false
@@ -77,9 +165,19 @@ export default function PublicProfile() {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h1 className="font-black text-2xl">{creator.name}</h1>
-                {creator.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <h1 className="font-black text-2xl">{creator.name}</h1>
+                  {creator.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
+                </div>
+                {isOwn && (
+                  <button
+                    onClick={() => setEditing(!editing)}
+                    className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors flex-shrink-0"
+                  >
+                    <Pencil size={16} className="text-olu-muted" />
+                  </button>
+                )}
               </div>
               <p className="text-olu-muted text-sm mt-1">{creator.handle}</p>
               <p className="text-sm text-olu-muted mt-3 leading-relaxed">{creator.bio || 'No bio yet.'}</p>
@@ -97,6 +195,10 @@ export default function PublicProfile() {
             </div>
           </div>
         </section>
+
+        {editing && isOwn && (
+          <ProfileEditor user={creator} onClose={() => setEditing(false)} onSaved={() => setEditing(false)} />
+        )}
 
         {creatorApps.length > 0 ? (
           <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">

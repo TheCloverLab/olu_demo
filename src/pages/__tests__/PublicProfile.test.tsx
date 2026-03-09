@@ -2,8 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import PublicProfile from '../../apps/consumer/pages/PublicProfile'
+import * as AuthContext from '../../context/AuthContext'
 import * as ConsumerApps from '../../domain/consumer/apps'
 import * as ProfileApi from '../../domain/profile/api'
+
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: vi.fn(),
+}))
 
 vi.mock('../../domain/consumer/apps', () => ({
   getPublicProfileConsumerApps: vi.fn(),
@@ -13,9 +18,24 @@ vi.mock('../../domain/profile/api', () => ({
   getProfileById: vi.fn(),
 }))
 
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({ update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })),
+    storage: { from: vi.fn(() => ({ upload: vi.fn().mockResolvedValue({ error: null }), getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'url' } }) })) },
+  },
+}))
+
 describe('PublicProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      user: { id: 'viewer-1' } as any,
+      session: {} as any,
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    })
     vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'creator-1',
       name: 'Luna Chen',

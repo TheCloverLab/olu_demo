@@ -10,95 +10,39 @@ export default function Settings() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { enabledBusinessModules } = useApp()
-  const [savingProfile, setSavingProfile] = useState(false)
+  const [savingHandle, setSavingHandle] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
-  const [message, setMessage] = useState('')
+  const [handleMessage, setHandleMessage] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [name, setName] = useState(user?.name || '')
   const [handle, setHandle] = useState((user?.handle || '').replace(/^@/, ''))
-  const [bio, setBio] = useState(user?.bio || '')
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [coverFile, setCoverFile] = useState<File | null>(null)
 
   useEffect(() => {
-    setName(user?.name || '')
     setHandle((user?.handle || '').replace(/^@/, ''))
-    setBio(user?.bio || '')
   }, [user?.id])
 
-  async function handleSaveProfile() {
+  async function handleSaveHandle() {
     if (!user?.id) return
-    setSavingProfile(true)
-    setMessage('')
+    setSavingHandle(true)
+    setHandleMessage('')
 
     try {
       const normalizedHandle = handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '')
-      if (!name.trim() || !normalizedHandle) {
-        throw new Error('Display name and handle are required')
-      }
+      if (!normalizedHandle) throw new Error('Handle is required')
 
-      let avatarUrl: string | undefined
-      let coverUrl: string | undefined
-
-      const ownerFolder = user.auth_id || user.id
-
-      if (avatarFile) {
-        const ext = avatarFile.name.split('.').pop() || 'jpg'
-        const path = `${ownerFolder}/avatar-${Date.now()}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, avatarFile, {
-          upsert: true,
-          contentType: avatarFile.type,
-        })
-        if (uploadErr) throw uploadErr
-        avatarUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
-      }
-
-      if (coverFile) {
-        const ext = coverFile.name.split('.').pop() || 'jpg'
-        const path = `${ownerFolder}/cover-${Date.now()}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('covers').upload(path, coverFile, {
-          upsert: true,
-          contentType: coverFile.type,
-        })
-        if (uploadErr) throw uploadErr
-        coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
-      }
-
-      const initials = name
-        .trim()
-        .split(' ')
-        .filter(Boolean)
-        .map((part) => part[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2) || 'U'
-
-      const updates: any = {
-        name: name.trim(),
-        handle: `@${normalizedHandle}`,
-        bio: bio.trim() || null,
-        initials,
-      }
-
-      if (avatarUrl) updates.avatar_img = avatarUrl
-      if (coverUrl) updates.cover_img = coverUrl
-
-      const { error } = await supabase.from('users').update(updates).eq('id', user.id)
+      const { error } = await supabase.from('users').update({ handle: `@${normalizedHandle}` }).eq('id', user.id)
       if (error) throw error
 
-      setAvatarFile(null)
-      setCoverFile(null)
-      setMessage('Profile updated successfully. Refreshing...')
+      setHandleMessage('Handle updated. Refreshing...')
       setTimeout(() => window.location.reload(), 700)
     } catch (err: any) {
-      setMessage(err.message || 'Failed to update profile')
+      setHandleMessage(err.message || 'Failed to update handle')
     } finally {
-      setSavingProfile(false)
+      setSavingHandle(false)
     }
   }
 
@@ -115,14 +59,12 @@ export default function Settings() {
         throw new Error('Passwords do not match')
       }
 
-      // Verify current password by signing in
       const { error: verifyError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: currentPassword,
       })
       if (verifyError) throw new Error('Current password is incorrect')
 
-      // Update password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       })
@@ -158,23 +100,15 @@ export default function Settings() {
             </button>
             <div>
               <h1 className="font-bold text-lg">Account Settings</h1>
-              <p className="text-olu-muted text-xs">Manage your profile and account security</p>
+              <p className="text-olu-muted text-xs">Manage your account and security</p>
             </div>
           </div>
         </div>
 
         <div className="p-4 space-y-6">
           <div className="bg-[#111111] rounded-2xl p-6">
-            <h2 className="font-semibold mb-4">Profile</h2>
+            <h2 className="font-semibold mb-4">Account</h2>
             <div className="space-y-4">
-              <div>
-                <p className="text-olu-muted text-xs mb-1">Display Name</p>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
-                />
-              </div>
               <div>
                 <p className="text-olu-muted text-xs mb-1">Email</p>
                 <p className="font-medium">{user?.email}</p>
@@ -190,39 +124,17 @@ export default function Settings() {
                   />
                 </div>
               </div>
-              <div>
-                <p className="text-olu-muted text-xs mb-1">Bio</p>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30 resize-none"
-                />
-              </div>
-              <div>
-                <p className="text-olu-muted text-xs mb-1">Avatar (optional)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black"
-                />
-              </div>
-              <div>
-                <p className="text-olu-muted text-xs mb-1">Cover Image (optional)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black"
-                />
-              </div>
+              {handleMessage && (
+                <p className={`text-sm ${handleMessage.includes('updated') ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {handleMessage}
+                </p>
+              )}
               <button
-                onClick={handleSaveProfile}
-                disabled={savingProfile}
+                onClick={handleSaveHandle}
+                disabled={savingHandle}
                 className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50"
               >
-                {savingProfile ? 'Saving...' : 'Save Profile'}
+                {savingHandle ? 'Saving...' : 'Save Handle'}
               </button>
             </div>
           </div>

@@ -19,11 +19,9 @@ vi.mock('../../lib/supabase', () => ({
     from: vi.fn(() => ({
       update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
     })),
-    storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn().mockResolvedValue({ error: null }),
-        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'url' } }),
-      })),
+    auth: {
+      signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+      updateUser: vi.fn().mockResolvedValue({ error: null }),
     },
   },
 }))
@@ -61,33 +59,31 @@ describe('Settings', () => {
     })
   })
 
-  it('renders account settings page', async () => {
+  it('renders account settings with email, handle, and password sections', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
     expect(screen.getByText('Account Settings')).toBeInTheDocument()
-    expect(screen.getByText('Profile')).toBeInTheDocument()
+    expect(screen.getByText('Account')).toBeInTheDocument()
+    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('testuser')).toBeInTheDocument()
+    expect(screen.getByText('Password')).toBeInTheDocument()
     expect(screen.getByText('Session')).toBeInTheDocument()
   })
 
-  it('displays user profile fields', async () => {
+  it('does not show profile editing fields (moved to public profile)', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Test User')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('testuser')).toBeInTheDocument()
+    expect(screen.queryByText('Display Name')).not.toBeInTheDocument()
+    expect(screen.queryByText('Bio')).not.toBeInTheDocument()
+    expect(screen.queryByText('Avatar (optional)')).not.toBeInTheDocument()
   })
 
-  it('shows business workspace link when modules are enabled', async () => {
+  it('shows business workspace link when modules are enabled', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
-
-    await waitFor(() => {
-      expect(screen.getByText('Business workspace')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Business workspace')).toBeInTheDocument()
   })
 
   it('shows sign out confirmation dialog', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
-
     await userEvent.click(screen.getByText('Sign out'))
-
     await waitFor(() => {
       expect(screen.getByText('Sign out?')).toBeInTheDocument()
       expect(screen.getByText('Cancel')).toBeInTheDocument()
@@ -96,7 +92,6 @@ describe('Settings', () => {
 
   it('calls signOut and navigates to login', async () => {
     mockSignOut.mockResolvedValue(undefined)
-
     render(<MemoryRouter><Settings /></MemoryRouter>)
     await userEvent.click(screen.getByText('Sign out'))
 
@@ -104,7 +99,6 @@ describe('Settings', () => {
       expect(screen.getByText('Sign out?')).toBeInTheDocument()
     })
 
-    // Click the confirm sign out button (second "Sign out" text in the dialog)
     const signOutButtons = screen.getAllByText('Sign out')
     await userEvent.click(signOutButtons[signOutButtons.length - 1])
 

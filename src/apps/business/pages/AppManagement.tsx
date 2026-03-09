@@ -52,11 +52,11 @@ export default function AppManagement() {
           </p>
         </div>
         <button
-          onClick={() => navigate('/business/settings')}
+          onClick={() => navigate('/business/settings#consumer-app')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors"
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">New app</span>
+          <span className="hidden sm:inline">Configure apps</span>
         </button>
       </div>
 
@@ -103,11 +103,11 @@ export default function AppManagement() {
 
                   <div className="flex items-center gap-2 pt-1 border-t border-cyan-500/10">
                     <button
-                      onClick={() => navigate('/business/settings')}
+                      onClick={() => navigate('/business/settings#consumer-app')}
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#0d1726] hover:bg-[#12213a] text-xs font-medium text-cyan-100/60 transition-colors"
                     >
                       <Pencil size={12} />
-                      Configure
+                      Settings
                     </button>
                     <button
                       onClick={() => {

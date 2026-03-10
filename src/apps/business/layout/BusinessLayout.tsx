@@ -15,7 +15,6 @@ import {
   PanelsTopLeft,
   ListTodo,
   ShieldCheck,
-  UserRound,
   AppWindow,
   Cable,
   Wallet,
@@ -30,8 +29,7 @@ import type { BusinessModuleKey } from '../../../lib/supabase'
 const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: string; exact?: boolean; moduleKey?: BusinessModuleKey }> = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/apps', icon: AppWindow, label: 'Apps', moduleKey: 'creator_ops' },
-  { to: '/business/team', icon: Users, label: 'Workforce', exact: true },
-  { to: '/business/team/humans', icon: UserRound, label: 'People' },
+  { to: '/business/team', icon: Users, label: 'Team', exact: true },
   { to: '/business/agents', icon: Bot, label: 'AI Agents' },
   { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
@@ -120,8 +118,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
               {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
-              <MenuItem icon={Users} label="Workforce" onClick={() => go('/business/team')} />
-              <MenuItem icon={UserRound} label="People" onClick={() => go('/business/team/humans')} />
+              <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
               <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />
               <MenuItem icon={ShieldCheck} label="Approvals" onClick={() => go('/business/approvals')} />

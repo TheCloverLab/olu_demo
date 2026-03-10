@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserRound, Users } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
 import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
+import type { Employee } from '../../../domain/team/types'
 import clsx from 'clsx'
 
 type GroupChat = {
@@ -111,11 +112,101 @@ function GroupRow({ group }: { group: GroupChat }) {
   )
 }
 
+const DEMO_HUMANS: Employee[] = [
+  {
+    id: 'human-1', workspace_id: 'ws-1', kind: 'human', name: 'Sarah Kim',
+    position: 'Community Manager', description: 'Manages fan community engagement and moderation',
+    avatar_img: null, color: 'from-purple-500 to-pink-500', status: 'online', employment_status: 'active',
+    template_id: null, agent_key: null, model_tier: null,
+    user_id: 'u-sarah', email: 'sarah@example.com',
+    hired_by_user_id: null, hired_at: '2024-01-15', skills: ['Community', 'Content', 'Moderation'],
+    salary_label: '$4,200/mo', last_message: 'Updated community guidelines', last_time: '10m ago',
+    created_at: '2024-01-15', updated_at: '2024-03-01',
+  },
+  {
+    id: 'human-2', workspace_id: 'ws-1', kind: 'human', name: 'James Okoro',
+    position: 'Growth Lead', description: 'Drives user acquisition and retention strategy',
+    avatar_img: null, color: 'from-emerald-500 to-teal-500', status: 'busy', employment_status: 'active',
+    template_id: null, agent_key: null, model_tier: null,
+    user_id: 'u-james', email: 'james@example.com',
+    hired_by_user_id: null, hired_at: '2024-02-01', skills: ['Analytics', 'SEO', 'Paid Ads'],
+    salary_label: '$5,800/mo', last_message: 'Reviewing Q1 metrics', last_time: '1h ago',
+    created_at: '2024-02-01', updated_at: '2024-03-01',
+  },
+  {
+    id: 'human-3', workspace_id: 'ws-1', kind: 'human', name: 'Mia Chen',
+    position: 'Content Creator', description: 'Produces course materials and marketing copy',
+    avatar_img: null, color: 'from-amber-500 to-orange-500', status: 'offline', employment_status: 'active',
+    template_id: null, agent_key: null, model_tier: null,
+    user_id: 'u-mia', email: 'mia@example.com',
+    hired_by_user_id: null, hired_at: '2024-03-01', skills: ['Writing', 'Video', 'Design'],
+    salary_label: '$3,900/mo', last_message: 'Finished course outline draft', last_time: '3h ago',
+    created_at: '2024-03-01', updated_at: '2024-03-09',
+  },
+]
+
+const STATUS_DOT_COLOR: Record<string, string> = {
+  online: 'bg-emerald-400',
+  busy: 'bg-amber-400',
+  offline: 'bg-gray-500',
+}
+
+function PersonRow({ emp }: { emp: Employee }) {
+  return (
+    <div className="rounded-[24px] border border-cyan-500/10 bg-[#091523] p-4 flex items-start gap-3 shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+      <div className="relative flex-shrink-0">
+        <div className={clsx('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
+          {emp.name.split(' ').map((n) => n[0]).join('')}
+        </div>
+        <div className={clsx('absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#091523]', STATUS_DOT_COLOR[emp.status])} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+          <span className="font-semibold text-sm">{emp.name}</span>
+          <span className="text-xs text-cyan-100/45 capitalize flex items-center gap-1">
+            <Circle size={6} className={STATUS_DOT_COLOR[emp.status]} fill="currentColor" />
+            {emp.status}
+          </span>
+        </div>
+        <p className="text-cyan-100/55 text-xs flex items-center gap-1.5">
+          <Briefcase size={12} />
+          {emp.position}
+        </p>
+        {emp.email && (
+          <p className="text-cyan-100/45 text-xs mt-0.5 flex items-center gap-1.5">
+            <Mail size={12} />
+            {emp.email}
+          </p>
+        )}
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          {emp.skills.map((skill) => (
+            <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-100/60 font-medium">
+              {skill}
+            </span>
+          ))}
+          {emp.salary_label && (
+            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
+              {emp.salary_label}
+            </span>
+          )}
+        </div>
+        {emp.last_message && (
+          <p className="text-cyan-100/35 text-xs mt-2 truncate">
+            {emp.last_message} · {emp.last_time}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Team() {
   const { user } = useAuth()
   const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
+  const [humans, setHumans] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
+  const [showInvite, setShowInvite] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -130,6 +221,7 @@ export default function Team() {
         const team = await getWorkspaceTeamSnapshotForUser(user)
         setAgents(team.agents)
         setGroups((team.groups || []) as GroupChat[])
+        setHumans(DEMO_HUMANS)
       } catch (error) {
         console.error('Failed to load team data', error)
         setAgents([])
@@ -179,23 +271,14 @@ export default function Team() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-black text-2xl">Workforce</h1>
+          <h1 className="font-black text-2xl">Team</h1>
           <p className="text-cyan-100/60 text-sm mt-0.5">
-            {agents.length} AI agent{agents.length > 1 ? 's' : ''} ·{' '}
+            {agents.length} AI agent{agents.length > 1 ? 's' : ''} · {humans.length} people ·{' '}
             {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/business/team/humans')}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors"
-          >
-            <UserRound size={14} />
-            People
-          </button>
-          <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
-            <Users size={18} className="text-cyan-200" />
-          </div>
+        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+          <Users size={18} className="text-cyan-200" />
         </div>
       </div>
 
@@ -250,6 +333,51 @@ export default function Team() {
           <div className="space-y-2">
             {groups.map((group) => (
               <GroupRow key={group.id} group={group} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {humans.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Users size={14} className="text-cyan-100/55" />
+              <p className="text-cyan-100/55 text-xs font-semibold uppercase tracking-wider">People</p>
+              <span className="text-cyan-100/35 text-xs">{humans.filter((h) => h.status === 'online').length} online</span>
+            </div>
+            <button
+              onClick={() => setShowInvite(!showInvite)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors"
+            >
+              <UserPlus size={12} />
+              Invite
+            </button>
+          </div>
+
+          {showInvite && (
+            <div className="rounded-2xl border border-cyan-500/20 bg-[#091422] p-5 mb-3 space-y-4">
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-cyan-100/45 block mb-1">Full name</label>
+                  <input type="text" placeholder="Jane Doe" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                </div>
+                <div>
+                  <label className="text-xs text-cyan-100/45 block mb-1">Email</label>
+                  <input type="email" placeholder="jane@company.com" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                </div>
+                <div className="flex items-end">
+                  <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
+                    Send Invite
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {humans.map((emp) => (
+              <PersonRow key={emp.id} emp={emp} />
             ))}
           </div>
         </div>

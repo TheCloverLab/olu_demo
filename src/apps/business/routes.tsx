@@ -12,7 +12,7 @@ import AdvertiserConsole from './pages/AdvertiserConsole'
 import SupplierConsole from './pages/SupplierConsole'
 import TaskCenter from './pages/TaskCenter'
 import ApprovalCenter from './pages/ApprovalCenter'
-import HumanEmployees from './pages/HumanEmployees'
+import { Navigate } from 'react-router-dom'
 import AppManagement from './pages/AppManagement'
 import Connectors from './pages/Connectors'
 import RoleProtected from '../../components/auth/RoleProtected'
@@ -25,7 +25,7 @@ export const businessRoutes: RouteObject[] = [
       { index: true, element: <BusinessWorkspace /> },
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
-      { path: 'team/humans', element: <HumanEmployees /> },
+      { path: 'team/humans', element: <Navigate to="/business/team" replace /> },
       { path: 'agents', element: <AIAgentConfig /> },
       { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
       { path: 'connectors', element: <Connectors /> },

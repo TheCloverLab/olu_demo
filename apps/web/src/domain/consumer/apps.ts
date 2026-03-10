@@ -1,5 +1,5 @@
 import type { ConsumerTemplateKey } from '../../apps/consumer/templateConfig'
-import { getAppTypeForTemplate, getTemplateKeyForAppType, getTemplateDefinition } from '../../apps/consumer/templateConfig'
+import { getAppTypeForTemplate, getTemplateKeyForAppType, getTemplateDefinition, isValidTemplateKey } from '../../apps/consumer/templateConfig'
 import { supabase } from '../../lib/supabase'
 import type {
   ConsumerApp,
@@ -238,7 +238,7 @@ export async function resolveConsumerAppBySlug(slug: string): Promise<{
     if (configSlug === slug) {
       return {
         creatorId: (config as any).workspaces?.owner_user_id,
-        appType: config.template_key === 'sell_courses' ? 'academy' : 'community',
+        appType: isValidTemplateKey(config.template_key) ? getAppTypeForTemplate(config.template_key) : 'community',
         title,
         configJson: config.config_json,
       }

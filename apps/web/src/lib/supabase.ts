@@ -365,9 +365,9 @@ export type WorkspaceBilling = {
 export type WorkspaceConsumerConfig = {
   id: string
   workspace_id: string
-  template_key: 'fan_community' | 'sell_courses'
+  template_key: string
   config_json: {
-    featured_template?: 'fan_community' | 'sell_courses'
+    featured_template?: string
     featured_creator_id?: string | null
     featured_course_slug?: string | null
     [key: string]: any

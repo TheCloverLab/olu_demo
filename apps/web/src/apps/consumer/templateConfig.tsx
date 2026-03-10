@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { BookOpen, Compass, GraduationCap, Home, MessageCircle, Sparkles, User, Users } from 'lucide-react'
+import { BookOpen, Calendar, Compass, GraduationCap, Home, MessageCircle, Sparkles, User, Users, Video } from 'lucide-react'
 
 export type ConsumerNavItem = {
   to: string
@@ -8,7 +8,7 @@ export type ConsumerNavItem = {
   exact?: boolean
 }
 
-export type ConsumerAppType = 'community' | 'academy'
+export type ConsumerAppType = 'community' | 'academy' | 'consulting'
 
 export type ConsumerTemplateDefinition = {
   label: string
@@ -71,6 +71,29 @@ const CONSUMER_TEMPLATES = {
       ctaLabel: 'Open catalog',
       ctaHref: '/courses',
       browseDescription: (name: string) => `${name} is currently browsing the academy experience.`,
+    },
+  },
+  consulting: {
+    label: 'Consulting',
+    shortLabel: 'Consult',
+    description: '1-on-1 sessions, bookings, and expert advice',
+    accent: 'from-violet-500 via-purple-500 to-indigo-400',
+    homeTitle: 'Consulting',
+    appType: 'consulting' as const,
+    nav: [
+      { to: '/', icon: Home, label: 'Home', exact: true },
+      { to: '/discover', icon: Compass, label: 'Experts' },
+      { to: '/chat', icon: MessageCircle, label: 'Chat' },
+      { to: '/profile', icon: User, label: 'Me' },
+    ],
+    quickLinks: [
+      { to: '/bookings', icon: Calendar, label: 'Bookings' },
+      { to: '/sessions', icon: Video, label: 'Sessions' },
+    ],
+    profile: {
+      ctaLabel: 'Book a session',
+      ctaHref: '/bookings',
+      browseDescription: (name: string) => `${name} is currently browsing the consulting experience.`,
     },
   },
 } as const satisfies Record<string, ConsumerTemplateDefinition>

@@ -33,7 +33,7 @@ vi.mock('../../domain/consumer/data', () => ({
 }))
 
 vi.mock('../../domain/profile/data', () => ({
-  getPublicCommunityCreatorIds: vi.fn(),
+  getPublicCommunityConfigsByOwner: vi.fn(),
 }))
 
 const mockNavigate = vi.fn()
@@ -83,7 +83,10 @@ describe('Home', () => {
       signOut: vi.fn(),
     } as any)
     vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue(mockCreators as any)
-    vi.mocked(ProfileData.getPublicCommunityCreatorIds).mockResolvedValue(new Set(['creator-1', 'creator-2']))
+    vi.mocked(ProfileData.getPublicCommunityConfigsByOwner).mockResolvedValue(new Map([
+      ['creator-1', { community_hero_title: 'Pixel Realm' }],
+      ['creator-2', { community_hero_title: 'The Listening Room' }],
+    ]))
     vi.mocked(ConsumerData.getPosts).mockResolvedValue(mockPosts as any)
     vi.mocked(ConsumerApi.getCourseLibrarySnapshot).mockResolvedValue({
       courses: [mockCourse],
@@ -114,7 +117,7 @@ describe('Home', () => {
       expect(screen.getAllByText('Continue learning').length).toBeGreaterThan(0)
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getByText('New for you')).toBeInTheDocument()
-      expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
+      expect(screen.getByText('Pixel Realm')).toBeInTheDocument()
       expect(screen.getByText('Digital Art Masterclass')).toBeInTheDocument()
       expect(screen.getAllByText('Core').length).toBeGreaterThan(0)
     })

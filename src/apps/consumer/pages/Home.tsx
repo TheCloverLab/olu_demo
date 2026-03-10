@@ -7,7 +7,7 @@ import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { buildAcademyCardFromCourse, buildCommunityCardFromCreator } from '../../../domain/consumer/apps'
 import { getPublicCreators } from '../../../domain/profile/api'
 import { getPosts } from '../../../domain/consumer/data'
-import { getPublicCommunityCreatorIds } from '../../../domain/profile/data'
+import { getPublicCommunityConfigsByOwner } from '../../../domain/profile/data'
 import type { ConsumerLessonProgress, User } from '../../../lib/supabase'
 import type { Course } from '../courseData'
 
@@ -112,7 +112,7 @@ export default function Home() {
   const [creators, setCreators] = useState<User[]>([])
   const [posts, setPosts] = useState<any[]>([])
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
-  const [publicCommunityCreatorIds, setPublicCommunityCreatorIds] = useState<Set<string>>(new Set())
+  const [communityConfigs, setCommunityConfigs] = useState<Map<string, any>>(new Map())
   const [purchasedSlugs, setPurchasedSlugs] = useState<string[]>([])
   const [progressBySlug, setProgressBySlug] = useState<Record<string, ConsumerLessonProgress[]>>({})
   const [memberships, setMemberships] = useState<Record<string, { tier_name: string }>>({})
@@ -128,7 +128,7 @@ export default function Home() {
           getPosts(16),
           getCourseLibrarySnapshot(),
         ])
-        const publicCommunityIds = await getPublicCommunityCreatorIds(creatorsData.map((creator) => creator.id))
+        const publicCommunityConfigMap = await getPublicCommunityConfigsByOwner(creatorsData.map((creator) => creator.id))
 
         const [membershipEntries, purchased, progressEntries] = await Promise.all([
           Promise.all(
@@ -148,7 +148,7 @@ export default function Home() {
         setCreators(creatorsData)
         setPosts(postsData)
         setCourseLibrary(courseSnapshot.courses)
-        setPublicCommunityCreatorIds(publicCommunityIds)
+        setCommunityConfigs(publicCommunityConfigMap)
         setPurchasedSlugs(purchased)
         setProgressBySlug(Object.fromEntries(progressEntries))
         setMemberships(
@@ -195,12 +195,12 @@ export default function Home() {
   }, [joinedCommunities, posts])
 
   const publicCommunityCreators = useMemo(() => {
-    return creators.filter((creator) => publicCommunityCreatorIds.has(creator.id))
-  }, [creators, publicCommunityCreatorIds])
+    return creators.filter((creator) => communityConfigs.has(creator.id))
+  }, [creators, communityConfigs])
 
   const communityCardsById = useMemo(() => {
-    return new Map(publicCommunityCreators.map((creator) => [creator.id, buildCommunityCardFromCreator(creator as any)]))
-  }, [publicCommunityCreators])
+    return new Map(publicCommunityCreators.map((creator) => [creator.id, buildCommunityCardFromCreator(creator as any, communityConfigs.get(creator.id))]))
+  }, [publicCommunityCreators, communityConfigs])
 
   const recommendedCommunities = useMemo(() => {
     const joinedIds = new Set(joinedCommunities.map((item) => item.creator.id))

@@ -23,7 +23,7 @@ const REVENUE_SPLIT = [
 
 const TRANSACTIONS = [
   { id: 'tx-1', type: 'in', title: 'VIP Collective subscription batch', channel: 'Memberships', amount: 426.88, at: 'Today, 10:42 AM', status: 'settled' },
-  { id: 'tx-2', type: 'out', title: 'USDC payout to creator treasury', channel: 'Payout', amount: 300, at: 'Yesterday, 4:12 PM', status: 'processing' },
+  { id: 'tx-2', type: 'out', title: 'Payout to creator treasury', channel: 'Payout', amount: 300, at: 'Yesterday, 4:12 PM', status: 'processing' },
   { id: 'tx-3', type: 'in', title: 'Neon City Hoodie sales settlement', channel: 'Shop', amount: 218.3, at: 'Yesterday, 11:06 AM', status: 'settled' },
   { id: 'tx-4', type: 'in', title: 'GameVerse campaign milestone', channel: 'Licensing', amount: 1200, at: 'Mar 03, 9:20 AM', status: 'settled' },
   { id: 'tx-5', type: 'out', title: 'Bank transfer withdrawal', channel: 'Fiat', amount: 650, at: 'Mar 01, 3:01 PM', status: 'settled' },
@@ -87,7 +87,7 @@ export default function WalletPage() {
         </div>
         <div>
           <h1 className="font-black text-2xl">Wallet</h1>
-          <p className="text-cyan-100/55 text-sm">Earnings, payouts, and stablecoin treasury</p>
+          <p className="text-cyan-100/55 text-sm">Earnings, payouts, and treasury</p>
         </div>
       </div>
 
@@ -122,8 +122,8 @@ export default function WalletPage() {
                   <p className="font-semibold mt-1">${balances.pendingUsd.toFixed(2)}</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10">
-                  <p className="text-cyan-100/45">USDC</p>
-                  <p className="font-semibold mt-1">{balances.usdc.toFixed(2)}</p>
+                  <p className="text-cyan-100/45">Treasury</p>
+                  <p className="font-semibold mt-1">${balances.usdc.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -190,10 +190,10 @@ export default function WalletPage() {
             <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-cyan-300">
                 <Coins size={14} />
-                <p className="text-xs font-semibold uppercase tracking-wider">Stablecoin</p>
+                <p className="text-xs font-semibold uppercase tracking-wider">Treasury</p>
               </div>
-              <p className="font-black text-2xl">{balances.usdc.toFixed(2)} USDC</p>
-              <p className="text-cyan-100/45 text-xs mt-1">Treasury wallet</p>
+              <p className="font-black text-2xl">${balances.usdc.toFixed(2)}</p>
+              <p className="text-cyan-100/45 text-xs mt-1">Treasury balance</p>
             </div>
 
             <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
@@ -252,8 +252,8 @@ export default function WalletPage() {
                 <div className="flex items-center gap-2.5">
                   <Coins size={16} className="text-cyan-300" />
                   <div>
-                    <p className="text-sm font-medium">USDC Treasury Wallet</p>
-                    <p className="text-cyan-100/45 text-xs">0x89c4...2b9f (Polygon)</p>
+                    <p className="text-sm font-medium">Treasury Wallet</p>
+                    <p className="text-cyan-100/45 text-xs">Digital wallet · primary</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300">Active</span>

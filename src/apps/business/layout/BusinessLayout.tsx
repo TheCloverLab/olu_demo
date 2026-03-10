@@ -123,7 +123,7 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
                   <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
                 </div>
                 <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-                <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+                <p className="text-emerald-400 text-xs mt-1">Balance</p>
               </div>
             </button>
 
@@ -204,7 +204,7 @@ export default function BusinessLayout() {
                 <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
               </div>
               <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-              <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+              <p className="text-emerald-400 text-xs mt-1">Balance</p>
             </div>
           </NavLink>
         </div>

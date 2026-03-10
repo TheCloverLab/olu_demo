@@ -151,8 +151,8 @@ export default function Wallet() {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
-            <p className="text-xs text-olu-muted">USDC Balance</p>
-            <p className="font-bold text-lg mt-1">{balanceUsdc.toFixed(2)} <span className="text-xs text-olu-muted font-normal">USDC</span></p>
+            <p className="text-xs text-olu-muted">Balance</p>
+            <p className="font-bold text-lg mt-1">${balanceUsdc.toFixed(2)}</p>
           </div>
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
             <p className="text-xs text-olu-muted">Token Balance</p>

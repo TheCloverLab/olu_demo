@@ -14,8 +14,8 @@ import { getOwnedConsumerApps, getPrimaryConsumerApp } from '../domain/consumer/
 import type { ConsumerApp, ConsumerAppType, WorkspaceConsumerConfig } from '../lib/supabase'
 
 interface ConsumerContextType {
-  consumerTemplate: ConsumerTemplateKey
-  appType: ConsumerAppType
+  consumerTemplate: ConsumerTemplateKey | null
+  appType: ConsumerAppType | null
   consumerApps: ConsumerApp[]
   primaryConsumerApp: ConsumerApp | null
   consumerConfig: WorkspaceConsumerConfig['config_json']
@@ -31,10 +31,10 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
   const { currentUser } = useSession()
   const [consumerApps, setConsumerApps] = useState<ConsumerApp[]>([])
   const [consumerConfig, setConsumerConfigState] = useState<WorkspaceConsumerConfig['config_json']>({})
-  const [consumerTemplate, setConsumerTemplateState] = useState<ConsumerTemplateKey>(() => {
-    if (typeof window === 'undefined') return DEFAULT_TEMPLATE
+  const [consumerTemplate, setConsumerTemplateState] = useState<ConsumerTemplateKey | null>(() => {
+    if (typeof window === 'undefined') return null
     const saved = window.localStorage.getItem('olu.consumerTemplate')
-    return saved && isValidTemplateKey(saved) ? saved : DEFAULT_TEMPLATE
+    return saved && isValidTemplateKey(saved) ? saved : null
   })
 
   useEffect(() => {
@@ -58,7 +58,11 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
           setConsumerTemplateState(persistedTemplate)
           setConsumerConfigState(persistedConfig?.config_json || {})
           if (typeof window !== 'undefined') {
-            window.localStorage.setItem('olu.consumerTemplate', persistedTemplate)
+            if (persistedTemplate) {
+              window.localStorage.setItem('olu.consumerTemplate', persistedTemplate)
+            } else {
+              window.localStorage.removeItem('olu.consumerTemplate')
+            }
           }
         }
       } catch (error) {
@@ -106,8 +110,8 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
   }
 
   const primaryConsumerApp = getPrimaryConsumerApp(consumerApps, consumerTemplate)
-  const appType: ConsumerAppType = primaryConsumerApp?.app_type || getAppTypeForTemplate(consumerTemplate)
-  const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name, consumerConfig)
+  const appType: ConsumerAppType | null = primaryConsumerApp?.app_type || (consumerTemplate ? getAppTypeForTemplate(consumerTemplate) : null)
+  const consumerExperience = getConsumerExperience(consumerTemplate || DEFAULT_TEMPLATE, currentUser.name, consumerConfig)
 
   return (
     <ConsumerCtx.Provider value={{

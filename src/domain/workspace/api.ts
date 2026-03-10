@@ -14,8 +14,6 @@ import type {
 } from '../../lib/supabase'
 import type { ConsumerTemplateKey } from '../../apps/consumer/templateConfig'
 
-const DEFAULT_WORKSPACE_MODULES: BusinessModuleKey[] = ['creator_ops', 'marketing', 'supply_chain']
-
 function buildWorkspaceSlug(user: Pick<User, 'username' | 'handle'>) {
   const raw = (user.username || user.handle || 'workspace').toLowerCase().replace(/^@/, '')
   const safe = raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'workspace'
@@ -71,12 +69,6 @@ export async function ensureWorkspaceForUser(user: Pick<User, 'id' | 'username' 
 
   if (membershipError) throw membershipError
 
-  const modulesPayload = DEFAULT_WORKSPACE_MODULES.map((moduleKey) => ({
-    workspace_id: workspace.id,
-    module_key: moduleKey,
-    enabled: true,
-  }))
-
   const permissionsPayload = [
     { membership_role: 'owner', resource: 'campaign', action: 'publish', allowed: true },
     { membership_role: 'owner', resource: 'billing', action: 'manage', allowed: true },
@@ -86,8 +78,7 @@ export async function ensureWorkspaceForUser(user: Pick<User, 'id' | 'username' 
     ...permission,
   }))
 
-  const [modulesResult, permissionsResult, integrationsResult, policiesResult, billingResult, consumerConfigResult] = await Promise.all([
-    supabase.from('workspace_modules').insert(modulesPayload),
+  const [permissionsResult, integrationsResult, policiesResult, billingResult] = await Promise.all([
     supabase.from('workspace_permissions').insert(permissionsPayload),
     supabase.from('workspace_integrations').insert([
       { workspace_id: workspace.id, provider: 'Shopify', status: 'planned', config_json: {} },
@@ -115,21 +106,12 @@ export async function ensureWorkspaceForUser(user: Pick<User, 'id' | 'username' 
       status: 'trial',
       billing_email: user.email,
     }),
-    supabase.from('workspace_consumer_configs').insert({
-      workspace_id: workspace.id,
-      template_key: 'fan_community',
-      config_json: {
-        featured_template: 'fan_community',
-      },
-    }),
   ])
 
-  if (modulesResult.error) throw modulesResult.error
   if (permissionsResult.error) throw permissionsResult.error
   if (integrationsResult.error) throw integrationsResult.error
   if (policiesResult.error) throw policiesResult.error
   if (billingResult.error) throw billingResult.error
-  if (consumerConfigResult.error) throw consumerConfigResult.error
 
   return membership as WorkspaceMembership
 }
@@ -246,9 +228,9 @@ export async function getWorkspaceSettingsForUser(user: Pick<User, 'id' | 'usern
   } as WorkspaceSettingsData
 }
 
-export async function getConsumerTemplateForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
+export async function getConsumerTemplateForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<ConsumerTemplateKey | null> {
   const consumerConfig = await getWorkspaceConsumerConfigForUser(user)
-  return (consumerConfig?.template_key || 'fan_community') as ConsumerTemplateKey
+  return (consumerConfig?.template_key as ConsumerTemplateKey) || null
 }
 
 export async function updateWorkspaceModuleForUser(

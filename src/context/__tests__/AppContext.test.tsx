@@ -104,7 +104,7 @@ describe('AppContext', () => {
 
     expect(screen.getByTestId('modules')).toHaveTextContent('')
     expect(screen.getByTestId('has-creator')).toHaveTextContent('no')
-    expect(screen.getByTestId('template')).toHaveTextContent('fan_community')
+    expect(screen.getByTestId('template')).toHaveTextContent('')
     expect(screen.getByTestId('consumer-apps')).toHaveTextContent('')
     expect(screen.getByTestId('primary-app')).toHaveTextContent('none')
   })
@@ -236,7 +236,7 @@ describe('AppContext', () => {
       </AppProvider>
     )
 
-    expect(screen.getByTestId('template')).toHaveTextContent('fan_community')
+    expect(screen.getByTestId('template')).toHaveTextContent('')
     await userEvent.click(screen.getByText('Switch to Courses'))
     expect(screen.getByTestId('template')).toHaveTextContent('sell_courses')
     expect(window.localStorage.getItem('olu.consumerTemplate')).toBe('sell_courses')

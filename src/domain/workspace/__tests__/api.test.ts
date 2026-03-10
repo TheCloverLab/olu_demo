@@ -42,23 +42,16 @@ describe('workspace api', () => {
     const membershipLookup = createChain({ data: null })
     const workspaceInsert = createChain({ data: { id: 'ws-1' } })
     const membershipInsert = createChain({ data: { id: 'wm-1', workspace_id: 'ws-1', user_id: 'user-1', membership_role: 'owner', status: 'active' } })
-    const modulesInsert = createChain({ data: [] })
-    const permissionsInsert = createChain({ data: [] })
-    const integrationsInsert = createChain({ data: [] })
-    const policiesInsert = createChain({ data: [] })
-    const billingInsert = createChain({ data: [] })
-    const consumerConfigInsert = createChain({ data: [] })
+    const seedInsert = createChain({ data: [] })
 
     vi.mocked(supabase.from)
       .mockReturnValueOnce(membershipLookup)
       .mockReturnValueOnce(workspaceInsert)
       .mockReturnValueOnce(membershipInsert)
-      .mockReturnValueOnce(modulesInsert)
-      .mockReturnValueOnce(permissionsInsert)
-      .mockReturnValueOnce(integrationsInsert)
-      .mockReturnValueOnce(policiesInsert)
-      .mockReturnValueOnce(billingInsert)
-      .mockReturnValueOnce(consumerConfigInsert)
+      .mockReturnValueOnce(seedInsert) // permissions
+      .mockReturnValueOnce(seedInsert) // integrations
+      .mockReturnValueOnce(seedInsert) // policies
+      .mockReturnValueOnce(seedInsert) // billing
 
     const result = await ensureWorkspaceForUser({
       id: 'user-1',

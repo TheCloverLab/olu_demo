@@ -10,8 +10,8 @@ export interface AppContextType {
   currentUser: any
   enabledBusinessModules: BusinessModuleKey[]
   hasModule: (moduleKey: BusinessModuleKey) => boolean
-  consumerTemplate: ConsumerTemplateKey
-  appType: ConsumerAppType
+  consumerTemplate: ConsumerTemplateKey | null
+  appType: ConsumerAppType | null
   consumerApps: ConsumerApp[]
   primaryConsumerApp: ConsumerApp | null
   consumerConfig: WorkspaceConsumerConfig['config_json']

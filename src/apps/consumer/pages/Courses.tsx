@@ -48,30 +48,36 @@ export default function Courses() {
   if (selected) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8">
-        <div className={`rounded-[28px] p-6 md:p-8 bg-gradient-to-br ${selected.hero}`}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/15 text-xs text-black/70 mb-4">
-            <GraduationCap size={13} />
-            {selected.level}
+        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-6 md:p-8">
+          <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">Academy</p>
+          <h1 className="font-black text-2xl md:text-3xl">{selected.title}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
+            <span>Hosted by {selected.instructor}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 text-xs">
+              <GraduationCap size={12} />
+              {selected.level}
+            </div>
           </div>
-          <h1 className="font-black text-4xl leading-tight text-black max-w-2xl">{selected.title}</h1>
-          <p className="text-black/70 text-base mt-3 max-w-2xl">{selected.subtitle}</p>
-          <div className="grid sm:grid-cols-3 gap-3 mt-6">
-            <div className="rounded-2xl bg-black/10 p-4">
-              <p className="font-black text-2xl text-black">{selected.stats.lessons}</p>
-              <p className="text-xs text-black/65 mt-1">Lessons</p>
+          {selected.description && (
+            <p className="text-sm text-white/55 mt-3 leading-relaxed max-w-2xl">{selected.description}</p>
+          )}
+          <div className="grid grid-cols-3 gap-3 mt-5">
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="font-black text-2xl">{selected.stats.lessons}</p>
+              <p className="text-xs text-olu-muted mt-1">Lessons</p>
             </div>
-            <div className="rounded-2xl bg-black/10 p-4">
-              <p className="font-black text-2xl text-black">{selected.stats.students}</p>
-              <p className="text-xs text-black/65 mt-1">Students</p>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="font-black text-2xl">{selected.stats.students}</p>
+              <p className="text-xs text-olu-muted mt-1">Students</p>
             </div>
-            <div className="rounded-2xl bg-black/10 p-4">
-              <p className="font-black text-2xl text-black">${selected.price}</p>
-              <p className="text-xs text-black/65 mt-1">Price</p>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="font-black text-2xl">${selected.price}</p>
+              <p className="text-xs text-olu-muted mt-1">Price</p>
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4 mt-6">
+        <div className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4 mt-4">
           <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
             <h2 className="font-bold text-xl mb-3">{courses.detail.learnTitle}</h2>
             <div className="space-y-3">

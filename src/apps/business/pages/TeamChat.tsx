@@ -512,7 +512,7 @@ export default function TeamChat() {
             </div>
           )}
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide rounded-b-[28px] bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-b border-cyan-500/10 shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-cyan-500/10 shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
             {messages.map((msg, i) => (
               <motion.div
                 key={i}

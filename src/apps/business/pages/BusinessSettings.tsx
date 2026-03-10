@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bell, ChevronLeft, CreditCard, KeyRound, Megaphone, PackageCheck, Sparkles } from 'lucide-react'
+import { Bell, ChevronLeft, CreditCard, KeyRound, LogOut, Megaphone, PackageCheck, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
@@ -39,10 +40,12 @@ const MODULE_METADATA: Array<{
 export default function BusinessSettings() {
   const navigate = useNavigate()
   const { reloadBusinessModules } = useApp()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -220,6 +223,65 @@ export default function BusinessSettings() {
           </div>
         </div>
       </section>
+
+      {/* Session */}
+      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-300 flex items-center justify-center">
+            <LogOut size={18} />
+          </span>
+          <div>
+            <p className="font-bold">Session</p>
+            <p className="text-cyan-100/55 text-xs">Sign out from this device</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowSignOutConfirm(true)}
+          className="w-full rounded-2xl bg-[#0d1726] border border-cyan-500/10 hover:bg-[#111e30] text-cyan-100/70 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+        >
+          <LogOut size={14} />
+          Sign out
+        </button>
+      </section>
+
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-40"
+              onClick={() => setShowSignOutConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="w-full max-w-sm bg-[#091422] border border-cyan-500/10 rounded-2xl p-5">
+                <h3 className="font-bold text-lg mb-1">Sign out?</h3>
+                <p className="text-cyan-100/55 text-sm mb-4">You will need to sign in again to continue.</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowSignOutConfirm(false)}
+                    disabled={signingOut}
+                    className="flex-1 rounded-xl bg-[#0d1726] border border-cyan-500/10 hover:bg-[#111e30] disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => { setSigningOut(true); await signOut(); navigate('/login') }}
+                    disabled={signingOut}
+                    className="flex-1 rounded-xl bg-cyan-300 text-slate-950 hover:bg-cyan-200 disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
+                  >
+                    {signingOut ? 'Signing out...' : 'Sign out'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

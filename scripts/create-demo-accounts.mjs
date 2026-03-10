@@ -218,6 +218,18 @@ async function createWorkspaceWithModules(userId, account) {
     .insert({ workspace_id: workspace.id, plan: 'starter', status: 'trial', billing_email: account.email })
   if (bilErr) throw bilErr
 
+  // Seed consumer config for creator_ops users (so their community shows up)
+  if (account.modules.includes('creator_ops')) {
+    const { error: ccErr } = await admin
+      .from('workspace_consumer_configs')
+      .insert({
+        workspace_id: workspace.id,
+        template_key: 'fan_community',
+        config_json: { featured_template: 'fan_community' },
+      })
+    if (ccErr) console.log(`  Warning: consumer config: ${ccErr.message}`)
+  }
+
   // Hire agents for this workspace
   for (const moduleKey of account.modules) {
     const agents = WORKSPACE_AGENTS[moduleKey] || []

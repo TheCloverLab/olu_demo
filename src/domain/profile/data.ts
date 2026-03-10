@@ -51,10 +51,36 @@ export async function getUserById(id: string) {
 }
 
 export async function getCreators() {
+  // Find users who have creator_ops module enabled
+  const { data: memberships, error: memError } = await supabase
+    .from('workspace_memberships')
+    .select('user_id, workspaces!inner(id)')
+    .eq('status', 'active')
+
+  if (memError) throw memError
+  const workspaceUserIds = (memberships || []).map((m: any) => m.user_id).filter(Boolean) as string[]
+
+  if (workspaceUserIds.length === 0) return []
+
+  const { data: modules, error: modError } = await supabase
+    .from('workspace_modules')
+    .select('workspace_id')
+    .eq('module_key', 'creator_ops')
+    .eq('enabled', true)
+
+  if (modError) throw modError
+  const creatorWsIds = new Set((modules || []).map((m: any) => m.workspace_id))
+
+  const creatorUserIds = (memberships || [])
+    .filter((m: any) => creatorWsIds.has(m.workspaces?.id))
+    .map((m: any) => m.user_id) as string[]
+
+  if (creatorUserIds.length === 0) return []
+
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .eq('role', 'creator')
+    .in('id', creatorUserIds)
     .order('followers', { ascending: false })
 
   if (error) throw error
@@ -125,24 +151,23 @@ export async function getCreatorsForDiscover(options: { query?: string; page?: n
   const pageSize = options.pageSize ?? 6
   const pattern = buildDiscoverPattern(options.query)
 
-  let request = supabase
-    .from('users')
-    .select('*')
-    .eq('role', 'creator')
-    .order('followers', { ascending: false })
+  // Get all creator_ops users
+  const allCreators = await getCreators()
+  if (allCreators.length === 0) return []
 
+  let creators = allCreators
   if (pattern) {
-    request = request.or(`name.ilike.%${pattern}%,handle.ilike.%${pattern}%,bio.ilike.%${pattern}%`)
+    const lc = pattern.toLowerCase()
+    creators = creators.filter((c) =>
+      c.name.toLowerCase().includes(lc) ||
+      c.handle.toLowerCase().includes(lc) ||
+      (c.bio || '').toLowerCase().includes(lc)
+    )
   }
 
-  const { data, error } = await request
-  if (error) throw error
-  const creators = (data || []).map((creator) => normalizeCreatorCoverImg(creator)) as User[]
-  const publicCommunityCreatorIds = await getPublicCommunityCreatorIds(creators.map((creator) => creator.id))
-  const filtered = creators.filter((creator) => publicCommunityCreatorIds.has(creator.id))
   const from = page * pageSize
   const to = from + pageSize
-  return filtered.slice(from, to)
+  return creators.slice(from, to)
 }
 
 // Used by getPublicConsumerAppsForUser - import locally to avoid circular dep

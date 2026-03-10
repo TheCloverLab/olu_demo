@@ -65,6 +65,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-semibold text-sm">{agent.name}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold uppercase tracking-wide">AI</span>
           <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-cyan-100/55 bg-cyan-500/10')}>
             {agent.role}
           </span>
@@ -138,6 +139,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap mb-0.5">
           <span className="font-semibold text-sm">{emp.name}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold uppercase tracking-wide">Human</span>
           <span className="text-xs text-cyan-100/45 capitalize flex items-center gap-1">
             <Circle size={6} className={STATUS_DOT_COLOR[emp.status]} fill="currentColor" />
             {emp.status}

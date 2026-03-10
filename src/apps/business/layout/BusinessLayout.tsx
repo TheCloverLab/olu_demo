@@ -172,12 +172,18 @@ export default function BusinessLayout() {
             <NavLink
               to="/business/wallet"
               className={({ isActive }) => clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+                'block rounded-2xl transition-colors cursor-pointer border',
+                isActive ? 'bg-cyan-300/10 border-cyan-400/20' : 'bg-[#0a1525] border-cyan-500/10 hover:bg-[#0d1a2d]'
               )}
             >
-              <Wallet size={18} />
-              Wallet
+              <div className="px-3 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Wallet size={14} className="text-emerald-400" />
+                  <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
+                </div>
+                <p className="font-black text-lg leading-none">$12,480</p>
+                <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+              </div>
             </NavLink>
           )}
         </div>

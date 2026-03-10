@@ -44,9 +44,13 @@ const WORKSPACE_AGENTS = {
   creator_ops: [
     { agentKey: 'lisa', templateKey: 'ip_manager', name: 'Lisa', role: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', description: 'Manages and licenses creator IP.', lastMessage: 'Received 3 new IP licensing requests.', lastTime: '12m ago' },
     { agentKey: 'eric', templateKey: 'data_analyst', name: 'Eric', role: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-blue-700', description: 'Analyzes performance and growth metrics.', lastMessage: 'Weekly report ready.', lastTime: '2h ago' },
+    { agentKey: 'aria', templateKey: 'community_manager', name: 'Aria', role: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', description: 'Runs community events and rewards top fans.', lastMessage: 'Community engagement up 12% this week.', lastTime: '30m ago' },
+    { agentKey: 'zephyr', templateKey: 'growth_officer', name: 'Zephyr', role: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', description: 'Drives follower and subscriber growth.', lastMessage: 'Identified 3 new audience segments.', lastTime: '45m ago' },
   ],
   marketing: [
     { agentKey: 'max', templateKey: 'marketing_manager', name: 'Max', role: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', description: 'Plans influencer campaigns end-to-end.', lastMessage: 'Luna team responded positively.', lastTime: '15m ago' },
+    { agentKey: 'debian', templateKey: 'ip_manager', name: 'Debian', role: 'IP Manager', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', description: 'Reviews IP and brand compliance.', lastMessage: 'Reviewing IP portfolio.', lastTime: '1h ago' },
+    { agentKey: 'sage', templateKey: 'data_analyst', name: 'Sage', role: 'Data Analyst', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', description: 'Tracks campaign analytics and ROI.', lastMessage: 'Campaign metrics compiled.', lastTime: '35m ago' },
   ],
   supply_chain: [
     { agentKey: 'chan', templateKey: 'channel_manager', name: 'Chan', role: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', description: 'Manages supplier and creator partnerships.', lastMessage: 'Hoodie design approved.', lastTime: '20m ago' },
@@ -83,6 +87,26 @@ const AGENT_TASKS = {
     { task_key: 'chan-shipping-rates', title: 'Negotiate shipping rates for SEA region', status: 'in_progress', priority: 'medium', due: 'Mar 18', progress: 25 },
     { task_key: 'chan-inventory', title: 'Audit current inventory levels across warehouses', status: 'pending', priority: 'medium', due: 'Mar 16' },
     { task_key: 'chan-catalog-sync', title: 'Sync product catalog with Shopify store', status: 'pending', priority: 'low', due: 'Mar 24' },
+  ],
+  aria: [
+    { task_key: 'aria-welcome-flow', title: 'Refine new member welcome sequence', status: 'in_progress', priority: 'high', due: 'Mar 11', progress: 65 },
+    { task_key: 'aria-weekly-event', title: 'Plan Friday community live event', status: 'pending', priority: 'medium', due: 'Mar 14' },
+    { task_key: 'aria-mod-report', title: 'Review weekly moderation report', status: 'done', priority: 'medium', due: 'Mar 7', progress: 100 },
+  ],
+  zephyr: [
+    { task_key: 'zephyr-audience', title: 'Analyze TikTok audience segments for spring push', status: 'in_progress', priority: 'high', due: 'Mar 12', progress: 40 },
+    { task_key: 'zephyr-seo', title: 'Optimize community landing page for search', status: 'pending', priority: 'medium', due: 'Mar 18' },
+    { task_key: 'zephyr-referral', title: 'Design member referral incentive program', status: 'in_progress', priority: 'medium', due: 'Mar 15', progress: 30 },
+  ],
+  debian: [
+    { task_key: 'debian-ip-review', title: 'Review GameVerse IP licensing portfolio', status: 'in_progress', priority: 'high', due: 'Mar 13', progress: 50 },
+    { task_key: 'debian-compliance', title: 'Brand usage compliance audit', status: 'pending', priority: 'medium', due: 'Mar 20' },
+    { task_key: 'debian-contract', title: 'Draft co-marketing agreement template', status: 'in_progress', priority: 'medium', due: 'Mar 16', progress: 35 },
+  ],
+  sage: [
+    { task_key: 'sage-player-analytics', title: 'Compile player engagement metrics report', status: 'done', priority: 'high', due: 'Mar 8', progress: 100 },
+    { task_key: 'sage-roi-dashboard', title: 'Build campaign ROI tracking dashboard', status: 'in_progress', priority: 'high', due: 'Mar 14', progress: 55 },
+    { task_key: 'sage-benchmark', title: 'Benchmark against competitor game studios', status: 'pending', priority: 'low', due: 'Mar 25' },
   ],
 }
 

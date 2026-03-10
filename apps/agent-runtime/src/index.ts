@@ -1,11 +1,161 @@
 /**
- * OLU Agent Runtime
+ * OLU Agent Runtime — HTTP Server
  *
- * LangGraph JS-based agent backend responsible for:
- * - Multi-agent orchestration
- * - Tool execution (system-internal tasks)
- * - Approval interrupt/resume flows
- * - Long-running task execution
+ * Endpoints:
+ *   GET  /health          — health check
+ *   POST /invoke          — invoke the task agent
+ *   POST /resume/:threadId — resume an interrupted graph (approval flow)
+ *   GET  /threads/:threadId — get thread state
  */
 
-console.log('OLU Agent Runtime — not yet implemented')
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { taskAgent } from './graph/task-agent.js'
+
+const PORT = parseInt(process.env.PORT || '8080', 10)
+
+async function readBody(req: IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = []
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer)
+  }
+  return Buffer.concat(chunks).toString()
+}
+
+function json(res: ServerResponse, status: number, data: unknown) {
+  res.writeHead(status, { 'Content-Type': 'application/json' })
+  res.end(JSON.stringify(data))
+}
+
+function cors(res: ServerResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+}
+
+const server = createServer(async (req, res) => {
+  cors(res)
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204)
+    res.end()
+    return
+  }
+
+  const url = new URL(req.url || '/', `http://localhost:${PORT}`)
+
+  try {
+    // Health check
+    if (url.pathname === '/health' && req.method === 'GET') {
+      json(res, 200, { status: 'ok', version: '0.1.0' })
+      return
+    }
+
+    // Invoke agent
+    if (url.pathname === '/invoke' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const {
+        workspaceId,
+        agentId,
+        agentName,
+        agentPosition,
+        taskDescription,
+        requiresApproval = false,
+      } = body
+
+      if (!workspaceId || !agentId || !taskDescription) {
+        json(res, 400, {
+          error: 'Missing required fields: workspaceId, agentId, taskDescription',
+        })
+        return
+      }
+
+      const threadId = `${agentId}-${Date.now()}`
+      const config = { configurable: { thread_id: threadId } }
+
+      const result = await taskAgent.invoke(
+        {
+          workspaceId,
+          agentId,
+          agentName: agentName || 'Agent',
+          agentPosition: agentPosition || 'AI Agent',
+          taskDescription,
+          requiresApproval,
+          messages: [],
+        },
+        config,
+      )
+
+      // Check if the graph was interrupted (needs approval)
+      const state = await taskAgent.getState(config)
+      const interrupted = state.next && state.next.length > 0
+
+      const lastMessage = result.messages[result.messages.length - 1]
+
+      json(res, 200, {
+        threadId,
+        interrupted,
+        pendingApproval: interrupted ? state.next : null,
+        response: lastMessage?.content || null,
+        messageCount: result.messages.length,
+      })
+      return
+    }
+
+    // Resume interrupted graph (approval)
+    const resumeMatch = url.pathname.match(/^\/resume\/(.+)$/)
+    if (resumeMatch && req.method === 'POST') {
+      const threadId = resumeMatch[1]
+      const body = JSON.parse(await readBody(req))
+      const { decision } = body // 'approve' or 'reject'
+
+      if (!decision || !['approve', 'reject'].includes(decision)) {
+        json(res, 400, { error: "decision must be 'approve' or 'reject'" })
+        return
+      }
+
+      const config = { configurable: { thread_id: threadId } }
+
+      // Resume the interrupted graph by updating state and re-invoking
+      await taskAgent.updateState(config, {
+        approved: decision === 'approve',
+      })
+      const result = await taskAgent.invoke(null, config)
+
+      const lastMessage = result.messages[result.messages.length - 1]
+      json(res, 200, {
+        threadId,
+        decision,
+        response: lastMessage?.content || null,
+        messageCount: result.messages.length,
+      })
+      return
+    }
+
+    // Get thread state
+    const threadMatch = url.pathname.match(/^\/threads\/(.+)$/)
+    if (threadMatch && req.method === 'GET') {
+      const threadId = threadMatch[1]
+      const config = { configurable: { thread_id: threadId } }
+      const state = await taskAgent.getState(config)
+
+      json(res, 200, {
+        threadId,
+        next: state.next,
+        messageCount: state.values?.messages?.length || 0,
+        lastMessage:
+          state.values?.messages?.[state.values.messages.length - 1]?.content ||
+          null,
+      })
+      return
+    }
+
+    json(res, 404, { error: 'not found' })
+  } catch (err: any) {
+    console.error('Request error:', err)
+    json(res, 500, { error: err.message || 'internal error' })
+  }
+})
+
+server.listen(PORT, () => {
+  console.log(`OLU Agent Runtime listening on :${PORT}`)
+})

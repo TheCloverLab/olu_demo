@@ -1,0 +1,8 @@
+node_modules
+dist
+*.md
+.git
+.github
+supabase
+scripts
+apps/web

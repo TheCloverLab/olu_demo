@@ -13,6 +13,7 @@ import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
+import { listAvailableProviders } from './lib/models.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -304,7 +305,7 @@ const server = createServer(async (req, res) => {
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
       const body = JSON.parse(await readBody(req))
-      const { workspaceId, agentId, agentName, agentRole, message } = body
+      const { workspaceId, agentId, agentName, agentRole, message, model } = body
 
       if (!workspaceId || !agentId || !message) {
         json(res, 400, { error: 'Missing required fields: workspaceId, agentId, message' })
@@ -317,9 +318,24 @@ const server = createServer(async (req, res) => {
         agentName: agentName || 'Agent',
         agentRole: agentRole || 'AI Agent',
         userMessage: message,
+        modelProvider: model,
       })
 
       json(res, 200, result)
+      return
+    }
+
+    // List available model providers
+    if (url.pathname === '/models' && req.method === 'GET') {
+      const providers = listAvailableProviders()
+      json(res, 200, {
+        providers: providers.map(p => ({
+          name: p.name,
+          model: p.model,
+          baseURL: p.baseURL,
+          supportsTools: p.supportsTools,
+        })),
+      })
       return
     }
 

@@ -3,10 +3,12 @@
  *
  * Uses the LLM's native function calling (tools) for a ReAct-style loop.
  * The LLM decides which tools to call and when.
+ * Supports multiple model providers via the model registry.
  */
 
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { allTools } from '../tools/workspace-tools.js'
+import { getModelProvider, type ModelProvider } from '../lib/models.js'
 
 type Message = {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -33,23 +35,18 @@ const toolDefs = allTools.map((t) => ({
   },
 }))
 
-async function callLLMWithTools(messages: Message[]) {
-  const apiKey = process.env.LLM_API_KEY
-  const baseURL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1'
-  const model = process.env.LLM_MODEL || 'gpt-4o-mini'
-
-  const res = await fetch(`${baseURL}/chat/completions`, {
+async function callLLMWithTools(messages: Message[], provider: ModelProvider) {
+  const res = await fetch(`${provider.baseURL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'User-Agent': 'claude-code/1.0.0',
-      'X-Client-Name': 'claude-code',
+      Authorization: `Bearer ${provider.apiKey}`,
+      ...(provider.headers || {}),
     },
     body: JSON.stringify({
-      model,
+      model: provider.model,
       messages,
-      tools: toolDefs,
+      tools: provider.supportsTools ? toolDefs : undefined,
       temperature: 0.3,
       max_tokens: 2048,
     }),
@@ -67,6 +64,8 @@ async function callLLMWithTools(messages: Message[]) {
 export type ChatResult = {
   response: string
   toolCalls: { name: string; args: Record<string, unknown>; result: string }[]
+  model?: string
+  provider?: string
 }
 
 export async function runChatAgent(params: {
@@ -75,8 +74,12 @@ export async function runChatAgent(params: {
   agentRole: string
   workspaceId: string
   userMessage: string
+  modelProvider?: string
 }): Promise<ChatResult> {
-  const { agentId, agentName, agentRole, workspaceId, userMessage } = params
+  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider } = params
+
+  const provider = getModelProvider(modelProvider)
+  console.log(`[chatAgent] Using model: ${provider.model} (${provider.name})`)
 
   const systemPrompt = `You are ${agentName}, a ${agentRole} AI agent in a workspace (workspace_id: ${workspaceId}, your agent_id: ${agentId}).
 
@@ -95,7 +98,7 @@ Be concise and professional. After completing actions, summarize what you did.`
   const MAX_ITERATIONS = 8
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const choice = await callLLMWithTools(messages)
+    const choice = await callLLMWithTools(messages, provider)
     const msg = choice.message
 
     if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
@@ -139,6 +142,8 @@ Be concise and professional. After completing actions, summarize what you did.`
       return {
         response: msg.content || msg.reasoning_content || 'Done.',
         toolCalls: allToolCalls,
+        model: provider.model,
+        provider: provider.name,
       }
     }
   }
@@ -146,5 +151,7 @@ Be concise and professional. After completing actions, summarize what you did.`
   return {
     response: 'Reached maximum tool call iterations.',
     toolCalls: allToolCalls,
+    model: provider.model,
+    provider: provider.name,
   }
 }

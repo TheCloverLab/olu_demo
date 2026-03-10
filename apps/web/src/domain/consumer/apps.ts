@@ -215,6 +215,55 @@ export function buildAcademyCardFromCourse(
   })
 }
 
+function titleToSlug(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+export async function resolveConsumerAppBySlug(slug: string): Promise<{
+  creatorId: string
+  appType: ConsumerAppType
+  title: string
+  configJson: Record<string, any> | null
+} | null> {
+  // Fetch all community configs
+  const { data: configs, error } = await supabase
+    .from('workspace_consumer_configs')
+    .select('*, workspaces!inner(owner_user_id)')
+
+  if (error || !configs) return null
+
+  for (const config of configs) {
+    const title = config.config_json?.community_hero_title || ''
+    const configSlug = titleToSlug(title)
+    if (configSlug === slug) {
+      return {
+        creatorId: (config as any).workspaces?.owner_user_id,
+        appType: config.template_key === 'sell_courses' ? 'academy' : 'community',
+        title,
+        configJson: config.config_json,
+      }
+    }
+  }
+
+  // Also check courses
+  const { data: courses } = await supabase
+    .from('consumer_courses')
+    .select('*')
+    .eq('slug', slug)
+    .limit(1)
+
+  if (courses && courses.length > 0) {
+    return {
+      creatorId: courses[0].creator_id,
+      appType: 'academy',
+      title: courses[0].title,
+      configJson: null,
+    }
+  }
+
+  return null
+}
+
 async function getOwnedConsumerCourses(ownerUserId: string) {
   const { data, error } = await supabase
     .from('consumer_courses')

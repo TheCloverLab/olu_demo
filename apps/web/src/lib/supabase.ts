@@ -466,6 +466,26 @@ export type WorkspaceAgentWithTasks = WorkspaceAgent & {
   tasks?: WorkspaceAgentTask[]
 }
 
+export type UserWallet = {
+  id: string
+  user_id: string
+  usdc_balance: number
+  token_balance: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type WorkspaceWallet = {
+  id: string
+  workspace_id: string
+  usdc_balance: number
+  token_balance: number
+  pending_revenue: number
+  total_spent: number
+  created_at?: string
+  updated_at?: string
+}
+
 export type WorkspaceEmployee = {
   id: string
   workspace_id: string

@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Briefcase,
@@ -22,7 +22,9 @@ import {
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
+import { getWorkspaceWalletForUser } from '../../../domain/workspace/api'
 import { APP_VERSION } from '../../../lib/version'
+import type { WorkspaceWallet } from '../../../lib/supabase'
 
 import type { BusinessModuleKey } from '../../../lib/supabase'
 
@@ -138,9 +140,17 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 
 export default function BusinessLayout() {
   const { currentUser, enabledBusinessModules } = useApp()
+  const { user } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [wallet, setWallet] = useState<WorkspaceWallet | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    if (user && enabledBusinessModules.includes('creator_ops')) {
+      getWorkspaceWalletForUser(user).then(setWallet).catch(() => {})
+    }
+  }, [user?.id])
 
   const allNav = [...CORE_NAV, { to: '/business/wallet', icon: Wallet, label: 'Wallet' }, { to: '/business/agents', icon: Bot, label: 'AI Agent Marketplace' }, ...MODULE_NAV]
   const activeModuleLabel = allNav.find((item) =>
@@ -181,7 +191,7 @@ export default function BusinessLayout() {
                   <Wallet size={14} className="text-emerald-400" />
                   <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
                 </div>
-                <p className="font-black text-lg leading-none">$12,480</p>
+                <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
                 <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
               </div>
             </NavLink>

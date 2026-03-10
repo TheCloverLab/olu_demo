@@ -2,6 +2,7 @@ import { supabase } from '../../lib/supabase'
 import type {
   BusinessModuleKey,
   User,
+  UserWallet,
   Workspace,
   WorkspaceBilling,
   WorkspaceConsumerConfig,
@@ -11,6 +12,7 @@ import type {
   WorkspacePermission,
   WorkspacePolicy,
   WorkspaceSettingsData,
+  WorkspaceWallet,
 } from '../../lib/supabase'
 import type { ConsumerTemplateKey } from '../../apps/consumer/templateConfig'
 
@@ -290,5 +292,30 @@ export async function updateWorkspaceConsumerConfigForUser(
 
   if (error) throw error
   return data as WorkspaceConsumerConfig
+}
+
+// ---------- Wallet ----------
+
+export async function getUserWallet(userId: string): Promise<UserWallet | null> {
+  const { data, error } = await supabase
+    .from('user_wallets')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  if (error) return null
+  return data as UserWallet
+}
+
+export async function getWorkspaceWalletForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<WorkspaceWallet | null> {
+  const membership = await ensureWorkspaceForUser(user)
+  const { data, error } = await supabase
+    .from('workspace_wallets')
+    .select('*')
+    .eq('workspace_id', membership.workspace_id)
+    .single()
+
+  if (error) return null
+  return data as WorkspaceWallet
 }
 

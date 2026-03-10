@@ -13,7 +13,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const nextPath = (location.state as { from?: string } | null)?.from || '/'
+  const searchParams = new URLSearchParams(location.search)
+  const nextPath = searchParams.get('returnTo') || (location.state as { from?: string } | null)?.from || '/'
 
   useEffect(() => {
     if (!authLoading && user) {

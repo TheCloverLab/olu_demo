@@ -377,6 +377,15 @@ for (const account of ACCOUNTS) {
   const profileId = await createProfile(account, authUser.id)
   await createWorkspaceWithModules(profileId, account)
 
+  // Create user wallet
+  const walletBalance = account.modules.length > 0
+    ? { usdc_balance: Math.floor(Math.random() * 20000) + 5000, token_balance: Math.floor(Math.random() * 15000) + 3000 }
+    : { usdc_balance: Math.floor(Math.random() * 500) + 50, token_balance: Math.floor(Math.random() * 3000) + 200 }
+  await admin.from('user_wallets').upsert({
+    user_id: profileId,
+    ...walletBalance,
+  }, { onConflict: 'user_id' })
+
   const moduleLabel = account.modules.length > 0 ? account.modules.join(', ') : 'consumer'
   summary.push({
     userId: profileId,

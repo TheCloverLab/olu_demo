@@ -211,7 +211,7 @@ export default function AppLayout() {
         </div>
 
         {/* Mobile Bottom Nav — icon-only like Patreon */}
-        <nav className="md:hidden flex items-center bg-olu-bg border-t border-olu-border flex-shrink-0">
+        <nav className="md:hidden flex items-center bg-olu-bg border-t border-olu-border flex-shrink-0 pb-[env(safe-area-inset-bottom)]">
           {navItems.map(({ to, icon: Icon, exact }) => (
             <NavLink
               key={to}

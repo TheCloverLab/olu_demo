@@ -71,7 +71,7 @@ async function deleteAllAuthUsers() {
 async function truncateAllTables() {
   console.log('Truncating all data tables...')
   const tables = [
-    'workspace_agent_tasks', 'workspace_agents',
+    'workspace_agent_tasks', 'workspace_agents', 'agent_templates',
     'consumer_lesson_progress', 'consumer_course_purchases', 'consumer_memberships',
     'workspace_billing', 'workspace_consumer_configs', 'workspace_policies',
     'workspace_integrations', 'workspace_permissions', 'workspace_modules',
@@ -122,6 +122,8 @@ async function createProfile(account, authUserId) {
       username,
       handle: account.handle,
       email: account.email,
+      role: 'fan',
+      roles: ['fan'],
       name: account.name,
       bio: account.bio || '',
       avatar_img: account.avatarImg || null,

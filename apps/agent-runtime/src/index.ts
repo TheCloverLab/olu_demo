@@ -14,6 +14,7 @@ import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
 import { listAvailableProviders } from './lib/models.js'
+import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -325,6 +326,12 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // List scheduled jobs
+    if (url.pathname === '/scheduler/jobs' && req.method === 'GET') {
+      json(res, 200, { activeJobs: getActiveJobIds() })
+      return
+    }
+
     // List available model providers
     if (url.pathname === '/models' && req.method === 'GET') {
       const providers = listAvailableProviders()
@@ -348,4 +355,9 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`OLU Agent Runtime listening on :${PORT}`)
+
+  // Load scheduled jobs on startup
+  loadScheduledJobs().catch(err => {
+    console.error('[startup] Failed to load scheduled jobs:', err.message)
+  })
 })

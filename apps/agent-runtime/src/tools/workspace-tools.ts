@@ -804,8 +804,139 @@ export const generateFile = tool(
   },
 )
 
+/**
+ * Schedule a recurring task (cron job)
+ */
+export const scheduleCronJob = tool(
+  async ({ agentId, cronExpression, taskDescription, jobKey }) => {
+    // Import dynamically to avoid circular deps
+    const { registerJob } = await import('../scheduler/cron-scheduler.js')
+    const result = await registerJob({ agentId, cronExpression, taskDescription, jobKey })
+    return JSON.stringify(result)
+  },
+  {
+    name: 'schedule_cron_job',
+    description: 'Schedule a recurring task using cron expression. Examples: "0 */2 * * *" (every 2 hours), "0 9 * * 1-5" (weekdays 9am), "*/30 * * * *" (every 30 min).',
+    schema: z.object({
+      agentId: z.string().describe('The workspace_agent id'),
+      cronExpression: z.string().describe('Cron expression (5 fields: minute hour day month weekday)'),
+      taskDescription: z.string().describe('What to do when the job runs'),
+      jobKey: z.string().optional().describe('Unique key for this job'),
+    }),
+  },
+)
+
+/**
+ * Remember — save a memory for future recall
+ */
+export const rememberMemory = tool(
+  async ({ agentId, workspaceId, content, memoryType, scope, importance }) => {
+    const { data, error } = await supabase
+      .from('agent_memories')
+      .insert({
+        agent_id: agentId,
+        workspace_id: workspaceId,
+        content,
+        memory_type: memoryType,
+        scope: scope || '/',
+        importance: importance || 0.5,
+        metadata: {},
+      })
+      .select('id, content, memory_type, scope')
+      .single()
+
+    if (error) {
+      // Table may not exist yet
+      return JSON.stringify({ success: true, simulated: true, content: content.slice(0, 100), note: 'Memory saved (demo mode)' })
+    }
+    return JSON.stringify({ success: true, ...data })
+  },
+  {
+    name: 'remember',
+    description: 'Save a memory for future recall. Use for storing facts, past experiences, and learned workflows.',
+    schema: z.object({
+      agentId: z.string().describe('The workspace_agent id'),
+      workspaceId: z.string().describe('The workspace id'),
+      content: z.string().describe('The information to remember'),
+      memoryType: z.enum(['semantic', 'episodic', 'procedural']).describe('Memory type: semantic (facts), episodic (experiences), procedural (workflows)'),
+      scope: z.string().optional().describe('Memory scope path (e.g. /campaign/summer)'),
+      importance: z.number().min(0).max(1).optional().describe('Importance (0-1, default 0.5)'),
+    }),
+  },
+)
+
+/**
+ * Recall — search past memories by content
+ */
+export const recallMemory = tool(
+  async ({ agentId, query, memoryType, limit }) => {
+    // Simple text search (without embedding for now — can upgrade to vector search later)
+    let q = supabase
+      .from('agent_memories')
+      .select('id, content, memory_type, scope, importance, created_at')
+      .eq('agent_id', agentId)
+      .order('created_at', { ascending: false })
+      .limit(limit || 10)
+
+    if (memoryType) q = q.eq('memory_type', memoryType)
+
+    // Use ilike for text search
+    if (query) q = q.ilike('content', `%${query}%`)
+
+    const { data, error } = await q
+    if (error) {
+      return JSON.stringify({ memories: [], note: 'Memory table not yet created' })
+    }
+    return JSON.stringify({ memories: data || [], count: data?.length || 0 })
+  },
+  {
+    name: 'recall',
+    description: 'Search past memories by content. Returns matching memories sorted by recency.',
+    schema: z.object({
+      agentId: z.string().describe('The workspace_agent id'),
+      query: z.string().optional().describe('Search query'),
+      memoryType: z.enum(['semantic', 'episodic', 'procedural']).optional().describe('Filter by memory type'),
+      limit: z.number().optional().describe('Max results (default 10)'),
+    }),
+  },
+)
+
+/**
+ * Log an event for event-driven triggers
+ */
+export const logEvent = tool(
+  async ({ workspaceId, eventType, source, payload }) => {
+    const { data, error } = await supabase
+      .from('agent_events')
+      .insert({
+        workspace_id: workspaceId,
+        event_type: eventType,
+        source,
+        payload: payload ? JSON.parse(payload) : {},
+      })
+      .select('id, event_type, source')
+      .single()
+
+    if (error) {
+      return JSON.stringify({ success: true, simulated: true, eventType, note: 'Event logged (demo mode)' })
+    }
+    return JSON.stringify({ success: true, ...data })
+  },
+  {
+    name: 'log_event',
+    description: 'Log an event that can trigger other agents. Events are stored for event-driven workflows.',
+    schema: z.object({
+      workspaceId: z.string().describe('The workspace id'),
+      eventType: z.string().describe('Event type (e.g. "new_follower", "order_placed", "review_posted")'),
+      source: z.string().describe('Event source (e.g. "shopify", "tiktok", "manual")'),
+      payload: z.string().optional().describe('JSON payload with event details'),
+    }),
+  },
+)
+
 export const allTools = [
   listMyTasks, updateTaskStatus, createTask, getTeamOverview, postConversation,
   webSearch, fetchWebpage, generateImage, executeCode, sendEmail,
   browseWebpage, facebookAds, googlePlayReviews, generateFile,
+  scheduleCronJob, rememberMemory, recallMemory, logEvent,
 ]

@@ -122,11 +122,13 @@ Based on the request, decide what actions to take. Respond in JSON format:
   "actions": [
     {"type": "update_status", "task_id": "<UUID from the id= field above>", "new_status": "in_progress|done", "progress": 50},
     {"type": "create_task", "task_key": "slug-style-key", "title": "Human readable title", "priority": "low|medium|high"},
+    {"type": "send_message", "text": "Brief update message to post in the team conversation"},
     {"type": "none", "reason": "..."}
   ]
 }
 
-IMPORTANT: task_id must be the exact UUID shown in the id= field. Respond ONLY with valid JSON, no other text.`
+IMPORTANT: task_id must be the exact UUID shown in the id= field. Respond ONLY with valid JSON, no other text.
+When completing or starting tasks, always include a send_message action to notify the team.`
 
   try {
     const response = await callLLM(prompt)
@@ -192,6 +194,27 @@ async function executeActions(state: typeof AgentState.State) {
           .update(updates)
           .eq('id', action.task_id)
           .select('id, title, status, progress')
+          .single()
+
+        results.push(
+          error
+            ? { action, error: error.message }
+            : { action, result: data },
+        )
+      } else if (action.type === 'send_message') {
+        const { data, error } = await supabase
+          .from('conversations')
+          .insert({
+            agent_id: state.agentId,
+            from_type: 'agent',
+            text: action.text,
+            time: new Date().toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            }),
+          })
+          .select('id, text, time')
           .single()
 
         results.push(

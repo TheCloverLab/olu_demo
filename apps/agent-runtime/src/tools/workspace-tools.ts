@@ -124,17 +124,16 @@ export const getTeamOverview = tool(
     const { data, error } = await supabase
       .from('workspace_agents')
       .select(
-        'id, name, position, status, employment_status, workspace_agent_tasks(id, status)',
+        'id, name, role, status, workspace_agent_tasks(id, status)',
       )
       .eq('workspace_id', workspaceId)
-      .eq('employment_status', 'active')
 
     if (error) return JSON.stringify({ error: error.message })
 
     const overview = (data || []).map((agent: any) => ({
       id: agent.id,
       name: agent.name,
-      position: agent.position,
+      role: agent.role,
       status: agent.status,
       taskCounts: {
         total: agent.workspace_agent_tasks?.length || 0,
@@ -162,4 +161,38 @@ export const getTeamOverview = tool(
   },
 )
 
-export const allTools = [listMyTasks, updateTaskStatus, createTask, getTeamOverview]
+/**
+ * Post a message to the workspace conversation as this agent
+ */
+export const postConversation = tool(
+  async ({ agentId, text }) => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({
+        agent_id: agentId,
+        from_type: 'agent',
+        text,
+        time: new Date().toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        }),
+      })
+      .select('id, text, time')
+      .single()
+
+    if (error) return JSON.stringify({ error: error.message })
+    return JSON.stringify(data)
+  },
+  {
+    name: 'post_conversation',
+    description:
+      'Post a message to the workspace conversation as this agent (visible to team members).',
+    schema: z.object({
+      agentId: z.string().describe('The workspace_agent id'),
+      text: z.string().describe('Message text to post'),
+    }),
+  },
+)
+
+export const allTools = [listMyTasks, updateTaskStatus, createTask, getTeamOverview, postConversation]

@@ -11,6 +11,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
+import { supabase } from './lib/supabase.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -127,6 +128,73 @@ const server = createServer(async (req, res) => {
         summary: result.summary,
         actions: result.actions,
       })
+      return
+    }
+
+    // List agents for a workspace
+    const agentsMatch = url.pathname.match(/^\/agents\/(.+)$/)
+    if (agentsMatch && req.method === 'GET') {
+      const workspaceId = agentsMatch[1]
+      const { data, error } = await supabase
+        .from('workspace_agents')
+        .select('id, name, role, status, agent_key, workspace_agent_tasks(id, title, status, priority, progress)')
+        .eq('workspace_id', workspaceId)
+
+      if (error) {
+        json(res, 500, { error: error.message })
+        return
+      }
+
+      json(res, 200, { agents: data || [] })
+      return
+    }
+
+    // Webhook trigger — Supabase/external events can trigger agent runs
+    if (url.pathname === '/webhook/task-created' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { record } = body // Supabase webhook sends { type, table, record, ... }
+
+      if (!record?.workspace_agent_id) {
+        json(res, 400, { error: 'Missing workspace_agent_id in record' })
+        return
+      }
+
+      // Look up the agent
+      const { data: agent } = await supabase
+        .from('workspace_agents')
+        .select('id, name, role, workspace_id')
+        .eq('id', record.workspace_agent_id)
+        .single()
+
+      if (!agent) {
+        json(res, 404, { error: 'Agent not found' })
+        return
+      }
+
+      const threadId = `webhook-${agent.id}-${Date.now()}`
+      const config = { configurable: { thread_id: threadId } }
+
+      // Fire-and-forget: invoke the agent with the new task context
+      taskAgent
+        .invoke(
+          {
+            workspaceId: agent.workspace_id,
+            agentId: agent.id,
+            agentName: agent.name,
+            agentPosition: agent.role,
+            taskDescription: `New task assigned: "${record.title}". Review your current tasks and take appropriate action.`,
+            requiresApproval: false,
+          },
+          config,
+        )
+        .then((result) => {
+          console.log(`[webhook] Agent ${agent.name} completed:`, result.summary)
+        })
+        .catch((err) => {
+          console.error(`[webhook] Agent ${agent.name} error:`, err.message)
+        })
+
+      json(res, 202, { threadId, message: 'Agent triggered' })
       return
     }
 

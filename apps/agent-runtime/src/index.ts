@@ -11,6 +11,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
+import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
@@ -297,6 +298,28 @@ const server = createServer(async (req, res) => {
         summary: state.values?.summary,
         error: state.values?.error,
       })
+      return
+    }
+
+    // Chat with an agent (tool-calling mode)
+    if (url.pathname === '/chat' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { workspaceId, agentId, agentName, agentRole, message } = body
+
+      if (!workspaceId || !agentId || !message) {
+        json(res, 400, { error: 'Missing required fields: workspaceId, agentId, message' })
+        return
+      }
+
+      const result = await runChatAgent({
+        workspaceId,
+        agentId,
+        agentName: agentName || 'Agent',
+        agentRole: agentRole || 'AI Agent',
+        userMessage: message,
+      })
+
+      json(res, 200, result)
       return
     }
 

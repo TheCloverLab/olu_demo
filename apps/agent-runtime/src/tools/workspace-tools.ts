@@ -195,4 +195,51 @@ export const postConversation = tool(
   },
 )
 
-export const allTools = [listMyTasks, updateTaskStatus, createTask, getTeamOverview, postConversation]
+/**
+ * Search the web using DuckDuckGo
+ */
+export const webSearch = tool(
+  async ({ query }) => {
+    try {
+      // Use DuckDuckGo HTML search (no API key needed)
+      const encoded = encodeURIComponent(query)
+      const res = await fetch(`https://html.duckduckgo.com/html/?q=${encoded}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OLU-Agent/1.0)' },
+      })
+      const html = await res.text()
+
+      // Extract result snippets from HTML
+      const results: { title: string; snippet: string; url: string }[] = []
+      const resultBlocks = html.match(/<div class="result[^"]*"[\s\S]*?<\/div>\s*<\/div>/g) || []
+
+      for (const block of resultBlocks.slice(0, 5)) {
+        const titleMatch = block.match(/<a[^>]*class="result__a"[^>]*>([\s\S]*?)<\/a>/)
+        const snippetMatch = block.match(/<a[^>]*class="result__snippet"[^>]*>([\s\S]*?)<\/a>/)
+        const urlMatch = block.match(/href="([^"]*)"/)
+        if (titleMatch) {
+          results.push({
+            title: titleMatch[1].replace(/<[^>]*>/g, '').trim(),
+            snippet: snippetMatch?.[1]?.replace(/<[^>]*>/g, '').trim() || '',
+            url: urlMatch?.[1] || '',
+          })
+        }
+      }
+
+      if (results.length === 0) {
+        return JSON.stringify({ query, results: [], note: 'No results found' })
+      }
+      return JSON.stringify({ query, results })
+    } catch (err: any) {
+      return JSON.stringify({ error: err.message, query })
+    }
+  },
+  {
+    name: 'web_search',
+    description: 'Search the web for information. Returns titles, snippets, and URLs of top results.',
+    schema: z.object({
+      query: z.string().describe('Search query'),
+    }),
+  },
+)
+
+export const allTools = [listMyTasks, updateTaskStatus, createTask, getTeamOverview, postConversation, webSearch]

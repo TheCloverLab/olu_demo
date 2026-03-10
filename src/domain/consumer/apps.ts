@@ -178,7 +178,7 @@ export function buildCommunityCardFromCreator(
     visibility: 'public',
     source: 'workspace_config',
     template_key: 'fan_community',
-    cover_img: creator.cover_img || null,
+    cover_img: configJson?.cover_img || creator.cover_img || null,
     config_json: configJson || null,
   }, creator, {
     priceLabel: 'Membership',

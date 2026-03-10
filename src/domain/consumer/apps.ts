@@ -68,7 +68,7 @@ export function getCommunityTitle(
 }
 
 export function buildCommunityConsumerApp(
-  owner: Pick<User, 'id' | 'name' | 'handle' | 'username'>,
+  owner: Pick<User, 'id' | 'name' | 'handle' | 'username' | 'cover_img'>,
   config: WorkspaceConsumerConfig
 ): ConsumerApp | null {
   if (!hasCommunityAppConfig(config)) return null
@@ -86,7 +86,7 @@ export function buildCommunityConsumerApp(
     visibility: 'public',
     source: 'workspace_config',
     template_key: config.template_key,
-    cover_img: null,
+    cover_img: owner.cover_img || null,
     config_json: config.config_json || {},
   }
 }
@@ -95,23 +95,23 @@ export function buildAcademyConsumerApps(courses: ConsumerCourse[]): ConsumerApp
   return courses.map((course) => ({
     id: `academy:${course.id}`,
     owner_user_id: course.creator_id,
-    app_type: 'academy',
+    app_type: 'academy' as const,
     title: course.title,
     slug: course.slug,
     summary: course.subtitle || course.headline,
     status: course.status,
-    visibility: course.status === 'published' ? 'public' : 'private',
+    visibility: course.status === 'published' ? 'public' as const : 'private' as const,
     source: 'course',
     template_key: 'sell_courses',
     linked_course_id: course.id,
     linked_course_slug: course.slug,
-    cover_img: course.hero,
+    cover_img: course.hero || null,
     config_json: null,
   }))
 }
 
 export function buildOwnedConsumerApps(
-  owner: Pick<User, 'id' | 'name' | 'handle' | 'username'>,
+  owner: Pick<User, 'id' | 'name' | 'handle' | 'username' | 'cover_img'>,
   config: WorkspaceConsumerConfig | null,
   courses: ConsumerCourse[]
 ): ConsumerApp[] {
@@ -203,7 +203,7 @@ export function buildAcademyCardFromCourse(
     template_key: 'sell_courses',
     linked_course_id: course.id,
     linked_course_slug: course.slug,
-    cover_img: course.hero,
+    cover_img: course.hero || null,
     config_json: null,
   }, {
     name: owner?.name || course.instructor,

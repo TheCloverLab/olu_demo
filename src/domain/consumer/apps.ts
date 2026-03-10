@@ -8,7 +8,7 @@ import type {
   User,
   WorkspaceConsumerConfig,
 } from '../../lib/supabase'
-import { getCreatorsForDiscover } from '../profile/data'
+import { getCreatorsForDiscover, getPublicCommunityConfigsByOwner } from '../profile/data'
 import { getConsumerCoursesForFeed } from './data'
 import { getProfileById } from '../profile/api'
 import { getWorkspaceConsumerConfigForUser } from '../workspace/api'
@@ -57,6 +57,16 @@ function toSlugPart(value: string | undefined | null, fallback: string) {
   return raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || fallback
 }
 
+export function getCommunityTitle(
+  owner: Pick<User, 'name'>,
+  configJson?: WorkspaceConsumerConfig['config_json'] | null
+): string {
+  if (configJson?.community_hero_title && typeof configJson.community_hero_title === 'string') {
+    return configJson.community_hero_title
+  }
+  return `${owner.name} Community`
+}
+
 export function buildCommunityConsumerApp(
   owner: Pick<User, 'id' | 'name' | 'handle' | 'username'>,
   config: WorkspaceConsumerConfig
@@ -67,7 +77,7 @@ export function buildCommunityConsumerApp(
     id: `community:${owner.id}`,
     owner_user_id: owner.id,
     app_type: 'community',
-    title: `${owner.name} Community`,
+    title: getCommunityTitle(owner, config.config_json),
     slug: `${toSlugPart(owner.handle || owner.username, 'community')}-community`,
     summary: typeof config.config_json?.community_hero_description === 'string'
       ? config.config_json.community_hero_description
@@ -154,13 +164,14 @@ export function buildConsumerAppCard(
 }
 
 export function buildCommunityCardFromCreator(
-  creator: Pick<User, 'id' | 'name' | 'handle' | 'username' | 'bio' | 'cover_img' | 'avatar_color'>
+  creator: Pick<User, 'id' | 'name' | 'handle' | 'username' | 'bio' | 'cover_img' | 'avatar_color'>,
+  configJson?: WorkspaceConsumerConfig['config_json'] | null
 ) {
   return buildConsumerAppCard({
     id: `community:${creator.id}`,
     owner_user_id: creator.id,
     app_type: 'community',
-    title: `${creator.name} Community`,
+    title: getCommunityTitle(creator, configJson),
     slug: `${toSlugPart(creator.handle || creator.username, 'community')}-community`,
     summary: creator.bio || 'Membership, recurring community discussions, and creator-only drops.',
     status: 'published',
@@ -168,7 +179,7 @@ export function buildCommunityCardFromCreator(
     source: 'workspace_config',
     template_key: 'fan_community',
     cover_img: creator.cover_img || null,
-    config_json: null,
+    config_json: configJson || null,
   }, creator, {
     priceLabel: 'Membership',
     href: `/communities/${creator.id}`,
@@ -243,7 +254,9 @@ export async function getDiscoverConsumerAppCards(options: DiscoverQueryOptions 
     getConsumerCoursesForFeed(options.query, options.page, options.pageSize),
   ])
 
-  const communityCards = creators.map((creator) => buildCommunityCardFromCreator(creator))
+  const communityConfigs = await getPublicCommunityConfigsByOwner(creators.map((c) => c.id)).catch(() => new Map<string, any>())
+
+  const communityCards = creators.map((creator) => buildCommunityCardFromCreator(creator, communityConfigs.get(creator.id)))
 
   const academyCards = courses.map((course) => {
     const owner = creators.find((creator) => creator.id === course.creator_id)

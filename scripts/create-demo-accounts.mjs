@@ -26,17 +26,17 @@ const ACCOUNTS = [
   { email: 'tyler.demo@olu.app', handle: '@tylerwang', name: 'Tyler Wang', color: 'from-teal-500 to-cyan-600', avatarImg: 'https://api.dicebear.com/9.x/notionists/svg?seed=tylerwang&backgroundColor=b6e3f4', modules: [], bio: 'Competitive gamer and esports commentator. Rank: Immortal.', followers: 15600, following: 89, posts: 234 },
 
   // ── Creator Ops (3) ─────────────────────────────────────────────
-  { email: 'luna.demo@olu.app', handle: '@lunachen', name: 'Luna Chen', color: 'from-zinc-600 to-zinc-500', avatarImg: '/images/avatars/luna.jpg', modules: ['creator_ops'], verified: true, followers: 234000, following: 312, posts: 847, bio: 'Digital artist & gamer | Creating worlds one pixel at a time' },
-  { email: 'kai.demo@olu.app', handle: '@kaivibe', name: 'Kai Vibe', color: 'from-amber-500 to-orange-600', avatarImg: '/images/avatars/kai.jpg', modules: ['creator_ops'], verified: true, followers: 167000, following: 201, posts: 512, bio: 'Lo-fi producer blending analog warmth with digital dreams. 2M+ streams.' },
-  { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.' },
+  { email: 'luna.demo@olu.app', handle: '@lunachen', name: 'Luna Chen', color: 'from-zinc-600 to-zinc-500', avatarImg: '/images/avatars/luna.jpg', coverImg: '/images/covers/lunachen.jpg', modules: ['creator_ops'], verified: true, followers: 234000, following: 312, posts: 847, bio: 'Digital artist & gamer | Creating worlds one pixel at a time', communityTitle: 'Pixel Realm' },
+  { email: 'kai.demo@olu.app', handle: '@kaivibe', name: 'Kai Vibe', color: 'from-amber-500 to-orange-600', avatarImg: '/images/avatars/kai.jpg', coverImg: '/images/covers/kaivibe.jpg', modules: ['creator_ops'], verified: true, followers: 167000, following: 201, posts: 512, bio: 'Lo-fi producer blending analog warmth with digital dreams. 2M+ streams.', communityTitle: 'The Listening Room' },
+  { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', coverImg: '/images/covers/zaranova.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.', communityTitle: 'Nova Style Lab' },
 
   // ── Marketing (2) ───────────────────────────────────────────────
-  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.' },
-  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.' },
+  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.' },
+  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', coverImg: '/images/covers/marcuschen.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.' },
 
   // ── Supply Chain (2) ────────────────────────────────────────────
-  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.' },
-  { email: 'yuki.demo@olu.app', handle: '@yukidraws', name: 'Yuki Draws', color: 'from-pink-400 to-rose-600', avatarImg: '/images/avatars/yuki.jpg', modules: ['supply_chain'], verified: false, followers: 89000, following: 140, posts: 377, bio: 'Character illustrator and print shop owner. Turning fan art into real products.' },
+  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', coverImg: '/images/covers/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.' },
+  { email: 'yuki.demo@olu.app', handle: '@yukidraws', name: 'Yuki Draws', color: 'from-pink-400 to-rose-600', avatarImg: '/images/avatars/yuki.jpg', coverImg: '/images/covers/yukidraws.jpg', modules: ['supply_chain'], verified: false, followers: 89000, following: 140, posts: 377, bio: 'Character illustrator and print shop owner. Turning fan art into real products.' },
 ]
 
 // Agent templates to hire per workspace
@@ -127,6 +127,7 @@ async function createProfile(account, authUserId) {
       name: account.name,
       bio: account.bio || '',
       avatar_img: account.avatarImg || null,
+      cover_img: account.coverImg || null,
       avatar_color: account.color,
       initials,
       followers: account.followers || 0,
@@ -178,10 +179,12 @@ async function createWorkspaceWithModules(userId, account) {
     })
   if (memErr) throw memErr
 
-  for (const moduleKey of account.modules) {
+  // Insert all module rows so toggles work; only enable the assigned ones
+  const allModuleKeys = ['creator_ops', 'marketing', 'supply_chain']
+  for (const moduleKey of allModuleKeys) {
     const { error: modErr } = await admin
       .from('workspace_modules')
-      .insert({ workspace_id: workspace.id, module_key: moduleKey, enabled: true })
+      .insert({ workspace_id: workspace.id, module_key: moduleKey, enabled: account.modules.includes(moduleKey) })
     if (modErr) throw modErr
   }
 
@@ -220,12 +223,14 @@ async function createWorkspaceWithModules(userId, account) {
 
   // Seed consumer config for creator_ops users (so their community shows up)
   if (account.modules.includes('creator_ops')) {
+    const configJson = { featured_template: 'fan_community' }
+    if (account.communityTitle) configJson.community_hero_title = account.communityTitle
     const { error: ccErr } = await admin
       .from('workspace_consumer_configs')
       .insert({
         workspace_id: workspace.id,
         template_key: 'fan_community',
-        config_json: { featured_template: 'fan_community' },
+        config_json: configJson,
       })
     if (ccErr) console.log(`  Warning: consumer config: ${ccErr.message}`)
   }
@@ -294,6 +299,7 @@ for (const account of ACCOUNTS) {
 
   const moduleLabel = account.modules.length > 0 ? account.modules.join(', ') : 'consumer'
   summary.push({
+    userId: profileId,
     email: account.email,
     password: DEMO_PASSWORD,
     name: account.name,
@@ -303,6 +309,93 @@ for (const account of ACCOUNTS) {
   console.log(`  ✓ ${account.name} (${moduleLabel})`)
 }
 
+// ── Seed Academy Courses ────────────────────────────────────────────
+console.log('\nSeeding academy courses...')
+
+// Map handle to userId for course creator_id
+const handleToUserId = {}
+for (let i = 0; i < ACCOUNTS.length; i++) {
+  handleToUserId[ACCOUNTS[i].handle] = summary[i].userId
+}
+
+const COURSES = [
+  {
+    creatorHandle: '@lunachen',
+    slug: 'digital-art-masterclass',
+    title: 'Digital Art Masterclass',
+    subtitle: 'From sketch to stunning — learn digital painting from zero to portfolio-ready.',
+    instructor: 'Luna Chen',
+    price: 49,
+    level: 'Beginner',
+    hero: '/images/courses/digital-art.jpg',
+    headline: 'The complete guide to digital illustration',
+    description: 'Learn professional digital painting techniques, color theory, and composition.',
+    outcomes: ['Master digital brushwork and layering', 'Build a polished art portfolio', 'Sell prints and commissions'],
+    lessons_count: 24,
+    students_count: 3400,
+    completion_rate: '78%',
+  },
+  {
+    creatorHandle: '@kaivibe',
+    slug: 'lofi-production-101',
+    title: 'Lo-fi Production 101',
+    subtitle: 'Craft chill beats from scratch using free tools and analog textures.',
+    instructor: 'Kai Vibe',
+    price: 39,
+    level: 'Beginner',
+    hero: '/images/courses/lofi-beats.jpg',
+    headline: 'Make your first lo-fi track in a weekend',
+    description: 'Step-by-step music production for lo-fi, chillhop, and ambient beats.',
+    outcomes: ['Set up a free production environment', 'Layer samples and synths', 'Publish on streaming platforms'],
+    lessons_count: 18,
+    students_count: 5100,
+    completion_rate: '82%',
+  },
+  {
+    creatorHandle: '@zaranova',
+    slug: 'sustainable-fashion-design',
+    title: 'Sustainable Fashion Design',
+    subtitle: 'Design, source, and launch an eco-conscious clothing line.',
+    instructor: 'Zara Nova',
+    price: 59,
+    level: 'Intermediate',
+    hero: '/images/courses/fashion-design.jpg',
+    headline: 'Build a fashion brand that respects the planet',
+    description: 'From fabric sourcing to brand identity — launch sustainable fashion.',
+    outcomes: ['Source ethical materials', 'Create a capsule collection', 'Build a brand story that sells'],
+    lessons_count: 20,
+    students_count: 1800,
+    completion_rate: '71%',
+  },
+]
+
+for (const course of COURSES) {
+  const creatorId = handleToUserId[course.creatorHandle]
+  if (!creatorId) {
+    console.log(`  Warning: no userId for ${course.creatorHandle}, skipping course`)
+    continue
+  }
+  const { error: courseErr } = await admin.from('consumer_courses').insert({
+    creator_id: creatorId,
+    slug: course.slug,
+    title: course.title,
+    subtitle: course.subtitle,
+    instructor: course.instructor,
+    price: course.price,
+    level: course.level,
+    hero: course.hero,
+    headline: course.headline,
+    description: course.description,
+    outcomes: course.outcomes,
+    lessons_count: course.lessons_count,
+    students_count: course.students_count,
+    completion_rate: course.completion_rate,
+    status: 'published',
+  })
+  if (courseErr) console.log(`  Warning: course ${course.slug}: ${courseErr.message}`)
+  else console.log(`  ✓ ${course.title} by ${course.instructor}`)
+}
+
 console.log('\n=== Summary ===\n')
-console.table(summary)
+console.table(summary.map(({ userId, ...rest }) => rest))
 console.log(`\nAll ${ACCOUNTS.length} accounts created with password: ${DEMO_PASSWORD}`)

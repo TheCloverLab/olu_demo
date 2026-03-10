@@ -13,7 +13,6 @@ import {
   X,
   ChevronRight,
   PanelsTopLeft,
-  Wallet,
   ListTodo,
   ShieldCheck,
   UserRound,
@@ -128,7 +127,6 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
                 <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
               ))}
-              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
             </div>
 

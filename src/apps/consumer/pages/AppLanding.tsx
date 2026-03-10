@@ -7,6 +7,8 @@ import { useApp } from '../../../context/AppContext'
 import { getCommunityMembershipTiers, getCommunityPosts, getCommunityProducts } from '../../../domain/consumer/data'
 import { getMembershipStatus, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
 import { getProfileById } from '../../../domain/profile/api'
+import { getPublicCommunityConfigsByOwner } from '../../../domain/profile/data'
+import { getCommunityTitle } from '../../../domain/consumer/apps'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -28,6 +30,7 @@ export default function AppLanding() {
   const [avatarBroken, setAvatarBroken] = useState(false)
   const [membershipStatus, setMembershipStatus] = useState<{ tier_name?: string } | null>(null)
   const [hasCourseAccess, setHasCourseAccess] = useState(false)
+  const [communityTitle, setCommunityTitle] = useState<string | null>(null)
   const avatarSrc = creator?.avatar_img || creator?.avatarImg
   const isCommunity = true
   const isOwner = !!creator?.id && currentUser?.id === creator.id
@@ -52,6 +55,14 @@ export default function AppLanding() {
         setPosts(postData)
         setTiers(tierData)
         setProducts(productData)
+
+        // Load custom community title (graceful fallback)
+        getPublicCommunityConfigsByOwner([id])
+          .then((configs) => {
+            const cfg = configs.get(id)
+            if (cfg?.community_hero_title) setCommunityTitle(cfg.community_hero_title)
+          })
+          .catch(() => {})
       } catch (err) {
         console.error('Failed loading creator app', err)
       } finally {
@@ -171,7 +182,7 @@ export default function AppLanding() {
       )}
 
       <div className={clsx('px-4 relative', isCommunity ? 'pt-2' : '-mt-10')}>
-        <div className={clsx('border border-white/10 backdrop-blur', isCommunity ? 'rounded-2xl bg-[#111111] p-4 md:p-5' : 'rounded-3xl bg-[#111111]/90 p-5 md:p-6')}>
+        <div className={clsx('backdrop-blur', isCommunity ? 'rounded-2xl bg-[#111111] p-4 md:p-5' : 'rounded-3xl bg-[#111111]/90 p-5 md:p-6')}>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
             <div className="flex gap-4">
               {isCommunity ? null : (
@@ -186,7 +197,7 @@ export default function AppLanding() {
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">{appCopy.eyebrow}</p>
                 <div className="flex items-center gap-2">
-                <h1 className={clsx('font-black', isCommunity ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl')}>{creator.name} Community</h1>
+                <h1 className={clsx('font-black', isCommunity ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl')}>{communityTitle || getCommunityTitle(creator)}</h1>
                   {creator.verified && <BadgeCheck size={18} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
                 </div>
                 {isCommunity ? (
@@ -256,7 +267,7 @@ export default function AppLanding() {
 
           <div className={clsx('grid gap-3 mt-5', isCommunity ? 'grid-cols-3' : 'grid-cols-3')}>
             {appCopy.stats.map((item) => (
-              <div key={item.label} className={clsx('border border-white/6 px-4 py-3', isCommunity ? 'rounded-full bg-white/5' : 'rounded-2xl bg-[#181818]')}>
+              <div key={item.label} className={clsx('border border-white/[0.04] px-4 py-3', isCommunity ? 'rounded-full bg-white/5' : 'rounded-2xl bg-[#181818]')}>
                 <p className={clsx('font-black', isCommunity ? 'text-base' : 'text-xl')}>{item.val}</p>
                 <p className="text-olu-muted text-xs mt-1">{item.label}</p>
               </div>
@@ -290,7 +301,7 @@ export default function AppLanding() {
                       <button
                         key={post.id}
                         onClick={() => navigate(`/content/${post.id}`)}
-                        className="w-full rounded-xl border border-white/6 bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.05] transition-colors"
+                        className="w-full rounded-xl border border-white/[0.04] bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.05] transition-colors"
                       >
                         <p className="font-medium text-sm text-white">{post.title}</p>
                         <p className="mt-1 text-xs text-olu-muted line-clamp-2">{post.preview}</p>
@@ -300,7 +311,7 @@ export default function AppLanding() {
                 ) : (
                   <div className="space-y-2 text-sm text-olu-muted">
                     {appCopy.included.map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
                         {item}
                       </div>
                     ))}
@@ -316,7 +327,7 @@ export default function AppLanding() {
                       'Topics',
                       membershipStatus ? `${membershipStatus.tier_name} member access` : 'Membership access',
                     ].map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
                         {item}
                       </div>
                     ))}
@@ -324,7 +335,7 @@ export default function AppLanding() {
                 ) : (
                   <div className="space-y-2 text-sm text-olu-muted">
                     {appCopy.nowLive.map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
                         {item}
                       </div>
                     ))}

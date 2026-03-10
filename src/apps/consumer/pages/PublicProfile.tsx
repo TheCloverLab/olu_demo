@@ -112,15 +112,14 @@ export default function PublicProfile() {
       if (!id) return
 
       try {
-        const [creatorData, publicApps] = await Promise.all([
-          getProfileById(id),
-          getPublicProfileConsumerApps(id),
-        ])
-
+        const creatorData = await getProfileById(id)
         if (cancelled) return
-
         setCreator(creatorData)
-        setPublicApps(publicApps)
+
+        // Load apps separately — workspace queries may fail due to RLS for non-owners
+        const apps = await getPublicProfileConsumerApps(id).catch(() => [])
+        if (cancelled) return
+        setPublicApps(apps)
       } catch (error) {
         console.error('Failed to load public profile', error)
       } finally {

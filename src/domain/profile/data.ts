@@ -93,21 +93,26 @@ async function getWorkspaceConsumerConfigsForOwnerIds(ownerUserIds: string[]) {
 }
 
 export async function getPublicCommunityCreatorIds(ownerUserIds: string[]) {
+  const configMap = await getPublicCommunityConfigsByOwner(ownerUserIds)
+  return new Set(configMap.keys())
+}
+
+export async function getPublicCommunityConfigsByOwner(ownerUserIds: string[]) {
   const configs = await getWorkspaceConsumerConfigsForOwnerIds(ownerUserIds)
 
-  return new Set(
-    configs
-      .filter((config) => {
-        const ownerUserId = config.workspace?.owner_user_id
-        if (!ownerUserId) return false
-        return (
-          config.template_key === 'fan_community' ||
-          config.config_json?.featured_template === 'fan_community' ||
-          config.config_json?.featured_creator_id === ownerUserId
-        )
-      })
-      .map((config) => config.workspace!.owner_user_id),
-  )
+  const map = new Map<string, WorkspaceConsumerConfig['config_json']>()
+  for (const config of configs) {
+    const ownerUserId = config.workspace?.owner_user_id
+    if (!ownerUserId) continue
+    if (
+      config.template_key === 'fan_community' ||
+      config.config_json?.featured_template === 'fan_community' ||
+      config.config_json?.featured_creator_id === ownerUserId
+    ) {
+      map.set(ownerUserId, config.config_json || null)
+    }
+  }
+  return map
 }
 
 export async function getPublicConsumerAppsForUser(userId: string) {

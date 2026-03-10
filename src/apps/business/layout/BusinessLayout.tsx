@@ -30,11 +30,9 @@ const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: s
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
   { to: '/business/apps', icon: AppWindow, label: 'Apps', moduleKey: 'creator_ops' },
   { to: '/business/team', icon: Users, label: 'Team', exact: true },
-  { to: '/business/agents', icon: Bot, label: 'AI Agents' },
   { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
   { to: '/business/connectors', icon: Cable, label: 'Connectors' },
-  { to: '/business/wallet', icon: Wallet, label: 'Wallet', moduleKey: 'creator_ops' },
 ]
 
 const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
@@ -116,18 +114,19 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
             </button>
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
               {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
               <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
-              <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
               <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />
               <MenuItem icon={ShieldCheck} label="Approvals" onClick={() => go('/business/approvals')} />
               <MenuItem icon={Cable} label="Connectors" onClick={() => go('/business/connectors')} />
-              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
               {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
                 <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
               ))}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
+              <div className="border-t border-cyan-500/10 my-2 mx-2" />
+              <MenuItem icon={Bot} label="AI Agent Marketplace" onClick={() => go('/business/agents')} />
             </div>
 
           </motion.div>
@@ -143,7 +142,7 @@ export default function BusinessLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const allNav = [...CORE_NAV, ...MODULE_NAV]
+  const allNav = [...CORE_NAV, { to: '/business/wallet', icon: Wallet, label: 'Wallet' }, { to: '/business/agents', icon: Bot, label: 'AI Agent Marketplace' }, ...MODULE_NAV]
   const activeModuleLabel = allNav.find((item) =>
     ('exact' in item && item.exact) ? location.pathname === item.to : location.pathname.startsWith(item.to)
   )?.label
@@ -161,7 +160,7 @@ export default function BusinessLayout() {
           </div>
         </div>
 
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 space-y-2">
           <button onClick={() => navigate('/business/account')} className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#0d1a2d] transition-colors text-left border border-cyan-500/10 bg-[#0a1525]">
             <Avatar user={currentUser} size="md" />
             <div className="min-w-0">
@@ -169,6 +168,18 @@ export default function BusinessLayout() {
               <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} modules enabled</p>
             </div>
           </button>
+          {enabledBusinessModules.includes('creator_ops') && (
+            <NavLink
+              to="/business/wallet"
+              className={({ isActive }) => clsx(
+                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+              )}
+            >
+              <Wallet size={18} />
+              Wallet
+            </NavLink>
+          )}
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
@@ -199,6 +210,18 @@ export default function BusinessLayout() {
               {label}
             </NavLink>
           ))}
+
+          <div className="border-t border-cyan-500/10 my-2" />
+          <NavLink
+            to="/business/agents"
+            className={({ isActive }) => clsx(
+              'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+              isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+            )}
+          >
+            <Bot size={18} />
+            AI Agent Marketplace
+          </NavLink>
         </nav>
 
         <div className="p-3 border-t border-cyan-500/10 space-y-2">

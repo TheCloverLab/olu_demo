@@ -175,6 +175,26 @@ function afterApproval(state: typeof AgentState.State) {
   return state.approved ? 'execute' : 'summarize'
 }
 
+// --- Activity logging ---
+
+async function logActivity(
+  agentId: string,
+  taskId: string,
+  action: string,
+  detail?: string,
+) {
+  try {
+    await supabase.from('workspace_agent_task_logs').insert({
+      agent_id: agentId,
+      task_id: taskId,
+      action,
+      detail,
+    })
+  } catch (err: any) {
+    console.warn('[logActivity] Failed:', err.message)
+  }
+}
+
 // --- Node: Execute planned actions ---
 
 async function executeActions(state: typeof AgentState.State) {
@@ -196,6 +216,10 @@ async function executeActions(state: typeof AgentState.State) {
           .select('id, title, status, progress')
           .single()
 
+        if (!error && data) {
+          const logAction = action.new_status === 'done' ? 'completed' : 'started'
+          await logActivity(state.agentId, action.task_id, logAction, `Status → ${action.new_status}, progress: ${action.progress ?? data.progress}%`)
+        }
         results.push(
           error
             ? { action, error: error.message }

@@ -66,3 +66,27 @@ export async function getThreadState(threadId: string): Promise<ThreadState> {
   if (!res.ok) throw new Error(`Thread fetch failed: ${res.status}`)
   return res.json()
 }
+
+export type AgentWithTasks = {
+  id: string
+  name: string
+  role: string
+  status: string
+  agent_key: string
+  workspace_agent_tasks: Array<{
+    id: string
+    title: string
+    status: string
+    priority: string
+    progress: number
+  }>
+}
+
+export async function getWorkspaceAgents(
+  workspaceId: string,
+): Promise<AgentWithTasks[]> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/agents/${workspaceId}`)
+  if (!res.ok) throw new Error(`Agents fetch failed: ${res.status}`)
+  const data = await res.json()
+  return data.agents
+}

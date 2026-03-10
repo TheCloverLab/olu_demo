@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AppWindow, Bot, Briefcase, Cable, CheckCircle2, Clock, LayoutDashboard,
-  Loader2, Megaphone, Package, ShieldCheck, Sparkles, UserRound, Users, Zap,
+  Loader2, Megaphone, Package, ShieldCheck, UserRound, Users, Zap,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -272,45 +272,6 @@ export default function BusinessWorkspace() {
         </div>
       </section>
 
-      {/* Apps + demo journey */}
-      <section className="grid lg:grid-cols-2 gap-4">
-        <Link to="/business/apps" className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422] hover:bg-[#0d1a2d] transition-colors">
-          <div className="flex items-center gap-2 mb-4">
-            <AppWindow size={16} className="text-amber-300" />
-            <p className="font-bold">Apps</p>
-          </div>
-          <div className="space-y-3">
-            {[
-              `${apps.length} consumer app${apps.length === 1 ? '' : 's'} configured`,
-              'Manage communities, academies, and other consumer-facing products.',
-              'Open Apps to configure and publish your consumer storefront.',
-            ].map((item) => (
-              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-cyan-100/55 border border-cyan-500/10">
-                {item}
-              </div>
-            ))}
-          </div>
-        </Link>
-
-        <div className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-amber-300" />
-            <p className="font-bold">Priority demo journey</p>
-          </div>
-          <div className="space-y-3">
-            {[
-              'Advertiser briefs Marketing Manager with budget and target KOL profile.',
-              'Agent sources creators, negotiates terms, and tracks each creator stage.',
-              'KOL-side business agent receives a promotion request and requests approval.',
-              'Once approved, content is scheduled and campaign progress returns.',
-            ].map((item) => (
-              <div key={item} className="rounded-2xl bg-[#0d1726] p-4 text-sm text-cyan-100/55 border border-cyan-500/10">
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

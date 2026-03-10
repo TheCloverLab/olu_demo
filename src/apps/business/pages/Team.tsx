@@ -4,8 +4,7 @@ import { motion } from 'framer-motion'
 import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
-import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
-import type { Employee } from '../../../domain/team/types'
+import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
 import clsx from 'clsx'
 
 type GroupChat = {
@@ -112,52 +111,28 @@ function GroupRow({ group }: { group: GroupChat }) {
   )
 }
 
-const DEMO_HUMANS: Employee[] = [
-  {
-    id: 'human-1', workspace_id: 'ws-1', kind: 'human', name: 'Sarah Kim',
-    position: 'Community Manager', description: 'Manages fan community engagement and moderation',
-    avatar_img: null, color: 'from-purple-500 to-pink-500', status: 'online', employment_status: 'active',
-    template_id: null, agent_key: null, model_tier: null,
-    user_id: 'u-sarah', email: 'sarah@example.com',
-    hired_by_user_id: null, hired_at: '2024-01-15', skills: ['Community', 'Content', 'Moderation'],
-    salary_label: '$4,200/mo', last_message: 'Updated community guidelines', last_time: '10m ago',
-    created_at: '2024-01-15', updated_at: '2024-03-01',
-  },
-  {
-    id: 'human-2', workspace_id: 'ws-1', kind: 'human', name: 'James Okoro',
-    position: 'Growth Lead', description: 'Drives user acquisition and retention strategy',
-    avatar_img: null, color: 'from-emerald-500 to-teal-500', status: 'busy', employment_status: 'active',
-    template_id: null, agent_key: null, model_tier: null,
-    user_id: 'u-james', email: 'james@example.com',
-    hired_by_user_id: null, hired_at: '2024-02-01', skills: ['Analytics', 'SEO', 'Paid Ads'],
-    salary_label: '$5,800/mo', last_message: 'Reviewing Q1 metrics', last_time: '1h ago',
-    created_at: '2024-02-01', updated_at: '2024-03-01',
-  },
-  {
-    id: 'human-3', workspace_id: 'ws-1', kind: 'human', name: 'Mia Chen',
-    position: 'Content Creator', description: 'Produces course materials and marketing copy',
-    avatar_img: null, color: 'from-amber-500 to-orange-500', status: 'offline', employment_status: 'active',
-    template_id: null, agent_key: null, model_tier: null,
-    user_id: 'u-mia', email: 'mia@example.com',
-    hired_by_user_id: null, hired_at: '2024-03-01', skills: ['Writing', 'Video', 'Design'],
-    salary_label: '$3,900/mo', last_message: 'Finished course outline draft', last_time: '3h ago',
-    created_at: '2024-03-01', updated_at: '2024-03-09',
-  },
-]
-
 const STATUS_DOT_COLOR: Record<string, string> = {
   online: 'bg-emerald-400',
   busy: 'bg-amber-400',
   offline: 'bg-gray-500',
 }
 
-function PersonRow({ emp }: { emp: Employee }) {
+function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
+  const navigate = useNavigate()
   return (
-    <div className="rounded-[24px] border border-cyan-500/10 bg-[#091523] p-4 flex items-start gap-3 shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+    <motion.button
+      whileHover={{ x: 4 }}
+      onClick={() => navigate(`/business/team/person/${emp.id}`)}
+      className="w-full rounded-[24px] border border-cyan-500/10 bg-[#091523] p-4 flex items-start gap-3 shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left hover:bg-[#0d1726] transition-colors"
+    >
       <div className="relative flex-shrink-0">
-        <div className={clsx('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
-          {emp.name.split(' ').map((n) => n[0]).join('')}
-        </div>
+        {emp.avatar_img ? (
+          <img src={emp.avatar_img} alt={emp.name} className="w-12 h-12 rounded-xl object-cover bg-[#0d1726]" />
+        ) : (
+          <div className={clsx('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
+            {emp.name.split(' ').map((n) => n[0]).join('')}
+          </div>
+        )}
         <div className={clsx('absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#091523]', STATUS_DOT_COLOR[emp.status])} />
       </div>
       <div className="flex-1 min-w-0">
@@ -179,7 +154,7 @@ function PersonRow({ emp }: { emp: Employee }) {
           </p>
         )}
         <div className="flex items-center gap-2 mt-2 flex-wrap">
-          {emp.skills.map((skill) => (
+          {(emp.skills || []).map((skill) => (
             <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-100/60 font-medium">
               {skill}
             </span>
@@ -190,13 +165,9 @@ function PersonRow({ emp }: { emp: Employee }) {
             </span>
           )}
         </div>
-        {emp.last_message && (
-          <p className="text-cyan-100/35 text-xs mt-2 truncate">
-            {emp.last_message} · {emp.last_time}
-          </p>
-        )}
       </div>
-    </div>
+      <ChevronRight size={16} className="text-cyan-100/45 flex-shrink-0 mt-3" />
+    </motion.button>
   )
 }
 
@@ -204,7 +175,7 @@ export default function Team() {
   const { user } = useAuth()
   const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
-  const [humans, setHumans] = useState<Employee[]>([])
+  const [humans, setHumans] = useState<WorkspaceEmployee[]>([])
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
 
@@ -213,6 +184,7 @@ export default function Team() {
       if (!user?.id) {
         setAgents([])
         setGroups([])
+        setHumans([])
         setLoading(false)
         return
       }
@@ -221,11 +193,12 @@ export default function Team() {
         const team = await getWorkspaceTeamSnapshotForUser(user)
         setAgents(team.agents)
         setGroups((team.groups || []) as GroupChat[])
-        setHumans(DEMO_HUMANS)
+        setHumans(team.humans || [])
       } catch (error) {
         console.error('Failed to load team data', error)
         setAgents([])
         setGroups([])
+        setHumans([])
       } finally {
         setLoading(false)
       }

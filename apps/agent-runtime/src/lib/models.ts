@@ -108,6 +108,40 @@ export function getModelProvider(name?: string): ModelProvider {
   return getDefaultProvider()
 }
 
+/** Generate embeddings using an available provider's embeddings API */
+export async function generateEmbedding(text: string): Promise<number[] | null> {
+  // Try providers in order: openai, claude (via proxy), default
+  const candidates = ['openai', 'claude', 'default']
+  for (const name of candidates) {
+    const provider = name === 'default' ? getDefaultProvider() : loadProviderFromEnv(name)
+    if (!provider?.apiKey) continue
+
+    try {
+      const res = await fetch(`${provider.baseURL}/embeddings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${provider.apiKey}`,
+          ...(provider.headers || {}),
+        },
+        body: JSON.stringify({
+          model: 'text-embedding-3-small',
+          input: text.slice(0, 8000),
+        }),
+      })
+
+      if (!res.ok) continue
+
+      const data = await res.json()
+      const embedding = data.data?.[0]?.embedding
+      if (embedding && Array.isArray(embedding)) return embedding
+    } catch {
+      continue
+    }
+  }
+  return null
+}
+
 /** List all available model providers (those with API keys configured) */
 export function listAvailableProviders(): ModelProvider[] {
   const providers: ModelProvider[] = [getDefaultProvider()]

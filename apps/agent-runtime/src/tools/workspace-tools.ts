@@ -6,6 +6,7 @@
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase.js'
+import { generateEmbedding } from '../lib/models.js'
 
 /**
  * List tasks assigned to this agent
@@ -917,25 +918,32 @@ export const scheduleCronJob = tool(
  */
 export const rememberMemory = tool(
   async ({ agentId, workspaceId, content, memoryType, scope, importance }) => {
+    // Generate embedding for semantic search
+    const embedding = await generateEmbedding(content)
+
+    const insertData: Record<string, unknown> = {
+      agent_id: agentId,
+      workspace_id: workspaceId,
+      content,
+      memory_type: memoryType,
+      scope: scope || '/',
+      importance: importance || 0.5,
+      metadata: {},
+    }
+    if (embedding) {
+      insertData.embedding = JSON.stringify(embedding)
+    }
+
     const { data, error } = await supabase
       .from('agent_memories')
-      .insert({
-        agent_id: agentId,
-        workspace_id: workspaceId,
-        content,
-        memory_type: memoryType,
-        scope: scope || '/',
-        importance: importance || 0.5,
-        metadata: {},
-      })
+      .insert(insertData)
       .select('id, content, memory_type, scope')
       .single()
 
     if (error) {
-      // Table may not exist yet
       return JSON.stringify({ success: true, simulated: true, content: content.slice(0, 100), note: 'Memory saved (demo mode)' })
     }
-    return JSON.stringify({ success: true, ...data })
+    return JSON.stringify({ success: true, ...data, hasEmbedding: !!embedding })
   },
   {
     name: 'remember',
@@ -956,24 +964,47 @@ export const rememberMemory = tool(
  */
 export const recallMemory = tool(
   async ({ agentId, query, memoryType, limit }) => {
-    // Simple text search (without embedding for now — can upgrade to vector search later)
+    const maxResults = limit || 10
+
+    // Try semantic search first if query is provided
+    if (query) {
+      const queryEmbedding = await generateEmbedding(query)
+
+      if (queryEmbedding) {
+        // Use the Supabase search_agent_memories function (pgvector)
+        const { data, error } = await supabase.rpc('search_agent_memories', {
+          p_agent_id: agentId,
+          p_query_embedding: JSON.stringify(queryEmbedding),
+          p_match_count: maxResults,
+          p_memory_type: memoryType || null,
+        })
+
+        if (!error && data?.length) {
+          return JSON.stringify({
+            memories: data,
+            count: data.length,
+            searchType: 'semantic',
+          })
+        }
+      }
+    }
+
+    // Fallback to text search
     let q = supabase
       .from('agent_memories')
       .select('id, content, memory_type, scope, importance, created_at')
       .eq('agent_id', agentId)
       .order('created_at', { ascending: false })
-      .limit(limit || 10)
+      .limit(maxResults)
 
     if (memoryType) q = q.eq('memory_type', memoryType)
-
-    // Use ilike for text search
     if (query) q = q.ilike('content', `%${query}%`)
 
     const { data, error } = await q
     if (error) {
       return JSON.stringify({ memories: [], note: 'Memory table not yet created' })
     }
-    return JSON.stringify({ memories: data || [], count: data?.length || 0 })
+    return JSON.stringify({ memories: data || [], count: data?.length || 0, searchType: 'text' })
   },
   {
     name: 'recall',
@@ -1020,9 +1051,302 @@ export const logEvent = tool(
   },
 )
 
+/**
+ * Lark Suite API — Tasks, Calendar, Bitable integration
+ */
+
+async function getLarkToken(): Promise<string | null> {
+  const appId = process.env.LARK_APP_ID
+  const appSecret = process.env.LARK_APP_SECRET
+  if (!appId || !appSecret) return null
+
+  try {
+    const res = await fetch('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+    })
+    const data = await res.json()
+    return data.tenant_access_token || null
+  } catch {
+    return null
+  }
+}
+
+export const larkTasks = tool(
+  async ({ action, summary, due, taskId, status }) => {
+    const token = await getLarkToken()
+    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
+
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+
+    try {
+      if (action === 'create') {
+        const body: any = { summary: summary || 'Untitled task' }
+        if (due) body.due = { timestamp: new Date(due).getTime().toString(), is_all_day: false }
+
+        const res = await fetch('https://open.larksuite.com/open-apis/task/v2/tasks', {
+          method: 'POST', headers, body: JSON.stringify(body),
+        })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'list') {
+        const res = await fetch('https://open.larksuite.com/open-apis/task/v2/tasks?page_size=20', { headers })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'complete' && taskId) {
+        const res = await fetch(`https://open.larksuite.com/open-apis/task/v2/tasks/${taskId}`, {
+          method: 'PATCH', headers,
+          body: JSON.stringify({ task: { completed_at: new Date().toISOString() } }),
+        })
+        return JSON.stringify(await res.json())
+      }
+
+      return JSON.stringify({ error: `Unknown action: ${action}` })
+    } catch (err: any) {
+      return JSON.stringify({ error: err.message })
+    }
+  },
+  {
+    name: 'lark_tasks',
+    description: 'Manage Lark/Feishu tasks — create tasks, list tasks, complete tasks.',
+    schema: z.object({
+      action: z.enum(['create', 'list', 'complete']).describe('Action to perform'),
+      summary: z.string().optional().describe('Task summary (for create)'),
+      due: z.string().optional().describe('Due date ISO string (for create)'),
+      taskId: z.string().optional().describe('Task ID (for complete)'),
+      status: z.string().optional().describe('Task status filter'),
+    }),
+  },
+)
+
+export const larkCalendar = tool(
+  async ({ action, summary, startTime, endTime, calendarId }) => {
+    const token = await getLarkToken()
+    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
+
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+
+    try {
+      if (action === 'list_calendars') {
+        const res = await fetch('https://open.larksuite.com/open-apis/calendar/v4/calendars?page_size=20', { headers })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'list_events') {
+        const cid = calendarId || 'primary'
+        const now = Math.floor(Date.now() / 1000)
+        const weekLater = now + 7 * 86400
+        const res = await fetch(
+          `https://open.larksuite.com/open-apis/calendar/v4/calendars/${cid}/events?start_time=${now}&end_time=${weekLater}&page_size=20`,
+          { headers },
+        )
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'create_event') {
+        const cid = calendarId || 'primary'
+        const res = await fetch(`https://open.larksuite.com/open-apis/calendar/v4/calendars/${cid}/events`, {
+          method: 'POST', headers,
+          body: JSON.stringify({
+            summary: summary || 'Untitled event',
+            start_time: { timestamp: String(new Date(startTime || Date.now()).getTime() / 1000) },
+            end_time: { timestamp: String(new Date(endTime || Date.now() + 3600000).getTime() / 1000) },
+          }),
+        })
+        return JSON.stringify(await res.json())
+      }
+
+      return JSON.stringify({ error: `Unknown action: ${action}` })
+    } catch (err: any) {
+      return JSON.stringify({ error: err.message })
+    }
+  },
+  {
+    name: 'lark_calendar',
+    description: 'Manage Lark/Feishu calendar — list calendars, list upcoming events, create events.',
+    schema: z.object({
+      action: z.enum(['list_calendars', 'list_events', 'create_event']).describe('Action to perform'),
+      summary: z.string().optional().describe('Event title (for create)'),
+      startTime: z.string().optional().describe('Start time ISO string'),
+      endTime: z.string().optional().describe('End time ISO string'),
+      calendarId: z.string().optional().describe('Calendar ID (default: primary)'),
+    }),
+  },
+)
+
+export const larkBitable = tool(
+  async ({ action, appToken, tableId, fields, records, recordId }) => {
+    const token = await getLarkToken()
+    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
+
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    const base = 'https://open.larksuite.com/open-apis/bitable/v1'
+
+    try {
+      if (action === 'list_tables' && appToken) {
+        const res = await fetch(`${base}/apps/${appToken}/tables?page_size=20`, { headers })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'list_records' && appToken && tableId) {
+        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records?page_size=20`, { headers })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'create_record' && appToken && tableId && fields) {
+        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ fields: JSON.parse(fields) }),
+        })
+        return JSON.stringify(await res.json())
+      }
+
+      if (action === 'update_record' && appToken && tableId && recordId && fields) {
+        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records/${recordId}`, {
+          method: 'PUT', headers,
+          body: JSON.stringify({ fields: JSON.parse(fields) }),
+        })
+        return JSON.stringify(await res.json())
+      }
+
+      return JSON.stringify({ error: `Unknown action: ${action}. Required params may be missing.` })
+    } catch (err: any) {
+      return JSON.stringify({ error: err.message })
+    }
+  },
+  {
+    name: 'lark_bitable',
+    description: 'Manage Lark/Feishu Bitable (多维表格) — list tables, read records, create/update records. Bitable is like Airtable for data management.',
+    schema: z.object({
+      action: z.enum(['list_tables', 'list_records', 'create_record', 'update_record']).describe('Action to perform'),
+      appToken: z.string().optional().describe('Bitable app token'),
+      tableId: z.string().optional().describe('Table ID'),
+      fields: z.string().optional().describe('JSON string of field key-value pairs'),
+      records: z.string().optional().describe('JSON array of records'),
+      recordId: z.string().optional().describe('Record ID (for update)'),
+    }),
+  },
+)
+
+/**
+ * Data visualization — generate charts as HTML/SVG
+ */
+export const generateChart = tool(
+  async ({ chartType, data, title, xLabel, yLabel }) => {
+    try {
+      const chartData = JSON.parse(data)
+
+      // Generate a simple SVG chart
+      const width = 600
+      const height = 400
+      const margin = { top: 40, right: 20, bottom: 60, left: 60 }
+      const innerW = width - margin.left - margin.right
+      const innerH = height - margin.top - margin.bottom
+
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" style="background:#fff;font-family:Arial,sans-serif">`
+
+      if (title) {
+        svg += `<text x="${width / 2}" y="25" text-anchor="middle" font-size="16" font-weight="bold">${title}</text>`
+      }
+      if (xLabel) {
+        svg += `<text x="${width / 2}" y="${height - 10}" text-anchor="middle" font-size="12" fill="#666">${xLabel}</text>`
+      }
+      if (yLabel) {
+        svg += `<text x="15" y="${height / 2}" text-anchor="middle" font-size="12" fill="#666" transform="rotate(-90,15,${height / 2})">${yLabel}</text>`
+      }
+
+      const labels = chartData.labels || chartData.map((_: any, i: number) => String(i))
+      const values = chartData.values || chartData.map((d: any) => typeof d === 'number' ? d : d.value)
+      const maxVal = Math.max(...values)
+      const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
+
+      if (chartType === 'bar') {
+        const barW = innerW / values.length * 0.7
+        const gap = innerW / values.length * 0.3
+
+        values.forEach((v: number, i: number) => {
+          const x = margin.left + i * (barW + gap) + gap / 2
+          const h = (v / maxVal) * innerH
+          const y = margin.top + innerH - h
+          svg += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${colors[i % colors.length]}" rx="3"/>`
+          svg += `<text x="${x + barW / 2}" y="${y - 5}" text-anchor="middle" font-size="11">${v}</text>`
+          svg += `<text x="${x + barW / 2}" y="${margin.top + innerH + 15}" text-anchor="middle" font-size="10">${labels[i]}</text>`
+        })
+      } else if (chartType === 'line') {
+        const points = values.map((v: number, i: number) => {
+          const x = margin.left + (i / (values.length - 1)) * innerW
+          const y = margin.top + innerH - (v / maxVal) * innerH
+          return `${x},${y}`
+        })
+        svg += `<polyline points="${points.join(' ')}" fill="none" stroke="#4F46E5" stroke-width="2.5"/>`
+        values.forEach((v: number, i: number) => {
+          const x = margin.left + (i / (values.length - 1)) * innerW
+          const y = margin.top + innerH - (v / maxVal) * innerH
+          svg += `<circle cx="${x}" cy="${y}" r="4" fill="#4F46E5"/>`
+          svg += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-size="10">${v}</text>`
+          svg += `<text x="${x}" y="${margin.top + innerH + 15}" text-anchor="middle" font-size="10">${labels[i]}</text>`
+        })
+      } else if (chartType === 'pie') {
+        const total = values.reduce((a: number, b: number) => a + b, 0)
+        let startAngle = 0
+        const cx = width / 2
+        const cy = height / 2
+        const r = Math.min(innerW, innerH) / 2 - 20
+
+        values.forEach((v: number, i: number) => {
+          const angle = (v / total) * 2 * Math.PI
+          const endAngle = startAngle + angle
+          const x1 = cx + r * Math.cos(startAngle)
+          const y1 = cy + r * Math.sin(startAngle)
+          const x2 = cx + r * Math.cos(endAngle)
+          const y2 = cy + r * Math.sin(endAngle)
+          const largeArc = angle > Math.PI ? 1 : 0
+          svg += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z" fill="${colors[i % colors.length]}"/>`
+          // Label
+          const midAngle = startAngle + angle / 2
+          const lx = cx + (r * 0.65) * Math.cos(midAngle)
+          const ly = cy + (r * 0.65) * Math.sin(midAngle)
+          svg += `<text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" fill="white" font-weight="bold">${labels[i]}: ${Math.round(v / total * 100)}%</text>`
+          startAngle = endAngle
+        })
+      }
+
+      svg += '</svg>'
+
+      // Wrap in HTML for display
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title || 'Chart'}</title></head><body style="display:flex;justify-content:center;padding:20px">${svg}</body></html>`
+
+      return JSON.stringify({
+        success: true,
+        chartType,
+        svg,
+        html,
+        dataPoints: values.length,
+      })
+    } catch (err: any) {
+      return JSON.stringify({ error: err.message })
+    }
+  },
+  {
+    name: 'generate_chart',
+    description: 'Generate a chart/visualization as SVG. Supports bar, line, and pie charts. Returns SVG and HTML for display.',
+    schema: z.object({
+      chartType: z.enum(['bar', 'line', 'pie']).describe('Chart type'),
+      data: z.string().describe('JSON data: { labels: ["A","B"], values: [10, 20] } or array of numbers'),
+      title: z.string().optional().describe('Chart title'),
+      xLabel: z.string().optional().describe('X-axis label'),
+      yLabel: z.string().optional().describe('Y-axis label'),
+    }),
+  },
+)
+
 export const allTools = [
   listMyTasks, updateTaskStatus, createTask, getTeamOverview, postConversation,
   webSearch, fetchWebpage, generateImage, executeCode, sendEmail,
   browseWebpage, facebookAds, googlePlayReviews, generateFile,
   scheduleCronJob, rememberMemory, recallMemory, logEvent,
+  larkTasks, larkCalendar, larkBitable, generateChart,
 ]

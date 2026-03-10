@@ -52,7 +52,15 @@ export default function Courses() {
           <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">Academy</p>
           <h1 className="font-black text-2xl md:text-3xl">{selected.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
-            <span>Hosted by {selected.instructor}</span>
+            <button
+              onClick={() => selected.creator_id && navigate(`/people/${selected.creator_id}`)}
+              className="flex items-center gap-2 hover:text-white transition-colors"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center font-bold text-white text-[10px]">
+                {selected.instructor.split(' ').map(w => w[0]).join('')}
+              </div>
+              Hosted by {selected.instructor}
+            </button>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 text-xs">
               <GraduationCap size={12} />
               {selected.level}

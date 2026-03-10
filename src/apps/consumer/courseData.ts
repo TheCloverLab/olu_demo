@@ -8,6 +8,7 @@ export type CourseSection = {
 
 export type Course = {
   id: string
+  creator_id?: string
   slug: string
   title: string
   subtitle: string

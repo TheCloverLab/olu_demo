@@ -386,6 +386,7 @@ function mapCourseRecord(
 ): Course {
   return {
     id: course.id,
+    creator_id: course.creator_id,
     slug: course.slug,
     title: course.title,
     subtitle: course.subtitle,

@@ -1,0 +1,65 @@
+/**
+ * Agent Runtime API client
+ * Calls the agent-runtime HTTP server to invoke/resume agent tasks
+ */
+
+const AGENT_RUNTIME_URL =
+  import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'
+
+export type InvokeResult = {
+  threadId: string
+  interrupted: boolean
+  pendingApproval: string[] | null
+  response: string | null
+  messageCount: number
+}
+
+export type ResumeResult = {
+  threadId: string
+  decision: string
+  response: string | null
+  messageCount: number
+}
+
+export type ThreadState = {
+  threadId: string
+  next: string[]
+  messageCount: number
+  lastMessage: string | null
+}
+
+export async function invokeAgent(params: {
+  workspaceId: string
+  agentId: string
+  agentName: string
+  agentPosition: string
+  taskDescription: string
+  requiresApproval?: boolean
+}): Promise<InvokeResult> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/invoke`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+  if (!res.ok) throw new Error(`Agent invoke failed: ${res.status}`)
+  return res.json()
+}
+
+export async function resumeAgent(
+  threadId: string,
+  decision: 'approve' | 'reject',
+): Promise<ResumeResult> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/resume/${threadId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ decision }),
+  })
+  if (!res.ok) throw new Error(`Agent resume failed: ${res.status}`)
+  return res.json()
+}
+
+export async function getThreadState(threadId: string): Promise<ThreadState> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/threads/${threadId}`)
+  if (!res.ok) throw new Error(`Thread fetch failed: ${res.status}`)
+  return res.json()
+}

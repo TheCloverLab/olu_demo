@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, ArrowDownLeft, Clock3, Wallet, Coins, Landmark, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
+import { useAuth } from '../../../context/AuthContext'
+import { getWorkspaceWalletForUser } from '../../../domain/workspace/api'
+import type { WorkspaceWallet } from '../../../lib/supabase'
 
 const TAB_OPTIONS = [
   { key: 'overview', label: 'Overview' },
@@ -27,16 +30,24 @@ const TRANSACTIONS = [
 ]
 
 export default function WalletPage() {
+  const { user } = useAuth()
   const [tab, setTab] = useState<TabKey>('overview')
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [withdrawing, setWithdrawing] = useState(false)
   const [payoutMessage, setPayoutMessage] = useState('')
+  const [wallet, setWallet] = useState<WorkspaceWallet | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      getWorkspaceWalletForUser(user).then(setWallet).catch(() => {})
+    }
+  }, [user?.id])
 
   const balances = {
-    totalUsd: 3248.91,
-    availableUsd: 2962.51,
-    pendingUsd: 286.4,
-    usdc: 846.25,
+    totalUsd: wallet ? Number(wallet.usdc_balance) + Number(wallet.pending_revenue) : 0,
+    availableUsd: wallet ? Number(wallet.usdc_balance) : 0,
+    pendingUsd: wallet ? Number(wallet.pending_revenue) : 0,
+    usdc: wallet ? Number(wallet.usdc_balance) : 0,
   }
 
   const monthlyInflow = useMemo(

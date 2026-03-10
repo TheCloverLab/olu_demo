@@ -38,7 +38,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
   )
 }
 
-function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () => void; showBusiness?: boolean }) {
+function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolean; onClose: () => void; showBusiness?: boolean; walletBalance: number | null }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
@@ -86,8 +86,20 @@ function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () 
               </div>
             )}
 
+            {walletBalance !== null && (
+              <button onClick={() => go('/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[#1c1c1c] border border-white/[0.06] hover:bg-[#242424] transition-colors text-left w-[calc(100%-2rem)]">
+                <div className="px-3 py-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Wallet size={13} className="text-emerald-400" />
+                    <span className="text-[11px] text-olu-muted font-medium">Wallet</span>
+                  </div>
+                  <p className="font-black text-base leading-none">${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+              </button>
+            )}
+
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />
+              {walletBalance === null && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />}
               {showBusiness && (
                 <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
               )}
@@ -258,7 +270,7 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} walletBalance={walletBalance} />
     </div>
   )
 }

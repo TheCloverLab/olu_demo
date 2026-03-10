@@ -452,6 +452,37 @@ for (const course of COURSES) {
   else console.log(`  ✓ ${course.title} by ${course.instructor}`)
 }
 
+// ── Seed Products ───────────────────────────────────────────────────
+console.log('\nSeeding products...')
+
+const PRODUCTS = [
+  { creatorHandle: '@lunachen', name: 'Neon City Hoodie', description: "Premium streetwear hoodie with Luna's Neon City artwork.", price: 59.99, image: '/images/products/hoodie.jpg', category: 'apparel', stock: 45, sold_count: 234, status: 'active' },
+  { creatorHandle: '@lunachen', name: 'Pixel Pin Set', description: 'Collectible enamel pin set featuring pixel art characters.', price: 24.99, image: '/images/products/pins.jpg', category: 'accessories', stock: 120, sold_count: 189, status: 'active' },
+  { creatorHandle: '@lunachen', name: 'Luna Acrylic Stand', description: "High-quality acrylic standee of Luna's signature character.", price: 34.99, image: '/images/products/stand.jpg', category: 'collectibles', stock: 67, sold_count: 156, status: 'active' },
+  { creatorHandle: '@lunachen', name: 'Chibi Luna Plushie', description: 'Soft plushie of chibi Luna, limited edition.', price: 44.99, image: '/images/products/plushie.jpg', category: 'collectibles', stock: 12, sold_count: 78, status: 'low_stock' },
+]
+
+for (const product of PRODUCTS) {
+  const creatorId = handleToUserId[product.creatorHandle]
+  if (!creatorId) {
+    console.log(`  Warning: no userId for ${product.creatorHandle}, skipping product`)
+    continue
+  }
+  const { error: productErr } = await admin.from('products').insert({
+    creator_id: creatorId,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    image: product.image,
+    category: product.category,
+    stock: product.stock,
+    sold_count: product.sold_count,
+    status: product.status,
+  })
+  if (productErr) console.log(`  Warning: product ${product.name}: ${productErr.message}`)
+  else console.log(`  ✓ ${product.name}`)
+}
+
 console.log('\n=== Summary ===\n')
 console.table(summary.map(({ userId, ...rest }) => rest))
 console.log(`\nAll ${ACCOUNTS.length} accounts created with password: ${DEMO_PASSWORD}`)

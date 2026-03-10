@@ -1,12 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Shop from '../Shop'
 import * as AppContext from '../../context/AppContext'
+import * as ConsumerData from '../../domain/consumer/data'
 
 vi.mock('../../context/AppContext', () => ({
   useApp: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/data', () => ({
+  getCommunityProducts: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/api', () => ({
+  getCourseLibrarySnapshot: vi.fn().mockResolvedValue({ courses: [], featuredCourse: null }),
 }))
 
 vi.mock('framer-motion', () => ({
@@ -21,13 +30,20 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => vi.fn() }
 })
 
+const MOCK_DB_PRODUCTS = [
+  { id: 'p1', creator_id: 'creator-1', name: 'Neon City Hoodie', price: 59.99, stock: 45, sold_count: 234, image: '/images/products/hoodie.jpg', status: 'active' },
+  { id: 'p2', creator_id: 'creator-1', name: 'Pixel Pin Set', price: 24.99, stock: 120, sold_count: 189, image: '/images/products/pins.jpg', status: 'active' },
+  { id: 'p3', creator_id: 'creator-1', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, sold_count: 156, image: '/images/products/stand.jpg', status: 'active' },
+  { id: 'p4', creator_id: 'creator-1', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, sold_count: 78, image: '/images/products/plushie.jpg', status: 'low_stock' },
+]
+
 function mockUseApp(overrides: Record<string, any> = {}) {
   const modules: string[] = overrides.enabledBusinessModules || []
   vi.mocked(AppContext.useApp).mockReturnValue({
     hasModule: (key: string) => modules.includes(key),
     currentUser: { id: 'user-1' },
     enabledBusinessModules: modules,
-    consumerConfig: {},
+    consumerConfig: { featured_creator_id: 'creator-1' },
     consumerTemplate: 'fan_community',
     appType: 'community',
     consumerExperience: {
@@ -54,6 +70,7 @@ describe('Shop', () => {
   describe('as Fan (User view)', () => {
     beforeEach(() => {
       mockUseApp()
+      vi.mocked(ConsumerData.getCommunityProducts).mockResolvedValue(MOCK_DB_PRODUCTS as any)
     })
 
     it('renders shop heading with browse description', () => {
@@ -62,11 +79,13 @@ describe('Shop', () => {
       expect(screen.getByText('Browse and buy products')).toBeInTheDocument()
     })
 
-    it('shows product cards with Add to Cart buttons', () => {
+    it('shows product cards with Add to Cart buttons', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      expect(screen.getByText('Neon City Hoodie')).toBeInTheDocument()
-      expect(screen.getByText('Pixel Pin Set')).toBeInTheDocument()
-      expect(screen.getAllByText('Add to Cart')).toHaveLength(4)
+      await waitFor(() => {
+        expect(screen.getByText('Neon City Hoodie')).toBeInTheDocument()
+        expect(screen.getByText('Pixel Pin Set')).toBeInTheDocument()
+        expect(screen.getAllByText('Add to Cart')).toHaveLength(4)
+      })
     })
 
     it('shows All Products heading', () => {
@@ -74,10 +93,11 @@ describe('Shop', () => {
       expect(screen.getByText('All Products')).toBeInTheDocument()
     })
 
-    it('shows low stock badge for items under 20', () => {
+    it('shows low stock badge for items under 20', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      // Chibi Luna Plushie has stock 12
-      expect(screen.getByText('Low Stock')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Low Stock')).toBeInTheDocument()
+      })
     })
   })
 
@@ -87,6 +107,7 @@ describe('Shop', () => {
         enabledBusinessModules: ['creator_ops'],
         currentUser: { id: 'creator-1' },
       })
+      vi.mocked(ConsumerData.getCommunityProducts).mockResolvedValue(MOCK_DB_PRODUCTS as any)
     })
 
     it('renders creator shop view with manage description', () => {
@@ -95,27 +116,35 @@ describe('Shop', () => {
       expect(screen.getByText('Manage your products')).toBeInTheDocument()
     })
 
-    it('shows stats cards', () => {
+    it('shows stats cards', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      expect(screen.getByText('Revenue')).toBeInTheDocument()
-      expect(screen.getByText('Sold')).toBeInTheDocument()
-      expect(screen.getByText('Products')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Revenue')).toBeInTheDocument()
+        expect(screen.getByText('Sold')).toBeInTheDocument()
+        expect(screen.getByText('Products')).toBeInTheDocument()
+      })
     })
 
-    it('shows Add New Product button', () => {
+    it('shows Add New Product button', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      expect(screen.getByText('Add New Product')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Add New Product')).toBeInTheDocument()
+      })
     })
 
-    it('shows stock info instead of Add to Cart', () => {
+    it('shows stock info instead of Add to Cart', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      expect(screen.queryByText('Add to Cart')).not.toBeInTheDocument()
-      expect(screen.getByText('Stock: 45 units')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.queryByText('Add to Cart')).not.toBeInTheDocument()
+        expect(screen.getByText('Stock: 45 units')).toBeInTheDocument()
+      })
     })
 
-    it('shows My Products heading', () => {
+    it('shows My Products heading', async () => {
       render(<MemoryRouter><Shop /></MemoryRouter>)
-      expect(screen.getByText('My Products')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('My Products')).toBeInTheDocument()
+      })
     })
   })
 

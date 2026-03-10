@@ -217,6 +217,14 @@ VALUES
   ('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'creator_club', 'Creator Club', 9.99, 'Popular monthly membership', ARRAY['Early access','Exclusive art pack','Members-only channels','10 percent shop discount'], 42000),
   ('50000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'vip', 'VIP Collective', 29.99, 'High-touch premium membership', ARRAY['Everything in Creator Club','1-on-1 feedback','Early merch access','25 percent shop discount'], 12000);
 
+-- Products (Luna's merch)
+INSERT INTO products (id, creator_id, name, description, price, image, category, stock, sold_count, status)
+VALUES
+  ('60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Neon City Hoodie', 'Premium streetwear hoodie with Luna''s Neon City artwork.', 59.99, '/images/products/hoodie.jpg', 'apparel', 45, 234, 'active'),
+  ('60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'Pixel Pin Set', 'Collectible enamel pin set featuring pixel art characters.', 24.99, '/images/products/pins.jpg', 'accessories', 120, 189, 'active'),
+  ('60000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'Luna Acrylic Stand', 'High-quality acrylic standee of Luna''s signature character.', 34.99, '/images/products/stand.jpg', 'collectibles', 67, 156, 'active'),
+  ('60000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000011', 'Chibi Luna Plushie', 'Soft plushie of chibi Luna, limited edition.', 44.99, '/images/products/plushie.jpg', 'collectibles', 12, 78, 'low_stock');
+
 -- Consumer memberships (Alex is VIP of Luna)
 INSERT INTO consumer_memberships (id, user_id, creator_id, tier_key, tier_name, status, joined_at)
 VALUES

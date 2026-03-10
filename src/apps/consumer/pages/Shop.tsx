@@ -5,28 +5,20 @@ import { ShoppingCart, Plus, Package, DollarSign, TrendingUp } from 'lucide-reac
 import { useApp } from '../../../context/AppContext'
 import type { Course } from '../courseData'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
+import { getCommunityProducts } from '../../../domain/consumer/data'
+import type { Product as DBProduct } from '../../../lib/supabase'
 
 interface Product {
   id: string
   name: string
   price: number
   stock: number
-  creatorId: string
-  creatorName: string
   image: string
 }
 
 interface CartItem extends Product {
   quantity: number
 }
-
-// Mock products data
-const MOCK_PRODUCTS: Product[] = [
-  { id: 'p1', name: 'Neon City Hoodie', price: 59.99, stock: 45, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/hoodie.jpg' },
-  { id: 'p2', name: 'Pixel Pin Set', price: 24.99, stock: 120, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/pins.jpg' },
-  { id: 'p3', name: 'Luna Acrylic Stand', price: 34.99, stock: 67, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/stand.jpg' },
-  { id: 'p4', name: 'Chibi Luna Plushie', price: 44.99, stock: 12, creatorId: 'luna', creatorName: 'Luna Chen', image: '/images/products/plushie.jpg' },
-]
 
 interface ProductCardProps {
   product: Product
@@ -53,7 +45,6 @@ function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
       </div>
       <div className="p-4">
         <h3 className="font-bold text-sm mb-1">{product.name}</h3>
-        <p className="text-olu-muted text-xs mb-2">by {product.creatorName}</p>
         <div className="flex items-center justify-between">
           <span className="font-bold text-lg">${product.price}</span>
           {!isCreator && (
@@ -75,12 +66,11 @@ function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
   )
 }
 
-function CreatorShopView() {
+function CreatorShopView({ products }: { products: Product[] }) {
   const navigate = useNavigate()
-  const myProducts = MOCK_PRODUCTS // In real app, filter by creator
 
-  const totalRevenue = myProducts.reduce((acc, p) => acc + p.price * 10, 0) // Mock sales
-  const totalSold = myProducts.reduce((acc, p) => acc + 10, 0) // Mock
+  const totalRevenue = products.reduce((acc, p) => acc + p.price * 10, 0) // estimated
+  const totalSold = products.reduce((acc, p) => acc + 10, 0) // estimated
 
   return (
     <div className="space-y-6">
@@ -105,7 +95,7 @@ function CreatorShopView() {
             <Package size={16} className="text-purple-400" />
             <p className="text-xs font-semibold text-olu-muted">Products</p>
           </div>
-          <p className="font-bold text-xl">{myProducts.length}</p>
+          <p className="font-bold text-xl">{products.length}</p>
         </div>
       </div>
 
@@ -122,7 +112,7 @@ function CreatorShopView() {
       <div>
         <h2 className="font-bold text-lg mb-3">My Products</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {myProducts.map(product => (
+          {products.map(product => (
             <ProductCard key={product.id} product={product} isCreator={true} />
           ))}
         </div>
@@ -131,7 +121,7 @@ function CreatorShopView() {
   )
 }
 
-function UserShopView() {
+function UserShopView({ products }: { products: Product[] }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
 
@@ -207,7 +197,7 @@ function UserShopView() {
       <div>
         <h2 className="font-bold text-lg mb-3">All Products</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {MOCK_PRODUCTS.map(product => (
+          {products.map(product => (
             <ProductCard key={product.id} product={product} onAddToCart={addToCart} isCreator={false} />
           ))}
         </div>
@@ -220,24 +210,36 @@ export default function Shop() {
   const { consumerConfig, hasModule, appType, consumerExperience } = useApp()
   const isCreator = hasModule('creator_ops')
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
+  const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    if (appType !== 'academy') return
-
     let cancelled = false
 
-    async function loadCourses() {
-      const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
-      if (!cancelled) {
-        setCourseLibrary(snapshot.courses)
+    async function loadData() {
+      if (appType === 'academy') {
+        const snapshot = await getCourseLibrarySnapshot(consumerConfig.featured_course_slug)
+        if (!cancelled) setCourseLibrary(snapshot.courses)
+      } else if (consumerConfig.featured_creator_id) {
+        try {
+          const dbProducts = await getCommunityProducts(consumerConfig.featured_creator_id)
+          if (!cancelled) {
+            setProducts(dbProducts.map(p => ({
+              id: p.id,
+              name: p.name,
+              price: Number(p.price),
+              stock: p.stock,
+              image: p.image || '',
+            })))
+          }
+        } catch (err) {
+          console.error('Failed to load products', err)
+        }
       }
     }
 
-    loadCourses()
-    return () => {
-      cancelled = true
-    }
-  }, [appType])
+    loadData()
+    return () => { cancelled = true }
+  }, [appType, consumerConfig.featured_creator_id])
 
   if (appType === 'academy') {
     const storefront = consumerExperience.courses.storefront
@@ -308,7 +310,7 @@ export default function Shop() {
         </div>
       </div>
 
-      {isCreator ? <CreatorShopView /> : <UserShopView />}
+      {isCreator ? <CreatorShopView products={products} /> : <UserShopView products={products} />}
     </div>
   )
 }

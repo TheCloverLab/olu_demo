@@ -204,8 +204,15 @@ export default function AppLanding() {
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
                     <button
                       onClick={() => navigate(`/people/${creator.id}`)}
-                      className="hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 hover:text-white transition-colors"
                     >
+                      {creator.avatar_img ? (
+                        <img src={creator.avatar_img} alt={creator.name} className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-bold text-white text-[8px]`}>
+                          {creator.initials}
+                        </div>
+                      )}
                       Hosted by {creator.name}
                     </button>
                     {canManageApp ? (

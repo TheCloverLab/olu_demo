@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Play, Loader2 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
+import { ensureWorkspaceForUser } from '../../../domain/workspace/api'
+import { batchRunAgents, invokeAgent } from '../../../domain/agent/runtime-api'
 import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
 import clsx from 'clsx'
 
@@ -39,49 +41,61 @@ function StatusDot({ status }: { status: 'online' | 'offline' | 'busy' }) {
   )
 }
 
-function AgentRow({ agent }: { agent: AgentWithTasks }) {
+function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: (agent: AgentWithTasks) => void; isRunning?: boolean }) {
   const navigate = useNavigate()
   const tasks = agent.tasks || []
   const pendingTasks = tasks.filter((t) => t.status !== 'done').length
 
   return (
-    <motion.button
-      whileHover={{ x: 4 }}
-      onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
-      className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
-    >
-      <div className="relative flex-shrink-0">
-        {agent.avatar_img ? (
-          <img src={agent.avatar_img} alt={agent.name} className="w-12 h-12 rounded-xl object-cover" />
-        ) : (
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xl font-bold text-white`}>
-            {agent.name[0]}
+    <div className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-cyan-500/10 bg-[#091523] hover:bg-[#0d1726] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+      <motion.button
+        whileHover={{ x: 4 }}
+        onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
+        <div className="relative flex-shrink-0">
+          {agent.avatar_img ? (
+            <img src={agent.avatar_img} alt={agent.name} className="w-12 h-12 rounded-xl object-cover" />
+          ) : (
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xl font-bold text-white`}>
+              {agent.name[0]}
+            </div>
+          )}
+          <div className="absolute -bottom-0.5 -right-0.5">
+            <StatusDot status={agent.status} />
           </div>
-        )}
-        <div className="absolute -bottom-0.5 -right-0.5">
-          <StatusDot status={agent.status} />
         </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-semibold text-sm">{agent.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold uppercase tracking-wide">AI</span>
-          <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-cyan-100/55 bg-cyan-500/10')}>
-            {agent.role}
-          </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-semibold text-sm">{agent.name}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold uppercase tracking-wide">AI</span>
+            <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-cyan-100/55 bg-cyan-500/10')}>
+              {agent.role}
+            </span>
+          </div>
+          <p className="text-cyan-100/45 text-xs line-clamp-1 mb-1">{agent.last_message || 'No messages yet'}</p>
+          <p className="text-cyan-100/45 text-xs">{agent.last_time || '—'}</p>
         </div>
-        <p className="text-cyan-100/45 text-xs line-clamp-1 mb-1">{agent.last_message || 'No messages yet'}</p>
-        <p className="text-cyan-100/45 text-xs">{agent.last_time || '—'}</p>
-      </div>
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+      </motion.button>
+      <div className="flex items-center gap-2 flex-shrink-0">
         {pendingTasks > 0 && (
           <span className="text-xs bg-emerald-400 text-black rounded-full w-5 h-5 flex items-center justify-center font-bold">
             {pendingTasks}
           </span>
         )}
+        {onRun && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRun(agent) }}
+            disabled={isRunning}
+            className="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40"
+            title="Run agent"
+          >
+            {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+          </button>
+        )}
         <ChevronRight size={16} className="text-cyan-100/45" />
       </div>
-    </motion.button>
+    </div>
   )
 }
 
@@ -178,8 +192,12 @@ export default function Team() {
   const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
   const [humans, setHumans] = useState<WorkspaceEmployee[]>([])
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
+  const [runningAll, setRunningAll] = useState(false)
+  const [runningAgent, setRunningAgent] = useState<string | null>(null)
+  const [lastRunResult, setLastRunResult] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -192,10 +210,14 @@ export default function Team() {
       }
 
       try {
-        const team = await getWorkspaceTeamSnapshotForUser(user)
+        const [team, membership] = await Promise.all([
+          getWorkspaceTeamSnapshotForUser(user),
+          ensureWorkspaceForUser(user),
+        ])
         setAgents(team.agents)
         setGroups((team.groups || []) as GroupChat[])
         setHumans(team.humans || [])
+        setWorkspaceId(membership.workspace_id)
       } catch (error) {
         console.error('Failed to load team data', error)
         setAgents([])
@@ -208,6 +230,51 @@ export default function Team() {
 
     load()
   }, [user?.id])
+
+  async function reload() {
+    if (!user?.id) return
+    const team = await getWorkspaceTeamSnapshotForUser(user)
+    setAgents(team.agents)
+  }
+
+  async function handleRunAll() {
+    if (!workspaceId || runningAll) return
+    setRunningAll(true)
+    setLastRunResult(null)
+    try {
+      const result = await batchRunAgents(workspaceId)
+      const summaries = result.results
+        .filter((r) => r.summary)
+        .map((r) => `${r.agentName}: ${r.summary}`)
+      setLastRunResult(summaries.length > 0 ? summaries.join('\n') : 'All agents ran — no actions taken.')
+      await reload()
+    } catch (err: any) {
+      setLastRunResult(`Error: ${err.message}`)
+    } finally {
+      setRunningAll(false)
+    }
+  }
+
+  async function handleRunAgent(agent: AgentWithTasks) {
+    if (!workspaceId || runningAgent) return
+    setRunningAgent(agent.id)
+    setLastRunResult(null)
+    try {
+      const result = await invokeAgent({
+        workspaceId,
+        agentId: agent.id,
+        agentName: agent.name,
+        agentPosition: agent.role,
+        taskDescription: 'Review your pending tasks and take action on the highest priority items.',
+      })
+      setLastRunResult(`${agent.name}: ${result.summary || result.plan || 'No actions taken.'}`)
+      await reload()
+    } catch (err: any) {
+      setLastRunResult(`Error: ${err.message}`)
+    } finally {
+      setRunningAgent(null)
+    }
+  }
 
   const totalTasks = useMemo(
     () => agents.reduce((acc, a) => acc + ((a.tasks || []).filter((t) => t.status !== 'done').length || 0), 0),
@@ -252,10 +319,23 @@ export default function Team() {
             {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
-          <Users size={18} className="text-cyan-200" />
-        </div>
+        <button
+          onClick={handleRunAll}
+          disabled={runningAll || !!runningAgent}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {runningAll ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+          {runningAll ? 'Running...' : 'Run All Agents'}
+        </button>
       </div>
+
+      {lastRunResult && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-4">
+          <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
+          <p className="text-sm text-cyan-100/80 whitespace-pre-line">{lastRunResult}</p>
+          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-100/40 mt-2 hover:text-cyan-100/60">Dismiss</button>
+        </div>
+      )}
 
       <div className="rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(14,28,48,0.92),rgba(8,18,33,0.86))] p-5 mb-6 shadow-[0_18px_60px_rgba(2,8,23,0.32)]">
         <div className="flex items-center gap-3">
@@ -294,7 +374,7 @@ export default function Team() {
         </div>
         <div className="space-y-2">
           {agents.map((agent) => (
-            <AgentRow key={agent.id} agent={agent} />
+            <AgentRow key={agent.id} agent={agent} onRun={handleRunAgent} isRunning={runningAgent === agent.id} />
           ))}
         </div>
       </div>

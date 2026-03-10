@@ -48,10 +48,25 @@ const AgentState = Annotation.Root({
 
 // --- LLM helper ---
 
-async function callLLM(prompt: string): Promise<string> {
+async function callLLM(prompt: string, options?: { json?: boolean }): Promise<string> {
   const apiKey = process.env.LLM_API_KEY
   const baseURL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1'
   const model = process.env.LLM_MODEL || 'gpt-4o-mini'
+
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: 'system', content: 'You are a task planning assistant. Always follow instructions precisely.' },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.3,
+    max_tokens: 1024,
+  }
+
+  // Use structured output mode for JSON responses (required for Kimi which puts content in reasoning_content otherwise)
+  if (options?.json) {
+    body.response_format = { type: 'json_object' }
+  }
 
   const res = await fetch(`${baseURL}/chat/completions`, {
     method: 'POST',
@@ -61,12 +76,7 @@ async function callLLM(prompt: string): Promise<string> {
       'User-Agent': 'claude-code/1.0.0',
       'X-Client-Name': 'claude-code',
     },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 1024,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {
@@ -78,7 +88,6 @@ async function callLLM(prompt: string): Promise<string> {
   console.log('[callLLM] Raw response:', text.slice(0, 500))
   const data = JSON.parse(text)
   const msg = data.choices?.[0]?.message
-  // Kimi For Coding puts actual content in reasoning_content when thinking mode is on
   return msg?.content || msg?.reasoning_content || ''
 }
 
@@ -131,7 +140,7 @@ IMPORTANT: task_id must be the exact UUID shown in the id= field. Respond ONLY w
 When completing or starting tasks, always include a send_message action to notify the team.`
 
   try {
-    const response = await callLLM(prompt)
+    const response = await callLLM(prompt, { json: true })
     console.log('[planActions] LLM response:', response.slice(0, 500))
     const cleaned = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim()
     const parsed = JSON.parse(cleaned)

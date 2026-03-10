@@ -171,7 +171,7 @@ export default function BusinessLayout() {
   )?.label
 
   return (
-    <div className="business-shell flex h-screen overflow-hidden">
+    <div className="business-shell flex h-[100dvh] overflow-hidden">
       <aside className="hidden md:flex flex-col w-64 border-r border-cyan-500/10 bg-[#07111f] flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-cyan-300 text-[#04111f] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">

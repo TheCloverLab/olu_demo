@@ -107,7 +107,7 @@ export default function AppLayout() {
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-olu-bg">
+    <div className="flex h-[100dvh] overflow-hidden bg-olu-bg">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-olu-border bg-olu-surface flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-2.5">

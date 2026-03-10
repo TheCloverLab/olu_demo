@@ -100,14 +100,14 @@ describe('consumer domain api', () => {
     vi.mocked(ConsumerData.getPublishedConsumerCourses).mockResolvedValue([
       {
         id: 'course-1',
-        slug: 'community-growth',
-        title: 'Build a Paid Fan Community',
-        subtitle: 'Turn audience attention into a durable membership business.',
+        slug: 'digital-art-masterclass',
+        title: 'Digital Art Masterclass',
+        subtitle: 'From sketch to stunning...',
         instructor: 'Luna Chen',
-        price: 129,
-        level: 'Intermediate',
+        price: 49,
+        level: 'Beginner',
         hero: 'from-rose-600 via-fuchsia-600 to-orange-500',
-        headline: 'From casual audience to paying members in 30 days.',
+        headline: 'From sketch to stunning digital art.',
         description: 'Course description',
         outcomes: ['Outcome 1'],
         lessons_count: 2,
@@ -130,21 +130,21 @@ describe('consumer domain api', () => {
     const snapshot = await getCourseLibrarySnapshot()
 
     expect(snapshot.courses).toHaveLength(1)
-    expect(snapshot.featuredCourse.slug).toBe('community-growth')
+    expect(snapshot.featuredCourse.slug).toBe('digital-art-masterclass')
     expect(snapshot.courses[0].sections[0].id).toBe('cg-1')
   })
 
   it('loads a single course snapshot by slug', async () => {
     vi.mocked(ConsumerData.getConsumerCourseDetail).mockResolvedValue({
       id: 'course-1',
-      slug: 'community-growth',
-      title: 'Build a Paid Fan Community',
-      subtitle: 'Turn audience attention into a durable membership business.',
+      slug: 'digital-art-masterclass',
+      title: 'Digital Art Masterclass',
+      subtitle: 'From sketch to stunning...',
       instructor: 'Luna Chen',
-      price: 129,
-      level: 'Intermediate',
+      price: 49,
+      level: 'Beginner',
       hero: 'from-rose-600 via-fuchsia-600 to-orange-500',
-      headline: 'From casual audience to paying members in 30 days.',
+      headline: 'From sketch to stunning digital art.',
       description: 'Course description',
       outcomes: ['Outcome 1'],
       lessons_count: 2,
@@ -163,9 +163,9 @@ describe('consumer domain api', () => {
       },
     ] as any)
 
-    const snapshot = await getCourseSnapshotBySlug('community-growth')
+    const snapshot = await getCourseSnapshotBySlug('digital-art-masterclass')
 
-    expect(snapshot?.slug).toBe('community-growth')
+    expect(snapshot?.slug).toBe('digital-art-masterclass')
     expect(snapshot?.sections).toHaveLength(1)
   })
 

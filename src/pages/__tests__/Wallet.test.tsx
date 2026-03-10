@@ -60,16 +60,16 @@ describe('Wallet', () => {
       courses: [
         {
           id: 'course-1',
-          slug: 'community-growth',
-          title: 'Build a Paid Fan Community',
+          slug: 'digital-art-masterclass',
+          title: 'Digital Art Masterclass',
           instructor: 'Luna Chen',
-          price: 129,
+          price: 49,
           sections: [],
         },
       ],
       featuredCourse: null,
     } as any)
-    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['community-growth'])
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['digital-art-masterclass'])
   })
 
   it('renders memberships and purchases', async () => {
@@ -80,9 +80,9 @@ describe('Wallet', () => {
       expect(screen.getByText('Recurring support')).toBeInTheDocument()
       expect(screen.getByText('Academy purchases')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
-      expect(screen.getByText('Build a Paid Fan Community')).toBeInTheDocument()
+      expect(screen.getByText('Digital Art Masterclass')).toBeInTheDocument()
       expect(screen.getByText('$29.99/mo')).toBeInTheDocument()
-      expect(screen.getByText('$129')).toBeInTheDocument()
+      expect(screen.getByText('$49')).toBeInTheDocument()
     })
   })
 })

@@ -34,11 +34,11 @@ describe('Discover', () => {
         id: 'academy:course-1',
         owner_user_id: 'creator-1',
         app_type: 'academy',
-        title: 'Build a Paid Fan Community',
+        title: 'Digital Art Masterclass',
         owner_name: 'Luna Chen',
-        summary: 'Turn audience attention into a membership business.',
-        price_label: '$129',
-        href: '/courses/community-growth',
+        summary: 'From sketch to stunning...',
+        price_label: '$49',
+        href: '/courses/digital-art-masterclass',
         outcomes: ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
         highlights: ['Structured lessons', 'Hands-on frameworks', 'Learning progress'],
       },
@@ -51,9 +51,9 @@ describe('Discover', () => {
     await waitFor(() => {
       expect(screen.getByText('Find something new.')).toBeInTheDocument()
       expect(screen.getAllByText('Luna Chen Community').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Build a Paid Fan Community').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Digital Art Masterclass').length).toBeGreaterThan(0)
       expect(screen.getByText('Recommended for you')).toBeInTheDocument()
-      expect(screen.getAllByText('$129').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('$49').length).toBeGreaterThan(0)
     })
   })
 

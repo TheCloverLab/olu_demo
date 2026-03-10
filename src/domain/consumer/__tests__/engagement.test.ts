@@ -21,7 +21,7 @@ vi.mock('../data', () => ({
 
 const course = {
   id: 'course-1',
-  slug: 'community-growth',
+  slug: 'digital-art-masterclass',
   sections: [
     { id: 'cg-1', title: 'One' },
     { id: 'cg-2', title: 'Two' },
@@ -53,7 +53,7 @@ describe('consumer engagement', () => {
     await markLessonComplete(null, course, 'cg-1')
     const progress = JSON.parse(window.localStorage.getItem('olu.consumer.courseProgress') || '{}')
 
-    expect(progress['community-growth'][0].section_key).toBe('cg-1')
+    expect(progress['digital-art-masterclass'][0].section_key).toBe('cg-1')
   })
 
   it('uses backend membership APIs for authenticated users', async () => {

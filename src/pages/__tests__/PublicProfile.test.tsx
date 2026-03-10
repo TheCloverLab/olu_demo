@@ -61,10 +61,10 @@ describe('PublicProfile', () => {
         id: 'academy:course-1',
         owner_user_id: 'creator-1',
         app_type: 'academy',
-        title: 'Build a Paid Fan Community',
-        summary: 'Turn audience attention into a membership business.',
-        price_label: '$129',
-        href: '/courses/community-growth',
+        title: 'Digital Art Masterclass',
+        summary: 'From sketch to stunning...',
+        price_label: '$49',
+        href: '/courses/digital-art-masterclass',
       },
     ] as any)
   })
@@ -82,7 +82,7 @@ describe('PublicProfile', () => {
       expect(screen.getByText('Luna Chen')).toBeInTheDocument()
       expect(screen.getByText('Open with Luna Chen')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
-      expect(screen.getAllByText('Build a Paid Fan Community').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Digital Art Masterclass').length).toBeGreaterThan(0)
     })
   })
 

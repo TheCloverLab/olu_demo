@@ -44,7 +44,7 @@ vi.mock('react-router-dom', async () => {
 
 const mockCreators = [
   { id: 'creator-1', name: 'Luna Chen', bio: 'Digital artist', verified: true, avatar_color: 'from-pink-500 to-orange-500' },
-  { id: 'creator-2', name: 'Ryu Codes', bio: 'Cohort-based teacher', verified: false, avatar_color: 'from-sky-500 to-cyan-500' },
+  { id: 'creator-2', name: 'Kai Vibe', bio: 'Lo-fi music producer', verified: false, avatar_color: 'from-sky-500 to-cyan-500' },
 ]
 
 const mockPosts = [
@@ -53,12 +53,12 @@ const mockPosts = [
 
 const mockCourse = {
   id: 'course-1',
-  slug: 'community-growth',
-  title: 'Build a Paid Fan Community',
-  subtitle: 'Turn audience attention into a membership business.',
+  slug: 'digital-art-masterclass',
+  title: 'Digital Art Masterclass',
+  subtitle: 'From sketch to stunning...',
   instructor: 'Luna Chen',
-  price: 129,
-  level: 'Intermediate',
+  price: 49,
+  level: 'Beginner',
   hero: 'from-rose-600 via-fuchsia-600 to-orange-500',
   stats: {
     lessons: 18,
@@ -94,7 +94,7 @@ describe('Home', () => {
         ? { tier_key: 'creator_club', tier_name: 'Core' } as any
         : null
     ))
-    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['community-growth'])
+    vi.mocked(Engagement.getPurchasedCourseSlugs).mockResolvedValue(['digital-art-masterclass'])
     vi.mocked(Engagement.getProgressForCourse).mockResolvedValue([
       { section_key: 'cg-1', completed: true },
     ] as any)
@@ -115,7 +115,7 @@ describe('Home', () => {
       expect(screen.getByText('Your communities')).toBeInTheDocument()
       expect(screen.getByText('New for you')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
-      expect(screen.getByText('Build a Paid Fan Community')).toBeInTheDocument()
+      expect(screen.getByText('Digital Art Masterclass')).toBeInTheDocument()
       expect(screen.getAllByText('Core').length).toBeGreaterThan(0)
     })
   })

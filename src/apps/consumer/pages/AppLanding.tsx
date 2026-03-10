@@ -267,7 +267,7 @@ export default function AppLanding() {
 
           <div className={clsx('grid gap-3 mt-5', isCommunity ? 'grid-cols-3' : 'grid-cols-3')}>
             {appCopy.stats.map((item) => (
-              <div key={item.label} className={clsx('border border-white/[0.04] px-4 py-3', isCommunity ? 'rounded-full bg-white/5' : 'rounded-2xl bg-[#181818]')}>
+              <div key={item.label} className={clsx('border border-white/[0.04] px-4 py-3', isCommunity ? 'rounded-2xl bg-white/5' : 'rounded-2xl bg-[#181818]')}>
                 <p className={clsx('font-black', isCommunity ? 'text-base' : 'text-xl')}>{item.val}</p>
                 <p className="text-olu-muted text-xs mt-1">{item.label}</p>
               </div>

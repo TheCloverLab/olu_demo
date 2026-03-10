@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
@@ -37,7 +37,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
   )
 }
 
-function MoreMenu({ open, onClose }) {
+function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () => void; showBusiness?: boolean }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
@@ -86,6 +86,9 @@ function MoreMenu({ open, onClose }) {
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+              {showBusiness && (
+                <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
+              )}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
@@ -96,7 +99,7 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, appType } = useApp()
+  const { currentUser, appType, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
@@ -161,7 +164,16 @@ export default function AppLayout() {
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
-          <NavLink 
+          {enabledBusinessModules.length > 0 && (
+            <button
+              onClick={() => navigate('/business')}
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 text-white border border-indigo-500/20"
+            >
+              <Briefcase size={14} />
+              Business OS
+            </button>
+          )}
+          <NavLink
             to="/settings"
             className={({ isActive }) => clsx(
               'w-full py-2 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2',
@@ -218,7 +230,7 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} />
     </div>
   )
 }

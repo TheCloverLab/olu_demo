@@ -31,11 +31,11 @@ const ACCOUNTS = [
   { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', coverImg: '/images/covers/zaranova.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.', communityTitle: 'Nova Style Lab', communityCover: '/images/covers/neoncity.jpg' },
 
   // ── Marketing (2) ───────────────────────────────────────────────
-  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.' },
-  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', coverImg: '/images/covers/marcuschen.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.' },
+  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.', communityTitle: 'GameVerse Arena', communityCover: '/images/covers/gameverse.jpg' },
+  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', coverImg: '/images/covers/marcuschen.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.', communityTitle: 'Tech & Gaming Hub', communityCover: '/images/covers/marcuschen.jpg' },
 
   // ── Supply Chain (2) ────────────────────────────────────────────
-  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', coverImg: '/images/covers/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.' },
+  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', coverImg: '/images/covers/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.', communityTitle: 'Artisan Workshop', communityCover: '/images/covers/artisancraft.jpg' },
   { email: 'yuki.demo@olu.app', handle: '@yukidraws', name: 'Yuki Draws', color: 'from-pink-400 to-rose-600', avatarImg: '/images/avatars/yuki.jpg', coverImg: '/images/covers/yukidraws.jpg', modules: ['supply_chain'], verified: false, followers: 89000, following: 140, posts: 377, bio: 'Character illustrator and print shop owner. Turning fan art into real products.' },
 ]
 
@@ -44,9 +44,13 @@ const WORKSPACE_AGENTS = {
   creator_ops: [
     { agentKey: 'lisa', templateKey: 'ip_manager', name: 'Lisa', role: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', description: 'Manages and licenses creator IP.', lastMessage: 'Received 3 new IP licensing requests.', lastTime: '12m ago' },
     { agentKey: 'eric', templateKey: 'data_analyst', name: 'Eric', role: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-blue-700', description: 'Analyzes performance and growth metrics.', lastMessage: 'Weekly report ready.', lastTime: '2h ago' },
+    { agentKey: 'aria', templateKey: 'community_manager', name: 'Aria', role: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', description: 'Runs community events and rewards top fans.', lastMessage: 'Community engagement up 12% this week.', lastTime: '30m ago' },
+    { agentKey: 'zephyr', templateKey: 'growth_officer', name: 'Zephyr', role: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', description: 'Drives follower and subscriber growth.', lastMessage: 'Identified 3 new audience segments.', lastTime: '45m ago' },
   ],
   marketing: [
     { agentKey: 'max', templateKey: 'marketing_manager', name: 'Max', role: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', description: 'Plans influencer campaigns end-to-end.', lastMessage: 'Luna team responded positively.', lastTime: '15m ago' },
+    { agentKey: 'debian', templateKey: 'ip_manager', name: 'Debian', role: 'IP Manager', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', description: 'Reviews IP and brand compliance.', lastMessage: 'Reviewing IP portfolio.', lastTime: '1h ago' },
+    { agentKey: 'sage', templateKey: 'data_analyst', name: 'Sage', role: 'Data Analyst', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', description: 'Tracks campaign analytics and ROI.', lastMessage: 'Campaign metrics compiled.', lastTime: '35m ago' },
   ],
   supply_chain: [
     { agentKey: 'chan', templateKey: 'channel_manager', name: 'Chan', role: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', description: 'Manages supplier and creator partnerships.', lastMessage: 'Hoodie design approved.', lastTime: '20m ago' },
@@ -83,6 +87,26 @@ const AGENT_TASKS = {
     { task_key: 'chan-shipping-rates', title: 'Negotiate shipping rates for SEA region', status: 'in_progress', priority: 'medium', due: 'Mar 18', progress: 25 },
     { task_key: 'chan-inventory', title: 'Audit current inventory levels across warehouses', status: 'pending', priority: 'medium', due: 'Mar 16' },
     { task_key: 'chan-catalog-sync', title: 'Sync product catalog with Shopify store', status: 'pending', priority: 'low', due: 'Mar 24' },
+  ],
+  aria: [
+    { task_key: 'aria-welcome-flow', title: 'Refine new member welcome sequence', status: 'in_progress', priority: 'high', due: 'Mar 11', progress: 65 },
+    { task_key: 'aria-weekly-event', title: 'Plan Friday community live event', status: 'pending', priority: 'medium', due: 'Mar 14' },
+    { task_key: 'aria-mod-report', title: 'Review weekly moderation report', status: 'done', priority: 'medium', due: 'Mar 7', progress: 100 },
+  ],
+  zephyr: [
+    { task_key: 'zephyr-audience', title: 'Analyze TikTok audience segments for spring push', status: 'in_progress', priority: 'high', due: 'Mar 12', progress: 40 },
+    { task_key: 'zephyr-seo', title: 'Optimize community landing page for search', status: 'pending', priority: 'medium', due: 'Mar 18' },
+    { task_key: 'zephyr-referral', title: 'Design member referral incentive program', status: 'in_progress', priority: 'medium', due: 'Mar 15', progress: 30 },
+  ],
+  debian: [
+    { task_key: 'debian-ip-review', title: 'Review GameVerse IP licensing portfolio', status: 'in_progress', priority: 'high', due: 'Mar 13', progress: 50 },
+    { task_key: 'debian-compliance', title: 'Brand usage compliance audit', status: 'pending', priority: 'medium', due: 'Mar 20' },
+    { task_key: 'debian-contract', title: 'Draft co-marketing agreement template', status: 'in_progress', priority: 'medium', due: 'Mar 16', progress: 35 },
+  ],
+  sage: [
+    { task_key: 'sage-player-analytics', title: 'Compile player engagement metrics report', status: 'done', priority: 'high', due: 'Mar 8', progress: 100 },
+    { task_key: 'sage-roi-dashboard', title: 'Build campaign ROI tracking dashboard', status: 'in_progress', priority: 'high', due: 'Mar 14', progress: 55 },
+    { task_key: 'sage-benchmark', title: 'Benchmark against competitor game studios', status: 'pending', priority: 'low', due: 'Mar 25' },
   ],
 }
 
@@ -254,8 +278,8 @@ async function createWorkspaceWithModules(userId, account) {
     .insert({ workspace_id: workspace.id, plan: 'starter', status: 'trial', billing_email: account.email })
   if (bilErr) throw bilErr
 
-  // Seed consumer config for creator_ops users (so their community shows up)
-  if (account.modules.includes('creator_ops')) {
+  // Seed consumer config for users with a community (so their community shows up)
+  if (account.communityTitle) {
     const configJson = { featured_template: 'fan_community' }
     if (account.communityTitle) configJson.community_hero_title = account.communityTitle
     if (account.communityCover) configJson.cover_img = account.communityCover

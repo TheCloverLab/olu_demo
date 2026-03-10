@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
-import { Briefcase, ChevronLeft, LogOut } from 'lucide-react'
+import { Briefcase, ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -185,21 +185,21 @@ export default function Settings() {
           </div>
 
           {enabledBusinessModules.length > 0 ? (
-            <div className="bg-[#111111] rounded-2xl p-6">
+            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-600/30 via-purple-600/20 to-fuchsia-600/10 border border-indigo-500/20">
               <button
                 onClick={() => navigate('/business')}
-                className="w-full rounded-2xl border border-white/10 bg-[#161616] hover:bg-[#1d1d1d] transition-colors px-4 py-3 text-left flex items-center justify-between gap-3"
+                className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/5 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-2xl bg-white/8 flex items-center justify-center flex-shrink-0">
-                    <Briefcase size={18} />
+                <div className="flex items-center gap-4">
+                  <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20">
+                    <Briefcase size={20} className="text-white" />
                   </span>
                   <div>
-                    <p className="font-semibold text-sm">Business workspace</p>
-                    <p className="text-olu-muted text-xs mt-1">Modules, approvals, operators, and AI agents</p>
+                    <p className="font-bold text-base">Business OS</p>
+                    <p className="text-white/60 text-sm mt-0.5">Modules, approvals, operators, and AI agents</p>
                   </div>
                 </div>
-                <span className="text-xs text-olu-muted">Open</span>
+                <ChevronRight size={18} className="text-white/40" />
               </button>
             </div>
           ) : null}

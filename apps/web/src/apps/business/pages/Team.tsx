@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserRound, Users } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
-import type { WorkspaceAgentWithTasks } from '../../../lib/supabase'
+import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
 import clsx from 'clsx'
 
 type GroupChat = {
@@ -65,6 +65,7 @@ function AgentRow({ agent }: { agent: AgentWithTasks }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-semibold text-sm">{agent.name}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold uppercase tracking-wide">AI</span>
           <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-cyan-100/55 bg-cyan-500/10')}>
             {agent.role}
           </span>
@@ -111,17 +112,81 @@ function GroupRow({ group }: { group: GroupChat }) {
   )
 }
 
+const STATUS_DOT_COLOR: Record<string, string> = {
+  online: 'bg-emerald-400',
+  busy: 'bg-amber-400',
+  offline: 'bg-gray-500',
+}
+
+function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
+  const navigate = useNavigate()
+  return (
+    <motion.button
+      whileHover={{ x: 4 }}
+      onClick={() => navigate(`/business/team/person/${emp.id}`)}
+      className="w-full rounded-[24px] border border-cyan-500/10 bg-[#091523] p-4 flex items-start gap-3 shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left hover:bg-[#0d1726] transition-colors"
+    >
+      <div className="relative flex-shrink-0">
+        {emp.avatar_img ? (
+          <img src={emp.avatar_img} alt={emp.name} className="w-12 h-12 rounded-xl object-cover bg-[#0d1726]" />
+        ) : (
+          <div className={clsx('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
+            {emp.name.split(' ').map((n) => n[0]).join('')}
+          </div>
+        )}
+        <div className={clsx('absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#091523]', STATUS_DOT_COLOR[emp.status])} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+          <span className="font-semibold text-sm">{emp.name}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold uppercase tracking-wide">Human</span>
+          <span className="text-xs text-cyan-100/45 capitalize flex items-center gap-1">
+            <Circle size={6} className={STATUS_DOT_COLOR[emp.status]} fill="currentColor" />
+            {emp.status}
+          </span>
+        </div>
+        <p className="text-cyan-100/55 text-xs flex items-center gap-1.5">
+          <Briefcase size={12} />
+          {emp.position}
+        </p>
+        {emp.email && (
+          <p className="text-cyan-100/45 text-xs mt-0.5 flex items-center gap-1.5">
+            <Mail size={12} />
+            {emp.email}
+          </p>
+        )}
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          {(emp.skills || []).map((skill) => (
+            <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-100/60 font-medium">
+              {skill}
+            </span>
+          ))}
+          {emp.salary_label && (
+            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
+              {emp.salary_label}
+            </span>
+          )}
+        </div>
+      </div>
+      <ChevronRight size={16} className="text-cyan-100/45 flex-shrink-0 mt-3" />
+    </motion.button>
+  )
+}
+
 export default function Team() {
   const { user } = useAuth()
   const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
+  const [humans, setHumans] = useState<WorkspaceEmployee[]>([])
   const [loading, setLoading] = useState(true)
+  const [showInvite, setShowInvite] = useState(false)
 
   useEffect(() => {
     async function load() {
       if (!user?.id) {
         setAgents([])
         setGroups([])
+        setHumans([])
         setLoading(false)
         return
       }
@@ -130,10 +195,12 @@ export default function Team() {
         const team = await getWorkspaceTeamSnapshotForUser(user)
         setAgents(team.agents)
         setGroups((team.groups || []) as GroupChat[])
+        setHumans(team.humans || [])
       } catch (error) {
         console.error('Failed to load team data', error)
         setAgents([])
         setGroups([])
+        setHumans([])
       } finally {
         setLoading(false)
       }
@@ -179,23 +246,14 @@ export default function Team() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-black text-2xl">Workforce</h1>
+          <h1 className="font-black text-2xl">Team</h1>
           <p className="text-cyan-100/60 text-sm mt-0.5">
-            {agents.length} AI agent{agents.length > 1 ? 's' : ''} ·{' '}
+            {agents.length} AI agent{agents.length > 1 ? 's' : ''} · {humans.length} people ·{' '}
             {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/business/team/humans')}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors"
-          >
-            <UserRound size={14} />
-            People
-          </button>
-          <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
-            <Users size={18} className="text-cyan-200" />
-          </div>
+        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+          <Users size={18} className="text-cyan-200" />
         </div>
       </div>
 
@@ -250,6 +308,51 @@ export default function Team() {
           <div className="space-y-2">
             {groups.map((group) => (
               <GroupRow key={group.id} group={group} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {humans.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Users size={14} className="text-cyan-100/55" />
+              <p className="text-cyan-100/55 text-xs font-semibold uppercase tracking-wider">People</p>
+              <span className="text-cyan-100/35 text-xs">{humans.filter((h) => h.status === 'online').length} online</span>
+            </div>
+            <button
+              onClick={() => setShowInvite(!showInvite)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors"
+            >
+              <UserPlus size={12} />
+              Invite
+            </button>
+          </div>
+
+          {showInvite && (
+            <div className="rounded-2xl border border-cyan-500/20 bg-[#091422] p-5 mb-3 space-y-4">
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-cyan-100/45 block mb-1">Full name</label>
+                  <input type="text" placeholder="Jane Doe" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                </div>
+                <div>
+                  <label className="text-xs text-cyan-100/45 block mb-1">Email</label>
+                  <input type="email" placeholder="jane@company.com" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                </div>
+                <div className="flex items-end">
+                  <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
+                    Send Invite
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {humans.map((emp) => (
+              <PersonRow key={emp.id} emp={emp} />
             ))}
           </div>
         </div>

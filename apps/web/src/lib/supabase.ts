@@ -466,6 +466,25 @@ export type WorkspaceAgentWithTasks = WorkspaceAgent & {
   tasks?: WorkspaceAgentTask[]
 }
 
+export type WorkspaceEmployee = {
+  id: string
+  workspace_id: string
+  user_id?: string | null
+  name: string
+  position: string
+  description?: string | null
+  avatar_img?: string | null
+  color?: string | null
+  status: 'online' | 'offline' | 'busy'
+  employment_status: 'active' | 'paused' | 'offboarded'
+  email?: string | null
+  skills: string[]
+  salary_label?: string | null
+  hired_at?: string
+  created_at?: string
+  updated_at?: string
+}
+
 export type ConsumerCourse = {
   id: string
   creator_id: string

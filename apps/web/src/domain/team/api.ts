@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import type { AgentTemplate, User, WorkspaceAgent, WorkspaceAgentWithTasks, WorkspaceAgentTask } from '../../lib/supabase'
+import type { AgentTemplate, User, WorkspaceAgent, WorkspaceAgentWithTasks, WorkspaceAgentTask, WorkspaceEmployee } from '../../lib/supabase'
 import { ensureWorkspaceForUser } from '../workspace/api'
 import {
   addConversationMessage,
@@ -159,6 +159,29 @@ export async function hireWorkspaceAgent(
 
 // ---------- HR-model team queries ----------
 
+export async function getWorkspaceEmployeesForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<WorkspaceEmployee[]> {
+  const membership = await ensureWorkspaceForUser(user)
+  const { data, error } = await supabase
+    .from('workspace_employees')
+    .select('*')
+    .eq('workspace_id', membership.workspace_id)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as WorkspaceEmployee[]
+}
+
+export async function getWorkspaceEmployeeById(employeeId: string): Promise<WorkspaceEmployee | null> {
+  const { data, error } = await supabase
+    .from('workspace_employees')
+    .select('*')
+    .eq('id', employeeId)
+    .single()
+
+  if (error) return null
+  return data as WorkspaceEmployee
+}
+
 export async function getTeamEmployeesForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<EmployeeWithTasks[]> {
   const agents = await getWorkspaceAgentsWithTasksForUser(user)
   return agents.map(toEmployeeWithTasks)
@@ -167,14 +190,16 @@ export async function getTeamEmployeesForUser(user: Pick<User, 'id' | 'username'
 // ---------- Team snapshot ----------
 
 export async function getWorkspaceTeamSnapshotForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
-  const [agents, groups] = await Promise.all([
+  const [agents, groups, humans] = await Promise.all([
     getWorkspaceAgentsWithTasksForUser(user),
     getGroupChatsByUser(user.id),
+    getWorkspaceEmployeesForUser(user).catch(() => [] as WorkspaceEmployee[]),
   ])
 
   return {
     agents,
     groups,
+    humans,
     employees: agents.map(toEmployeeWithTasks),
     taskCount: agents.reduce((acc, agent) => acc + ((agent.tasks || []).filter((task) => task.status !== 'done').length || 0), 0),
   }

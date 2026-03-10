@@ -18,7 +18,9 @@
       ],
       "environment": [
         { "name": "NODE_ENV", "value": "production" },
-        { "name": "PORT", "value": "8080" }
+        { "name": "PORT", "value": "8080" },
+        { "name": "LLM_BASE_URL", "value": "https://api.kimi.com/coding/v1" },
+        { "name": "LLM_MODEL", "value": "kimi-for-coding" }
       ],
       "secrets": [
         {

@@ -23,8 +23,8 @@ FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
 
+# npm workspaces hoists all deps to root node_modules
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/agent-runtime/node_modules ./apps/agent-runtime/node_modules
 COPY --from=build /app/apps/agent-runtime/dist ./apps/agent-runtime/dist
 COPY --from=build /app/apps/agent-runtime/package.json ./apps/agent-runtime/
 COPY --from=build /app/packages/shared ./packages/shared

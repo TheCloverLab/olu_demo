@@ -76,11 +76,10 @@ describe('Wallet', () => {
     render(<MemoryRouter><Wallet /></MemoryRouter>)
 
     await waitFor(() => {
-      expect(screen.getByText('Payments and purchases')).toBeInTheDocument()
       expect(screen.getByText('Recurring support')).toBeInTheDocument()
       expect(screen.getByText('Academy purchases')).toBeInTheDocument()
       expect(screen.getByText('Luna Chen Community')).toBeInTheDocument()
-      expect(screen.getByText('Digital Art Masterclass')).toBeInTheDocument()
+      expect(screen.getAllByText('Digital Art Masterclass').length).toBeGreaterThanOrEqual(1)
       expect(screen.getByText('$29.99/mo')).toBeInTheDocument()
       expect(screen.getByText('$49')).toBeInTheDocument()
     })

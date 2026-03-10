@@ -2,42 +2,16 @@
   "name": "olu-demo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "prebuild": "node scripts/write-version.mjs",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web",
+    "dev:agent": "npm run dev --workspace=apps/agent-runtime",
     "ops:role-apps": "node scripts/list-role-applications.mjs",
     "ops:role-review": "node scripts/review-role-application.mjs"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
-    "@tailwindcss/typography": "^0.5.19",
-    "clsx": "^2.1.1",
-    "framer-motion": "^11.3.0",
-    "lucide-react": "^0.424.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.26.0",
-    "recharts": "^2.12.7"
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.19",
-    "jsdom": "^28.1.0",
-    "postcss": "^8.4.40",
-    "tailwindcss": "^3.4.7",
-    "typescript": "^5.9.3",
-    "vite": "^5.3.5",
-    "vitest": "^4.0.18"
   }
 }

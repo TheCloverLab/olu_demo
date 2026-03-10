@@ -29,20 +29,23 @@ OLU is a multi-tenant SaaS platform with two sides:
 
 AI agents and human employees share one Employee model: position, JD, skills, qualifications, performance, salary (token cost).
 
-### Directory Structure
+### Directory Structure (Monorepo)
 
 ```
-src/
-  apps/
-    consumer/pages/    # Consumer-facing pages (Shop, Courses, Discover, etc.)
-    business/pages/    # Business-facing pages (Team, TeamChat, Settings, etc.)
-  domain/              # Domain layer (consumer, profile, social, team, connectors, agent, workspace)
-  context/             # React contexts (AppContext — global state)
-  lib/                 # Supabase client, types, utilities
-  services/            # Legacy monolith API (being split by domain)
-  pages/__tests__/     # Test files
-scripts/               # Seed scripts, ops tools
-supabase/              # Migrations, seed.sql, edge functions, config
+apps/
+  web/                   # React SPA (Vite + Tailwind)
+    src/
+      apps/consumer/     # Consumer-facing pages (Shop, Courses, Discover, etc.)
+      apps/business/     # Business-facing pages (Team, TeamChat, Settings, etc.)
+      domain/            # Domain layer (consumer, profile, social, team, connectors, agent, workspace)
+      context/           # React contexts (AppContext — global state)
+      lib/               # Supabase client, types, utilities
+    api/                 # Vercel serverless functions
+  agent-runtime/         # LangGraph JS agent backend (multi-agent orchestration)
+packages/
+  shared/                # Shared domain types used by web + agent-runtime
+scripts/                 # Seed scripts, ops tools
+supabase/                # Migrations, seed.sql, edge functions, config
 ```
 
 ### Data Flow
@@ -66,10 +69,10 @@ Consumer pages use `useApp()` context for:
 ## Development
 
 ```bash
-npm run dev        # Start dev server
-npm run build      # Production build
-npm run test       # Run tests (Vitest)
-npm run test:watch # Watch mode
+npm run dev          # Start web dev server
+npm run build        # Production build (web)
+npm run test         # Run tests (web)
+npm run dev:agent    # Start agent-runtime dev server
 ```
 
 ## Demo Accounts

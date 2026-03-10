@@ -74,8 +74,12 @@ async function callLLM(prompt: string): Promise<string> {
     throw new Error(`LLM error ${res.status}: ${text.slice(0, 200)}`)
   }
 
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || ''
+  const text = await res.text()
+  console.log('[callLLM] Raw response:', text.slice(0, 500))
+  const data = JSON.parse(text)
+  const msg = data.choices?.[0]?.message
+  // Kimi For Coding puts actual content in reasoning_content when thinking mode is on
+  return msg?.content || msg?.reasoning_content || ''
 }
 
 // --- Node: Fetch current tasks ---
@@ -101,7 +105,7 @@ async function planActions(state: typeof AgentState.State) {
   const taskList = state.tasks
     .map(
       (t) =>
-        `- [${t.status}] "${t.title}" (priority: ${t.priority}, progress: ${t.progress}%)`,
+        `- [${t.status}] id="${t.id}" "${t.title}" (priority: ${t.priority}, progress: ${t.progress}%)`,
     )
     .join('\n')
 
@@ -116,16 +120,17 @@ Based on the request, decide what actions to take. Respond in JSON format:
 {
   "plan": "Brief description of what you'll do",
   "actions": [
-    {"type": "update_status", "task_id": "...", "new_status": "in_progress|done", "progress": 50},
-    {"type": "create_task", "task_key": "...", "title": "...", "priority": "low|medium|high"},
+    {"type": "update_status", "task_id": "<UUID from the id= field above>", "new_status": "in_progress|done", "progress": 50},
+    {"type": "create_task", "task_key": "slug-style-key", "title": "Human readable title", "priority": "low|medium|high"},
     {"type": "none", "reason": "..."}
   ]
 }
 
-Only use valid task IDs from the list above. Respond ONLY with the JSON, no other text.`
+IMPORTANT: task_id must be the exact UUID shown in the id= field. Respond ONLY with valid JSON, no other text.`
 
   try {
     const response = await callLLM(prompt)
+    console.log('[planActions] LLM response:', response.slice(0, 500))
     const cleaned = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim()
     const parsed = JSON.parse(cleaned)
     return {
@@ -133,6 +138,7 @@ Only use valid task IDs from the list above. Respond ONLY with the JSON, no othe
       actions: Array.isArray(parsed.actions) ? parsed.actions : [],
     }
   } catch (err: any) {
+    console.error('[planActions] Error:', err.message)
     return { plan: 'Failed to plan', actions: [], error: err.message }
   }
 }

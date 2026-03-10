@@ -102,6 +102,91 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // Batch run — execute all agents in a workspace
+    if (url.pathname === '/batch' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { workspaceId, taskDescription } = body
+
+      if (!workspaceId) {
+        json(res, 400, { error: 'Missing required field: workspaceId' })
+        return
+      }
+
+      const { data: agents, error: agentsError } = await supabase
+        .from('workspace_agents')
+        .select('id, name, role')
+        .eq('workspace_id', workspaceId)
+
+      if (agentsError || !agents?.length) {
+        json(res, 404, { error: agentsError?.message || 'No agents found' })
+        return
+      }
+
+      const description =
+        taskDescription || 'Review your pending tasks and take appropriate action on the highest priority items.'
+
+      // Run all agents in parallel
+      const runs = await Promise.allSettled(
+        agents.map(async (agent) => {
+          const threadId = `batch-${agent.id}-${Date.now()}`
+          const config = { configurable: { thread_id: threadId } }
+
+          // Set agent status to busy
+          await supabase
+            .from('workspace_agents')
+            .update({ status: 'busy', updated_at: new Date().toISOString() })
+            .eq('id', agent.id)
+
+          try {
+            const result = await taskAgent.invoke(
+              {
+                workspaceId,
+                agentId: agent.id,
+                agentName: agent.name,
+                agentPosition: agent.role,
+                taskDescription: description,
+                requiresApproval: false,
+              },
+              config,
+            )
+
+            // Set agent back to online
+            await supabase
+              .from('workspace_agents')
+              .update({ status: 'online', updated_at: new Date().toISOString() })
+              .eq('id', agent.id)
+
+            return {
+              agentId: agent.id,
+              agentName: agent.name,
+              threadId,
+              summary: result.summary,
+              actions: result.actions,
+            }
+          } catch (err: any) {
+            // Set agent back to online on error
+            await supabase
+              .from('workspace_agents')
+              .update({ status: 'online', updated_at: new Date().toISOString() })
+              .eq('id', agent.id)
+            throw err
+          }
+        }),
+      )
+
+      const results = runs.map((r, i) => {
+        if (r.status === 'fulfilled') return r.value
+        return {
+          agentId: agents[i].id,
+          agentName: agents[i].name,
+          error: (r.reason as Error).message,
+        }
+      })
+
+      json(res, 200, { workspaceId, results })
+      return
+    }
+
     // Resume interrupted graph (approval)
     const resumeMatch = url.pathname.match(/^\/resume\/(.+)$/)
     if (resumeMatch && req.method === 'POST') {

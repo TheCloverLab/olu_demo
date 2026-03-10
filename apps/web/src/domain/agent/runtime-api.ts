@@ -82,6 +82,31 @@ export type AgentWithTasks = {
   }>
 }
 
+export type BatchResult = {
+  workspaceId: string
+  results: Array<{
+    agentId: string
+    agentName: string
+    threadId?: string
+    summary?: string
+    actions?: unknown[]
+    error?: string
+  }>
+}
+
+export async function batchRunAgents(
+  workspaceId: string,
+  taskDescription?: string,
+): Promise<BatchResult> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workspaceId, taskDescription }),
+  })
+  if (!res.ok) throw new Error(`Batch run failed: ${res.status}`)
+  return res.json()
+}
+
 export async function getWorkspaceAgents(
   workspaceId: string,
 ): Promise<AgentWithTasks[]> {

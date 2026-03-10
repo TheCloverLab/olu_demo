@@ -6,6 +6,21 @@ import { getDiscoverConsumerAppCards, type ConsumerAppCard } from '../../../doma
 
 const PAGE_SIZE = 4
 
+const CARD_GRADIENTS = [
+  'from-fuchsia-700 via-rose-600 to-orange-500',
+  'from-violet-700 via-purple-600 to-indigo-500',
+  'from-cyan-700 via-teal-600 to-emerald-500',
+  'from-amber-600 via-orange-500 to-rose-500',
+  'from-blue-700 via-sky-600 to-cyan-500',
+  'from-pink-600 via-fuchsia-500 to-purple-500',
+]
+
+function pickGradient(seed: string) {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0
+  return CARD_GRADIENTS[Math.abs(hash) % CARD_GRADIENTS.length]
+}
+
 function DiscoverCard({
   app,
   onOpen,
@@ -20,7 +35,7 @@ function DiscoverCard({
       onClick={onOpen}
       className="w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#111111] text-left hover:-translate-y-0.5 transition-all"
     >
-      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-fuchsia-700 via-rose-600 to-orange-500">
+      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${pickGradient(app.id)}`}>
         {app.cover_img && !coverBroken ? (
           <img
             src={app.cover_img}

@@ -53,6 +53,39 @@ const WORKSPACE_AGENTS = {
   ],
 }
 
+// Tasks per agent (keyed by agentKey)
+const AGENT_TASKS = {
+  lisa: [
+    { task_key: 'lisa-ip-audit', title: 'Audit Q1 IP licensing agreements', status: 'done', priority: 'high', due: 'Mar 5', progress: 100 },
+    { task_key: 'lisa-takedown-batch', title: 'Process 12 unauthorized reprint takedowns', status: 'in_progress', priority: 'high', due: 'Today', progress: 75 },
+    { task_key: 'lisa-new-license', title: 'Draft license terms for Pixel Realm merch line', status: 'in_progress', priority: 'medium', due: 'Mar 14', progress: 40 },
+    { task_key: 'lisa-royalty-report', title: 'Generate monthly royalty collection report', status: 'pending', priority: 'medium', due: 'Mar 20' },
+    { task_key: 'lisa-partner-review', title: 'Review ArtisanCraft partnership IP clauses', status: 'pending', priority: 'low', due: 'Mar 25' },
+  ],
+  eric: [
+    { task_key: 'eric-weekly-report', title: 'Compile weekly engagement analytics', status: 'done', priority: 'medium', due: 'Mar 7', progress: 100 },
+    { task_key: 'eric-growth-deep', title: 'Deep-dive: subscriber growth vs churn analysis', status: 'in_progress', priority: 'high', due: 'Today', progress: 60 },
+    { task_key: 'eric-revenue-dash', title: 'Build revenue dashboard for community tiers', status: 'in_progress', priority: 'medium', due: 'Mar 15', progress: 30 },
+    { task_key: 'eric-ab-test', title: 'Analyze A/B test results for onboarding flow', status: 'pending', priority: 'high', due: 'Mar 12' },
+    { task_key: 'eric-benchmark', title: 'Benchmark creator metrics against industry averages', status: 'pending', priority: 'low', due: 'Mar 28' },
+  ],
+  max: [
+    { task_key: 'max-campaign-luna', title: 'Plan Luna Chen x GameVerse cross-promo campaign', status: 'in_progress', priority: 'high', due: 'Mar 12', progress: 55 },
+    { task_key: 'max-influencer-outreach', title: 'Shortlist 15 micro-influencers for spring push', status: 'done', priority: 'medium', due: 'Mar 6', progress: 100 },
+    { task_key: 'max-budget-review', title: 'Review Q2 marketing budget allocation', status: 'in_progress', priority: 'high', due: 'Today', progress: 80 },
+    { task_key: 'max-performance', title: 'Compile Feb campaign performance report', status: 'done', priority: 'medium', due: 'Mar 3', progress: 100 },
+    { task_key: 'max-social-calendar', title: 'Draft March social media content calendar', status: 'pending', priority: 'medium', due: 'Mar 14' },
+    { task_key: 'max-creator-brief', title: 'Write creative brief for Zara Nova collab', status: 'pending', priority: 'low', due: 'Mar 22' },
+  ],
+  chan: [
+    { task_key: 'chan-supplier-onboard', title: 'Onboard 2 new print-on-demand suppliers', status: 'in_progress', priority: 'high', due: 'Mar 13', progress: 45 },
+    { task_key: 'chan-hoodie-qa', title: 'QA check: Luna hoodie sample batch', status: 'done', priority: 'high', due: 'Mar 8', progress: 100 },
+    { task_key: 'chan-shipping-rates', title: 'Negotiate shipping rates for SEA region', status: 'in_progress', priority: 'medium', due: 'Mar 18', progress: 25 },
+    { task_key: 'chan-inventory', title: 'Audit current inventory levels across warehouses', status: 'pending', priority: 'medium', due: 'Mar 16' },
+    { task_key: 'chan-catalog-sync', title: 'Sync product catalog with Shopify store', status: 'pending', priority: 'low', due: 'Mar 24' },
+  ],
+}
+
 async function deleteAllAuthUsers() {
   console.log('Deleting all existing auth users...')
   let deleted = 0
@@ -236,12 +269,12 @@ async function createWorkspaceWithModules(userId, account) {
     if (ccErr) console.log(`  Warning: consumer config: ${ccErr.message}`)
   }
 
-  // Hire agents for this workspace
+  // Hire agents and assign tasks
   for (const moduleKey of account.modules) {
     const agents = WORKSPACE_AGENTS[moduleKey] || []
     for (const agentDef of agents) {
       const template = await getTemplateByKey(agentDef.templateKey)
-      const { error: agentErr } = await admin
+      const { data: agentRow, error: agentErr } = await admin
         .from('workspace_agents')
         .insert({
           workspace_id: workspace.id,
@@ -257,7 +290,29 @@ async function createWorkspaceWithModules(userId, account) {
           last_message: agentDef.lastMessage,
           last_time: agentDef.lastTime,
         })
-      if (agentErr) console.log(`  Warning: could not create agent ${agentDef.name}: ${agentErr.message}`)
+        .select('id')
+        .single()
+      if (agentErr) {
+        console.log(`  Warning: could not create agent ${agentDef.name}: ${agentErr.message}`)
+        continue
+      }
+
+      // Seed tasks for this agent
+      const tasks = AGENT_TASKS[agentDef.agentKey] || []
+      for (const task of tasks) {
+        const { error: taskErr } = await admin
+          .from('workspace_agent_tasks')
+          .insert({
+            workspace_agent_id: agentRow.id,
+            task_key: task.task_key,
+            title: task.title,
+            status: task.status,
+            priority: task.priority,
+            due: task.due || null,
+            progress: task.progress || 0,
+          })
+        if (taskErr) console.log(`  Warning: task ${task.task_key}: ${taskErr.message}`)
+      }
     }
   }
 

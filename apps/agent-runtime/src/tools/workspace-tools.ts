@@ -725,12 +725,13 @@ export const googlePlayReviews = tool(
 )
 
 /**
- * Generate files — CSV, JSON, HTML, or plain text documents
+ * Generate files — CSV, JSON, HTML, text, PDF, DOCX, or XLSX
  */
 export const generateFile = tool(
-  async ({ format, filename, content, columns, rows }) => {
+  async ({ format, filename, content, columns, rows, title }) => {
     try {
-      let fileContent: string
+      let fileBuffer: Buffer | null = null
+      let fileContent: string = ''
       let mimeType: string
 
       if (format === 'csv') {
@@ -750,29 +751,113 @@ export const generateFile = tool(
       } else if (format === 'html') {
         fileContent = content || '<html><body><h1>Generated Document</h1></body></html>'
         mimeType = 'text/html'
+      } else if (format === 'pdf') {
+        const PDFDocument = (await import('pdfkit')).default
+        const doc = new PDFDocument({ margin: 50 })
+        const chunks: Buffer[] = []
+        doc.on('data', (chunk: Buffer) => chunks.push(chunk))
+
+        if (title) {
+          doc.fontSize(20).text(title, { align: 'center' })
+          doc.moveDown()
+        }
+
+        if (columns && rows) {
+          // Table layout for PDF
+          const colWidth = (doc.page.width - 100) / columns.length
+          doc.fontSize(10).font('Helvetica-Bold')
+          columns.forEach((col, i) => doc.text(col, 50 + i * colWidth, doc.y, { width: colWidth, continued: i < columns.length - 1 }))
+          doc.moveDown(0.5)
+          doc.font('Helvetica')
+          for (const row of rows) {
+            const y = doc.y
+            row.forEach((cell, i) => doc.text(cell, 50 + i * colWidth, y, { width: colWidth, continued: i < row.length - 1 }))
+            doc.moveDown(0.3)
+          }
+        } else if (content) {
+          doc.fontSize(12).text(content)
+        }
+
+        doc.end()
+        await new Promise<void>(resolve => doc.on('end', resolve))
+        fileBuffer = Buffer.concat(chunks)
+        mimeType = 'application/pdf'
+      } else if (format === 'docx') {
+        const docx = await import('docx')
+        const paragraphs: any[] = []
+
+        if (title) {
+          paragraphs.push(new docx.Paragraph({ text: title, heading: docx.HeadingLevel.HEADING_1 }))
+        }
+
+        if (columns && rows) {
+          // Create table
+          const headerRow = new docx.TableRow({
+            children: columns.map(col => new docx.TableCell({
+              children: [new docx.Paragraph({ children: [new docx.TextRun({ text: col, bold: true })] })],
+            })),
+          })
+          const dataRows = rows.map(row => new docx.TableRow({
+            children: row.map(cell => new docx.TableCell({
+              children: [new docx.Paragraph(cell)],
+            })),
+          }))
+          paragraphs.push(new docx.Table({ rows: [headerRow, ...dataRows] }))
+        } else if (content) {
+          for (const line of content.split('\n')) {
+            paragraphs.push(new docx.Paragraph(line))
+          }
+        }
+
+        const doc = new docx.Document({
+          sections: [{ children: paragraphs }],
+        })
+        fileBuffer = Buffer.from(await docx.Packer.toBuffer(doc))
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      } else if (format === 'xlsx') {
+        const ExcelJS = await import('exceljs')
+        const workbook = new ExcelJS.default.Workbook()
+        const sheet = workbook.addWorksheet(title || 'Sheet1')
+
+        if (columns && rows) {
+          sheet.addRow(columns)
+          // Bold header
+          sheet.getRow(1).font = { bold: true }
+          for (const row of rows) sheet.addRow(row)
+          // Auto-fit column widths
+          columns.forEach((_, i) => { sheet.getColumn(i + 1).width = 15 })
+        } else if (content) {
+          for (const line of content.split('\n')) {
+            sheet.addRow([line])
+          }
+        }
+
+        fileBuffer = Buffer.from(await workbook.xlsx.writeBuffer())
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       } else {
         fileContent = content || ''
         mimeType = 'text/plain'
       }
 
-      // Store in Supabase storage if available
-      const fileName = filename || `generated-${Date.now()}.${format}`
+      const ext = format === 'docx' ? 'docx' : format === 'xlsx' ? 'xlsx' : format
+      const fileName = filename || `generated-${Date.now()}.${ext}`
+      const uploadContent = fileBuffer || fileContent
+
       const { data, error } = await supabase.storage
         .from('generated-files')
-        .upload(`files/${fileName}`, fileContent, {
+        .upload(`files/${fileName}`, uploadContent, {
           contentType: mimeType,
           upsert: true,
         })
 
       if (error) {
-        // Storage bucket might not exist — return content directly
         return JSON.stringify({
           success: true,
           filename: fileName,
           format,
-          size: fileContent.length,
-          content: fileContent.slice(0, 2000),
-          note: 'File generated but could not be uploaded to storage. Content returned inline.',
+          size: fileBuffer ? fileBuffer.length : fileContent.length,
+          content: fileBuffer ? `[Binary ${format.toUpperCase()} file, ${fileBuffer.length} bytes]` : fileContent.slice(0, 2000),
+          note: 'File generated but could not be uploaded to storage.',
         })
       }
 
@@ -784,7 +869,7 @@ export const generateFile = tool(
         success: true,
         filename: fileName,
         format,
-        size: fileContent.length,
+        size: fileBuffer ? fileBuffer.length : fileContent.length,
         url: urlData?.publicUrl,
       })
     } catch (err: any) {
@@ -793,13 +878,14 @@ export const generateFile = tool(
   },
   {
     name: 'generate_file',
-    description: 'Generate a file (CSV, JSON, HTML, or text). Can create reports, data exports, templates, etc. Returns the file URL or inline content.',
+    description: 'Generate a file in various formats: CSV, JSON, HTML, text, PDF, DOCX (Word), or XLSX (Excel). Can create reports, invoices, data exports, presentations, etc.',
     schema: z.object({
-      format: z.enum(['csv', 'json', 'html', 'text']).describe('File format'),
+      format: z.enum(['csv', 'json', 'html', 'text', 'pdf', 'docx', 'xlsx']).describe('File format'),
       filename: z.string().optional().describe('Output filename'),
-      content: z.string().optional().describe('File content (for json/html/text)'),
-      columns: z.array(z.string()).optional().describe('CSV column headers'),
-      rows: z.array(z.array(z.string())).optional().describe('CSV data rows'),
+      content: z.string().optional().describe('File content (for text-based formats) or body text (for pdf/docx)'),
+      title: z.string().optional().describe('Document title (for pdf/docx/xlsx)'),
+      columns: z.array(z.string()).optional().describe('Table column headers (for csv/pdf/docx/xlsx)'),
+      rows: z.array(z.array(z.string())).optional().describe('Table data rows'),
     }),
   },
 )

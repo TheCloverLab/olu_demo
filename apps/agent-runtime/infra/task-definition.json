@@ -5,7 +5,7 @@
   "cpu": "512",
   "memory": "1024",
   "executionRoleArn": "${EXECUTION_ROLE_ARN}",
-  "taskRoleArn": "${TASK_ROLE_ARN}",
+  "taskRoleArn": "${EXECUTION_ROLE_ARN}",
   "containerDefinitions": [
     {
       "name": "agent-runtime",
@@ -22,7 +22,9 @@
         { "name": "LLM_BASE_URL", "value": "https://api.kimi.com/coding/v1" },
         { "name": "LLM_MODEL", "value": "kimi-for-coding" },
         { "name": "VOLCENGINE_BASE_URL", "value": "https://ark.cn-beijing.volces.com/api/v3" },
-        { "name": "VOLCENGINE_IMAGE_MODEL", "value": "doubao-seedream-5-0-260128" }
+        { "name": "VOLCENGINE_IMAGE_MODEL", "value": "doubao-seedream-5-0-260128" },
+        { "name": "MODEL_CLAUDE_BASE_URL", "value": "https://api123.icu/v1" },
+        { "name": "MODEL_CLAUDE_MODEL", "value": "claude-sonnet-4-6" }
       ],
       "secrets": [
         {
@@ -56,6 +58,10 @@
         {
           "name": "GOOGLE_PLAY_PACKAGE_NAME",
           "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/GOOGLE_PLAY_PACKAGE_NAME"
+        },
+        {
+          "name": "MODEL_CLAUDE_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/MODEL_CLAUDE_API_KEY"
         }
       ],
       "logConfiguration": {

@@ -26,12 +26,17 @@ type ToolCall = {
 
 const toolMap = Object.fromEntries(allTools.map((t) => [t.name, t]))
 
+function cleanSchema(schema: Record<string, unknown>): Record<string, unknown> {
+  const { $schema, additionalProperties, ...rest } = schema as any
+  return rest
+}
+
 const toolDefs = allTools.map((t) => ({
   type: 'function' as const,
   function: {
     name: t.name,
     description: t.description,
-    parameters: t.schema ? zodToJsonSchema(t.schema) : { type: 'object', properties: {} },
+    parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema) as Record<string, unknown>) : { type: 'object', properties: {} },
   },
 }))
 

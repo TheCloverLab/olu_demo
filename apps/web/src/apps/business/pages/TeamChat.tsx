@@ -340,106 +340,133 @@ export default function TeamChat() {
         }
       }
 
-      const apiMessages = [
-        { role: 'system', content: buildSystemPrompt(agent, user?.name) },
-        ...next
-          .filter(m => m.text && m.text.trim())
-          .slice(-20) // keep last 20 messages max
-          .map(m => ({
-            role: m.from === 'user' ? 'user' : 'assistant',
-            content: m.text,
-          })),
-      ]
+      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || ''
 
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${session?.access_token || ''}`,
-        },
-        body: JSON.stringify({ messages: apiMessages }),
-      })
+      // Use agent-runtime /chat (tool-calling mode) if configured, otherwise fall back to edge function
+      if (AGENT_RUNTIME_URL) {
+        const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workspaceId: agent.workspace_id || '',
+            agentId: selectedAgentDbId,
+            agentName: agent.name,
+            agentRole: agent.role,
+            message: userText,
+          }),
+        })
 
-      const contentType = res.headers.get('content-type') || ''
-      if (!res.ok) {
-        const errorText = await res.text()
-        console.error('agent-chat http error:', res.status, errorText)
-        if (res.status === 401) {
-          setRuntimeError(runtimeErrorMessage('invalid-auth'))
-        } else if (errorText.includes('[ERROR:')) {
-          const match = errorText.match(/\[ERROR:([^\]]+)\]/)
-          setRuntimeError(runtimeErrorMessage(match?.[1] || 'provider-fetch-failed'))
-        } else {
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error('agent-runtime /chat error:', res.status, errorText)
           setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+          return
         }
-        return
-      }
 
-      if (!contentType.includes('text/event-stream')) {
-        const errorText = await res.text()
-        console.error('agent-chat unexpected response:', contentType, errorText)
-        setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
-        return
-      }
+        const result = await res.json()
+        const assistantText = result.response || 'Done.'
 
-      if (!res.body) {
-        throw new Error('Empty response body')
-      }
+        // Show tool calls if any
+        const toolInfo = result.toolCalls?.length
+          ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
+          : ''
 
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
+        setMessages(prev => [...prev, { from: 'agent', text: assistantText + toolInfo, time: 'Just now' }])
 
-      // Add an empty agent message to stream into
-      setMessages(prev => [...prev, { from: 'agent', text: '', time: 'Just now' }])
-      setLoading(false)
-      setStreaming(true)
-      let assistantText = ''
-
-      let buffer = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || '' // keep incomplete line for next chunk
-
-        for (const line of lines) {
-          if (!line.startsWith('data:')) continue
-          const payload = line.slice(5).trim()
-          if (payload === '[DONE]') break
-          if (payload.startsWith('[ERROR:')) {
-            const errorCode = payload.slice(7, -1)
-            console.error('API error payload:', errorCode)
-            setRuntimeError(runtimeErrorMessage(errorCode))
-            setMessages(prev => prev.filter((msg, index) => !(index === prev.length - 1 && msg.from === 'agent' && !msg.text)))
-            break
-          }
+        if (selectedAgentDbId && assistantText.trim()) {
           try {
-            const json = JSON.parse(payload)
-            const delta = json.choices?.[0]?.delta || {}
-            if (delta.reasoning_content) {
-              setThinking(prev => (prev + delta.reasoning_content).slice(-120))
-            }
-            const token = delta.content || ''
-            if (token) {
-              setThinking('') // clear thinking hint once content starts
-              assistantText += token
-              setMessages(prev => {
-                const msgs = [...prev]
-                msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: msgs[msgs.length - 1].text + token }
-                return msgs
-              })
-            }
-          } catch (_) {}
+            await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+          } catch (err) {
+            console.error('Failed saving assistant message', err)
+          }
         }
-      }
+      } else {
+        // Fallback: Supabase edge function (streaming, no tools)
+        const apiMessages = [
+          { role: 'system', content: buildSystemPrompt(agent, user?.name) },
+          ...next
+            .filter(m => m.text && m.text.trim())
+            .slice(-20)
+            .map(m => ({
+              role: m.from === 'user' ? 'user' : 'assistant',
+              content: m.text,
+            })),
+        ]
 
-      if (selectedAgentDbId && assistantText.trim()) {
-        try {
-          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
-        } catch (err) {
-          console.error('Failed saving assistant message', err)
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+          },
+          body: JSON.stringify({ messages: apiMessages }),
+        })
+
+        const contentType = res.headers.get('content-type') || ''
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error('agent-chat http error:', res.status, errorText)
+          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+          return
+        }
+
+        if (!contentType.includes('text/event-stream') || !res.body) {
+          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+          return
+        }
+
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+
+        setMessages(prev => [...prev, { from: 'agent', text: '', time: 'Just now' }])
+        setLoading(false)
+        setStreaming(true)
+        let assistantText = ''
+
+        let buffer = ''
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (!line.startsWith('data:')) continue
+            const payload = line.slice(5).trim()
+            if (payload === '[DONE]') break
+            if (payload.startsWith('[ERROR:')) {
+              setRuntimeError(runtimeErrorMessage(payload.slice(7, -1)))
+              setMessages(prev => prev.filter((_, index) => !(index === prev.length - 1)))
+              break
+            }
+            try {
+              const json = JSON.parse(payload)
+              const delta = json.choices?.[0]?.delta || {}
+              if (delta.reasoning_content) {
+                setThinking(prev => (prev + delta.reasoning_content).slice(-120))
+              }
+              const token = delta.content || ''
+              if (token) {
+                setThinking('')
+                assistantText += token
+                setMessages(prev => {
+                  const msgs = [...prev]
+                  msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: msgs[msgs.length - 1].text + token }
+                  return msgs
+                })
+              }
+            } catch (_) {}
+          }
+        }
+
+        if (selectedAgentDbId && assistantText.trim()) {
+          try {
+            await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+          } catch (err) {
+            console.error('Failed saving assistant message', err)
+          }
         }
       }
     } catch (e) {

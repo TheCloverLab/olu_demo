@@ -20,7 +20,9 @@
         { "name": "NODE_ENV", "value": "production" },
         { "name": "PORT", "value": "8080" },
         { "name": "LLM_BASE_URL", "value": "https://api.kimi.com/coding/v1" },
-        { "name": "LLM_MODEL", "value": "kimi-for-coding" }
+        { "name": "LLM_MODEL", "value": "kimi-for-coding" },
+        { "name": "VOLCENGINE_BASE_URL", "value": "https://ark.cn-beijing.volces.com/api/v3" },
+        { "name": "VOLCENGINE_IMAGE_MODEL", "value": "doubao-seedream-5-0-260128" }
       ],
       "secrets": [
         {
@@ -34,6 +36,10 @@
         {
           "name": "LLM_API_KEY",
           "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/LLM_API_KEY"
+        },
+        {
+          "name": "VOLCENGINE_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/VOLCENGINE_API_KEY"
         }
       ],
       "logConfiguration": {

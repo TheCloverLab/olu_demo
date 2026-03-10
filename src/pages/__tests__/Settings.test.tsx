@@ -78,7 +78,7 @@ describe('Settings', () => {
 
   it('shows business workspace link when modules are enabled', () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
-    expect(screen.getByText('Business workspace')).toBeInTheDocument()
+    expect(screen.getByText('Business OS')).toBeInTheDocument()
   })
 
   it('shows sign out confirmation dialog', async () => {

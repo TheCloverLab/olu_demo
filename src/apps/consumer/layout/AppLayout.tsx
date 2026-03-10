@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
@@ -96,7 +96,7 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, appType } = useApp()
+  const { currentUser, appType, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
@@ -161,7 +161,16 @@ export default function AppLayout() {
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
-          <NavLink 
+          {enabledBusinessModules.length > 0 && (
+            <button
+              onClick={() => navigate('/business')}
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 text-white border border-indigo-500/20"
+            >
+              <Briefcase size={14} />
+              Business OS
+            </button>
+          )}
+          <NavLink
             to="/settings"
             className={({ isActive }) => clsx(
               'w-full py-2 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2',

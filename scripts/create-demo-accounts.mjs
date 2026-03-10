@@ -31,11 +31,11 @@ const ACCOUNTS = [
   { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', coverImg: '/images/covers/zaranova.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.', communityTitle: 'Nova Style Lab', communityCover: '/images/covers/neoncity.jpg' },
 
   // ── Marketing (2) ───────────────────────────────────────────────
-  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.' },
-  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', coverImg: '/images/covers/marcuschen.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.' },
+  { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.', communityTitle: 'GameVerse Arena', communityCover: '/images/covers/gameverse.jpg' },
+  { email: 'marcus.demo@olu.app', handle: '@techmarkus', name: 'Marcus Chen', color: 'from-blue-400 to-blue-600', avatarImg: '/images/avatars/marcus.jpg', coverImg: '/images/covers/marcuschen.jpg', modules: ['marketing'], verified: true, followers: 412000, following: 290, posts: 903, bio: 'Tech reviewer and brand strategist. Honest takes on gadgets, games, and growth.', communityTitle: 'Tech & Gaming Hub', communityCover: '/images/covers/marcuschen.jpg' },
 
   // ── Supply Chain (2) ────────────────────────────────────────────
-  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', coverImg: '/images/covers/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.' },
+  { email: 'artisan.demo@olu.app', handle: '@artisancraft', name: 'ArtisanCraft Co.', color: 'from-emerald-500 to-teal-600', avatarImg: '/images/avatars/artisancraft.jpg', coverImg: '/images/covers/artisancraft.jpg', modules: ['supply_chain'], verified: true, followers: 12000, following: 567, posts: 89, bio: 'Premium creator merch. From design to doorstep in 5 days. Trusted by 200+ creators.', communityTitle: 'Artisan Workshop', communityCover: '/images/covers/artisancraft.jpg' },
   { email: 'yuki.demo@olu.app', handle: '@yukidraws', name: 'Yuki Draws', color: 'from-pink-400 to-rose-600', avatarImg: '/images/avatars/yuki.jpg', coverImg: '/images/covers/yukidraws.jpg', modules: ['supply_chain'], verified: false, followers: 89000, following: 140, posts: 377, bio: 'Character illustrator and print shop owner. Turning fan art into real products.' },
 ]
 
@@ -254,8 +254,8 @@ async function createWorkspaceWithModules(userId, account) {
     .insert({ workspace_id: workspace.id, plan: 'starter', status: 'trial', billing_email: account.email })
   if (bilErr) throw bilErr
 
-  // Seed consumer config for creator_ops users (so their community shows up)
-  if (account.modules.includes('creator_ops')) {
+  // Seed consumer config for users with a community (so their community shows up)
+  if (account.communityTitle) {
     const configJson = { featured_template: 'fan_community' }
     if (account.communityTitle) configJson.community_hero_title = account.communityTitle
     if (account.communityCover) configJson.cover_img = account.communityCover

@@ -168,6 +168,16 @@ VALUES
   ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000004', 'growth', 'active', 'gameverse.demo@olu.app'),
   ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000006', 'starter', 'active', 'artisan.demo@olu.app');
 
+-- Consumer configs (community discovery)
+INSERT INTO workspace_consumer_configs (workspace_id, template_key, config_json)
+VALUES
+  ('05000000-0000-0000-0000-000000000001', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Pixel Realm","cover_img":"/images/covers/dragonart.jpg"}'::jsonb),
+  ('05000000-0000-0000-0000-000000000002', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"The Listening Room","cover_img":"/images/covers/midnightdrift.jpg"}'::jsonb),
+  ('05000000-0000-0000-0000-000000000003', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Nova Style Lab","cover_img":"/images/covers/neoncity.jpg"}'::jsonb),
+  ('05000000-0000-0000-0000-000000000004', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"GameVerse Arena","cover_img":"/images/covers/gameverse.jpg"}'::jsonb),
+  ('05000000-0000-0000-0000-000000000005', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Tech & Gaming Hub","cover_img":"/images/covers/marcuschen.jpg"}'::jsonb),
+  ('05000000-0000-0000-0000-000000000006', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Artisan Workshop","cover_img":"/images/covers/artisancraft.jpg"}'::jsonb);
+
 -- ── Agent Templates ───────────────────────────────────────────────
 
 INSERT INTO agent_templates (id, template_key, name, role, avatar_img, color, category, pricing_model, price_label, model, cost_per_1k, rating, reviews, description, status)

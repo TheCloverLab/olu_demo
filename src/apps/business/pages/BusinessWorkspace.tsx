@@ -60,7 +60,7 @@ export default function BusinessWorkspace() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 overflow-x-hidden">
       {/* Hero + live stats */}
       <section className="rounded-3xl p-6 md:p-7 border border-cyan-400/15 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)]">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 text-xs text-cyan-100/70 mb-4">
@@ -122,9 +122,13 @@ export default function BusinessWorkspace() {
             <p className="text-xs text-cyan-100/45 uppercase tracking-wider">Recent activity</p>
             {employees.slice(0, 4).map((emp) => (
               <div key={emp.id} className="flex items-center gap-3 rounded-2xl bg-[#0d1726] p-3 border border-cyan-500/10">
-                <div className={clsx('w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white', emp.color || 'from-gray-600 to-gray-500')}>
-                  {emp.name[0]}
-                </div>
+                {emp.avatar_img ? (
+                  <img src={emp.avatar_img} alt={emp.name} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                  <div className={clsx('w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white flex-shrink-0', emp.color || 'from-gray-600 to-gray-500')}>
+                    {emp.name[0]}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{emp.name}</p>
                   <p className="text-xs text-cyan-100/45 truncate">{emp.last_message || emp.position}</p>

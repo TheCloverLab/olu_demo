@@ -5,14 +5,14 @@ import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
 import type { ConnectorSummary } from '../../../domain/connectors/types'
 
-const PLATFORM_META: Record<string, { description: string; color: string }> = {
-  Shopify: { description: 'E-commerce storefront, orders, and inventory management', color: 'from-green-500 to-green-600' },
-  Temu: { description: 'Marketplace listings, pricing, and order fulfillment', color: 'from-orange-500 to-red-500' },
-  SHEIN: { description: 'Product catalog sync and trend-driven merchandising', color: 'from-black to-gray-800' },
-  'Google Play': { description: 'App distribution, reviews, and store presence', color: 'from-blue-500 to-green-500' },
-  'Apple App Store': { description: 'iOS app management, ratings, and submissions', color: 'from-gray-600 to-gray-800' },
-  Zendesk: { description: 'Customer support tickets and agent routing', color: 'from-emerald-600 to-teal-600' },
-  Mixpanel: { description: 'Product analytics, funnels, and user behavior data', color: 'from-purple-600 to-violet-600' },
+const PLATFORM_META: Record<string, { description: string; color: string; icon?: string }> = {
+  Shopify: { description: 'E-commerce storefront, orders, and inventory management', color: 'from-green-500 to-green-600', icon: '/images/connectors/shopify.svg' },
+  Temu: { description: 'Marketplace listings, pricing, and order fulfillment', color: 'from-orange-500 to-red-500', icon: '/images/connectors/temu.svg' },
+  SHEIN: { description: 'Product catalog sync and trend-driven merchandising', color: 'from-black to-gray-800', icon: '/images/connectors/shein.svg' },
+  'Google Play': { description: 'App distribution, reviews, and store presence', color: 'from-blue-500 to-green-500', icon: '/images/connectors/google-play.svg' },
+  'Apple App Store': { description: 'iOS app management, ratings, and submissions', color: 'from-gray-600 to-gray-800', icon: '/images/connectors/app-store.svg' },
+  Zendesk: { description: 'Customer support tickets and agent routing', color: 'from-emerald-600 to-teal-600', icon: '/images/connectors/zendesk.svg' },
+  Mixpanel: { description: 'Product analytics, funnels, and user behavior data', color: 'from-purple-600 to-violet-600', icon: '/images/connectors/mixpanel.svg' },
 }
 
 const PLANNED_PLATFORMS = ['Shopify', 'Temu', 'SHEIN', 'Google Play', 'Apple App Store', 'Zendesk', 'Mixpanel']
@@ -87,9 +87,13 @@ export default function Connectors() {
           const meta = PLATFORM_META[platform.provider]
           return (
             <div key={platform.provider} className="rounded-2xl border border-cyan-500/10 bg-[#091422] p-5 flex items-start gap-4">
-              <div className={clsx('w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm flex-shrink-0', meta?.color || 'from-gray-600 to-gray-500')}>
-                {platform.provider[0]}
-              </div>
+              {meta?.icon ? (
+                <img src={meta.icon} alt={platform.provider} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+              ) : (
+                <div className={clsx('w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm flex-shrink-0', meta?.color || 'from-gray-600 to-gray-500')}>
+                  {platform.provider[0]}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-sm">{platform.provider}</p>

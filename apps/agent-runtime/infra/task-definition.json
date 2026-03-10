@@ -40,6 +40,22 @@
         {
           "name": "VOLCENGINE_API_KEY",
           "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/VOLCENGINE_API_KEY"
+        },
+        {
+          "name": "FB_ACCESS_TOKEN",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/FB_ACCESS_TOKEN"
+        },
+        {
+          "name": "FB_AD_ACCOUNT_ID",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/FB_AD_ACCOUNT_ID"
+        },
+        {
+          "name": "GOOGLE_PLAY_SERVICE_ACCOUNT_KEY",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/GOOGLE_PLAY_SERVICE_ACCOUNT_KEY"
+        },
+        {
+          "name": "GOOGLE_PLAY_PACKAGE_NAME",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/GOOGLE_PLAY_PACKAGE_NAME"
         }
       ],
       "logConfiguration": {

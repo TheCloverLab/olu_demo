@@ -577,7 +577,19 @@ export default function TeamChat() {
                             ? 'prose-headings:text-[#04111f] prose-p:text-[#04111f] prose-li:text-[#04111f] prose-strong:text-[#04111f] prose-code:bg-black/10 prose-code:text-[#04111f] prose-pre:bg-black/10'
                             : 'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[#0b1523]'
                         )}>
-                          <ReactMarkdown>{preprocessMarkdown(msg.text)}</ReactMarkdown>
+                          <ReactMarkdown
+                            components={{
+                              img: ({ src, alt }) => (
+                                <img
+                                  src={src}
+                                  alt={alt || 'Generated image'}
+                                  className="rounded-xl max-w-full my-2 border border-cyan-500/10"
+                                  style={{ maxHeight: 400 }}
+                                  loading="lazy"
+                                />
+                              ),
+                            }}
+                          >{preprocessMarkdown(msg.text)}</ReactMarkdown>
                         </div>
                       ) : (
                         <span className="flex gap-1 items-center h-4">

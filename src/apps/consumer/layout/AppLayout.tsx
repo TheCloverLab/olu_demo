@@ -37,7 +37,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
   )
 }
 
-function MoreMenu({ open, onClose }) {
+function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () => void; showBusiness?: boolean }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
@@ -86,6 +86,9 @@ function MoreMenu({ open, onClose }) {
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+              {showBusiness && (
+                <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
+              )}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
             </div>
           </motion.div>
@@ -227,7 +230,7 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} />
     </div>
   )
 }

@@ -14,8 +14,9 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
 }
 
-export default function AppLanding() {
-  const { id } = useParams()
+export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorId?: string } = {}) {
+  const { id: paramId } = useParams()
+  const id = standaloneCreatorId || paramId
   const navigate = useNavigate()
   const { currentUser, enabledBusinessModules } = useApp()
 

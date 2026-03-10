@@ -18,6 +18,7 @@ import {
   AppWindow,
   Cable,
   Wallet,
+  ExternalLink,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -129,6 +130,8 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
               <div className="border-t border-cyan-500/10 my-2 mx-2" />
               <MenuItem icon={Bot} label="AI Agent Marketplace" onClick={() => go('/business/agents')} />
+              <div className="border-t border-cyan-500/10 my-2 mx-2" />
+              <MenuItem icon={ExternalLink} label="Open OLU" onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
             </div>
 
           </motion.div>

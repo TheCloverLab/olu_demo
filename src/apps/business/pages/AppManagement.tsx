@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { AppWindow, ChevronDown, Eye, EyeOff, Globe, Loader2, Pencil, Plus, Save, X } from 'lucide-react'
+import { AppWindow, ChevronDown, Eye, EyeOff, Globe, ImagePlus, Loader2, Pencil, Plus, Save, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import type { ConsumerApp } from '../../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { getOwnedConsumerApps } from '../../../domain/consumer/apps'
+import { updateWorkspaceConsumerConfigForUser } from '../../../domain/workspace/api'
 
 const TYPE_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   community: { label: 'Community', color: 'text-purple-400', bg: 'bg-purple-400/10' },
@@ -24,10 +26,61 @@ const NEW_APP_TYPES = [
   { type: 'knowledge', label: 'Knowledge', description: 'Digital products, ebooks, and downloads', icon: '📚', coming: true },
 ]
 
-function AppConfigPanel({ app, onClose }: { app: ConsumerApp; onClose: () => void }) {
+function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: () => void; onSaved: () => void }) {
+  const { user } = useAuth()
   const [title, setTitle] = useState(app.title)
   const [summary, setSummary] = useState(app.summary || '')
   const [visibility, setVisibility] = useState(app.visibility)
+  const [coverPreview, setCoverPreview] = useState(app.cover_img || '')
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverFile(file)
+    setCoverPreview(URL.createObjectURL(file))
+  }
+
+  async function handleSave() {
+    if (!user) return
+    setSaving(true)
+    setMessage('')
+    try {
+      let coverUrl = app.cover_img || ''
+
+      if (coverFile) {
+        const ext = coverFile.name.split('.').pop() || 'jpg'
+        const path = `${user.id}/${app.app_type}-cover-${Date.now()}.${ext}`
+        const { error: uploadErr } = await supabase.storage.from('covers').upload(path, coverFile, { upsert: true, contentType: coverFile.type })
+        if (uploadErr) throw uploadErr
+        coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      }
+
+      if (app.app_type === 'community') {
+        await updateWorkspaceConsumerConfigForUser(user, {
+          config_json: {
+            ...(app.config_json || {}),
+            community_hero_title: title,
+            community_hero_description: summary,
+            cover_img: coverUrl,
+          },
+        })
+      } else if (app.linked_course_id) {
+        const updates: Record<string, any> = { title, subtitle: summary, hero: coverUrl || '' }
+        const { error } = await supabase.from('consumer_courses').update(updates).eq('id', app.linked_course_id)
+        if (error) throw error
+      }
+
+      setMessage('Saved!')
+      setTimeout(() => { onSaved() }, 400)
+    } catch (err: any) {
+      setMessage(err.message || 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="rounded-2xl border border-cyan-500/20 bg-[#0a1525] p-5 space-y-4">
@@ -41,6 +94,22 @@ function AppConfigPanel({ app, onClose }: { app: ConsumerApp; onClose: () => voi
         </button>
       </div>
       <div className="space-y-3">
+        <div>
+          <label className="text-xs text-cyan-100/45 block mb-1">Cover image</label>
+          <div className="relative rounded-xl overflow-hidden border border-cyan-500/10 bg-[#0d1726]">
+            {coverPreview ? (
+              <img src={coverPreview} alt="Cover" className="w-full h-28 object-cover" />
+            ) : (
+              <div className="w-full h-28 flex items-center justify-center text-cyan-100/25">
+                <ImagePlus size={24} />
+              </div>
+            )}
+            <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+              <span className="text-xs font-medium text-white bg-black/60 px-3 py-1.5 rounded-lg">Change cover</span>
+              <input type="file" accept="image/*" onChange={handleCoverChange} className="hidden" />
+            </label>
+          </div>
+        </div>
         <div>
           <label className="text-xs text-cyan-100/45 block mb-1">App title</label>
           <input
@@ -79,10 +148,15 @@ function AppConfigPanel({ app, onClose }: { app: ConsumerApp; onClose: () => voi
             ))}
           </div>
         </div>
+        {message && <p className={`text-xs ${message === 'Saved!' ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
         <div className="flex items-center gap-2 pt-2">
-          <button className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-xs font-semibold hover:bg-cyan-200 transition-colors">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-xs font-semibold hover:bg-cyan-200 transition-colors disabled:opacity-50"
+          >
             <Save size={12} />
-            Save changes
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
           <button
             onClick={onClose}
@@ -165,12 +239,17 @@ export default function AppManagement() {
   const [configAppId, setConfigAppId] = useState<string | null>(null)
   const [showNewApp, setShowNewApp] = useState(false)
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return }
+  function reloadApps() {
+    if (!user) return
     getOwnedConsumerApps(user)
       .then(setApps)
       .catch(() => setApps([]))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return }
+    reloadApps()
   }, [user?.id])
 
   if (loading) {
@@ -272,7 +351,7 @@ export default function AppManagement() {
                 </div>
 
                 {isConfiguring && (
-                  <AppConfigPanel app={app} onClose={() => setConfigAppId(null)} />
+                  <AppConfigPanel app={app} onClose={() => setConfigAppId(null)} onSaved={() => { setConfigAppId(null); reloadApps() }} />
                 )}
               </div>
             )

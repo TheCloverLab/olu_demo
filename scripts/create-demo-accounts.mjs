@@ -26,9 +26,9 @@ const ACCOUNTS = [
   { email: 'tyler.demo@olu.app', handle: '@tylerwang', name: 'Tyler Wang', color: 'from-teal-500 to-cyan-600', avatarImg: 'https://api.dicebear.com/9.x/notionists/svg?seed=tylerwang&backgroundColor=b6e3f4', modules: [], bio: 'Competitive gamer and esports commentator. Rank: Immortal.', followers: 15600, following: 89, posts: 234 },
 
   // ── Creator Ops (3) ─────────────────────────────────────────────
-  { email: 'luna.demo@olu.app', handle: '@lunachen', name: 'Luna Chen', color: 'from-zinc-600 to-zinc-500', avatarImg: '/images/avatars/luna.jpg', coverImg: '/images/covers/lunachen.jpg', modules: ['creator_ops'], verified: true, followers: 234000, following: 312, posts: 847, bio: 'Digital artist & gamer | Creating worlds one pixel at a time', communityTitle: 'Pixel Realm' },
-  { email: 'kai.demo@olu.app', handle: '@kaivibe', name: 'Kai Vibe', color: 'from-amber-500 to-orange-600', avatarImg: '/images/avatars/kai.jpg', coverImg: '/images/covers/kaivibe.jpg', modules: ['creator_ops'], verified: true, followers: 167000, following: 201, posts: 512, bio: 'Lo-fi producer blending analog warmth with digital dreams. 2M+ streams.', communityTitle: 'The Listening Room' },
-  { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', coverImg: '/images/covers/zaranova.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.', communityTitle: 'Nova Style Lab' },
+  { email: 'luna.demo@olu.app', handle: '@lunachen', name: 'Luna Chen', color: 'from-zinc-600 to-zinc-500', avatarImg: '/images/avatars/luna.jpg', coverImg: '/images/covers/lunachen.jpg', modules: ['creator_ops'], verified: true, followers: 234000, following: 312, posts: 847, bio: 'Digital artist & gamer | Creating worlds one pixel at a time', communityTitle: 'Pixel Realm', communityCover: '/images/covers/dragonart.jpg' },
+  { email: 'kai.demo@olu.app', handle: '@kaivibe', name: 'Kai Vibe', color: 'from-amber-500 to-orange-600', avatarImg: '/images/avatars/kai.jpg', coverImg: '/images/covers/kaivibe.jpg', modules: ['creator_ops'], verified: true, followers: 167000, following: 201, posts: 512, bio: 'Lo-fi producer blending analog warmth with digital dreams. 2M+ streams.', communityTitle: 'The Listening Room', communityCover: '/images/covers/midnightdrift.jpg' },
+  { email: 'zara.demo@olu.app', handle: '@zaranova', name: 'Zara Nova', color: 'from-purple-400 to-pink-600', avatarImg: '/images/avatars/zara.jpg', coverImg: '/images/covers/zaranova.jpg', modules: ['creator_ops'], verified: true, followers: 201000, following: 411, posts: 601, bio: 'Fashion designer and lifestyle creator. Sustainable style for the modern wardrobe.', communityTitle: 'Nova Style Lab', communityCover: '/images/covers/neoncity.jpg' },
 
   // ── Marketing (2) ───────────────────────────────────────────────
   { email: 'gameverse.demo@olu.app', handle: '@gameverse', name: 'GameVerse Studios', color: 'from-blue-500 to-cyan-600', avatarImg: '/images/avatars/gameverse.jpg', coverImg: '/images/covers/gameverse.jpg', modules: ['marketing'], verified: true, followers: 89000, following: 234, posts: 156, bio: 'Indie game studio behind Galaxy Quest and Neon Drift. Building worlds players actually want to live in.' },
@@ -225,6 +225,7 @@ async function createWorkspaceWithModules(userId, account) {
   if (account.modules.includes('creator_ops')) {
     const configJson = { featured_template: 'fan_community' }
     if (account.communityTitle) configJson.community_hero_title = account.communityTitle
+    if (account.communityCover) configJson.cover_img = account.communityCover
     const { error: ccErr } = await admin
       .from('workspace_consumer_configs')
       .insert({
@@ -327,7 +328,7 @@ const COURSES = [
     instructor: 'Luna Chen',
     price: 49,
     level: 'Beginner',
-    hero: '',
+    hero: '/images/covers/gamingsetup.jpg',
     headline: 'The complete guide to digital illustration',
     description: 'Learn professional digital painting techniques, color theory, and composition.',
     outcomes: ['Master digital brushwork and layering', 'Build a polished art portfolio', 'Sell prints and commissions'],
@@ -343,7 +344,7 @@ const COURSES = [
     instructor: 'Kai Vibe',
     price: 39,
     level: 'Beginner',
-    hero: '',
+    hero: '/images/covers/galaxyquest.jpg',
     headline: 'Make your first lo-fi track in a weekend',
     description: 'Step-by-step music production for lo-fi, chillhop, and ambient beats.',
     outcomes: ['Set up a free production environment', 'Layer samples and synths', 'Publish on streaming platforms'],
@@ -359,7 +360,7 @@ const COURSES = [
     instructor: 'Zara Nova',
     price: 59,
     level: 'Intermediate',
-    hero: '',
+    hero: '/images/covers/alexpark.jpg',
     headline: 'Build a fashion brand that respects the planet',
     description: 'From fabric sourcing to brand identity — launch sustainable fashion.',
     outcomes: ['Source ethical materials', 'Create a capsule collection', 'Build a brand story that sells'],

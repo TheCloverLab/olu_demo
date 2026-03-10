@@ -86,7 +86,7 @@ export function buildCommunityConsumerApp(
     visibility: 'public',
     source: 'workspace_config',
     template_key: config.template_key,
-    cover_img: owner.cover_img || null,
+    cover_img: config.config_json?.cover_img || owner.cover_img || null,
     config_json: config.config_json || {},
   }
 }

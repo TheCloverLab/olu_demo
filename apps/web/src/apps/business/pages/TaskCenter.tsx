@@ -91,7 +91,7 @@ export default function TaskCenter() {
         taskId: task.id,
         state: result.interrupted ? 'approval' : 'done',
         threadId: result.threadId,
-        response: result.response,
+        response: result.summary || result.error,
       }))
 
       // Refresh tasks if completed
@@ -119,7 +119,7 @@ export default function TaskCenter() {
         taskId,
         state: 'done',
         threadId: exec.threadId,
-        response: result.response,
+        response: result.summary,
       }))
       if (user) getTeamEmployeesForUser(user).then(setEmployees)
     } catch (err: any) {

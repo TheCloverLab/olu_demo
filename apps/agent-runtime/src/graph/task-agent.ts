@@ -1,22 +1,16 @@
 /**
  * Task Agent — LangGraph graph that executes workspace tasks
  *
- * Flow: receive task → plan steps → execute tools → (optional) human approval → complete
+ * Uses a deterministic workflow (not LLM-driven tool calling) for reliability.
+ * Flow: fetch tasks → analyze with LLM → execute updates → (optional) approval → summarize
  */
 
 import { StateGraph, Annotation, interrupt, MemorySaver } from '@langchain/langgraph'
-import { ChatOpenAI } from '@langchain/openai'
-import { ToolNode } from '@langchain/langgraph/prebuilt'
-import { BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
-import { allTools } from '../tools/workspace-tools.js'
+import { supabase } from '../lib/supabase.js'
 
 // --- State definition ---
 
 const AgentState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: (prev, next) => [...prev, ...next],
-    default: () => [],
-  }),
   workspaceId: Annotation<string>(),
   agentId: Annotation<string>(),
   agentName: Annotation<string>(),
@@ -30,111 +24,262 @@ const AgentState = Annotation.Root({
     reducer: (_prev, next) => next,
     default: () => null,
   }),
+  tasks: Annotation<any[]>({
+    reducer: (_prev, next) => next,
+    default: () => [],
+  }),
+  plan: Annotation<string>({
+    reducer: (_prev, next) => next,
+    default: () => '',
+  }),
+  actions: Annotation<any[]>({
+    reducer: (_prev, next) => next,
+    default: () => [],
+  }),
+  summary: Annotation<string>({
+    reducer: (_prev, next) => next,
+    default: () => '',
+  }),
+  error: Annotation<string | null>({
+    reducer: (_prev, next) => next,
+    default: () => null,
+  }),
 })
 
-// --- Nodes ---
+// --- LLM helper ---
 
-function buildModel() {
+async function callLLM(prompt: string): Promise<string> {
   const apiKey = process.env.LLM_API_KEY
   const baseURL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1'
-  const modelName = process.env.LLM_MODEL || 'gpt-4o-mini'
+  const model = process.env.LLM_MODEL || 'gpt-4o-mini'
 
-  return new ChatOpenAI({
-    openAIApiKey: apiKey,
-    modelName,
-    configuration: { baseURL },
-    temperature: 0.3,
-  }).bindTools(allTools)
-}
-
-async function agentNode(state: typeof AgentState.State) {
-  const model = buildModel()
-
-  const systemPrompt = new SystemMessage(
-    `You are ${state.agentName}, a ${state.agentPosition} AI agent working in a business workspace.
-
-Your workspace ID is: ${state.workspaceId}
-Your agent ID is: ${state.agentId}
-
-You have tools to manage tasks in the workspace. Use them to complete the user's request.
-
-Guidelines:
-- Always check your current tasks first before taking action
-- Update task status as you work (pending → in_progress → done)
-- Be concise in your reasoning
-- If you need to create new tasks, use descriptive task keys`,
-  )
-
-  const messages =
-    state.messages.length === 0
-      ? [systemPrompt, new HumanMessage(state.taskDescription)]
-      : [systemPrompt, ...state.messages]
-
-  const response = await model.invoke(messages)
-  return { messages: [response] }
-}
-
-function shouldContinue(state: typeof AgentState.State) {
-  const lastMessage = state.messages[state.messages.length - 1]
-  const aiMessage = lastMessage as any
-
-  // If the LLM made tool calls, execute them
-  if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
-    // Check if any tool call modifies task status to 'done' — may require approval
-    const hasDoneUpdate = aiMessage.tool_calls.some(
-      (tc: any) =>
-        tc.name === 'update_task_status' && tc.args?.status === 'done',
-    )
-    if (hasDoneUpdate && state.requiresApproval && state.approved === null) {
-      return 'approval'
-    }
-    return 'tools'
-  }
-
-  // No tool calls — agent is done
-  return '__end__'
-}
-
-async function approvalNode(state: typeof AgentState.State) {
-  // Interrupt execution and wait for human approval
-  const decision = interrupt({
-    question:
-      'The agent wants to mark a task as done. Do you approve?',
-    agentId: state.agentId,
-    agentName: state.agentName,
+  const res = await fetch(`${baseURL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'User-Agent': 'claude-code/1.0.0',
+      'X-Client-Name': 'claude-code',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 1024,
+    }),
   })
 
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`LLM error ${res.status}: ${text.slice(0, 200)}`)
+  }
+
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || ''
+}
+
+// --- Node: Fetch current tasks ---
+
+async function fetchTasks(state: typeof AgentState.State) {
+  const { data, error } = await supabase
+    .from('workspace_agent_tasks')
+    .select('id, task_key, title, status, priority, due, progress')
+    .eq('workspace_agent_id', state.agentId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return { tasks: [], error: `Failed to fetch tasks: ${error.message}` }
+  }
+  return { tasks: data || [] }
+}
+
+// --- Node: Plan actions using LLM ---
+
+async function planActions(state: typeof AgentState.State) {
+  if (state.error) return {}
+
+  const taskList = state.tasks
+    .map(
+      (t) =>
+        `- [${t.status}] "${t.title}" (priority: ${t.priority}, progress: ${t.progress}%)`,
+    )
+    .join('\n')
+
+  const prompt = `You are ${state.agentName}, a ${state.agentPosition} AI agent.
+
+Current tasks:
+${taskList || '(no tasks)'}
+
+User request: ${state.taskDescription}
+
+Based on the request, decide what actions to take. Respond in JSON format:
+{
+  "plan": "Brief description of what you'll do",
+  "actions": [
+    {"type": "update_status", "task_id": "...", "new_status": "in_progress|done", "progress": 50},
+    {"type": "create_task", "task_key": "...", "title": "...", "priority": "low|medium|high"},
+    {"type": "none", "reason": "..."}
+  ]
+}
+
+Only use valid task IDs from the list above. Respond ONLY with the JSON, no other text.`
+
+  try {
+    const response = await callLLM(prompt)
+    const cleaned = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+    return {
+      plan: parsed.plan || '',
+      actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+    }
+  } catch (err: any) {
+    return { plan: 'Failed to plan', actions: [], error: err.message }
+  }
+}
+
+// --- Node: Check if approval is needed ---
+
+function checkApproval(state: typeof AgentState.State) {
+  if (state.error) return '__end__'
+
+  const hasStatusChange = state.actions.some(
+    (a: any) => a.type === 'update_status' && a.new_status === 'done',
+  )
+
+  if (hasStatusChange && state.requiresApproval && state.approved === null) {
+    return 'approval'
+  }
+  return 'execute'
+}
+
+// --- Node: Human approval interrupt ---
+
+async function approvalNode(state: typeof AgentState.State) {
+  const decision = interrupt({
+    question: `${state.agentName} wants to execute: ${state.plan}. Approve?`,
+    actions: state.actions,
+    agentId: state.agentId,
+  })
   return { approved: decision === 'approve' }
 }
 
 function afterApproval(state: typeof AgentState.State) {
-  if (state.approved) {
-    return 'tools'
+  return state.approved ? 'execute' : 'summarize'
+}
+
+// --- Node: Execute planned actions ---
+
+async function executeActions(state: typeof AgentState.State) {
+  const results: any[] = []
+
+  for (const action of state.actions) {
+    try {
+      if (action.type === 'update_status') {
+        const updates: Record<string, unknown> = {
+          updated_at: new Date().toISOString(),
+        }
+        if (action.new_status) updates.status = action.new_status
+        if (action.progress !== undefined) updates.progress = action.progress
+
+        const { data, error } = await supabase
+          .from('workspace_agent_tasks')
+          .update(updates)
+          .eq('id', action.task_id)
+          .select('id, title, status, progress')
+          .single()
+
+        results.push(
+          error
+            ? { action, error: error.message }
+            : { action, result: data },
+        )
+      } else if (action.type === 'create_task') {
+        const { data, error } = await supabase
+          .from('workspace_agent_tasks')
+          .insert({
+            workspace_agent_id: state.agentId,
+            task_key: action.task_key,
+            title: action.title,
+            priority: action.priority || 'medium',
+            status: 'pending',
+            progress: 0,
+          })
+          .select('id, title, status')
+          .single()
+
+        results.push(
+          error
+            ? { action, error: error.message }
+            : { action, result: data },
+        )
+      } else {
+        results.push({ action, result: 'no-op' })
+      }
+    } catch (err: any) {
+      results.push({ action, error: err.message })
+    }
   }
-  return '__end__'
+
+  return { actions: results }
+}
+
+// --- Node: Summarize results ---
+
+async function summarize(state: typeof AgentState.State) {
+  if (state.error) {
+    return { summary: `Error: ${state.error}` }
+  }
+
+  if (state.approved === false) {
+    return { summary: 'Action was rejected by the reviewer.' }
+  }
+
+  const actionsDesc = state.actions
+    .map((a: any) => {
+      if (a.error) return `- FAILED: ${JSON.stringify(a.action)} — ${a.error}`
+      if (a.result === 'no-op') return `- Skipped: ${a.action?.reason || 'no action needed'}`
+      return `- Done: ${JSON.stringify(a.result)}`
+    })
+    .join('\n')
+
+  try {
+    const summary = await callLLM(
+      `You are ${state.agentName}. Summarize what you did in 1-2 sentences:
+
+Plan: ${state.plan}
+Actions taken:
+${actionsDesc}
+
+Be concise and professional.`,
+    )
+    return { summary }
+  } catch {
+    return { summary: `Completed ${state.actions.length} action(s). Plan: ${state.plan}` }
+  }
 }
 
 // --- Graph ---
 
-const toolNode = new ToolNode(allTools)
-
 const graph = new StateGraph(AgentState)
-  .addNode('agent', agentNode)
-  .addNode('tools', toolNode)
+  .addNode('fetchTasks', fetchTasks)
+  .addNode('planActions', planActions)
   .addNode('approval', approvalNode)
-  .addEdge('__start__', 'agent')
-  .addConditionalEdges('agent', shouldContinue, {
-    tools: 'tools',
+  .addNode('execute', executeActions)
+  .addNode('summarize', summarize)
+  .addEdge('__start__', 'fetchTasks')
+  .addEdge('fetchTasks', 'planActions')
+  .addConditionalEdges('planActions', checkApproval, {
     approval: 'approval',
+    execute: 'execute',
     __end__: '__end__',
   })
   .addConditionalEdges('approval', afterApproval, {
-    tools: 'tools',
-    __end__: '__end__',
+    execute: 'execute',
+    summarize: 'summarize',
   })
-  .addEdge('tools', 'agent')
+  .addEdge('execute', 'summarize')
+  .addEdge('summarize', '__end__')
 
-// Use in-memory checkpointing (swap for Postgres in production)
 const checkpointer = new MemorySaver()
 
 export const taskAgent = graph.compile({ checkpointer })

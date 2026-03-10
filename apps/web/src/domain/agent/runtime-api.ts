@@ -10,22 +10,25 @@ export type InvokeResult = {
   threadId: string
   interrupted: boolean
   pendingApproval: string[] | null
-  response: string | null
-  messageCount: number
+  plan: string
+  summary: string
+  actions: unknown[]
+  error: string | null
 }
 
 export type ResumeResult = {
   threadId: string
   decision: string
-  response: string | null
-  messageCount: number
+  summary: string
+  actions: unknown[]
 }
 
 export type ThreadState = {
   threadId: string
   next: string[]
-  messageCount: number
-  lastMessage: string | null
+  plan: string
+  summary: string
+  error: string | null
 }
 
 export async function invokeAgent(params: {

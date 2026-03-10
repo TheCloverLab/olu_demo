@@ -80,7 +80,6 @@ const server = createServer(async (req, res) => {
           agentPosition: agentPosition || 'AI Agent',
           taskDescription,
           requiresApproval,
-          messages: [],
         },
         config,
       )
@@ -89,14 +88,14 @@ const server = createServer(async (req, res) => {
       const state = await taskAgent.getState(config)
       const interrupted = state.next && state.next.length > 0
 
-      const lastMessage = result.messages[result.messages.length - 1]
-
       json(res, 200, {
         threadId,
         interrupted,
         pendingApproval: interrupted ? state.next : null,
-        response: lastMessage?.content || null,
-        messageCount: result.messages.length,
+        plan: result.plan,
+        summary: result.summary,
+        actions: result.actions,
+        error: result.error,
       })
       return
     }
@@ -121,12 +120,11 @@ const server = createServer(async (req, res) => {
       })
       const result = await taskAgent.invoke(null, config)
 
-      const lastMessage = result.messages[result.messages.length - 1]
       json(res, 200, {
         threadId,
         decision,
-        response: lastMessage?.content || null,
-        messageCount: result.messages.length,
+        summary: result.summary,
+        actions: result.actions,
       })
       return
     }
@@ -141,10 +139,9 @@ const server = createServer(async (req, res) => {
       json(res, 200, {
         threadId,
         next: state.next,
-        messageCount: state.values?.messages?.length || 0,
-        lastMessage:
-          state.values?.messages?.[state.values.messages.length - 1]?.content ||
-          null,
+        plan: state.values?.plan,
+        summary: state.values?.summary,
+        error: state.values?.error,
       })
       return
     }

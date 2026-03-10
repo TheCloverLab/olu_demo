@@ -51,36 +51,12 @@ export async function getUserById(id: string) {
 }
 
 export async function getCreators() {
-  // Find users who have creator_ops module enabled
-  const { data: memberships, error: memError } = await supabase
-    .from('workspace_memberships')
-    .select('user_id, workspaces!inner(id)')
-    .eq('status', 'active')
-
-  if (memError) throw memError
-  const workspaceUserIds = (memberships || []).map((m: any) => m.user_id).filter(Boolean) as string[]
-
-  if (workspaceUserIds.length === 0) return []
-
-  const { data: modules, error: modError } = await supabase
-    .from('workspace_modules')
-    .select('workspace_id')
-    .eq('module_key', 'creator_ops')
-    .eq('enabled', true)
-
-  if (modError) throw modError
-  const creatorWsIds = new Set((modules || []).map((m: any) => m.workspace_id))
-
-  const creatorUserIds = (memberships || [])
-    .filter((m: any) => creatorWsIds.has(m.workspaces?.id))
-    .map((m: any) => m.user_id) as string[]
-
-  if (creatorUserIds.length === 0) return []
-
+  // Creators are verified users with a meaningful following (public-facing query, no RLS-blocked workspace tables)
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .in('id', creatorUserIds)
+    .eq('verified', true)
+    .gt('followers', 10000)
     .order('followers', { ascending: false })
 
   if (error) throw error

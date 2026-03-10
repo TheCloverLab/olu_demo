@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, BookOpen, CreditCard, Crown, Plus, ReceiptText } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
+import { getUserWallet } from '../../../domain/workspace/api'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCommunityMembershipTiers } from '../../../domain/consumer/data'
 import { getMembershipStatus, getPurchasedCourseSlugs } from '../../../domain/consumer/engagement'
@@ -31,10 +32,10 @@ function fallbackPriceFromCourse(course: Course) {
   return 'Paid'
 }
 
-// Demo balance & transactions — seeded client-side for now
-const DEMO_BALANCE_USD = 128.50
-const DEMO_BALANCE_USDC = 45.00
-const DEMO_POINTS = 2340
+// Fallback demo values — overridden by DB data when available
+const FALLBACK_BALANCE_USD = 128.50
+const FALLBACK_BALANCE_USDC = 45.00
+const FALLBACK_POINTS = 2340
 
 const DEMO_TRANSACTIONS: TxnItem[] = [
   { id: 'txn-1', label: 'Top-up via Apple Pay', detail: 'Mar 8, 2026', amount: '+$50.00', direction: 'in', date: '2026-03-08' },
@@ -52,6 +53,9 @@ export default function Wallet() {
   const { user } = useAuth()
   const [membershipCharges, setMembershipCharges] = useState<ChargeItem[]>([])
   const [courseCharges, setCourseCharges] = useState<ChargeItem[]>([])
+  const [balanceUsd, setBalanceUsd] = useState(FALLBACK_BALANCE_USD)
+  const [balanceUsdc, setBalanceUsdc] = useState(FALLBACK_BALANCE_USDC)
+  const [points, setPoints] = useState(FALLBACK_POINTS)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -59,6 +63,15 @@ export default function Wallet() {
 
     async function loadWallet() {
       if (!user?.id) return
+
+      // Load wallet balance from DB
+      getUserWallet(user.id).then((w) => {
+        if (w && !cancelled) {
+          setBalanceUsdc(Number(w.usdc_balance))
+          setPoints(Number(w.token_balance))
+          // Keep USD as fallback — no separate USD field in DB
+        }
+      }).catch(() => {})
 
       try {
         const [creators, courseSnapshot] = await Promise.all([
@@ -130,9 +143,9 @@ export default function Wallet() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-white/45">Total balance</p>
-            <h1 className="font-black text-4xl mt-2">${(DEMO_BALANCE_USD + DEMO_BALANCE_USDC).toFixed(2)}</h1>
+            <h1 className="font-black text-4xl mt-2">${(balanceUsd + balanceUsdc).toFixed(2)}</h1>
             <p className="text-sm text-olu-muted mt-2">
-              {DEMO_POINTS.toLocaleString()} points earned
+              {points.toLocaleString()} points earned
             </p>
           </div>
           <CreditCard size={22} className="text-white/35" />
@@ -141,11 +154,11 @@ export default function Wallet() {
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
             <p className="text-xs text-olu-muted">Cash (USD)</p>
-            <p className="font-bold text-lg mt-1">${DEMO_BALANCE_USD.toFixed(2)}</p>
+            <p className="font-bold text-lg mt-1">${balanceUsd.toFixed(2)}</p>
           </div>
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
             <p className="text-xs text-olu-muted">Stablecoin (USDC)</p>
-            <p className="font-bold text-lg mt-1">{DEMO_BALANCE_USDC.toFixed(2)} <span className="text-xs text-olu-muted font-normal">USDC</span></p>
+            <p className="font-bold text-lg mt-1">{balanceUsdc.toFixed(2)} <span className="text-xs text-olu-muted font-normal">USDC</span></p>
           </div>
         </div>
 

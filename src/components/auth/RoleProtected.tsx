@@ -26,7 +26,8 @@ export default function RoleProtected({
   if (loading) return null
 
   if (requireAuth && !user) {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
+    const returnTo = `${location.pathname}${location.search}`
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace state={{ from: returnTo }} />
   }
 
   if (requiredModule && !enabledBusinessModules.includes(requiredModule)) {

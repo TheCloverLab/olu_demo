@@ -1,9 +1,10 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
+import { getUserWallet } from '../../../domain/workspace/api'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
 import { CONSUMER_NAV, getTemplateKeyForAppType } from '../templateConfig'
@@ -37,7 +38,7 @@ function MenuItem({ icon: Icon, label, onClick }) {
   )
 }
 
-function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () => void; showBusiness?: boolean }) {
+function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolean; onClose: () => void; showBusiness?: boolean; walletBalance: number | null }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const navigate = useNavigate()
@@ -85,7 +86,20 @@ function MoreMenu({ open, onClose, showBusiness }: { open: boolean; onClose: () 
               </div>
             )}
 
+            {walletBalance !== null && (
+              <button onClick={() => go('/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[#1c1c1c] border border-white/[0.06] hover:bg-[#242424] transition-colors text-left w-[calc(100%-2rem)]">
+                <div className="px-3 py-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Wallet size={13} className="text-emerald-400" />
+                    <span className="text-[11px] text-olu-muted font-medium">Wallet</span>
+                  </div>
+                  <p className="font-black text-base leading-none">${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+              </button>
+            )}
+
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+              {walletBalance === null && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />}
               {showBusiness && (
                 <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
               )}
@@ -102,12 +116,21 @@ export default function AppLayout() {
   const { currentUser, appType, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[getTemplateKeyForAppType(appType)]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
+  useEffect(() => {
+    if (authUser?.id) {
+      getUserWallet(authUser.id).then((w) => {
+        if (w) setWalletBalance(Number(w.usdc_balance))
+      }).catch(() => {})
+    }
+  }, [authUser?.id])
+
   return (
-    <div className="flex h-screen overflow-hidden bg-olu-bg">
+    <div className="flex h-[100dvh] overflow-hidden bg-olu-bg">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-olu-border bg-olu-surface flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-2.5">
@@ -126,6 +149,23 @@ export default function AppLayout() {
                 <p className="text-olu-muted text-xs">{currentUser.handle}</p>
               </div>
             </button>
+            {walletBalance !== null && (
+              <NavLink
+                to="/wallet"
+                className={({ isActive }) => clsx(
+                  'block rounded-2xl transition-colors cursor-pointer border mt-2',
+                  isActive ? 'bg-white/10 border-white/20' : 'bg-[#1c1c1c] border-white/[0.06] hover:bg-[#242424]'
+                )}
+              >
+                <div className="px-3 py-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Wallet size={13} className="text-emerald-400" />
+                    <span className="text-[11px] text-olu-muted font-medium">Wallet</span>
+                  </div>
+                  <p className="font-black text-base leading-none">${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+              </NavLink>
+            )}
           </div>
         ) : (
           <div className="px-3 pb-3 space-y-2">
@@ -211,7 +251,7 @@ export default function AppLayout() {
         </div>
 
         {/* Mobile Bottom Nav — icon-only like Patreon */}
-        <nav className="md:hidden flex items-center bg-olu-bg border-t border-olu-border flex-shrink-0">
+        <nav className="md:hidden flex items-center bg-olu-bg border-t border-olu-border flex-shrink-0 pb-[env(safe-area-inset-bottom)]">
           {navItems.map(({ to, icon: Icon, exact }) => (
             <NavLink
               key={to}
@@ -230,7 +270,7 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} walletBalance={walletBalance} />
     </div>
   )
 }

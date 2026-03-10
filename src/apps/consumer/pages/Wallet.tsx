@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, BookOpen, CreditCard, Crown, ReceiptText } from 'lucide-react'
+import { ArrowLeft, ArrowDownLeft, ArrowUpRight, BookOpen, CreditCard, Crown, Plus, ReceiptText } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getCourseLibrarySnapshot } from '../../../domain/consumer/api'
 import { getCommunityMembershipTiers } from '../../../domain/consumer/data'
@@ -17,10 +17,34 @@ type ChargeItem = {
   kind: 'membership' | 'course'
 }
 
+type TxnItem = {
+  id: string
+  label: string
+  detail: string
+  amount: string
+  direction: 'in' | 'out'
+  date: string
+}
+
 function fallbackPriceFromCourse(course: Course) {
   if (typeof course.price === 'number') return `$${course.price}`
   return 'Paid'
 }
+
+// Demo balance & transactions — seeded client-side for now
+const DEMO_BALANCE = 128.50
+const DEMO_POINTS = 2340
+
+const DEMO_TRANSACTIONS: TxnItem[] = [
+  { id: 'txn-1', label: 'Top-up via Apple Pay', detail: 'Mar 8, 2026', amount: '+$50.00', direction: 'in', date: '2026-03-08' },
+  { id: 'txn-2', label: 'Pixel Realm membership', detail: 'Mar 7, 2026 · Monthly renewal', amount: '-$9.99', direction: 'out', date: '2026-03-07' },
+  { id: 'txn-3', label: 'Lo-fi Production 101', detail: 'Mar 3, 2026 · Course purchase', amount: '-$39.00', direction: 'out', date: '2026-03-03' },
+  { id: 'txn-4', label: 'Referral bonus', detail: 'Feb 28, 2026 · Invited Jordan Lee', amount: '+$5.00', direction: 'in', date: '2026-02-28' },
+  { id: 'txn-5', label: 'Top-up via card', detail: 'Feb 25, 2026', amount: '+$100.00', direction: 'in', date: '2026-02-25' },
+  { id: 'txn-6', label: 'The Listening Room membership', detail: 'Feb 20, 2026 · Monthly renewal', amount: '-$4.99', direction: 'out', date: '2026-02-20' },
+  { id: 'txn-7', label: 'Digital Art Masterclass', detail: 'Feb 15, 2026 · Course purchase', amount: '-$49.00', direction: 'out', date: '2026-02-15' },
+  { id: 'txn-8', label: 'Welcome bonus', detail: 'Feb 10, 2026 · New account', amount: '+$10.00', direction: 'in', date: '2026-02-10' },
+]
 
 export default function Wallet() {
   const navigate = useNavigate()
@@ -100,34 +124,83 @@ export default function Wallet() {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <section className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+      {/* Balance card */}
+      <section className="rounded-[28px] border border-white/10 bg-gradient-to-br from-[#111111] to-[#0a0e17] p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Wallet</p>
-            <h1 className="font-black text-2xl mt-2">Payments and purchases</h1>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Available balance</p>
+            <h1 className="font-black text-4xl mt-2">${DEMO_BALANCE.toFixed(2)}</h1>
             <p className="text-sm text-olu-muted mt-2">
-              Track membership renewals, academy purchases, and the things you already paid for.
+              {DEMO_POINTS.toLocaleString()} points earned
             </p>
           </div>
-          <CreditCard size={20} className="text-white/45" />
+          <CreditCard size={22} className="text-white/35" />
+        </div>
+
+        <div className="mt-5 flex gap-3">
+          <button className="flex items-center gap-2 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:bg-white/90 transition-colors">
+            <Plus size={16} /> Top up
+          </button>
+          <button className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium hover:bg-white/10 transition-colors">
+            <ArrowUpRight size={16} /> Send
+          </button>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{totalMemberships}</span>
             <span className="ml-2 text-olu-muted">Memberships</span>
           </div>
-          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{totalAcademies}</span>
             <span className="ml-2 text-olu-muted">Academies</span>
           </div>
-          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{recentCharges.length}</span>
-            <span className="ml-2 text-olu-muted">Recent charges</span>
+            <span className="ml-2 text-olu-muted">Charges</span>
           </div>
         </div>
       </section>
 
+      {/* Recent transactions */}
+      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Transactions</p>
+            <p className="font-semibold text-base mt-1">Recent activity</p>
+          </div>
+          <ReceiptText size={18} className="text-white/45" />
+        </div>
+
+        <div className="space-y-2">
+          {DEMO_TRANSACTIONS.map((txn) => (
+            <div
+              key={txn.id}
+              className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5"
+            >
+              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                txn.direction === 'in' ? 'bg-emerald-500/15' : 'bg-white/5'
+              }`}>
+                {txn.direction === 'in'
+                  ? <ArrowDownLeft size={14} className="text-emerald-400" />
+                  : <ArrowUpRight size={14} className="text-white/45" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{txn.label}</p>
+                <p className="text-xs text-olu-muted mt-0.5">{txn.detail}</p>
+              </div>
+              <span className={`text-sm font-semibold ${
+                txn.direction === 'in' ? 'text-emerald-400' : 'text-white/70'
+              }`}>
+                {txn.amount}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Memberships */}
       <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -164,6 +237,7 @@ export default function Wallet() {
         )}
       </section>
 
+      {/* Course purchases */}
       <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -200,16 +274,38 @@ export default function Wallet() {
         )}
       </section>
 
+      {/* Payment methods */}
       <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="font-semibold text-sm">Receipts and billing history</p>
-            <p className="text-xs text-olu-muted mt-1">
-              Payment history will become downloadable when full checkout is wired in. For now this page reflects active consumer purchases.
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Payment methods</p>
+            <p className="font-semibold text-base mt-1">Linked accounts</p>
           </div>
-          <ReceiptText size={18} className="text-white/45" />
+          <CreditCard size={18} className="text-white/45" />
         </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">AP</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Apple Pay</p>
+              <p className="text-xs text-olu-muted">Default</p>
+            </div>
+            <span className="text-xs text-emerald-400">Connected</span>
+          </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">V</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Visa ····4829</p>
+              <p className="text-xs text-olu-muted">Expires 09/27</p>
+            </div>
+            <span className="text-xs text-emerald-400">Active</span>
+          </div>
+        </div>
+
+        <button className="mt-3 w-full rounded-2xl border border-dashed border-white/10 px-4 py-3 text-sm text-olu-muted hover:bg-white/[0.03] transition-colors">
+          + Add payment method
+        </button>
       </section>
     </div>
   )

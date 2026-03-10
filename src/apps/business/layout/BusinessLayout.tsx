@@ -18,6 +18,7 @@ import {
   UserRound,
   AppWindow,
   Cable,
+  Wallet,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -35,6 +36,7 @@ const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: s
   { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
   { to: '/business/connectors', icon: Cable, label: 'Connectors' },
+  { to: '/business/wallet', icon: Wallet, label: 'Wallet', moduleKey: 'creator_ops' },
 ]
 
 const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
@@ -124,6 +126,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />
               <MenuItem icon={ShieldCheck} label="Approvals" onClick={() => go('/business/approvals')} />
               <MenuItem icon={Cable} label="Connectors" onClick={() => go('/business/connectors')} />
+              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
               {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
                 <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
               ))}

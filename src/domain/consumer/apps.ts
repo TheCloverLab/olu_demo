@@ -228,17 +228,9 @@ export async function getPublicProfileConsumerApps(userId: string) {
   const owner = await getProfileById(userId)
   const apps = await getOwnedConsumerApps(owner)
 
+  // Only show apps with real content — exclude auto-generated workspace_config apps
   return apps
-    .filter((app) => {
-      if (app.visibility !== 'public' || app.status !== 'published') return false
-      // Exclude community apps generated purely from default workspace config
-      if (app.app_type === 'community' && app.source === 'workspace_config') {
-        const cfg = app.config_json as Record<string, unknown> | null
-        const hasCustomConfig = cfg && COMMUNITY_CONFIG_KEYS.some((key) => key in cfg)
-        if (!hasCustomConfig) return false
-      }
-      return true
-    })
+    .filter((app) => app.visibility === 'public' && app.status === 'published' && app.source !== 'workspace_config')
     .map((app) => buildConsumerAppCard(app, owner, {
       href: app.app_type === 'community' ? `/communities/${owner.id}` : `/courses/${app.linked_course_slug}`,
       priceLabel: app.app_type === 'community' ? 'Open community' : 'Open academy',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom'
-import { Home, Users, MessageCircle, User, ArrowLeft } from 'lucide-react'
+import { Home, Users, MessageCircle, User } from 'lucide-react'
 import clsx from 'clsx'
 import { resolveConsumerAppBySlug } from '../../../domain/consumer/apps'
 
@@ -55,9 +55,6 @@ export default function StandaloneAppLayout() {
     <div className="h-screen flex flex-col bg-[#04111f] text-white">
       {/* Minimal header */}
       <header className="flex items-center gap-3 px-4 py-3 border-b border-cyan-500/10 bg-[#08111d]/95 backdrop-blur flex-shrink-0">
-        <button onClick={() => navigate('/discover')} className="p-1 hover:bg-[#0d1a2d] rounded-lg transition-colors">
-          <ArrowLeft size={18} className="text-cyan-100/55" />
-        </button>
         <p className="font-bold text-sm truncate">{appCtx.title}</p>
       </header>
 

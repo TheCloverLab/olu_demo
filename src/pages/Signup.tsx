@@ -69,7 +69,7 @@ export default function Signup() {
             </div>
 
             <p className="text-xs text-olu-muted">
-              New accounts start as <span className="text-white font-medium">Fan</span>. You can add Creator/Advertiser/Supplier roles later in Settings.
+              Your account includes access to all consumer and business features. Enable modules in Business Settings.
             </p>
 
             <div>

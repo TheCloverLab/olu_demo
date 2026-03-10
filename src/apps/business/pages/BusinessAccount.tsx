@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext'
 
 export default function BusinessAccount() {
   const navigate = useNavigate()
-  const { currentUser, availableRoles, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
 
   return (
@@ -48,8 +48,8 @@ export default function BusinessAccount() {
               <p className="font-black text-2xl">{enabledBusinessModules.length}</p>
             </div>
             <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-              <p className="text-cyan-100/45 text-xs mb-1">Current operator mode</p>
-              <p className="font-semibold text-sm capitalize">{currentUser.role}</p>
+              <p className="text-cyan-100/45 text-xs mb-1">Account status</p>
+              <p className="font-semibold text-sm">Active</p>
             </div>
           </div>
 

@@ -324,22 +324,14 @@ function mapMembershipTier(tier: MembershipTier): CommunityTier {
 }
 
 export async function resolveFeaturedCommunityCreator(
-  viewer?: Pick<User, 'id' | 'role'> | null,
+  viewer?: Pick<User, 'id'> | null,
   preferredCreatorId?: string | null
 ) {
   if (preferredCreatorId) {
     try {
-      return await getUserById(preferredCreatorId)
+      return await getProfileById(preferredCreatorId)
     } catch (error) {
       console.error('Failed to load preferred featured creator', error)
-    }
-  }
-
-  if (viewer?.id && viewer.role === 'creator') {
-    try {
-      return await getProfileById(viewer.id)
-    } catch (error) {
-      console.error('Failed to load viewer as featured creator', error)
     }
   }
 

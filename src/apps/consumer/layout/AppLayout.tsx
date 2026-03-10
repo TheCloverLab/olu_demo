@@ -6,7 +6,7 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-import { CONSUMER_NAV } from '../templateConfig'
+import { CONSUMER_NAV, getTemplateKeyForAppType } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -70,7 +70,7 @@ function MoreMenu({ open, onClose }) {
                 <Avatar user={currentUser} size="md" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm">{currentUser.name}</p>
-                  <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
+                  <p className="text-olu-muted text-xs">{currentUser.handle}</p>
                 </div>
               </button>
             ) : (
@@ -96,11 +96,11 @@ function MoreMenu({ open, onClose }) {
 }
 
 export default function AppLayout() {
-  const { currentUser, consumerTemplate } = useApp()
+  const { currentUser, appType } = useApp()
   const { user: authUser } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
-  const navItems = CONSUMER_NAV[consumerTemplate]
+  const navItems = CONSUMER_NAV[getTemplateKeyForAppType(appType)]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   return (
@@ -120,7 +120,7 @@ export default function AppLayout() {
               <Avatar user={currentUser} size="md" />
               <div className="min-w-0 text-left">
                 <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-                <p className="text-olu-muted text-xs capitalize">{currentUser.role}</p>
+                <p className="text-olu-muted text-xs">{currentUser.handle}</p>
               </div>
             </button>
           </div>

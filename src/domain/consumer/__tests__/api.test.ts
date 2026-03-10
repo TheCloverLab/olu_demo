@@ -27,32 +27,29 @@ describe('consumer domain api', () => {
     vi.clearAllMocks()
   })
 
-  it('uses the viewer when the viewer is a creator', async () => {
+  it('uses the preferred creator ID when provided', async () => {
     vi.mocked(ProfileApi.getProfileById).mockResolvedValue({
       id: 'creator-1',
-      role: 'creator',
       name: 'Luna',
     } as any)
 
-    const result = await resolveFeaturedCommunityCreator({
-      id: 'creator-1',
-      role: 'creator',
-    } as any)
+    const result = await resolveFeaturedCommunityCreator(
+      { id: 'viewer-1' } as any,
+      'creator-1'
+    )
 
-    expect(ProfileApi.getProfileById).toHaveBeenCalledWith('creator-1')
     expect(result?.id).toBe('creator-1')
   })
 
-  it('falls back to the first creator when the viewer is not a creator', async () => {
+  it('falls back to the first public creator', async () => {
     vi.mocked(ProfileApi.getPublicCreators).mockResolvedValue([
-      { id: 'creator-1', role: 'creator', name: 'Luna' },
-      { id: 'creator-2', role: 'creator', name: 'Kai' },
+      { id: 'creator-1', name: 'Luna' },
+      { id: 'creator-2', name: 'Kai' },
     ] as any)
 
-    const result = await resolveFeaturedCommunityCreator({
-      id: 'fan-1',
-      role: 'fan',
-    } as any)
+    const result = await resolveFeaturedCommunityCreator(
+      { id: 'viewer-1' } as any
+    )
 
     expect(ProfileApi.getPublicCreators).toHaveBeenCalled()
     expect(result?.id).toBe('creator-1')

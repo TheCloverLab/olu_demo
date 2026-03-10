@@ -53,7 +53,7 @@ describe('Signup', () => {
     renderSignup()
     expect(screen.getByText('Join OLU')).toBeInTheDocument()
     expect(screen.getByText('Sign up')).toBeInTheDocument()
-    expect(screen.getByText(/New accounts start as/)).toBeInTheDocument()
+    expect(screen.getByText(/access to all consumer and business features/)).toBeInTheDocument()
   })
 
   it('calls signUp and navigates on success', async () => {

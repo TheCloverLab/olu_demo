@@ -32,8 +32,6 @@ export function createMockUser(overrides = {}) {
     username: 'testuser',
     handle: '@testuser',
     email: 'test@example.com',
-    role: 'fan' as const,
-    roles: ['fan'] as const,
     name: 'Test User',
     initials: 'TU',
     avatar_color: 'from-blue-500 to-purple-600',

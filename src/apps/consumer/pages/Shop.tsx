@@ -217,12 +217,12 @@ function UserShopView() {
 }
 
 export default function Shop() {
-  const { consumerConfig, hasModule, consumerTemplate, consumerExperience } = useApp()
+  const { consumerConfig, hasModule, appType, consumerExperience } = useApp()
   const isCreator = hasModule('creator_ops')
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
 
   useEffect(() => {
-    if (consumerTemplate !== 'sell_courses') return
+    if (appType !== 'academy') return
 
     let cancelled = false
 
@@ -237,9 +237,9 @@ export default function Shop() {
     return () => {
       cancelled = true
     }
-  }, [consumerTemplate])
+  }, [appType])
 
-  if (consumerTemplate === 'sell_courses') {
+  if (appType === 'academy') {
     const storefront = consumerExperience.courses.storefront
     return (
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">

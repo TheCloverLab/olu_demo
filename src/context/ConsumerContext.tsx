@@ -8,13 +8,14 @@ import {
   updateWorkspaceConsumerTemplateForUser,
 } from '../domain/workspace/api'
 import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
-import { isValidTemplateKey, DEFAULT_TEMPLATE } from '../apps/consumer/templateConfig'
+import { isValidTemplateKey, DEFAULT_TEMPLATE, getAppTypeForTemplate } from '../apps/consumer/templateConfig'
 import { getConsumerExperience, type ConsumerExperience } from '../domain/consumer/api'
 import { getOwnedConsumerApps, getPrimaryConsumerApp } from '../domain/consumer/apps'
-import type { ConsumerApp, WorkspaceConsumerConfig } from '../lib/supabase'
+import type { ConsumerApp, ConsumerAppType, WorkspaceConsumerConfig } from '../lib/supabase'
 
 interface ConsumerContextType {
   consumerTemplate: ConsumerTemplateKey
+  appType: ConsumerAppType
   consumerApps: ConsumerApp[]
   primaryConsumerApp: ConsumerApp | null
   consumerConfig: WorkspaceConsumerConfig['config_json']
@@ -105,11 +106,13 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
   }
 
   const primaryConsumerApp = getPrimaryConsumerApp(consumerApps, consumerTemplate)
+  const appType: ConsumerAppType = primaryConsumerApp?.app_type || getAppTypeForTemplate(consumerTemplate)
   const consumerExperience = getConsumerExperience(consumerTemplate, currentUser.name, consumerConfig)
 
   return (
     <ConsumerCtx.Provider value={{
       consumerTemplate,
+      appType,
       consumerApps,
       primaryConsumerApp,
       consumerConfig,

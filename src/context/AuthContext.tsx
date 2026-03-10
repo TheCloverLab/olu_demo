@@ -106,8 +106,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         username: userData?.username || generatedUsername,
         handle: userData?.handle || generatedHandle,
         name: generatedName,
-        role: userData?.role || 'fan',
-        roles: userData?.roles || ['fan'],
         initials: userData?.initials || generatedInitials,
         avatar_color: userData?.avatar_color || 'from-blue-500 to-purple-600',
         followers: userData?.followers ?? 0,

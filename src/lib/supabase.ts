@@ -16,8 +16,6 @@ export type User = {
   username: string
   handle: string
   email: string
-  role: 'creator' | 'fan' | 'advertiser' | 'supplier'
-  roles?: ('creator' | 'fan' | 'advertiser' | 'supplier')[]
   name: string
   bio?: string
   avatar_img?: string
@@ -287,19 +285,6 @@ export type MembershipTier = {
   description?: string
   perks: string[]
   subscriber_count: number
-  created_at?: string
-  updated_at?: string
-}
-
-export type RoleApplication = {
-  id: string
-  user_id: string
-  target_role: 'creator' | 'advertiser' | 'supplier'
-  reason?: string
-  status: 'pending' | 'approved' | 'rejected'
-  reviewed_by?: string
-  reviewed_at?: string
-  review_note?: string
   created_at?: string
   updated_at?: string
 }

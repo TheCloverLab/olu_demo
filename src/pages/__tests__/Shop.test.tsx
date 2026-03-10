@@ -29,6 +29,7 @@ function mockUseApp(overrides: Record<string, any> = {}) {
     enabledBusinessModules: modules,
     consumerConfig: {},
     consumerTemplate: 'fan_community',
+    appType: 'community',
     consumerExperience: {
       courses: {
         storefront: {
@@ -118,9 +119,10 @@ describe('Shop', () => {
     })
   })
 
-  it('renders course storefront when consumer template is sell_courses', () => {
+  it('renders course storefront when app type is academy', () => {
     mockUseApp({
       consumerTemplate: 'sell_courses',
+      appType: 'academy',
     })
 
     render(<MemoryRouter><Shop /></MemoryRouter>)

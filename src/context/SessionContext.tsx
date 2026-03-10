@@ -5,8 +5,6 @@ export interface SessionUser {
   id: string
   name: string
   handle: string
-  role: string
-  roles: string[]
   initials: string
   avatar_color: string
   followers: number
@@ -20,8 +18,6 @@ const GUEST_USER: SessionUser = {
   id: 'guest',
   name: 'Guest',
   handle: '@guest',
-  role: 'fan',
-  roles: ['fan'],
   initials: 'G',
   avatar_color: 'from-gray-600 to-gray-500',
   followers: 0,

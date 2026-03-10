@@ -4,13 +4,14 @@ import { WorkspaceProvider, useWorkspace } from './WorkspaceContext'
 import { ConsumerProvider, useConsumer } from './ConsumerContext'
 import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
 import type { ConsumerExperience } from '../domain/consumer/api'
-import type { BusinessModuleKey, ConsumerApp, WorkspaceConsumerConfig } from '../lib/supabase'
+import type { BusinessModuleKey, ConsumerApp, ConsumerAppType, WorkspaceConsumerConfig } from '../lib/supabase'
 
 export interface AppContextType {
   currentUser: any
   enabledBusinessModules: BusinessModuleKey[]
   hasModule: (moduleKey: BusinessModuleKey) => boolean
   consumerTemplate: ConsumerTemplateKey
+  appType: ConsumerAppType
   consumerApps: ConsumerApp[]
   primaryConsumerApp: ConsumerApp | null
   consumerConfig: WorkspaceConsumerConfig['config_json']
@@ -39,13 +40,14 @@ export function AppProvider({ children }: AppProviderProps) {
 export function useApp(): AppContextType {
   const { currentUser } = useSession()
   const { enabledBusinessModules, hasModule, reloadBusinessModules } = useWorkspace()
-  const { consumerTemplate, consumerApps, primaryConsumerApp, consumerConfig, consumerExperience, setConsumerTemplate, setConsumerConfig } = useConsumer()
+  const { consumerTemplate, appType, consumerApps, primaryConsumerApp, consumerConfig, consumerExperience, setConsumerTemplate, setConsumerConfig } = useConsumer()
 
   return {
     currentUser,
     enabledBusinessModules,
     hasModule,
     consumerTemplate,
+    appType,
     consumerApps,
     primaryConsumerApp,
     consumerConfig,

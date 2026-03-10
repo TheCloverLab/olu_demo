@@ -9,6 +9,7 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
@@ -114,11 +115,11 @@ const server = createServer(async (req, res) => {
 
       const config = { configurable: { thread_id: threadId } }
 
-      // Resume the interrupted graph by updating state and re-invoking
-      await taskAgent.updateState(config, {
-        approved: decision === 'approve',
-      })
-      const result = await taskAgent.invoke(null, config)
+      // Resume the interrupted graph with the decision value
+      const result = await taskAgent.invoke(
+        new Command({ resume: decision }),
+        config,
+      )
 
       json(res, 200, {
         threadId,

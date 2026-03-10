@@ -308,7 +308,10 @@ export async function getUserWallet(userId: string): Promise<UserWallet | null> 
 }
 
 export async function getWorkspaceWalletForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<WorkspaceWallet | null> {
-  const membership = await ensureWorkspaceForUser(user)
+  // Try direct membership lookup first (faster, no INSERT attempt)
+  const membership = await getWorkspaceMembershipForUser(user.id)
+  if (!membership) return null
+
   const { data, error } = await supabase
     .from('workspace_wallets')
     .select('*')

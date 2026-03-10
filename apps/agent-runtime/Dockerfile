@@ -18,10 +18,14 @@ RUN npm install --workspace=apps/agent-runtime --workspace=packages/shared
 RUN npm run build --workspace=packages/shared 2>/dev/null; \
     npm run build --workspace=apps/agent-runtime
 
-# --- runtime stage: minimal production image ---
+# --- runtime stage: production image with Chromium for browser automation ---
 FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Install Playwright Chromium system dependencies
+RUN npx playwright install-deps chromium 2>/dev/null || true
 
 # npm workspaces hoists all deps to root node_modules
 COPY --from=deps /app/node_modules ./node_modules
@@ -29,6 +33,9 @@ COPY --from=build /app/apps/agent-runtime/dist ./apps/agent-runtime/dist
 COPY --from=build /app/apps/agent-runtime/package.json ./apps/agent-runtime/
 COPY --from=build /app/packages/shared ./packages/shared
 COPY package.json ./
+
+# Install Playwright Chromium browser
+RUN npx playwright install chromium
 
 EXPOSE 8080
 

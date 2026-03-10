@@ -1,4 +1,6 @@
--- Seed data derived from src/data/mock.ts
+-- Seed data for OLU Demo
+-- 10 consumers, 3 creator_ops, 2 marketing, 2 supply_chain
+-- All demo accounts use password: Demo123!
 
 BEGIN;
 
@@ -45,43 +47,88 @@ TRUNCATE TABLE
   users
 RESTART IDENTITY CASCADE;
 
--- Users
-INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, cover_img, avatar_color, initials, followers, following, posts, verified, social_links)
-VALUES
-  ('00000000-0000-0000-0000-000000000001', 'luna', '@lunachen', 'luna@example.com', 'creator', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', '/images/covers/lunachen.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true, '{"youtube":"youtube.com/@lunachen","tiktok":"@lunachen","instagram":"@luna.creates","twitch":"lunachen"}'::jsonb),
-  ('00000000-0000-0000-0000-000000000002', 'alex', '@alexpark', 'alex@example.com', 'fan', 'Alex Park', 'Superfan of Luna Chen', '/images/avatars/alex.jpg', '/images/covers/alexpark.jpg', 'from-pink-500 to-rose-600', 'AP', 1240, 89, 43, false, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000003', 'gameverse', '@gameverse', 'gameverse@example.com', 'advertiser', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', '/images/covers/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000004', 'artisan', '@artisancraft', 'artisan@example.com', 'supplier', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', '/images/covers/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000005', 'kai', '@kaivibe', 'kai@example.com', 'creator', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', '/images/covers/kaivibe.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000006', 'yuki', '@yukidraws', 'yuki@example.com', 'creator', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', '/images/covers/yukidraws.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000007', 'marcus', '@techmarkus', 'marcus@example.com', 'creator', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', '/images/covers/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true, '{}'::jsonb),
-  ('00000000-0000-0000-0000-000000000008', 'zara', '@zaranova', 'zara@example.com', 'creator', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', '/images/covers/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true, '{}'::jsonb);
+-- ── Users ──────────────────────────────────────────────────────────
 
--- Workspace foundation
+-- Consumers (10)
+INSERT INTO users (id, username, handle, email, name, bio, avatar_color, initials, followers, following, posts, verified)
+VALUES
+  ('00000000-0000-0000-0000-000000000001', 'alexpark', '@alexpark', 'alex.demo@olu.app', 'Alex Park', '', 'from-pink-500 to-rose-600', 'AP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000002', 'jordanlee', '@jordanlee', 'jordan.demo@olu.app', 'Jordan Lee', '', 'from-blue-500 to-blue-700', 'JL', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000003', 'miazhang', '@miazhang', 'mia.demo@olu.app', 'Mia Zhang', '', 'from-violet-500 to-purple-600', 'MZ', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000004', 'ryankim', '@ryankim', 'ryan.demo@olu.app', 'Ryan Kim', '', 'from-amber-500 to-orange-600', 'RK', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000005', 'sofiamartinez', '@sofiamartinez', 'sofia.demo@olu.app', 'Sofia Martinez', '', 'from-rose-500 to-pink-600', 'SM', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000006', 'davidchen', '@davidchen', 'david.demo@olu.app', 'David Chen', '', 'from-emerald-500 to-green-600', 'DC', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000007', 'emmawilson', '@emmawilson', 'emma.demo@olu.app', 'Emma Wilson', '', 'from-sky-500 to-blue-600', 'EW', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000008', 'lucasbrown', '@lucasbrown', 'lucas.demo@olu.app', 'Lucas Brown', '', 'from-orange-500 to-red-600', 'LB', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000009', 'ninapatel', '@ninapatel', 'nina.demo@olu.app', 'Nina Patel', '', 'from-yellow-500 to-amber-600', 'NP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000010', 'tylerwang', '@tylerwang', 'tyler.demo@olu.app', 'Tyler Wang', '', 'from-teal-500 to-cyan-600', 'TW', 0, 0, 0, false);
+
+-- Creator Ops (3)
+INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+VALUES
+  ('00000000-0000-0000-0000-000000000011', 'lunachen', '@lunachen', 'luna.demo@olu.app', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true),
+  ('00000000-0000-0000-0000-000000000012', 'kaivibe', '@kaivibe', 'kai.demo@olu.app', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true),
+  ('00000000-0000-0000-0000-000000000013', 'zaranova', '@zaranova', 'zara.demo@olu.app', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true);
+
+-- Marketing (2)
+INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+VALUES
+  ('00000000-0000-0000-0000-000000000014', 'gameverse', '@gameverse', 'gameverse.demo@olu.app', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true),
+  ('00000000-0000-0000-0000-000000000015', 'techmarkus', '@techmarkus', 'marcus.demo@olu.app', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true);
+
+-- Supply Chain (2)
+INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+VALUES
+  ('00000000-0000-0000-0000-000000000016', 'artisancraft', '@artisancraft', 'artisan.demo@olu.app', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true),
+  ('00000000-0000-0000-0000-000000000017', 'yukidraws', '@yukidraws', 'yuki.demo@olu.app', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false);
+
+-- ── Workspaces (only for business users) ──────────────────────────
+
+-- Creator Ops workspaces
 INSERT INTO workspaces (id, owner_user_id, name, slug, status)
 VALUES
-  ('05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Luna Studio', 'luna-studio', 'active'),
-  ('05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'GameVerse Growth', 'gameverse-growth', 'active'),
-  ('05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004', 'ArtisanCraft Ops', 'artisancraft-ops', 'active');
+  ('05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Luna Chen Workspace', 'lunachen-workspace', 'active'),
+  ('05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000012', 'Kai Vibe Workspace', 'kaivibe-workspace', 'active'),
+  ('05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000013', 'Zara Nova Workspace', 'zaranova-workspace', 'active');
 
+-- Marketing workspaces
+INSERT INTO workspaces (id, owner_user_id, name, slug, status)
+VALUES
+  ('05000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000014', 'GameVerse Studios Workspace', 'gameverse-workspace', 'active'),
+  ('05000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000015', 'Marcus Chen Workspace', 'techmarkus-workspace', 'active');
+
+-- Supply Chain workspaces
+INSERT INTO workspaces (id, owner_user_id, name, slug, status)
+VALUES
+  ('05000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000016', 'ArtisanCraft Co. Workspace', 'artisancraft-workspace', 'active'),
+  ('05000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000017', 'Yuki Draws Workspace', 'yukidraws-workspace', 'active');
+
+-- Workspace memberships
 INSERT INTO workspace_memberships (id, workspace_id, user_id, membership_role, status)
 VALUES
-  ('05100000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'owner', 'active'),
-  ('05100000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'owner', 'active'),
-  ('05100000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004', 'owner', 'active');
+  ('05100000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000012', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000013', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000014', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000015', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000016', 'owner', 'active'),
+  ('05100000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000017', 'owner', 'active');
 
+-- Workspace modules (only the specific module each user needs)
 INSERT INTO workspace_modules (id, workspace_id, module_key, enabled)
 VALUES
+  -- Creator Ops users get creator_ops
   ('05200000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'creator_ops', true),
-  ('05200000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'marketing', true),
-  ('05200000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'supply_chain', true),
-  ('05200000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'creator_ops', true),
-  ('05200000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000002', 'marketing', true),
-  ('05200000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000002', 'supply_chain', true),
-  ('05200000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000003', 'creator_ops', true),
-  ('05200000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000003', 'marketing', true),
-  ('05200000-0000-0000-0000-000000000009', '05000000-0000-0000-0000-000000000003', 'supply_chain', true);
+  ('05200000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'creator_ops', true),
+  ('05200000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'creator_ops', true),
+  -- Marketing users get marketing
+  ('05200000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000004', 'marketing', true),
+  ('05200000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000005', 'marketing', true),
+  -- Supply Chain users get supply_chain
+  ('05200000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000006', 'supply_chain', true),
+  ('05200000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000007', 'supply_chain', true);
 
+-- Workspace permissions
 INSERT INTO workspace_permissions (id, workspace_id, membership_role, resource, action, allowed)
 VALUES
   ('05300000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'owner', 'campaign', 'publish', true),
@@ -89,34 +136,39 @@ VALUES
   ('05300000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', 'owner', 'campaign', 'publish', true),
   ('05300000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'owner', 'billing', 'manage', true),
   ('05300000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000003', 'owner', 'campaign', 'publish', true),
-  ('05300000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'owner', 'billing', 'manage', true);
+  ('05300000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000004', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000004', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000009', '05000000-0000-0000-0000-000000000005', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000010', '05000000-0000-0000-0000-000000000005', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000011', '05000000-0000-0000-0000-000000000006', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000012', '05000000-0000-0000-0000-000000000006', 'owner', 'billing', 'manage', true),
+  ('05300000-0000-0000-0000-000000000013', '05000000-0000-0000-0000-000000000007', 'owner', 'campaign', 'publish', true),
+  ('05300000-0000-0000-0000-000000000014', '05000000-0000-0000-0000-000000000007', 'owner', 'billing', 'manage', true);
 
+-- Workspace integrations (for business users)
 INSERT INTO workspace_integrations (id, workspace_id, provider, status, config_json, last_sync_at)
 VALUES
   ('05400000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'Shopify', 'connected', '{"shop":"luna-merch"}'::jsonb, NOW() - INTERVAL '2 hours'),
   ('05400000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'Mixpanel', 'planned', '{}'::jsonb, NULL),
   ('05400000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'Zendesk', 'planned', '{}'::jsonb, NULL),
-  ('05400000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'Shopify', 'connected', '{"shop":"gameverse-store"}'::jsonb, NOW() - INTERVAL '30 minutes'),
-  ('05400000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000002', 'Mixpanel', 'connected', '{"project":"gameverse-growth"}'::jsonb, NOW() - INTERVAL '1 day'),
-  ('05400000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'Shopify', 'planned', '{}'::jsonb, NULL);
+  ('05400000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000004', 'Shopify', 'connected', '{"shop":"gameverse-store"}'::jsonb, NOW() - INTERVAL '30 minutes'),
+  ('05400000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000004', 'Mixpanel', 'connected', '{"project":"gameverse-growth"}'::jsonb, NOW() - INTERVAL '1 day');
 
+-- Workspace policies
 INSERT INTO workspace_policies (id, workspace_id, approval_policy, sandbox_policy, notification_policy)
 VALUES
   ('05500000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":500}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb),
-  ('05500000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":750}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb),
-  ('05500000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":500}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb);
+  ('05500000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000004', '{"publish_requires_marketer_approval":true,"budget_change_review_threshold":750}'::jsonb, '{"takeover_mode":"manual","high_risk_actions_require_review":true}'::jsonb, '{"route_creator_approvals_to_workspace":true,"route_publish_events_to_workspace":true}'::jsonb);
 
+-- Workspace billing
 INSERT INTO workspace_billing (id, workspace_id, plan, status, billing_email)
 VALUES
-  ('05600000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'starter', 'trial', 'luna@example.com'),
-  ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'growth', 'active', 'finance@gameverse.example.com'),
-  ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'starter', 'active', 'ops@artisancraft.example.com');
+  ('05600000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'starter', 'trial', 'luna.demo@olu.app'),
+  ('05600000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000004', 'growth', 'active', 'gameverse.demo@olu.app'),
+  ('05600000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000006', 'starter', 'active', 'artisan.demo@olu.app');
 
-INSERT INTO workspace_consumer_configs (id, workspace_id, template_key, config_json)
-VALUES
-  ('05650000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'fan_community', '{"featured_template":"fan_community"}'::jsonb),
-  ('05650000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000002', 'sell_courses', '{"featured_template":"sell_courses"}'::jsonb),
-  ('05650000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000003', 'fan_community', '{"featured_template":"fan_community"}'::jsonb);
+-- ── Agent Templates ───────────────────────────────────────────────
 
 INSERT INTO agent_templates (id, template_key, name, role, avatar_img, color, category, pricing_model, price_label, model, cost_per_1k, rating, reviews, description, status)
 VALUES
@@ -131,12 +183,14 @@ VALUES
   ('05700000-0000-0000-0000-000000000009', 'finance_officer', 'Finance Officer', 'Finance Officer', '/images/agents/finance.jpg', 'from-yellow-500 to-amber-600', 'Pro', 'subscription', '$9.99/mo', 'GPT-5.2-Codex', 0.0060, 4.9, 1100, 'Cross-border payments, invoicing, and financial reporting.', 'active'),
   ('05700000-0000-0000-0000-000000000010', 'localization_agent', 'Localization Agent', 'Localization Agent', '/images/agents/localization.jpg', 'from-cyan-500 to-blue-600', 'Pro', 'subscription', '$4.99/mo', 'Gemini 3 Pro', 0.0003, 4.6, 430, 'Translates and localizes content for global audiences.', 'active');
 
+-- ── Workspace Agents (Luna's workspace) ───────────────────────────
+
 INSERT INTO workspace_agents (id, workspace_id, template_id, hired_by_user_id, agent_key, name, role, avatar_img, color, status, description, last_message, last_time)
 VALUES
-  ('05800000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'lisa', 'Lisa', 'IP Manager', '/images/agents/lisa.jpg', 'from-zinc-600 to-zinc-500', 'online', 'Manages and licenses creator IP.', 'Received 3 new IP licensing requests.', '12m ago'),
-  ('05800000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'eric', 'Eric', 'Data Analyst', '/images/agents/eric.jpg', 'from-blue-500 to-blue-700', 'online', 'Analyzes performance and growth metrics.', 'Weekly report ready.', '2h ago'),
-  ('05800000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', '05700000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000003', 'max', 'Max', 'Marketing Manager', '/images/agents/max.jpg', 'from-blue-500 to-cyan-500', 'online', 'Plans influencer campaigns end-to-end.', 'Luna team responded positively.', '15m ago'),
-  ('05800000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000003', '05700000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000004', 'chan', 'Chan', 'Channel Manager', '/images/agents/chan.jpg', 'from-emerald-500 to-green-600', 'online', 'Manages supplier and creator partnerships.', 'Hoodie design approved.', '20m ago');
+  ('05800000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'lisa', 'Lisa', 'IP Manager', '/images/agents/lisa.jpg', 'from-zinc-600 to-zinc-500', 'online', 'Manages and licenses creator IP.', 'Received 3 new IP licensing requests.', '12m ago'),
+  ('05800000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', '05700000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000011', 'eric', 'Eric', 'Data Analyst', '/images/agents/eric.jpg', 'from-blue-500 to-blue-700', 'online', 'Analyzes performance and growth metrics.', 'Weekly report ready.', '2h ago'),
+  ('05800000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000004', '05700000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000014', 'max', 'Max', 'Marketing Manager', '/images/agents/max.jpg', 'from-blue-500 to-cyan-500', 'online', 'Plans influencer campaigns end-to-end.', 'Luna team responded positively.', '15m ago'),
+  ('05800000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000006', '05700000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000016', 'chan', 'Chan', 'Channel Manager', '/images/agents/chan.jpg', 'from-emerald-500 to-green-600', 'online', 'Manages supplier and creator partnerships.', 'Hoodie design approved.', '20m ago');
 
 INSERT INTO workspace_agent_tasks (id, workspace_agent_id, task_key, title, status, priority, due, progress)
 VALUES
@@ -146,25 +200,34 @@ VALUES
   ('05900000-0000-0000-0000-000000000004', '05800000-0000-0000-0000-000000000003', 't4', 'Negotiate with Luna IP Manager', 'in_progress', 'high', 'Today', 60),
   ('05900000-0000-0000-0000-000000000005', '05800000-0000-0000-0000-000000000004', 't5', 'List Luna hoodie in creator shop', 'in_progress', 'high', 'Today', 70);
 
--- Posts
-INSERT INTO posts (id, creator_id, type, title, preview, cover_img, gradient_bg, emoji, likes, comments, tips, locked, lock_price, allow_fan_creation, fan_creation_fee, sponsored, sponsored_by, tags)
-VALUES
-  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'image', 'Neon City fan art drop', 'New pixel series is live.', '/images/covers/neoncity.jpg', 'from-zinc-800 to-zinc-900', '🎨', 8920, 345, 234, false, NULL, true, 0.30, false, NULL, ARRAY['Art','Pixel','Cyberpunk']),
-  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', 'music', 'Midnight Drift — Unreleased Track Preview', '30 second preview for subscribers.', '/images/covers/midnightdrift.jpg', 'from-amber-800 via-orange-700 to-red-800', '🎵', 5670, 189, 412, true, 2.99, false, NULL, false, NULL, ARRAY['Music','Lo-fi','Original']),
-  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'video', 'My gaming setup tour 2025', 'Full setup tour including studio corner.', '/images/covers/gamingsetup.jpg', 'from-zinc-800 to-zinc-900', '🎮', 12300, 567, 89, false, NULL, true, 0.30, false, NULL, ARRAY['Gaming','Setup','Tour']),
-  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000007', 'video', 'Galaxy Quest Review — Honest Take', 'Unfiltered review after 20 hours of gameplay.', '/images/covers/galaxyquest.jpg', 'from-blue-900 to-slate-800', '🚀', 23400, 1240, 156, false, NULL, false, NULL, true, 'GameVerse Studios', ARRAY['Gaming','Review','Sponsored']);
+-- ── Posts (Luna's content) ────────────────────────────────────────
 
--- Creator shop products
-INSERT INTO products (id, creator_id, name, description, price, image, category, stock, sold_count, status)
+INSERT INTO posts (id, creator_id, type, title, preview, gradient_bg, emoji, likes, comments, tips, locked, allow_fan_creation, fan_creation_fee, sponsored, tags)
 VALUES
-  ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Neon City Hoodie', 'Premium hoodie with Neon City artwork.', 59.99, '/images/products/neon-city-hoodie.jpg', 'physical', 45, 234, 'active'),
-  ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Luna Chan Digital Art Pack', 'Monthly digital art bundle.', 14.99, '/images/products/luna-art-pack.jpg', 'digital', 0, 1240, 'active'),
-  ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Pixel World Enamel Pin Set', 'Collector enamel pin set.', 24.99, '/images/products/pixel-pin-set.jpg', 'physical', 12, 567, 'active');
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'image', 'Neon City fan art drop', 'New pixel series is live.', 'from-zinc-800 to-zinc-900', '🎨', 8920, 345, 234, false, true, 0.30, false, ARRAY['Art','Pixel','Cyberpunk']),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000012', 'music', 'Midnight Drift — Unreleased Track Preview', '30 second preview for subscribers.', 'from-amber-800 via-orange-700 to-red-800', '🎵', 5670, 189, 412, true, false, NULL, false, ARRAY['Music','Lo-fi','Original']),
+  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'video', 'My gaming setup tour 2025', 'Full setup tour including studio corner.', 'from-zinc-800 to-zinc-900', '🎮', 12300, 567, 89, false, true, 0.30, false, ARRAY['Gaming','Setup','Tour']),
+  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000015', 'video', 'Galaxy Quest Review — Honest Take', 'Unfiltered review after 20 hours of gameplay.', 'from-blue-900 to-slate-800', '🚀', 23400, 1240, 156, false, false, NULL, true, ARRAY['Gaming','Review','Sponsored']);
+
+-- ── Membership tiers (Luna) ───────────────────────────────────────
+
+INSERT INTO membership_tiers (id, creator_id, tier_key, name, price, description, perks, subscriber_count)
+VALUES
+  ('50000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'free', 'Free', 0.00, 'Basic free tier', ARRAY['Access to public posts','Comment on posts','Join community Discord'], 180000),
+  ('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'creator_club', 'Creator Club', 9.99, 'Popular monthly membership', ARRAY['Early access','Exclusive art pack','Members-only channels','10 percent shop discount'], 42000),
+  ('50000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'vip', 'VIP Collective', 29.99, 'High-touch premium membership', ARRAY['Everything in Creator Club','1-on-1 feedback','Early merch access','25 percent shop discount'], 12000);
+
+-- Consumer memberships (Alex is VIP of Luna)
+INSERT INTO consumer_memberships (id, user_id, creator_id, tier_key, tier_name, status, joined_at)
+VALUES
+  ('20650000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'vip', 'VIP Collective', 'active', NOW() - INTERVAL '45 days');
+
+-- ── Courses (Luna + Kai) ──────────────────────────────────────────
 
 INSERT INTO consumer_courses (id, creator_id, slug, title, subtitle, instructor, price, level, hero, headline, description, outcomes, lessons_count, students_count, completion_rate, status)
 VALUES
-  ('20500000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'community-growth', 'Build a Paid Fan Community', 'Turn audience attention into a durable membership business.', 'Luna Chen', 129.00, 'Intermediate', 'from-rose-600 via-fuchsia-600 to-orange-500', 'From casual audience to paying members in 30 days.', 'A practical course on community positioning, membership packaging, and retention loops for creators.', ARRAY['Design a community offer people understand in one screen','Build member tiers that drive upgrades','Create a recurring content rhythm that keeps churn low'], 18, 1240, '68%', 'published'),
-  ('20500000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', 'launch-playbook', 'Launch Your First Cohort Course', 'Design, sell, and deliver a course with a small team.', 'Ryu Codes', 179.00, 'Beginner', 'from-sky-600 via-cyan-500 to-emerald-400', 'A practical launch sequence for creators who want structured teaching revenue.', 'This course focuses on offer framing, curriculum design, launch sequencing, and student onboarding.', ARRAY['Break expertise into a clear curriculum','Build a landing page that sells the transformation','Run a lightweight course launch with clear milestones'], 22, 860, '72%', 'published');
+  ('20500000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'community-growth', 'Build a Paid Fan Community', 'Turn audience attention into a durable membership business.', 'Luna Chen', 129.00, 'Intermediate', 'from-rose-600 via-fuchsia-600 to-orange-500', 'From casual audience to paying members in 30 days.', 'A practical course on community positioning, membership packaging, and retention loops for creators.', ARRAY['Design a community offer people understand in one screen','Build member tiers that drive upgrades','Create a recurring content rhythm that keeps churn low'], 18, 1240, '68%', 'published'),
+  ('20500000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000012', 'launch-playbook', 'Launch Your First Cohort Course', 'Design, sell, and deliver a course with a small team.', 'Kai Vibe', 179.00, 'Beginner', 'from-sky-600 via-cyan-500 to-emerald-400', 'A practical launch sequence for creators who want structured teaching revenue.', 'This course focuses on offer framing, curriculum design, launch sequencing, and student onboarding.', ARRAY['Break expertise into a clear curriculum','Build a landing page that sells the transformation','Run a lightweight course launch with clear milestones'], 22, 860, '72%', 'published');
 
 INSERT INTO consumer_course_sections (id, course_id, section_key, title, duration, summary, preview, position)
 VALUES
@@ -177,134 +240,50 @@ VALUES
   ('20600000-0000-0000-0000-000000000007', '20500000-0000-0000-0000-000000000002', 'lp-3', 'Launch Assets', '17 min', 'Build sales assets, social proof, and launch timing.', false, 3),
   ('20600000-0000-0000-0000-000000000008', '20500000-0000-0000-0000-000000000002', 'lp-4', 'Student Delivery', '20 min', 'Handle onboarding, learning flow, and support.', false, 4);
 
-INSERT INTO consumer_memberships (id, user_id, creator_id, tier_key, tier_name, status, joined_at)
-VALUES
-  ('20650000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'vip', 'VIP Collective', 'active', NOW() - INTERVAL '45 days');
+-- ── Campaigns (GameVerse) ─────────────────────────────────────────
 
-INSERT INTO consumer_course_purchases (id, user_id, course_id, status, purchased_at)
-VALUES
-  ('20660000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'purchased', NOW() - INTERVAL '10 days');
-
-INSERT INTO consumer_lesson_progress (id, user_id, course_id, section_key, completed, completed_at)
-VALUES
-  ('20670000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'cg-1', true, NOW() - INTERVAL '9 days'),
-  ('20670000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '20500000-0000-0000-0000-000000000001', 'cg-2', false, NULL);
-
--- AI agents
-INSERT INTO ai_agents (id, user_id, agent_key, name, role, icon, avatar_img, color, status, description, last_message, last_time)
-VALUES
-  ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'lisa', 'Lisa', 'IP Manager', '⚖️', '/images/agents/lisa.jpg', 'from-zinc-600 to-zinc-500', 'online', 'Manages and licenses creator IP.', 'Received 3 new IP licensing requests.', '12m ago'),
-  ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'eric', 'Eric', 'Data Analyst', '📊', '/images/agents/eric.jpg', 'from-blue-500 to-blue-700', 'online', 'Analyzes performance and growth metrics.', 'Weekly report ready.', '2h ago'),
-  ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'max', 'Max', 'Marketing Manager', '📣', '/images/agents/max.jpg', 'from-blue-500 to-cyan-500', 'online', 'Plans influencer campaigns end-to-end.', 'Luna team responded positively.', '15m ago'),
-  ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000004', 'chan', 'Chan', 'Channel Manager', '🏭', '/images/agents/chan.jpg', 'from-emerald-500 to-green-600', 'online', 'Manages supplier/creator partnerships.', 'Hoodie design approved.', '20m ago');
-
-INSERT INTO agent_tasks (id, agent_id, task_key, title, status, priority, due, progress)
-VALUES
-  ('31000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 't1', 'Review GameVerse IP proposal', 'pending', 'high', 'Today', 0),
-  ('31000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', 't2', 'Renew voice licensing terms', 'in_progress', 'medium', 'This week', 45),
-  ('31000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000002', 't3', 'Weekly performance report', 'done', 'high', 'Done', 100),
-  ('31000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000003', 't4', 'Negotiate with Luna IP Manager', 'in_progress', 'high', 'Today', 60),
-  ('31000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000004', 't5', 'List Luna hoodie in creator shop', 'in_progress', 'high', 'Today', 70);
-
-INSERT INTO conversations (id, agent_id, from_type, text, time)
-VALUES
-  ('32000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 'agent', 'Good morning, Luna. Three new licensing requests arrived today.', '9:00 AM'),
-  ('32000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', 'user', 'Great, tell me more.', '9:05 AM'),
-  ('32000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000002', 'agent', 'Weekly performance report: TikTok up 34 percent.', '8:00 AM'),
-  ('32000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000003', 'agent', 'Campaign created and outreach started.', '9:11 AM');
-
--- Group chat + messages
-INSERT INTO group_chats (id, user_id, chat_key, name, participants, icons, last_message, last_time)
-VALUES
-  ('40000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'grp1', 'Strategy: Me + Eric + Nova', ARRAY['Luna','Eric','Nova'], ARRAY['👤','📊','✨'], 'Nova: Based on Eric data, we should pivot to cozy content.', '1h ago');
-
-INSERT INTO group_chat_messages (id, group_chat_id, from_name, avatar, text, time)
-VALUES
-  ('41000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', 'Eric', '📊', 'Cozy content is getting 2.3x engagement.', '9:00 AM'),
-  ('41000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001', 'Nova', '✨', 'I drafted six cozy-themed ideas.', '9:05 AM'),
-  ('41000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000001', 'user', NULL, 'Love it. Let us run top three ideas this week.', '9:20 AM');
-
--- Membership tiers
-INSERT INTO membership_tiers (id, creator_id, tier_key, name, price, description, perks, subscriber_count)
-VALUES
-  ('50000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'free', 'Free', 0.00, 'Basic free tier', ARRAY['Access to public posts','Comment on posts','Join community Discord'], 180000),
-  ('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'creator_club', 'Creator Club', 9.99, 'Popular monthly membership', ARRAY['Early access','Exclusive art pack','Members-only channels','10 percent shop discount'], 42000),
-  ('50000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'vip', 'VIP Collective', 29.99, 'High-touch premium membership', ARRAY['Everything in Creator Club','1-on-1 feedback','Early merch access','25 percent shop discount'], 12000);
-
--- Fans CRM
-INSERT INTO fans (id, creator_id, name, handle, tier, joined_date, total_spend, status, color, initials, last_seen, avatar_img)
-VALUES
-  ('60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Alex Park', '@alexpark', 'vip', '2024-01-15', 1240, 'active', 'from-pink-500 to-rose-600', 'AP', '2h ago', '/images/fans/AlexPark.png'),
-  ('60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Jordan Lee', '@jordanlee', 'creator_club', '2024-02-20', 380, 'active', 'from-blue-500 to-blue-700', 'JL', '1d ago', '/images/fans/JordanLee.png'),
-  ('60000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Aria Patel', '@ariapatel', 'vip', '2023-06-14', 5600, 'active', 'from-yellow-500 to-amber-600', 'AP', '20m ago', '/images/fans/AriaPatel.png');
-
--- IP records
-INSERT INTO ip_licenses (id, creator_id, requester, type, status, fee_type, amount, approved_by, date)
-VALUES
-  ('70000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'ArtisanCraft Co.', 'Merchandise (Hoodie Design)', 'approved', 'royalty', '$340/mo', 'Lisa (AI)', '2025-06-10'),
-  ('70000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'IndieSound Studio', 'Voice Acting (NPC)', 'negotiating', 'flat', '$8,000', 'Pending', '2025-06-18'),
-  ('70000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'GameVerse Studios', 'Influencer Sponsorship', 'approved', 'performance', '$12,000 + CPV', 'Lisa (AI) + Luna', '2025-06-17');
-
-INSERT INTO ip_infringements (id, creator_id, platform, offender, content, status, action, result, date)
-VALUES
-  ('71000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'TikTok', '@copypaste99', 'Repost of Neon City art without credit', 'resolved', 'DMCA takedown sent', 'Content removed', '2025-06-18'),
-  ('71000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Etsy', 'PirateStore88', 'Selling prints without license', 'in_progress', 'Cease and desist sent', 'Awaiting response', '2025-06-15');
-
--- Analytics
-INSERT INTO analytics_revenue (id, user_id, month, subscriptions, tips, shop, ip)
-VALUES
-  ('80000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Jan', 6200, 1200, 980, 400),
-  ('80000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Feb', 7100, 1450, 1200, 600),
-  ('80000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Mar', 7800, 1800, 1450, 800),
-  ('80000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Apr', 8200, 1600, 1800, 1200),
-  ('80000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'May', 9100, 2100, 2100, 900),
-  ('80000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'Jun', 8200, 2100, 1400, 700);
-
-INSERT INTO analytics_views (id, user_id, month, tiktok, youtube, instagram)
-VALUES
-  ('81000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Jan', 520000, 280000, 120000),
-  ('81000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Feb', 680000, 310000, 140000),
-  ('81000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Mar', 890000, 340000, 160000),
-  ('81000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Apr', 1100000, 290000, 180000),
-  ('81000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'May', 950000, 360000, 210000),
-  ('81000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'Jun', 1200000, 340000, 230000);
-
--- Advertiser campaigns
 INSERT INTO campaigns (id, advertiser_id, name, status, budget, spent, start_date, end_date, agent_key, reach, target_reach, conversions, target_conversions)
 VALUES
-  ('90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'Galaxy Quest Launch', 'active', 50000, 31500, '2025-06-10', '2025-07-10', 'max', 2100000, 3200000, 8400, 15000),
-  ('90000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'Summer Sale Blast', 'completed', 20000, 19800, '2025-05-01', '2025-05-31', 'max', 4500000, 3000000, 22000, 15000);
+  ('90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000014', 'Galaxy Quest Launch', 'active', 50000, 31500, '2025-06-10', '2025-07-10', 'max', 2100000, 3200000, 8400, 15000),
+  ('90000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000014', 'Summer Sale Blast', 'completed', 20000, 19800, '2025-05-01', '2025-05-31', 'max', 4500000, 3000000, 22000, 15000);
 
 INSERT INTO campaign_creators (id, campaign_id, creator_id, status, stage, budget, views, conversions)
 VALUES
-  ('91000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000007', 'live', 'Content Live', 8500, 890000, 4200),
-  ('91000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'production', 'Content in Production', 12000, 0, 0),
-  ('91000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000007', 'completed', 'Completed', 8000, 2100000, 12000);
+  ('91000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000015', 'live', 'Content Live', 8500, 890000, 4200),
+  ('91000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'production', 'Content in Production', 12000, 0, 0),
+  ('91000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000015', 'completed', 'Completed', 8000, 2100000, 12000);
 
--- Prototype workflow tables for business-side campaign execution
-INSERT INTO business_campaigns (id, advertiser_id, agent_id, name, brand_name, objective, budget, budget_spent, status, target_creator_count)
-VALUES
-  ('94000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000003', 'Run club launch sprint', 'AeroPulse', 'Find 5 sports KOLs to promote the new performance sneaker line.', 1000, 220, 'offer_sent', 5);
+-- ── Supplier data (ArtisanCraft) ──────────────────────────────────
 
-INSERT INTO business_campaign_targets (id, campaign_id, creator_id, creator_agent_id, stage, offer_amount, deliverable_type, deliverable_status, marketer_message, creator_message, creator_reward)
-VALUES
-  ('94100000-0000-0000-0000-000000000001', '94000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 'offer_sent', 100, 'ai_video', 'waiting', 'Marketing Manager shortlisted Luna Chen and drafted a promo package with AI video sample plus $100 placement fee.', 'Business Agent received an AeroPulse promotion request. Review the AI-generated promo and decide whether to accept.', 0);
-
-INSERT INTO business_campaign_events (id, campaign_id, target_id, actor_type, actor_user_id, title, detail)
-VALUES
-  ('94200000-0000-0000-0000-000000000001', '94000000-0000-0000-0000-000000000001', '94100000-0000-0000-0000-000000000001', 'advertiser', '00000000-0000-0000-0000-000000000003', 'Campaign brief created', 'Marketing Manager accepted the AeroPulse launch brief and started sourcing sports creators.'),
-  ('94200000-0000-0000-0000-000000000002', '94000000-0000-0000-0000-000000000001', '94100000-0000-0000-0000-000000000001', 'agent', NULL, 'Offer sent to Luna Chen', 'AI-generated promo sample, fee, and posting requirements were delivered to the creator-side business agent.');
-
--- Supplier tables
 INSERT INTO supplier_creator_partnerships (id, supplier_id, creator_id, status, products_count, monthly_sales, ip_approved, channel_manager)
 VALUES
-  ('92000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'active', 4, 45600, true, 'Chan'),
-  ('92000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000005', 'negotiating', 0, 0, false, 'Chan');
+  ('92000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000011', 'active', 4, 45600, true, 'Chan'),
+  ('92000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000012', 'negotiating', 0, 0, false, 'Chan');
 
 INSERT INTO supplier_products (id, supplier_id, creator_id, name, sku, price, sold_today, sold_week, sold_month, revenue_month, status)
 VALUES
-  ('93000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Neon City Hoodie (Luna Chen)', 'NC-HOOD-001', 59.99, 12, 78, 234, 14036, 'active'),
-  ('93000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Pixel Pin Set (Luna Chen)', 'PP-PIN-001', 24.99, 8, 45, 189, 4723, 'active'),
-  ('93000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Chibi Luna Plushie', 'CL-PLU-001', 44.99, 5, 31, 78, 3509, 'low_stock');
+  ('93000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000011', 'Neon City Hoodie (Luna Chen)', 'NC-HOOD-001', 59.99, 12, 78, 234, 14036, 'active'),
+  ('93000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000011', 'Pixel Pin Set (Luna Chen)', 'PP-PIN-001', 24.99, 8, 45, 189, 4723, 'active'),
+  ('93000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000011', 'Chibi Luna Plushie', 'CL-PLU-001', 44.99, 5, 31, 78, 3509, 'low_stock');
+
+-- ── Analytics (Luna) ──────────────────────────────────────────────
+
+INSERT INTO analytics_revenue (id, user_id, month, subscriptions, tips, shop, ip)
+VALUES
+  ('80000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Jan', 6200, 1200, 980, 400),
+  ('80000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'Feb', 7100, 1450, 1200, 600),
+  ('80000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'Mar', 7800, 1800, 1450, 800),
+  ('80000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000011', 'Apr', 8200, 1600, 1800, 1200),
+  ('80000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000011', 'May', 9100, 2100, 2100, 900),
+  ('80000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000011', 'Jun', 8200, 2100, 1400, 700);
+
+INSERT INTO analytics_views (id, user_id, month, tiktok, youtube, instagram)
+VALUES
+  ('81000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Jan', 520000, 280000, 120000),
+  ('81000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'Feb', 680000, 310000, 140000),
+  ('81000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000011', 'Mar', 890000, 340000, 160000),
+  ('81000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000011', 'Apr', 1100000, 290000, 180000),
+  ('81000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000011', 'May', 950000, 360000, 210000),
+  ('81000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000011', 'Jun', 1200000, 340000, 230000);
 
 COMMIT;

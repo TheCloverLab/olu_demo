@@ -27,7 +27,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'team/humans', element: <HumanEmployees /> },
       { path: 'agents', element: <AIAgentConfig /> },
-      { path: 'apps', element: <AppManagement /> },
+      { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
       { path: 'connectors', element: <Connectors /> },
       { path: 'tasks', element: <TaskCenter /> },
       { path: 'approvals', element: <ApprovalCenter /> },

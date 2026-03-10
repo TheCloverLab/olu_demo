@@ -27,9 +27,9 @@ import { APP_VERSION } from '../../../lib/version'
 
 import type { BusinessModuleKey } from '../../../lib/supabase'
 
-const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: string; exact?: boolean }> = [
+const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: string; exact?: boolean; moduleKey?: BusinessModuleKey }> = [
   { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
-  { to: '/business/apps', icon: AppWindow, label: 'Apps' },
+  { to: '/business/apps', icon: AppWindow, label: 'Apps', moduleKey: 'creator_ops' },
   { to: '/business/team', icon: Users, label: 'Workforce', exact: true },
   { to: '/business/team/humans', icon: UserRound, label: 'People' },
   { to: '/business/agents', icon: Bot, label: 'AI Agents' },
@@ -118,7 +118,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
-              <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />
+              {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
               <MenuItem icon={Users} label="Workforce" onClick={() => go('/business/team')} />
               <MenuItem icon={UserRound} label="People" onClick={() => go('/business/team/humans')} />
               <MenuItem icon={Bot} label="AI Agents" onClick={() => go('/business/agents')} />
@@ -174,7 +174,7 @@ export default function BusinessLayout() {
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {CORE_NAV.map(({ to, icon: Icon, label, exact }) => (
+          {CORE_NAV.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey)).map(({ to, icon: Icon, label, exact }) => (
             <NavLink
               key={to}
               to={to}

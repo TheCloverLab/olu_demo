@@ -162,11 +162,13 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
 
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-6">
-      <div className="px-4 pt-4 mb-2">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm">
-          <ArrowLeft size={16} /> Back
-        </button>
-      </div>
+      {!standaloneCreatorId && (
+        <div className="px-4 pt-4 mb-2">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm">
+            <ArrowLeft size={16} /> Back
+          </button>
+        </div>
+      )}
 
       {isCommunity ? null : (
         <div className={`h-44 bg-gradient-to-br ${creator.avatar_color || 'from-gray-700 to-gray-900'} relative mx-4 rounded-3xl overflow-hidden`}>

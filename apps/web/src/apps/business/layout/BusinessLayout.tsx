@@ -18,6 +18,7 @@ import {
   AppWindow,
   Cable,
   Wallet,
+  ExternalLink,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -116,7 +117,7 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
             </button>
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              {hasModule('creator_ops') && <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />}
+              <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
               {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
               <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
@@ -129,6 +130,8 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
               <div className="border-t border-cyan-500/10 my-2 mx-2" />
               <MenuItem icon={Bot} label="AI Agent Marketplace" onClick={() => go('/business/agents')} />
+              <div className="border-t border-cyan-500/10 my-2 mx-2" />
+              <MenuItem icon={ExternalLink} label="Open OLU" onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
             </div>
 
           </motion.div>
@@ -147,7 +150,7 @@ export default function BusinessLayout() {
   const location = useLocation()
 
   useEffect(() => {
-    if (user && enabledBusinessModules.includes('creator_ops')) {
+    if (user) {
       getWorkspaceWalletForUser(user).then(setWallet).catch(() => {})
     }
   }, [user?.id])
@@ -178,24 +181,22 @@ export default function BusinessLayout() {
               <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} modules enabled</p>
             </div>
           </button>
-          {enabledBusinessModules.includes('creator_ops') && (
-            <NavLink
-              to="/business/wallet"
-              className={({ isActive }) => clsx(
-                'block rounded-2xl transition-colors cursor-pointer border',
-                isActive ? 'bg-cyan-300/10 border-cyan-400/20' : 'bg-[#0a1525] border-cyan-500/10 hover:bg-[#0d1a2d]'
-              )}
-            >
-              <div className="px-3 py-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Wallet size={14} className="text-emerald-400" />
-                  <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
-                </div>
-                <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-                <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+          <NavLink
+            to="/business/wallet"
+            className={({ isActive }) => clsx(
+              'block rounded-2xl transition-colors cursor-pointer border',
+              isActive ? 'bg-cyan-300/10 border-cyan-400/20' : 'bg-[#0a1525] border-cyan-500/10 hover:bg-[#0d1a2d]'
+            )}
+          >
+            <div className="px-3 py-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet size={14} className="text-emerald-400" />
+                <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
               </div>
-            </NavLink>
-          )}
+              <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
+              <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+            </div>
+          </NavLink>
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">

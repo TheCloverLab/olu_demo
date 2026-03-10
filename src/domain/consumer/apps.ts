@@ -256,7 +256,9 @@ export async function getDiscoverConsumerAppCards(options: DiscoverQueryOptions 
 
   const communityConfigs = await getPublicCommunityConfigsByOwner(creators.map((c) => c.id)).catch(() => new Map<string, any>())
 
-  const communityCards = creators.map((creator) => buildCommunityCardFromCreator(creator, communityConfigs.get(creator.id)))
+  const communityCards = creators
+    .filter((creator) => communityConfigs.has(creator.id))
+    .map((creator) => buildCommunityCardFromCreator(creator, communityConfigs.get(creator.id)))
 
   const academyCards = courses.map((course) => {
     const owner = creators.find((creator) => creator.id === course.creator_id)

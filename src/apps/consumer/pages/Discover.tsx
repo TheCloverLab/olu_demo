@@ -33,19 +33,24 @@ function DiscoverCard({
   return (
     <button
       onClick={onOpen}
-      className="w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#111111] text-left hover:-translate-y-0.5 transition-all"
+      className="relative w-full overflow-hidden rounded-[24px] text-left hover:-translate-y-0.5 transition-all min-h-[260px] flex flex-col justify-end"
     >
-      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${pickGradient(app.id)}`}>
-        {app.cover_img && !coverBroken ? (
-          <img
-            src={app.cover_img}
-            alt={app.title}
-            className="h-full w-full object-cover"
-            onError={() => setCoverBroken(true)}
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-4">
+      {/* Full-card background */}
+      {app.cover_img && !coverBroken ? (
+        <img
+          src={app.cover_img}
+          alt={app.title}
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setCoverBroken(true)}
+        />
+      ) : (
+        <div className={`absolute inset-0 bg-gradient-to-br ${pickGradient(app.id)}`} />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15" />
+
+      {/* Content overlay */}
+      <div className="relative p-4 space-y-3">
+        <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/65">
             {app.app_type === 'community' ? 'Community' : 'Academy'}
           </p>
@@ -54,17 +59,15 @@ function DiscoverCard({
             {app.summary || app.owner_name}
           </p>
         </div>
-      </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">
+        <div className="flex items-center justify-between gap-3">
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300 backdrop-blur-sm">
             {app.price_label}
           </span>
-          <span className="text-xs text-olu-muted">{app.owner_name}</span>
+          <span className="text-xs text-white/60">{app.owner_name}</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {app.highlights.map((item) => (
-            <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+            <span key={item} className="rounded-full border border-white/15 bg-black/30 backdrop-blur-sm px-2.5 py-1 text-[11px] text-white/80">
               {item}
             </span>
           ))}

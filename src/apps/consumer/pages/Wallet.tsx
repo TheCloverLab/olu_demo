@@ -32,7 +32,8 @@ function fallbackPriceFromCourse(course: Course) {
 }
 
 // Demo balance & transactions — seeded client-side for now
-const DEMO_BALANCE = 128.50
+const DEMO_BALANCE_USD = 128.50
+const DEMO_BALANCE_USDC = 45.00
 const DEMO_POINTS = 2340
 
 const DEMO_TRANSACTIONS: TxnItem[] = [
@@ -128,8 +129,8 @@ export default function Wallet() {
       <section className="rounded-[28px] border border-white/10 bg-gradient-to-br from-[#111111] to-[#0a0e17] p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Available balance</p>
-            <h1 className="font-black text-4xl mt-2">${DEMO_BALANCE.toFixed(2)}</h1>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Total balance</p>
+            <h1 className="font-black text-4xl mt-2">${(DEMO_BALANCE_USD + DEMO_BALANCE_USDC).toFixed(2)}</h1>
             <p className="text-sm text-olu-muted mt-2">
               {DEMO_POINTS.toLocaleString()} points earned
             </p>
@@ -137,7 +138,18 @@ export default function Wallet() {
           <CreditCard size={22} className="text-white/35" />
         </div>
 
-        <div className="mt-5 flex gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
+            <p className="text-xs text-olu-muted">Cash (USD)</p>
+            <p className="font-bold text-lg mt-1">${DEMO_BALANCE_USD.toFixed(2)}</p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
+            <p className="text-xs text-olu-muted">Stablecoin (USDC)</p>
+            <p className="font-bold text-lg mt-1">{DEMO_BALANCE_USDC.toFixed(2)} <span className="text-xs text-olu-muted font-normal">USDC</span></p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-3">
           <button className="flex items-center gap-2 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:bg-white/90 transition-colors">
             <Plus size={16} /> Top up
           </button>
@@ -146,7 +158,7 @@ export default function Wallet() {
           </button>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{totalMemberships}</span>
             <span className="ml-2 text-olu-muted">Memberships</span>

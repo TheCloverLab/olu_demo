@@ -59,33 +59,37 @@ if aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$SERVICE_NAME"
     --output text
   echo "  Service updated with new deployment"
 else
-  # Service doesn't exist — create it
+  # Service doesn't exist — create it with ALB
   VPC_ID="vpc-01ae65cbde060bbc2"
   SUBNETS=$(aws ec2 describe-subnets \
     --filters "Name=vpc-id,Values=$VPC_ID" \
     --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' \
     --output text | tr '\t' ',')
 
-  # Fallback: if no public subnets, use all subnets
-  if [ -z "$SUBNETS" ]; then
-    SUBNETS=$(aws ec2 describe-subnets \
-      --filters "Name=vpc-id,Values=$VPC_ID" \
-      --query 'Subnets[*].SubnetId' \
-      --output text | tr '\t' ',')
-  fi
-
   SG_ID=$(aws ec2 describe-security-groups \
     --filters "Name=group-name,Values=olu-agent-runtime-sg" "Name=vpc-id,Values=$VPC_ID" \
     --query 'SecurityGroups[0].GroupId' \
     --output text)
 
-  aws ecs create-service \
-    --cluster "$ECS_CLUSTER" \
-    --service-name "$SERVICE_NAME" \
-    --task-definition "$SERVICE_NAME" \
-    --desired-count 1 \
-    --launch-type FARGATE \
-    --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG_ID],assignPublicIp=ENABLED}" \
+  TG_ARN=$(aws elbv2 describe-target-groups \
+    --names olu-agent-runtime-tg \
+    --query 'TargetGroups[0].TargetGroupArn' \
+    --output text 2>/dev/null || echo "")
+
+  CREATE_ARGS=(
+    --cluster "$ECS_CLUSTER"
+    --service-name "$SERVICE_NAME"
+    --task-definition "$SERVICE_NAME"
+    --desired-count 1
+    --launch-type FARGATE
+    --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG_ID],assignPublicIp=ENABLED}"
+  )
+
+  if [ -n "$TG_ARN" ] && [ "$TG_ARN" != "None" ]; then
+    CREATE_ARGS+=(--load-balancers "targetGroupArn=$TG_ARN,containerName=agent-runtime,containerPort=8080")
+  fi
+
+  aws ecs create-service "${CREATE_ARGS[@]}" \
     --query 'service.serviceArn' \
     --output text
   echo "  Service created"

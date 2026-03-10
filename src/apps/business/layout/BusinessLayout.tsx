@@ -74,7 +74,7 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
   )
 }
 
-function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () => void; wallet: WorkspaceWallet | null }) {
   const navigate = useNavigate()
   const { currentUser, hasModule } = useApp()
 
@@ -116,8 +116,18 @@ function BusinessMenu({ open, onClose }: { open: boolean; onClose: () => void })
               </div>
             </button>
 
+            <button onClick={() => go('/business/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[#0a1525] border border-cyan-500/10 hover:bg-[#0d1a2d] transition-colors text-left">
+              <div className="px-3 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Wallet size={14} className="text-emerald-400" />
+                  <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
+                </div>
+                <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
+                <p className="text-emerald-400 text-xs mt-1">USDC Balance</p>
+              </div>
+            </button>
+
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/business/wallet')} />
               <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
               {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
               <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
@@ -281,7 +291,7 @@ export default function BusinessLayout() {
         </div>
       </main>
 
-      <BusinessMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <BusinessMenu open={menuOpen} onClose={() => setMenuOpen(false)} wallet={wallet} />
     </div>
   )
 }

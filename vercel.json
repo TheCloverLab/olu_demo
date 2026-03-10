@@ -1,10 +1,7 @@
 {
   "buildCommand": "cd apps/web && npm run build",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "npm install",
+  "installCommand": "npm install --prefer-offline && npm install @rollup/rollup-linux-x64-gnu --no-save",
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
-  "functions": {
-    "api/chat.js": { "regions": ["hnd1"], "maxDuration": 30 }
-  }
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }

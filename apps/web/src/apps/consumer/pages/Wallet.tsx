@@ -142,21 +142,15 @@ export default function Wallet() {
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-white/45">Total balance</p>
             <h1 className="font-black text-4xl mt-2">${balanceUsdc.toFixed(2)}</h1>
-            <p className="text-sm text-olu-muted mt-2">
-              {points.toLocaleString()} points earned
-            </p>
+            <p className="text-sm text-olu-muted mt-2">Wallet</p>
           </div>
           <CreditCard size={22} className="text-white/35" />
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-4">
           <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
             <p className="text-xs text-olu-muted">Balance</p>
             <p className="font-bold text-lg mt-1">${balanceUsdc.toFixed(2)}</p>
-          </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
-            <p className="text-xs text-olu-muted">Token Balance</p>
-            <p className="font-bold text-lg mt-1">{points.toLocaleString()} <span className="text-xs text-olu-muted font-normal">OLU</span></p>
           </div>
         </div>
 

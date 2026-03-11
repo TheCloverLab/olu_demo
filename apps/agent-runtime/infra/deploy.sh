@@ -42,7 +42,8 @@ EXEC_ROLE_ARN=$(aws iam get-role --role-name ecsTaskExecutionRole --query 'Role.
 # Generate task definition with real ARNs
 TMPFILE=$(mktemp)
 sed "s|\${EXECUTION_ROLE_ARN}|$EXEC_ROLE_ARN|g; s|\${TASK_ROLE_ARN}|$EXEC_ROLE_ARN|g" \
-  apps/agent-runtime/infra/task-definition.json > "$TMPFILE"
+  apps/agent-runtime/infra/task-definition.json | \
+  sed "s|\${IMAGE_URI}|$IMAGE_URI|g" > "$TMPFILE"
 aws ecs register-task-definition --cli-input-json "file://$TMPFILE" >/dev/null
 rm -f "$TMPFILE"
 

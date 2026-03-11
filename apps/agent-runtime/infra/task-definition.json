@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "agent-runtime",
-      "image": "749391130736.dkr.ecr.us-west-2.amazonaws.com/olu-agent-runtime:latest",
+      "image": "${IMAGE_URI}",
       "portMappings": [
         {
           "containerPort": 8080,

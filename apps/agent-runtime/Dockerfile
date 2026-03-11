@@ -24,6 +24,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
+# Install Python3 (for lark-suite skill subprocess calls)
+RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
+
 # Install Playwright Chromium system dependencies
 RUN npx playwright install-deps chromium 2>/dev/null || true
 
@@ -33,6 +36,9 @@ COPY --from=build /app/apps/agent-runtime/dist ./apps/agent-runtime/dist
 COPY --from=build /app/apps/agent-runtime/package.json ./apps/agent-runtime/
 COPY --from=build /app/packages/shared ./packages/shared
 COPY package.json ./
+
+# Copy lark-suite Python scripts (for subprocess calling from agent tools)
+COPY scripts/lark-suite/ ./lark-suite/
 
 # Install Playwright Chromium browser
 RUN npx playwright install chromium

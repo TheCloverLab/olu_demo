@@ -1093,62 +1093,50 @@ export const logEvent = tool(
 )
 
 /**
- * Lark Suite API — Tasks, Calendar, Bitable integration
+ * Lark Suite API — calls Python lark-suite skill via subprocess
  */
 
-async function getLarkToken(): Promise<string | null> {
-  const appId = process.env.LARK_APP_ID
-  const appSecret = process.env.LARK_APP_SECRET
-  if (!appId || !appSecret) return null
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 
+const execFileAsync = promisify(execFile)
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Resolve lark_suite.py path — bundled in Docker at /app/lark-suite/
+const LARK_SUITE_SCRIPT = process.env.LARK_SUITE_SCRIPT
+  || (process.env.NODE_ENV === 'production' ? '/app/lark-suite/lark_suite.py' : resolve(__dirname, '../../../../scripts/lark-suite/lark_suite.py'))
+
+async function runLarkSuite(args: string[]): Promise<string> {
   try {
-    const res = await fetch('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+    const { stdout, stderr } = await execFileAsync('python3', [LARK_SUITE_SCRIPT, ...args], {
+      env: { ...process.env },
+      timeout: 30000,
     })
-    const data = await res.json()
-    return data.tenant_access_token || null
-  } catch {
-    return null
+    if (stderr) console.error(`[lark-suite] ${stderr.trim()}`)
+    return stdout.trim() || JSON.stringify({ ok: true })
+  } catch (err: any) {
+    return JSON.stringify({ error: err.message || 'lark-suite subprocess failed' })
   }
 }
 
 export const larkTasks = tool(
-  async ({ action, summary, due, taskId, status }) => {
-    const token = await getLarkToken()
-    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
-
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-
-    try {
-      if (action === 'create') {
-        const body: any = { summary: summary || 'Untitled task' }
-        if (due) body.due = { timestamp: new Date(due).getTime().toString(), is_all_day: false }
-
-        const res = await fetch('https://open.larksuite.com/open-apis/task/v2/tasks', {
-          method: 'POST', headers, body: JSON.stringify(body),
-        })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'list') {
-        const res = await fetch('https://open.larksuite.com/open-apis/task/v2/tasks?page_size=20', { headers })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'complete' && taskId) {
-        const res = await fetch(`https://open.larksuite.com/open-apis/task/v2/tasks/${taskId}`, {
-          method: 'PATCH', headers,
-          body: JSON.stringify({ task: { completed_at: new Date().toISOString() } }),
-        })
-        return JSON.stringify(await res.json())
-      }
-
-      return JSON.stringify({ error: `Unknown action: ${action}` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+  async ({ action, summary, due, taskId }) => {
+    if (action === 'create') {
+      const args = ['task-create', summary || 'Untitled task']
+      if (due) args.push('--due', due)
+      return runLarkSuite(args)
     }
+    if (action === 'list') {
+      return runLarkSuite(['task-list'])
+    }
+    if (action === 'complete' && taskId) {
+      return runLarkSuite(['task-complete', taskId])
+    }
+    return JSON.stringify({ error: `Unknown action: ${action}` })
   },
   {
     name: 'lark_tasks',
@@ -1156,54 +1144,32 @@ export const larkTasks = tool(
     schema: z.object({
       action: z.enum(['create', 'list', 'complete']).describe('Action to perform'),
       summary: z.string().optional().describe('Task summary (for create)'),
-      due: z.string().optional().describe('Due date ISO string (for create)'),
-      taskId: z.string().optional().describe('Task ID (for complete)'),
-      status: z.string().optional().describe('Task status filter'),
+      due: z.string().optional().describe('Due date YYYY-MM-DD (for create)'),
+      taskId: z.string().optional().describe('Task GUID (for complete)'),
     }),
   },
 )
 
 export const larkCalendar = tool(
   async ({ action, summary, startTime, endTime, calendarId }) => {
-    const token = await getLarkToken()
-    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
-
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-
-    try {
-      if (action === 'list_calendars') {
-        const res = await fetch('https://open.larksuite.com/open-apis/calendar/v4/calendars?page_size=20', { headers })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'list_events') {
-        const cid = calendarId || 'primary'
-        const now = Math.floor(Date.now() / 1000)
-        const weekLater = now + 7 * 86400
-        const res = await fetch(
-          `https://open.larksuite.com/open-apis/calendar/v4/calendars/${cid}/events?start_time=${now}&end_time=${weekLater}&page_size=20`,
-          { headers },
-        )
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'create_event') {
-        const cid = calendarId || 'primary'
-        const res = await fetch(`https://open.larksuite.com/open-apis/calendar/v4/calendars/${cid}/events`, {
-          method: 'POST', headers,
-          body: JSON.stringify({
-            summary: summary || 'Untitled event',
-            start_time: { timestamp: String(new Date(startTime || Date.now()).getTime() / 1000) },
-            end_time: { timestamp: String(new Date(endTime || Date.now() + 3600000).getTime() / 1000) },
-          }),
-        })
-        return JSON.stringify(await res.json())
-      }
-
-      return JSON.stringify({ error: `Unknown action: ${action}` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    if (action === 'list_calendars') {
+      return runLarkSuite(['cal-list'])
     }
+    if (action === 'list_events') {
+      const args = ['cal-events', calendarId || 'primary']
+      if (startTime) args.push('--start', startTime)
+      if (endTime) args.push('--end', endTime)
+      return runLarkSuite(args)
+    }
+    if (action === 'create_event') {
+      return runLarkSuite([
+        'cal-create', calendarId || 'primary',
+        summary || 'Untitled event',
+        startTime || String(Math.floor(Date.now() / 1000)),
+        endTime || String(Math.floor(Date.now() / 1000) + 3600),
+      ])
+    }
+    return JSON.stringify({ error: `Unknown action: ${action}` })
   },
   {
     name: 'lark_calendar',
@@ -1211,52 +1177,28 @@ export const larkCalendar = tool(
     schema: z.object({
       action: z.enum(['list_calendars', 'list_events', 'create_event']).describe('Action to perform'),
       summary: z.string().optional().describe('Event title (for create)'),
-      startTime: z.string().optional().describe('Start time ISO string'),
-      endTime: z.string().optional().describe('End time ISO string'),
+      startTime: z.string().optional().describe('Start time ISO timestamp'),
+      endTime: z.string().optional().describe('End time ISO timestamp'),
       calendarId: z.string().optional().describe('Calendar ID (default: primary)'),
     }),
   },
 )
 
 export const larkBitable = tool(
-  async ({ action, appToken, tableId, fields, records, recordId }) => {
-    const token = await getLarkToken()
-    if (!token) return JSON.stringify({ error: 'LARK_APP_ID and LARK_APP_SECRET not configured' })
-
-    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-    const base = 'https://open.larksuite.com/open-apis/bitable/v1'
-
-    try {
-      if (action === 'list_tables' && appToken) {
-        const res = await fetch(`${base}/apps/${appToken}/tables?page_size=20`, { headers })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'list_records' && appToken && tableId) {
-        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records?page_size=20`, { headers })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'create_record' && appToken && tableId && fields) {
-        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records`, {
-          method: 'POST', headers,
-          body: JSON.stringify({ fields: JSON.parse(fields) }),
-        })
-        return JSON.stringify(await res.json())
-      }
-
-      if (action === 'update_record' && appToken && tableId && recordId && fields) {
-        const res = await fetch(`${base}/apps/${appToken}/tables/${tableId}/records/${recordId}`, {
-          method: 'PUT', headers,
-          body: JSON.stringify({ fields: JSON.parse(fields) }),
-        })
-        return JSON.stringify(await res.json())
-      }
-
-      return JSON.stringify({ error: `Unknown action: ${action}. Required params may be missing.` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+  async ({ action, appToken, tableId, fields, recordId }) => {
+    if (action === 'list_tables' && appToken) {
+      return runLarkSuite(['base-tables', appToken])
     }
+    if (action === 'list_records' && appToken && tableId) {
+      return runLarkSuite(['base-records', appToken, tableId])
+    }
+    if (action === 'create_record' && appToken && tableId && fields) {
+      return runLarkSuite(['base-add', appToken, tableId, fields])
+    }
+    if (action === 'update_record' && appToken && tableId && recordId && fields) {
+      return runLarkSuite(['base-update', appToken, tableId, recordId, fields])
+    }
+    return JSON.stringify({ error: `Unknown action: ${action}. Required params may be missing.` })
   },
   {
     name: 'lark_bitable',
@@ -1266,7 +1208,6 @@ export const larkBitable = tool(
       appToken: z.string().optional().describe('Bitable app token'),
       tableId: z.string().optional().describe('Table ID'),
       fields: z.string().optional().describe('JSON string of field key-value pairs'),
-      records: z.string().optional().describe('JSON array of records'),
       recordId: z.string().optional().describe('Record ID (for update)'),
     }),
   },

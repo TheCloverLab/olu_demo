@@ -21,19 +21,19 @@ function AgentCard({
       <img src={agent.avatar_img || ''} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
-        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/10 text-cyan-100/70')}>
+        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-sidebar-text)]')}>
           {agent.price_label}
         </span>
       </div>
       <div className="flex items-center gap-1 mb-2">
         <Star size={11} className="text-amber-400" fill="currentColor" />
         <span className="text-xs font-semibold">{agent.rating}</span>
-        <span className="text-cyan-100/45 text-xs">({agent.reviews.toLocaleString()})</span>
+        <span className="text-[var(--olu-text-secondary)] text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
-      <p className="text-cyan-100/60 text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
+      <p className="text-[var(--olu-text-secondary)] text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
       <div className="flex items-center gap-2 mb-3 text-xs">
         <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-200 font-medium">{agent.model}</span>
-        <span className="text-cyan-100/55">${agent.cost_per_1k}/1K tokens</span>
+        <span className="text-[var(--olu-text-secondary)]">${agent.cost_per_1k}/1K tokens</span>
       </div>
       <button
         onClick={() => onHire(agent)}
@@ -66,25 +66,25 @@ function HireModal({
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/70 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-sm bg-[#08111d] border border-cyan-500/10 rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="p-5 border-b border-cyan-500/10">
+        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-sm bg-[var(--olu-header-bg)] border border-[var(--olu-card-border)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="p-5 border-b border-[var(--olu-card-border)]">
             <h3 className="font-bold">Hire {agent.name}</h3>
-            <p className="text-cyan-100/45 text-xs mt-0.5">Give your new AI teammate a workspace name</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5">Give your new AI teammate a workspace name</p>
           </div>
           <div className="p-5">
             <img src={agent.avatar_img || ''} alt={agent.name} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4" />
-            <label className="text-xs font-semibold text-cyan-100/45 uppercase tracking-wider block mb-2">Agent Name</label>
+            <label className="text-xs font-semibold text-[var(--olu-text-secondary)] uppercase tracking-wider block mb-2">Agent Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Give your agent a name, like Ashley, Ada, or Luca."
-              className="w-full p-3 bg-[#0d1726] rounded-xl text-sm focus:outline-none border border-cyan-500/10 focus:border-cyan-300/30 transition-colors mb-4 placeholder:text-cyan-100/35"
+              className="w-full p-3 bg-[var(--olu-card-bg)] rounded-xl text-sm focus:outline-none border border-[var(--olu-card-border)] focus:border-cyan-300/30 transition-colors mb-4 placeholder:text-[var(--olu-muted)]"
             />
-            <p className="text-xs text-cyan-100/55 mb-4">
+            <p className="text-xs text-[var(--olu-text-secondary)] mb-4">
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
             </p>
             <div className="flex gap-3">
-              <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-cyan-500/10 text-sm font-medium text-cyan-100/60 hover:text-white transition-colors">Cancel</button>
+              <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-[var(--olu-card-border)] text-sm font-medium text-[var(--olu-text-secondary)] hover:text-white transition-colors">Cancel</button>
               <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
                 {loading ? 'Hiring...' : 'Confirm Hire'}
               </button>
@@ -166,24 +166,24 @@ export default function AIAgentConfig() {
       <div className="rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(17,33,53,0.96),rgba(8,19,34,0.88))] p-6 shadow-[0_18px_60px_rgba(2,8,23,0.35)] mb-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
               <Bot size={18} className="text-cyan-200" />
             </div>
             <div>
               <h1 className="font-black text-2xl">AI Agents</h1>
-              <p className="text-cyan-100/60 text-sm">Workspace-backed team members, marketplace templates, and operating coverage</p>
+              <p className="text-[var(--olu-text-secondary)] text-sm">Workspace-backed team members, marketplace templates, and operating coverage</p>
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[260px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Coverage</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Coverage</p>
               <p className="font-black text-2xl">{activeAgents.length}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Active workspace operators</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Active workspace operators</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Templates</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Templates</p>
               <p className="font-black text-2xl">{templates.length}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Marketplace agents ready</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Marketplace agents ready</p>
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function AIAgentConfig() {
       </AnimatePresence>
 
       {loading ? (
-        <div className="rounded-3xl border border-cyan-400/10 bg-[#091523] p-8 text-cyan-100/60 text-sm">
+        <div className="rounded-3xl border border-cyan-400/10 bg-[#091523] p-8 text-[var(--olu-text-secondary)] text-sm">
           Loading workspace agents...
         </div>
       ) : (
@@ -208,7 +208,7 @@ export default function AIAgentConfig() {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <ShieldCheck size={16} className="text-cyan-200" />
-                <p className="text-cyan-100/55 text-xs font-semibold uppercase tracking-wider">Your Team ({activeAgents.length})</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">Your Team ({activeAgents.length})</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activeAgents.map((agent) => (
@@ -223,7 +223,7 @@ export default function AIAgentConfig() {
                         navigate(`/business/team/${agent.agent_key || agent.id}`)
                       }
                     }}
-                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-cyan-400/10 bg-[#091523] hover:bg-[#0d1a2d] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
+                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-cyan-400/10 bg-[#091523] hover:bg-[var(--olu-card-hover)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
                   >
                     <div className="relative flex-shrink-0">
                       {agent.avatar_img
@@ -234,10 +234,10 @@ export default function AIAgentConfig() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">{agent.name}</p>
-                      <p className="text-cyan-100/55 text-xs">{agent.role}</p>
+                      <p className="text-[var(--olu-text-secondary)] text-xs">{agent.role}</p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-cyan-500/10 transition-colors"><Settings size={14} className="text-cyan-100/60" /></button>
+                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-cyan-500/10 transition-colors"><Settings size={14} className="text-[var(--olu-text-secondary)]" /></button>
                       <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-red-500/15 transition-colors"><Trash2 size={14} className="text-red-400" /></button>
                     </div>
                   </div>
@@ -248,21 +248,21 @@ export default function AIAgentConfig() {
 
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <ShoppingBag size={16} className="text-cyan-100/55" />
+              <ShoppingBag size={16} className="text-[var(--olu-text-secondary)]" />
               <p className="font-bold text-lg">Agent Marketplace</p>
-              <div className="ml-auto flex items-center gap-1 p-1 bg-[#091523] border border-cyan-500/10 rounded-xl overflow-x-auto scrollbar-hide">
+              <div className="ml-auto flex items-center gap-1 p-1 bg-[#091523] border border-[var(--olu-card-border)] rounded-xl overflow-x-auto scrollbar-hide">
                 {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setFilter(category)}
-                    className={clsx('px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all', filter === category ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/60 hover:text-white')}
+                    className={clsx('px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all', filter === category ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-white')}
                   >
                     {category}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="rounded-[28px] border border-cyan-400/10 bg-[#08111d] p-4 mb-4 flex items-center gap-3">
+            <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 mb-4 flex items-center gap-3">
               <Sparkles size={16} className="text-cyan-200" />
               <p className="text-sm text-cyan-100/68">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
             </div>

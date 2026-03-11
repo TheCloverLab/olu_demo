@@ -71,7 +71,7 @@ export default function ApprovalCenter() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-cyan-100/45" size={24} />
+        <Loader2 className="animate-spin text-[var(--olu-text-secondary)]" size={24} />
       </div>
     )
   }
@@ -80,13 +80,13 @@ export default function ApprovalCenter() {
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-2">Workspace</p>
+          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace</p>
           <h1 className="font-black text-2xl">Approval Center</h1>
-          <p className="text-cyan-100/55 text-sm mt-1">
+          <p className="text-[var(--olu-text-secondary)] text-sm mt-1">
             {counts.pending} pending · {counts.approved} approved · {counts.rejected} rejected
           </p>
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
           <Shield size={18} className="text-cyan-300" />
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function ApprovalCenter() {
             onClick={() => setFilter(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap',
-              filter === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#0d1726] text-cyan-100/60 border border-cyan-500/10 hover:bg-[#12213a]'
+              filter === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)]'
             )}
           >
             {label} ({counts[key] ?? 0})
@@ -107,8 +107,8 @@ export default function ApprovalCenter() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] p-12 text-center">
-          <p className="text-cyan-100/45">No approvals{filter !== 'all' ? ` with status "${filter}"` : ''}.</p>
+        <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-12 text-center">
+          <p className="text-[var(--olu-text-secondary)]">No approvals{filter !== 'all' ? ` with status "${filter}"` : ''}.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -116,7 +116,7 @@ export default function ApprovalCenter() {
             const cfg = STATUS_CFG[item.status]
             const Icon = cfg.icon
             return (
-              <div key={item.id} className="rounded-2xl border border-cyan-500/10 bg-[#091422] p-5 flex items-start gap-4">
+              <div key={item.id} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 flex items-start gap-4">
                 <div className={clsx('mt-0.5 flex-shrink-0', cfg.color)}>
                   <Icon size={18} />
                 </div>
@@ -124,8 +124,8 @@ export default function ApprovalCenter() {
                   <p className="font-semibold text-sm">{item.title}</p>
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
                     <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', cfg.bg, cfg.color)}>{cfg.label}</span>
-                    <span className="text-xs text-cyan-100/45">by {item.requestedBy}</span>
-                    <span className="text-xs text-cyan-100/45">{item.createdAt}</span>
+                    <span className="text-xs text-[var(--olu-text-secondary)]">by {item.requestedBy}</span>
+                    <span className="text-xs text-[var(--olu-text-secondary)]">{item.createdAt}</span>
                   </div>
                   {item.status === 'pending' && (
                     <div className="flex gap-2 mt-3">

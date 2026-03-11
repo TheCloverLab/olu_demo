@@ -62,7 +62,7 @@ export default function HumanEmployees() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-cyan-100/45" size={24} />
+        <Loader2 className="animate-spin text-[var(--olu-text-secondary)]" size={24} />
       </div>
     )
   }
@@ -71,9 +71,9 @@ export default function HumanEmployees() {
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-2">Workspace</p>
+          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace</p>
           <h1 className="font-black text-2xl">People</h1>
-          <p className="text-cyan-100/55 text-sm mt-1">
+          <p className="text-[var(--olu-text-secondary)] text-sm mt-1">
             {employees.length} members · {employees.filter((e) => e.status === 'online').length} online
           </p>
         </div>
@@ -87,23 +87,23 @@ export default function HumanEmployees() {
       </div>
 
       {showAdd && (
-        <div className="rounded-2xl border border-cyan-500/20 bg-[#091422] p-5 space-y-4">
+        <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
           <h3 className="font-semibold text-sm flex items-center gap-2">
             <Users2 size={16} className="text-cyan-300" />
             Invite a team member
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-cyan-100/45 block mb-1">Full name</label>
-              <input type="text" placeholder="Jane Doe" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
+              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
-              <label className="text-xs text-cyan-100/45 block mb-1">Email</label>
-              <input type="email" placeholder="jane@company.com" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
+              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
-              <label className="text-xs text-cyan-100/45 block mb-1">Position</label>
-              <input type="text" placeholder="Marketing Manager" className="w-full bg-[#0d1726] border border-cyan-500/10 rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Position</label>
+              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div className="flex items-end">
               <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -116,7 +116,7 @@ export default function HumanEmployees() {
 
       <div className="space-y-3">
         {employees.map((emp) => (
-          <div key={emp.id} className="rounded-2xl border border-cyan-500/10 bg-[#091422] p-5 flex items-start gap-4">
+          <div key={emp.id} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 flex items-start gap-4">
             <div className="relative flex-shrink-0">
               <div className={clsx('w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
                 {emp.name.split(' ').map((n) => n[0]).join('')}
@@ -126,24 +126,24 @@ export default function HumanEmployees() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold text-sm">{emp.name}</p>
-                <span className="text-xs text-cyan-100/45 capitalize flex items-center gap-1">
+                <span className="text-xs text-[var(--olu-text-secondary)] capitalize flex items-center gap-1">
                   <Circle size={6} className={STATUS_DOT[emp.status]} fill="currentColor" />
                   {emp.status}
                 </span>
               </div>
-              <p className="text-cyan-100/55 text-xs mt-0.5 flex items-center gap-1.5">
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5 flex items-center gap-1.5">
                 <Briefcase size={12} />
                 {emp.position}
               </p>
               {emp.email && (
-                <p className="text-cyan-100/45 text-xs mt-0.5 flex items-center gap-1.5">
+                <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5 flex items-center gap-1.5">
                   <Mail size={12} />
                   {emp.email}
                 </p>
               )}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {emp.skills.map((skill) => (
-                  <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-100/60 font-medium">
+                  <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-[var(--olu-text-secondary)] font-medium">
                     {skill}
                   </span>
                 ))}
@@ -154,7 +154,7 @@ export default function HumanEmployees() {
                 )}
               </div>
               {emp.last_message && (
-                <p className="text-cyan-100/35 text-xs mt-2 truncate">
+                <p className="text-[var(--olu-muted)] text-xs mt-2 truncate">
                   {emp.last_message} · {emp.last_time}
                 </p>
               )}

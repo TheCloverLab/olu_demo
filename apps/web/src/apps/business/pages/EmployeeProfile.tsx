@@ -27,7 +27,7 @@ export default function EmployeeProfile() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 flex items-center justify-center">
-        <p className="text-cyan-100/60 text-sm">Loading profile...</p>
+        <p className="text-[var(--olu-text-secondary)] text-sm">Loading profile...</p>
       </div>
     )
   }
@@ -35,7 +35,7 @@ export default function EmployeeProfile() {
   if (!employee) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <p className="text-cyan-100/55 mb-4">Employee not found</p>
+        <p className="text-[var(--olu-text-secondary)] mb-4">Employee not found</p>
         <button onClick={() => navigate('/business/team')} className="text-cyan-300 text-sm hover:underline">
           Back to Team
         </button>
@@ -49,13 +49,13 @@ export default function EmployeeProfile() {
     <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <button
         onClick={() => navigate('/business/team')}
-        className="flex items-center gap-2 text-cyan-100/55 text-sm hover:text-white transition-colors mb-6"
+        className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-sm hover:text-white transition-colors mb-6"
       >
         <ArrowLeft size={16} />
         Back to Team
       </button>
 
-      <div className="rounded-3xl border border-cyan-500/10 bg-[#091422] overflow-hidden">
+      <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
         {/* Header with avatar */}
         <div className="relative p-6 pb-0">
           <div className="absolute inset-0 h-28 bg-gradient-to-br from-cyan-500/10 to-purple-500/10" />
@@ -64,7 +64,7 @@ export default function EmployeeProfile() {
               <img
                 src={employee.avatar_img}
                 alt={employee.name}
-                className="w-20 h-20 rounded-2xl object-cover border-4 border-[#091422] bg-[#0d1726]"
+                className="w-20 h-20 rounded-2xl object-cover border-4 border-[#091422] bg-[var(--olu-card-bg)]"
               />
             ) : (
               <div className={clsx(
@@ -82,7 +82,7 @@ export default function EmployeeProfile() {
                   {employee.status}
                 </span>
                 <span className="text-cyan-100/30">·</span>
-                <span className="text-xs text-cyan-100/55 capitalize">{employee.employment_status}</span>
+                <span className="text-xs text-[var(--olu-text-secondary)] capitalize">{employee.employment_status}</span>
               </div>
             </div>
           </div>
@@ -92,20 +92,20 @@ export default function EmployeeProfile() {
         <div className="p-6 space-y-5">
           {/* Position & description */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-cyan-100/70 text-sm">
+            <div className="flex items-center gap-2 text-[var(--olu-sidebar-text)] text-sm">
               <Briefcase size={14} />
               <span className="font-medium">{employee.position}</span>
             </div>
             {employee.description && (
-              <p className="text-cyan-100/55 text-sm leading-relaxed">{employee.description}</p>
+              <p className="text-[var(--olu-text-secondary)] text-sm leading-relaxed">{employee.description}</p>
             )}
           </div>
 
           {/* Info grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {employee.email && (
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <div className="flex items-center gap-2 text-cyan-100/45 text-xs mb-1">
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <div className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-xs mb-1">
                   <Mail size={12} />
                   Email
                 </div>
@@ -113,8 +113,8 @@ export default function EmployeeProfile() {
               </div>
             )}
             {employee.salary_label && (
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <div className="flex items-center gap-2 text-cyan-100/45 text-xs mb-1">
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <div className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-xs mb-1">
                   <DollarSign size={12} />
                   Compensation
                 </div>
@@ -122,8 +122,8 @@ export default function EmployeeProfile() {
               </div>
             )}
             {employee.hired_at && (
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <div className="flex items-center gap-2 text-cyan-100/45 text-xs mb-1">
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <div className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-xs mb-1">
                   <Calendar size={12} />
                   Joined
                 </div>
@@ -135,12 +135,12 @@ export default function EmployeeProfile() {
           {/* Skills */}
           {employee.skills && employee.skills.length > 0 && (
             <div>
-              <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-3">Skills</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-3">Skills</p>
               <div className="flex flex-wrap gap-2">
                 {employee.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-100/70 text-sm font-medium border border-cyan-500/10"
+                    className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-[var(--olu-sidebar-text)] text-sm font-medium border border-[var(--olu-card-border)]"
                   >
                     {skill}
                   </span>

@@ -15,7 +15,7 @@ const TABS = [
 ] as const
 
 const STAGE_META = {
-  draft: { label: 'Draft', tone: 'bg-cyan-500/10 text-cyan-100/60' },
+  draft: { label: 'Draft', tone: 'bg-cyan-500/10 text-[var(--olu-text-secondary)]' },
   sourcing: { label: 'Sourcing', tone: 'bg-cyan-500/20 text-cyan-300' },
   offer_sent: { label: 'Offer Sent', tone: 'bg-amber-500/20 text-amber-300' },
   creator_review: { label: 'Creator Review', tone: 'bg-amber-500/20 text-amber-300' },
@@ -35,10 +35,10 @@ function compactNumber(value: number) {
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-[24px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-cyan-100/55 text-xs">{label}</p>
-        <Icon size={14} className="text-cyan-100/55" />
+        <p className="text-[var(--olu-text-secondary)] text-xs">{label}</p>
+        <Icon size={14} className="text-[var(--olu-text-secondary)]" />
       </div>
       <p className="font-black text-2xl">{value}</p>
     </div>
@@ -143,7 +143,7 @@ export default function AdvertiserConsole() {
   }
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto px-4 py-8 text-cyan-100/60">Loading advertiser console...</div>
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-[var(--olu-text-secondary)]">Loading advertiser console...</div>
   }
 
   return (
@@ -151,24 +151,24 @@ export default function AdvertiserConsole() {
       <div className="rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(17,33,53,0.96),rgba(8,19,34,0.88))] p-6 shadow-[0_18px_60px_rgba(2,8,23,0.35)]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
               <Megaphone size={18} className="text-cyan-200" />
             </div>
             <div>
               <h1 className="font-black text-2xl">Marketing Workspace</h1>
-              <p className="text-cyan-100/60 text-sm">Influencer campaign operations, creator approvals, and reporting inside the business workspace</p>
+              <p className="text-[var(--olu-text-secondary)] text-sm">Influencer campaign operations, creator approvals, and reporting inside the business workspace</p>
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Live Stage</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Live Stage</p>
               <p className="font-black text-2xl">{stageMeta.label}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Current workflow progression</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Current workflow progression</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Reach Returned</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Reach Returned</p>
               <p className="font-black text-2xl">{compactNumber(workflow?.campaign.reported_reach || 0)}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Synced from backend workflow data</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Synced from backend workflow data</p>
             </div>
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function AdvertiserConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#091523] border border-cyan-500/10 text-cyan-100/60 hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#091523] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
             )}
           >
             <Icon size={14} />
@@ -193,12 +193,12 @@ export default function AdvertiserConsole() {
       {tab === 'mission' && (
         <div className="space-y-4">
           <div className="grid lg:grid-cols-[1.25fr,0.9fr] gap-4">
-            <div className="rounded-[32px] p-6 space-y-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+            <div className="rounded-[32px] p-6 space-y-5 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-cyan-100/55 text-xs uppercase tracking-wider mb-2">Mission control</p>
+                  <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Mission control</p>
                   <h2 className="font-black text-2xl">{workflow?.campaign.brand_name || 'No active workflow'}</h2>
-                  <p className="text-cyan-100/60 text-sm mt-2 max-w-2xl">
+                  <p className="text-[var(--olu-text-secondary)] text-sm mt-2 max-w-2xl">
                     {workflow?.campaign.objective || 'Start a real workflow row in Supabase, then drive it across marketer and creator workspaces.'}
                   </p>
                 </div>
@@ -212,36 +212,36 @@ export default function AdvertiserConsole() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-3">
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Budget</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Budget</p>
                   <p className="font-black text-xl">${workflow?.campaign.budget ?? 0}</p>
                 </div>
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Spent</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Spent</p>
                   <p className="font-black text-xl">${workflow?.campaign.budget_spent ?? 0}</p>
                 </div>
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Creator Fee</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Creator Fee</p>
                   <p className="font-black text-xl">${primaryTarget?.offer_amount ?? 0}</p>
                 </div>
               </div>
 
-              <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
+              <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock3 size={14} className="text-cyan-100/55" />
+                  <Clock3 size={14} className="text-[var(--olu-text-secondary)]" />
                   <p className="font-semibold text-sm">Latest workflow event</p>
                 </div>
                 <p className="text-sm text-white">{workflow?.events[0]?.title || 'No activity yet'}</p>
-                <p className="text-sm text-cyan-100/60 leading-relaxed mt-2">{workflow?.events[0]?.detail || 'The workflow timeline will appear here once you create or advance it.'}</p>
+                <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed mt-2">{workflow?.events[0]?.detail || 'The workflow timeline will appear here once you create or advance it.'}</p>
               </div>
 
-              <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
+              <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
                 <p className="font-semibold text-sm mb-3">Target creator</p>
                 <select
                   value={selectedCreatorId}
                   onChange={(e) => setSelectedCreatorId(e.target.value)}
                   disabled={actionLoading}
-                  className="w-full rounded-xl bg-[#08111d] border border-cyan-500/10 px-3 py-2.5 text-sm focus:outline-none focus:border-cyan-300/30"
+                  className="w-full rounded-xl bg-[var(--olu-header-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm focus:outline-none focus:border-cyan-300/30"
                 >
                   {creators.map((creator) => (
                     <option key={creator.id} value={creator.id}>
@@ -249,7 +249,7 @@ export default function AdvertiserConsole() {
                     </option>
                   ))}
                 </select>
-                <p className="text-cyan-100/60 text-xs mt-2">
+                <p className="text-[var(--olu-text-secondary)] text-xs mt-2">
                   New workflows are now tied to a selected creator instead of a hardcoded seed account.
                 </p>
               </div>
@@ -265,14 +265,14 @@ export default function AdvertiserConsole() {
                 <button
                   onClick={handleAdvance}
                   disabled={actionLoading || !workflow || !['sourcing', 'approved', 'scheduled', 'published'].includes(workflow.campaign.status)}
-                  className="px-4 py-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-white text-sm font-semibold disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-white text-sm font-semibold disabled:opacity-40"
                 >
                   Advance marketer step
                 </button>
                 <button
                   onClick={handleRefresh}
                   disabled={actionLoading}
-                  className="px-4 py-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
                 >
                   <RefreshCcw size={14} />
                   Refresh
@@ -280,7 +280,7 @@ export default function AdvertiserConsole() {
               </div>
             </div>
 
-            <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+            <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
               <p className="font-bold mb-4">Execution stages</p>
               <div className="space-y-3">
                 {[
@@ -290,13 +290,13 @@ export default function AdvertiserConsole() {
                   { title: '4. Scheduled publish', desc: 'Approved promo moves into creator publishing queue.', active: ['scheduled', 'published', 'completed'].includes(workflow?.campaign.status || 'draft') },
                   { title: '5. Metrics return', desc: 'First-day reach, clicks, and conversions come back into marketing workspace.', active: ['completed'].includes(workflow?.campaign.status || 'draft') },
                 ].map((step) => (
-                  <div key={step.title} className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10 flex items-start gap-3">
-                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-cyan-100/55')}>
+                  <div key={step.title} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
+                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                       {step.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{step.title}</p>
-                      <p className="text-cyan-100/60 text-xs mt-1 leading-relaxed">{step.desc}</p>
+                      <p className="text-[var(--olu-text-secondary)] text-xs mt-1 leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -305,50 +305,50 @@ export default function AdvertiserConsole() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
-            <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+            <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
               <p className="font-bold mb-4">Creator pipeline</p>
               <div className="space-y-3">
                 {(workflow?.targets || []).map((target) => (
-                  <div key={target.id} className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10 flex items-center justify-between gap-4">
+                  <div key={target.id} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center justify-between gap-4">
                     <div>
                       <p className="font-semibold text-sm">{target.creator?.name || 'Creator'}</p>
-                      <p className="text-cyan-100/60 text-xs mt-1">{target.stage} · {target.deliverable_status}</p>
+                      <p className="text-[var(--olu-text-secondary)] text-xs mt-1">{target.stage} · {target.deliverable_status}</p>
                     </div>
                     <span className="text-sm font-semibold">${target.offer_amount}</span>
                   </div>
                 ))}
-                {!workflow && <p className="text-cyan-100/60 text-sm">No live workflow yet.</p>}
+                {!workflow && <p className="text-[var(--olu-text-secondary)] text-sm">No live workflow yet.</p>}
               </div>
             </div>
 
-            <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+            <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
               <p className="font-bold mb-4">Activity log</p>
               <div className="space-y-3">
                 {(workflow?.events || []).map((event) => (
-                  <div key={event.id} className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
+                  <div key={event.id} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
                     <p className="font-semibold text-sm">{event.title}</p>
-                    <p className="text-cyan-100/60 text-xs mt-1 leading-relaxed">{event.detail}</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs mt-1 leading-relaxed">{event.detail}</p>
                   </div>
                 ))}
-                {!workflow && <p className="text-cyan-100/60 text-sm">Create a workflow to see persistent timeline events.</p>}
+                {!workflow && <p className="text-[var(--olu-text-secondary)] text-sm">Create a workflow to see persistent timeline events.</p>}
               </div>
             </div>
           </div>
 
           {workflow && (
-            <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+            <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
               <p className="font-bold mb-4">Reported outcome</p>
               <div className="grid md:grid-cols-3 gap-3">
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Reach</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Reach</p>
                   <p className="font-black text-xl">{compactNumber(workflow.campaign.reported_reach || 0)}</p>
                 </div>
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Conversions</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Conversions</p>
                   <p className="font-black text-xl">{compactNumber(workflow.campaign.reported_conversions || 0)}</p>
                 </div>
-                <div className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Clicks</p>
+                <div className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Clicks</p>
                   <p className="font-black text-xl">{compactNumber(primaryTarget?.reported_clicks || 0)}</p>
                 </div>
               </div>
@@ -366,7 +366,7 @@ export default function AdvertiserConsole() {
             <MetricCard label="Conversions" value={compactNumber(totals.conversions)} icon={Users} />
           </div>
 
-          <div className="rounded-[28px] p-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold mb-4">Budget vs Spend</p>
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={chartData}>
@@ -387,13 +387,13 @@ export default function AdvertiserConsole() {
           {campaigns.map((campaign) => {
             const progress = campaign.budget > 0 ? Math.min(100, (campaign.spent / campaign.budget) * 100) : 0
             return (
-              <div key={campaign.id} className="rounded-[28px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+              <div key={campaign.id} className="rounded-[28px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold">{campaign.name}</p>
-                    <p className="text-cyan-100/60 text-xs">{campaign.start_date} - {campaign.end_date}</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs">{campaign.start_date} - {campaign.end_date}</p>
                   </div>
-                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-cyan-100/60')}>
+                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                     {campaign.status}
                   </span>
                 </div>
@@ -403,25 +403,25 @@ export default function AdvertiserConsole() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <p className="text-cyan-100/60">Spent <span className="text-white font-semibold">${Math.round(campaign.spent).toLocaleString()}</span></p>
-                  <p className="text-cyan-100/60">Budget <span className="text-white font-semibold">${Math.round(campaign.budget).toLocaleString()}</span></p>
-                  <p className="text-cyan-100/60">Reach <span className="text-white font-semibold">{compactNumber(campaign.reach)}</span></p>
-                  <p className="text-cyan-100/60">Conversions <span className="text-white font-semibold">{compactNumber(campaign.conversions)}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Spent <span className="text-white font-semibold">${Math.round(campaign.spent).toLocaleString()}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Budget <span className="text-white font-semibold">${Math.round(campaign.budget).toLocaleString()}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Reach <span className="text-white font-semibold">{compactNumber(campaign.reach)}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Conversions <span className="text-white font-semibold">{compactNumber(campaign.conversions)}</span></p>
                 </div>
               </div>
             )
           })}
 
-          {campaigns.length === 0 && <p className="text-cyan-100/60 text-sm">No campaigns yet.</p>}
+          {campaigns.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No campaigns yet.</p>}
         </div>
       )}
 
       {tab === 'creators' && (
-        <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+        <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
           <p className="font-semibold mb-4">Creator CRM</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {creators.slice(0, 6).map((creator) => (
-              <div key={creator.id} className="rounded-[24px] bg-[#0d1726] p-4 border border-cyan-500/10 flex items-center gap-3">
+              <div key={creator.id} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3">
                 {creator.avatar_img ? (
                   <img src={creator.avatar_img} alt={creator.name} className="w-11 h-11 rounded-xl object-cover" />
                 ) : (
@@ -431,12 +431,12 @@ export default function AdvertiserConsole() {
                 )}
                 <div className="min-w-0">
                   <p className="font-semibold text-sm">{creator.name}</p>
-                  <p className="text-cyan-100/60 text-xs">{creator.handle}</p>
+                  <p className="text-[var(--olu-text-secondary)] text-xs">{creator.handle}</p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="text-cyan-100/60 text-sm mt-4">Mission Control now reads the cross-workspace workflow from backend tables. The next step is expanding this into broader creator relationship records.</p>
+          <p className="text-[var(--olu-text-secondary)] text-sm mt-4">Mission Control now reads the cross-workspace workflow from backend tables. The next step is expanding this into broader creator relationship records.</p>
         </div>
       )}
     </div>

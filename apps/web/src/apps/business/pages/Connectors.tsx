@@ -19,7 +19,7 @@ const PLANNED_PLATFORMS = ['Shopify', 'Temu', 'SHEIN', 'Google Play', 'Apple App
 
 const STATUS_CFG = {
   connected: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Connected' },
-  planned: { icon: Circle, color: 'text-cyan-100/45', bg: 'bg-cyan-500/10', label: 'Planned' },
+  planned: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Planned' },
   error: { icon: Circle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Error' },
   disconnected: { icon: Circle, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'Disconnected' },
 }
@@ -54,7 +54,7 @@ export default function Connectors() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-cyan-100/45" size={24} />
+        <Loader2 className="animate-spin text-[var(--olu-text-secondary)]" size={24} />
       </div>
     )
   }
@@ -63,19 +63,19 @@ export default function Connectors() {
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-cyan-100/45 text-xs uppercase tracking-wider mb-2">Workspace</p>
+          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace</p>
           <h1 className="font-black text-2xl">Connectors</h1>
-          <p className="text-cyan-100/55 text-sm mt-1">
+          <p className="text-[var(--olu-text-secondary)] text-sm mt-1">
             {connectedCount} connected · {allPlatforms.length - connectedCount} planned
           </p>
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-[#091422] border border-cyan-500/10 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
           <Cable size={18} className="text-cyan-300" />
         </div>
       </div>
 
       <div className="rounded-3xl border border-cyan-400/15 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.08),transparent_40%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)] p-5">
-        <p className="text-sm text-cyan-100/55 leading-relaxed">
+        <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
           Connectors are <strong className="text-cyan-100/80">existing platforms</strong> where your AI agents execute tasks on your behalf — managing listings, processing orders, handling support tickets, and tracking analytics. Each connector gives your agents the ability to operate inside these platforms as if they were logged-in employees.
         </p>
       </div>
@@ -86,7 +86,7 @@ export default function Connectors() {
           const Icon = cfg.icon
           const meta = PLATFORM_META[platform.provider]
           return (
-            <div key={platform.provider} className="rounded-2xl border border-cyan-500/10 bg-[#091422] p-5 flex items-start gap-4">
+            <div key={platform.provider} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 flex items-start gap-4">
               {meta?.icon ? (
                 <img src={meta.icon} alt={platform.provider} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
               ) : (
@@ -99,14 +99,14 @@ export default function Connectors() {
                   <p className="font-semibold text-sm">{platform.provider}</p>
                   <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', cfg.bg, cfg.color)}>{cfg.label}</span>
                 </div>
-                <p className="text-cyan-100/45 text-xs mt-1">{meta?.description || 'Platform connector'}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs mt-1">{meta?.description || 'Platform connector'}</p>
                 {platform.status === 'connected' && (
                   <div className="flex gap-2 mt-3">
-                    <button className="px-3 py-1.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors flex items-center gap-1.5">
+                    <button className="px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors flex items-center gap-1.5">
                       <Settings2 size={12} />
                       Configure
                     </button>
-                    <button className="px-3 py-1.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/60 text-xs font-medium hover:bg-[#12213a] transition-colors flex items-center gap-1.5">
+                    <button className="px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors flex items-center gap-1.5">
                       <ExternalLink size={12} />
                       Open
                     </button>

@@ -41,6 +41,15 @@
   --olu-chip-inactive-border: #d1d5db;
   --olu-chip-inactive-hover-bg: #f3f4f6;
   --olu-chip-inactive-hover-border: #9ca3af;
+  --olu-section-bg: #f8fafc;
+  --olu-section-border: #e2e8f0;
+  --olu-section-accent: rgba(14, 165, 233, 0.06);
+  --olu-card-bg: #ffffff;
+  --olu-card-border: #e2e8f0;
+  --olu-card-hover: #f1f5f9;
+  --olu-text-secondary: #64748b;
+  --olu-hero-bg: linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%);
+  --olu-hero-accent: rgba(14, 165, 233, 0.08);
 }
 
 .dark {
@@ -81,6 +90,15 @@
   --olu-chip-inactive-border: #3a3a3a;
   --olu-chip-inactive-hover-bg: #1c1c1c;
   --olu-chip-inactive-hover-border: #666666;
+  --olu-section-bg: #091422;
+  --olu-section-border: rgba(6, 182, 212, 0.1);
+  --olu-section-accent: rgba(34, 211, 238, 0.14);
+  --olu-card-bg: #0d1726;
+  --olu-card-border: rgba(6, 182, 212, 0.1);
+  --olu-card-hover: #12213a;
+  --olu-text-secondary: rgba(207, 250, 254, 0.45);
+  --olu-hero-bg: linear-gradient(180deg, #0b1422 0%, #08111d 100%);
+  --olu-hero-accent: rgba(34, 211, 238, 0.14);
 }
 
 /* ─── Global cursor — outside all Tailwind layers ─── */

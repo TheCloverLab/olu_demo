@@ -87,7 +87,7 @@ export default function WalletPage() {
         </div>
         <div>
           <h1 className="font-black text-2xl">Wallet</h1>
-          <p className="text-cyan-100/55 text-sm">Earnings, payouts, and treasury</p>
+          <p className="text-[var(--olu-text-secondary)] text-sm">Earnings, payouts, and treasury</p>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ export default function WalletPage() {
             onClick={() => setTab(item.key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap',
-              tab === item.key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#0d1726] border border-cyan-500/10 text-cyan-100/55 hover:text-white'
+              tab === item.key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
             )}
           >
             {item.label}
@@ -109,39 +109,39 @@ export default function WalletPage() {
       {tab === 'overview' && (
         <div className="space-y-4">
           <div className="grid md:grid-cols-3 gap-3">
-            <div className="rounded-[28px] p-4 md:col-span-2 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-              <p className="text-cyan-100/45 text-xs mb-1">Total Wallet Balance</p>
+            <div className="rounded-[28px] p-4 md:col-span-2 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Total Wallet Balance</p>
               <p className="font-black text-3xl mb-3">${balances.totalUsd.toLocaleString()}</p>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10">
-                  <p className="text-cyan-100/45">Available</p>
+                <div className="p-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)]">Available</p>
                   <p className="font-semibold mt-1">${balances.availableUsd.toFixed(2)}</p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10">
-                  <p className="text-cyan-100/45">Pending</p>
+                <div className="p-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)]">Pending</p>
                   <p className="font-semibold mt-1">${balances.pendingUsd.toFixed(2)}</p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10">
-                  <p className="text-cyan-100/45">Treasury</p>
+                <div className="p-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)]">Treasury</p>
                   <p className="font-semibold mt-1">${balances.usdc.toFixed(2)}</p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-              <p className="text-cyan-100/45 text-xs mb-2">Withdraw</p>
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+              <p className="text-[var(--olu-text-secondary)] text-xs mb-2">Withdraw</p>
               <input
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="Amount in USD"
-                className="w-full rounded-xl bg-[#0d1726] border border-cyan-500/10 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-300/40"
+                className="w-full rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-300/40"
               />
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[100, 300, 500, 1000].map((quick) => (
                   <button
                     key={quick}
                     onClick={() => setWithdrawAmount(String(quick))}
-                    className="rounded-lg bg-[#0d1726] border border-cyan-500/10 hover:bg-[#12213a] text-xs py-1.5"
+                    className="rounded-lg bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] text-xs py-1.5"
                   >
                     ${quick}
                   </button>
@@ -155,21 +155,21 @@ export default function WalletPage() {
                 {withdrawing ? 'Submitting...' : 'Request payout'}
               </button>
               {payoutMessage && (
-                <p className="mt-2 text-xs text-cyan-100/45">{payoutMessage}</p>
+                <p className="mt-2 text-xs text-[var(--olu-text-secondary)]">{payoutMessage}</p>
               )}
             </div>
           </div>
 
-          <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-3">Revenue Mix (30 days)</p>
             <div className="space-y-3">
               {REVENUE_SPLIT.map((item) => (
                 <div key={item.source}>
                   <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-cyan-100/45">{item.source}</span>
+                    <span className="text-[var(--olu-text-secondary)]">{item.source}</span>
                     <span className="font-semibold">${item.amount.toFixed(2)} · {item.value}%</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#0d1726] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[var(--olu-card-bg)] overflow-hidden">
                     <div className={clsx('h-full rounded-full', item.color)} style={{ width: `${item.value}%` }} />
                   </div>
                 </div>
@@ -178,46 +178,46 @@ export default function WalletPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-3">
-            <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-emerald-300">
                 <ArrowDownLeft size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Inflow</p>
               </div>
               <p className="font-black text-2xl">${monthlyInflow.toFixed(2)}</p>
-              <p className="text-cyan-100/45 text-xs mt-1">Last 30 days</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Last 30 days</p>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-cyan-300">
                 <Coins size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Treasury</p>
               </div>
               <p className="font-black text-2xl">${balances.usdc.toFixed(2)}</p>
-              <p className="text-cyan-100/45 text-xs mt-1">Treasury balance</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Treasury balance</p>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-amber-300">
                 <Clock3 size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Next Payout</p>
               </div>
               <p className="font-black text-2xl">2 days</p>
-              <p className="text-cyan-100/45 text-xs mt-1">Scheduled bank settlement</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Scheduled bank settlement</p>
             </div>
           </div>
         </div>
       )}
 
       {tab === 'transactions' && (
-        <div className="rounded-[28px] p-4 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+        <div className="rounded-[28px] p-4 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
           {TRANSACTIONS.map((tx) => (
-            <motion.div key={tx.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 flex items-center gap-3">
+            <motion.div key={tx.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-3">
               <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/15 text-cyan-300')}>
                 {tx.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{tx.title}</p>
-                <p className="text-cyan-100/45 text-xs">{tx.channel} · {tx.at}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{tx.channel} · {tx.at}</p>
               </div>
               <div className="text-right">
                 <p className={clsx('font-semibold', tx.type === 'in' ? 'text-emerald-300' : 'text-cyan-300')}>
@@ -234,26 +234,26 @@ export default function WalletPage() {
 
       {tab === 'payouts' && (
         <div className="space-y-4">
-          <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-3">Payout Methods</p>
             <div className="space-y-2.5">
-              <div className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Landmark size={16} className="text-emerald-300" />
                   <div>
                     <p className="text-sm font-medium">Bank Transfer (USD)</p>
-                    <p className="text-cyan-100/45 text-xs">Chase **** 9831 · primary</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs">Chase **** 9831 · primary</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">Active</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Coins size={16} className="text-cyan-300" />
                   <div>
                     <p className="text-sm font-medium">Treasury Wallet</p>
-                    <p className="text-cyan-100/45 text-xs">Digital wallet · primary</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs">Digital wallet · primary</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300">Active</span>
@@ -261,13 +261,13 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-2">Risk & Compliance</p>
-            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#0d1726] border border-cyan-500/10">
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <ShieldCheck size={16} className="text-emerald-300 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Compliance checks passed</p>
-                <p className="text-cyan-100/45 text-xs">KYC level 2 verified · no payout holds in the last 90 days.</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">KYC level 2 verified · no payout holds in the last 90 days.</p>
               </div>
             </div>
           </div>

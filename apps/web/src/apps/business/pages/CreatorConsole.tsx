@@ -30,10 +30,10 @@ type TabKey = (typeof TABS)[number]['key']
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-[24px] p-4 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-cyan-100/55 text-xs">{label}</p>
-        <Icon size={14} className="text-cyan-100/55" />
+        <p className="text-[var(--olu-text-secondary)] text-xs">{label}</p>
+        <Icon size={14} className="text-[var(--olu-text-secondary)]" />
       </div>
       <p className="font-black text-2xl">{value}</p>
     </div>
@@ -140,7 +140,7 @@ export default function CreatorConsole() {
   }
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto px-4 py-8 text-cyan-100/60">Loading creator console...</div>
+    return <div className="max-w-6xl mx-auto px-4 py-8 text-[var(--olu-text-secondary)]">Loading creator console...</div>
   }
 
   return (
@@ -149,18 +149,18 @@ export default function CreatorConsole() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="font-black text-2xl">Creator Ops</h1>
-            <p className="text-cyan-100/60 text-sm mt-1">Creator-side approvals, monetization, and workflow telemetry inside the business workspace</p>
+            <p className="text-[var(--olu-text-secondary)] text-sm mt-1">Creator-side approvals, monetization, and workflow telemetry inside the business workspace</p>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Reward Locked</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Reward Locked</p>
               <p className="font-black text-2xl">${myTarget?.creator_reward ?? 0}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Current workflow payout</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Current workflow payout</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[#0a1525] p-4">
-              <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Current Stage</p>
+            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+              <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Current Stage</p>
               <p className="font-black text-2xl capitalize">{workflow?.campaign.status || 'idle'}</p>
-              <p className="text-cyan-100/60 text-xs mt-1">Synced from backend campaign state</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Synced from backend campaign state</p>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function CreatorConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#091422] border border-cyan-500/10 text-cyan-100/60 hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
             )}
           >
             <Icon size={14} />
@@ -184,40 +184,40 @@ export default function CreatorConsole() {
 
       {tab === 'campaigns' && (
         <div className="grid lg:grid-cols-[1.2fr,0.95fr] gap-4">
-          <div className="rounded-[32px] p-6 space-y-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+          <div className="rounded-[32px] p-6 space-y-5 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-cyan-100/55 text-xs uppercase tracking-wider mb-2">KOL-side workspace</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">KOL-side workspace</p>
                 <h2 className="font-black text-2xl">Business Agent inbox</h2>
-                <p className="text-cyan-100/60 text-sm mt-2 max-w-2xl">
+                <p className="text-[var(--olu-text-secondary)] text-sm mt-2 max-w-2xl">
                   The creator now sees the same workflow from Supabase, not from local UI state. This is the approval step for an incoming advertiser collaboration.
                 </p>
               </div>
-              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-300' : 'bg-cyan-500/10 text-cyan-100/60')}>
+              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                 {campaignAccepted ? 'Accepted' : hasIncomingCampaign ? 'Needs review' : 'No request'}
               </span>
             </div>
 
-            <div className="rounded-[28px] bg-[#0d1726] p-5 border border-cyan-500/10">
+            <div className="rounded-[28px] bg-[var(--olu-card-bg)] p-5 border border-[var(--olu-card-border)]">
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div>
                   <p className="font-bold text-lg">{workflow?.campaign.brand_name || 'No campaign'}</p>
-                  <p className="text-cyan-100/55 text-xs mt-1">Promotion request for {myTarget?.creator?.name || user?.name || 'creator'}</p>
+                  <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Promotion request for {myTarget?.creator?.name || user?.name || 'creator'}</p>
                 </div>
                 <span className="text-sm font-semibold">${myTarget?.offer_amount ?? 0}</span>
               </div>
               <p className="text-sm text-cyan-100/65 leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
               <div className="grid md:grid-cols-3 gap-3 mt-4">
-                <div className="rounded-2xl bg-[#08111d] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Deliverable</p>
+                <div className="rounded-2xl bg-[var(--olu-header-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Deliverable</p>
                   <p className="font-semibold text-sm">{myTarget?.deliverable_type || 'ai_video'}</p>
                 </div>
-                <div className="rounded-2xl bg-[#08111d] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Placement fee</p>
+                <div className="rounded-2xl bg-[var(--olu-header-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Placement fee</p>
                   <p className="font-semibold text-sm">${myTarget?.offer_amount ?? 0}</p>
                 </div>
-                <div className="rounded-2xl bg-[#08111d] p-4 border border-cyan-500/10">
-                  <p className="text-cyan-100/55 text-xs mb-1">Queue status</p>
+                <div className="rounded-2xl bg-[var(--olu-header-bg)] p-4 border border-[var(--olu-card-border)]">
+                  <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Queue status</p>
                   <p className="font-semibold text-sm capitalize">{myTarget?.deliverable_status || 'waiting'}</p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleReject}
                 disabled={!hasIncomingCampaign || actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/65 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-100/65 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
               >
                 <XCircle size={16} />
                 Reject
@@ -243,7 +243,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleRefresh}
                 disabled={actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[#0d1726] border border-cyan-500/10 text-cyan-100/65 text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-100/65 text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
               >
                 <RefreshCcw size={14} />
                 Refresh
@@ -251,7 +251,7 @@ export default function CreatorConsole() {
             </div>
           </div>
 
-          <div className="rounded-[32px] p-6 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+          <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <p className="font-bold mb-4">Approval story</p>
             <div className="space-y-3">
               {[
@@ -260,43 +260,43 @@ export default function CreatorConsole() {
                 { title: 'Publishing queue', desc: 'After approval, the campaign can be advanced by the marketer into scheduled and published states.', active: ['scheduled', 'published', 'completed'].includes(workflow?.campaign.status || '') },
                 { title: 'Metrics returned', desc: 'The creator-side workspace can see when reported results come back from the live placement.', active: ['completed'].includes(workflow?.campaign.status || '') },
               ].map((item) => (
-                <div key={item.title} className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10 flex items-start gap-3">
-                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-cyan-100/55')}>
+                <div key={item.title} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
+                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                     {item.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                   </div>
                   <div>
                     <p className="font-semibold text-sm">{item.title}</p>
-                    <p className="text-cyan-100/60 text-xs mt-1 leading-relaxed">{item.desc}</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs mt-1 leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-2xl bg-[#0d1726] p-4 mt-4 border border-cyan-500/10">
-              <p className="text-cyan-100/55 text-xs mb-1">Creator reward locked</p>
+            <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 mt-4 border border-[var(--olu-card-border)]">
+              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Creator reward locked</p>
               <p className="font-black text-2xl">${myTarget?.creator_reward ?? 0}</p>
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-4">
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <p className="text-cyan-100/55 text-xs mb-1">Views</p>
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Views</p>
                 <p className="font-black text-xl">{compactNumber(myTarget?.reported_views ?? 0)}</p>
               </div>
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <p className="text-cyan-100/55 text-xs mb-1">Clicks</p>
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Clicks</p>
                 <p className="font-black text-xl">{compactNumber(myTarget?.reported_clicks ?? 0)}</p>
               </div>
-              <div className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
-                <p className="text-cyan-100/55 text-xs mb-1">Conversions</p>
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
+                <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Conversions</p>
                 <p className="font-black text-xl">{compactNumber(myTarget?.reported_conversions ?? 0)}</p>
               </div>
             </div>
 
             <div className="space-y-3 mt-4">
               {(workflow?.events || []).slice(0, 3).map((event) => (
-                <div key={event.id} className="rounded-2xl bg-[#0d1726] p-4 border border-cyan-500/10">
+                <div key={event.id} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
                   <p className="font-semibold text-sm">{event.title}</p>
-                  <p className="text-cyan-100/60 text-xs mt-1">{event.detail}</p>
+                  <p className="text-[var(--olu-text-secondary)] text-xs mt-1">{event.detail}</p>
                 </div>
               ))}
             </div>
@@ -313,7 +313,7 @@ export default function CreatorConsole() {
             <MetricCard label="IP Licenses" value={licenses.length.toString()} icon={CheckSquare} />
           </div>
 
-          <div className="rounded-[28px] p-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold mb-4">Revenue Breakdown</p>
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={revenue}>
@@ -329,7 +329,7 @@ export default function CreatorConsole() {
             </ResponsiveContainer>
           </div>
 
-          <div className="rounded-[28px] p-5 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold mb-4">Platform Views</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={views}>
@@ -347,58 +347,58 @@ export default function CreatorConsole() {
       )}
 
       {tab === 'fans' && (
-        <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
           {fans.map((fan) => (
-            <div key={fan.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
+            <div key={fan.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <div>
                 <p className="font-medium text-sm">{fan.name}</p>
-                <p className="text-cyan-100/55 text-xs">{fan.handle} · {fan.tier}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{fan.handle} · {fan.tier}</p>
               </div>
               <p className="text-sm font-semibold">${Math.round(fan.total_spend)}</p>
             </div>
           ))}
-          {fans.length === 0 && <p className="text-cyan-100/60 text-sm">No customer data yet.</p>}
+          {fans.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No customer data yet.</p>}
         </div>
       )}
 
       {tab === 'ip' && (
         <div className="grid lg:grid-cols-2 gap-4">
-          <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold">Licenses</p>
             {licenses.map((item) => (
-              <div key={item.id} className="p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
+              <div key={item.id} className="p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
                 <p className="text-sm font-medium">{item.requester}</p>
-                <p className="text-cyan-100/55 text-xs">{item.type} · {item.status}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{item.type} · {item.status}</p>
               </div>
             ))}
-            {licenses.length === 0 && <p className="text-cyan-100/60 text-sm">No license requests.</p>}
+            {licenses.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No license requests.</p>}
           </div>
 
-          <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
             <p className="font-bold">Infringements</p>
             {infringements.map((item) => (
-              <div key={item.id} className="p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
+              <div key={item.id} className="p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
                 <p className="text-sm font-medium">{item.platform} · {item.offender}</p>
-                <p className="text-cyan-100/55 text-xs">{item.content} · {item.status}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{item.content} · {item.status}</p>
               </div>
             ))}
-            {infringements.length === 0 && <p className="text-cyan-100/60 text-sm">No infringement records.</p>}
+            {infringements.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No infringement records.</p>}
           </div>
         </div>
       )}
 
       {tab === 'shop' && (
-        <div className="rounded-[32px] p-5 space-y-3 border border-cyan-500/10 bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
           {products.map((product) => (
-            <div key={product.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[#0d1726] border border-cyan-500/10">
+            <div key={product.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <div>
                 <p className="text-sm font-medium">{product.name}</p>
-                <p className="text-cyan-100/55 text-xs">{product.status} · stock {product.stock}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{product.status} · stock {product.stock}</p>
               </div>
               <p className="font-semibold">${Number(product.price).toFixed(2)}</p>
             </div>
           ))}
-          {products.length === 0 && <p className="text-cyan-100/60 text-sm">No products yet.</p>}
+          {products.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No products yet.</p>}
         </div>
       )}
     </div>

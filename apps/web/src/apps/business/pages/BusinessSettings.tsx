@@ -87,30 +87,30 @@ export default function BusinessSettings() {
   }
 
   if (loading) {
-    return <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 text-cyan-100/60">Loading workspace settings...</div>
+    return <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 text-[var(--olu-text-secondary)]">Loading workspace settings...</div>
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-24 md:pb-8 space-y-6">
       <div className="flex items-start gap-3">
-        <button onClick={() => navigate('/business')} className="p-2 rounded-full hover:bg-[#0d1a2d] transition-colors">
+        <button onClick={() => navigate('/business')} className="p-2 rounded-full hover:bg-[var(--olu-card-hover)] transition-colors">
           <ChevronLeft size={20} />
         </button>
         <div>
-          <p className="text-cyan-100/55 text-xs uppercase tracking-[0.18em] mb-2">Workspace</p>
+          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Workspace</p>
           <h1 className="font-black text-2xl">Settings</h1>
         </div>
       </div>
 
       {/* Modules */}
-      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-5">
           <span className="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-200 flex items-center justify-center">
             <Sparkles size={18} />
           </span>
           <div>
             <p className="font-bold">Modules</p>
-            <p className="text-cyan-100/55 text-xs">Enable or disable operator surfaces for this workspace</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">Enable or disable operator surfaces for this workspace</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -118,14 +118,14 @@ export default function BusinessSettings() {
             const Icon = module.icon
             const isSaving = savingModule === module.key
             return (
-              <div key={module.key} className="flex items-center justify-between gap-4 rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
+              <div key={module.key} className="flex items-center justify-between gap-4 rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
                 <div className="flex items-start gap-3">
                   <span className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${module.accentClass}`}>
                     <Icon size={18} />
                   </span>
                   <div>
                     <p className="font-semibold text-sm">{module.label}</p>
-                    <p className="text-cyan-100/55 text-xs max-w-md mt-1">{module.description}</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs max-w-md mt-1">{module.description}</p>
                   </div>
                 </div>
                 <button
@@ -135,7 +135,7 @@ export default function BusinessSettings() {
                   className={`min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
                     module.enabled
                       ? 'bg-cyan-300 text-slate-950 hover:bg-cyan-200'
-                      : 'bg-white/8 text-cyan-50 border border-cyan-500/10 hover:bg-white/12'
+                      : 'bg-white/8 text-cyan-50 border border-[var(--olu-card-border)] hover:bg-white/12'
                   }`}
                 >
                   {isSaving ? 'Saving...' : module.enabled ? 'Enabled' : 'Enable'}
@@ -147,53 +147,53 @@ export default function BusinessSettings() {
       </section>
 
       {/* Billing */}
-      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
             <CreditCard size={18} />
           </span>
           <div>
             <p className="font-bold">Billing</p>
-            <p className="text-cyan-100/55 text-xs">Plan, status, and billing contact</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">Plan, status, and billing contact</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
-          <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-            <p className="text-cyan-100/55 text-xs mb-1">Plan</p>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Plan</p>
             <p className="font-semibold text-sm capitalize">{settings?.billing?.plan || 'Starter'}</p>
           </div>
-          <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-            <p className="text-cyan-100/55 text-xs mb-1">Status</p>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Status</p>
             <p className="font-semibold text-sm capitalize">{settings?.billing?.status || 'Trial'}</p>
           </div>
-          <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-            <p className="text-cyan-100/55 text-xs mb-1">Billing contact</p>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Billing contact</p>
             <p className="font-semibold text-sm truncate">{settings?.billing?.billing_email || user?.email}</p>
           </div>
         </div>
       </section>
 
       {/* Notifications */}
-      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-2xl bg-fuchsia-500/15 text-fuchsia-300 flex items-center justify-center">
             <Bell size={18} />
           </span>
           <div>
             <p className="font-bold">Notifications</p>
-            <p className="text-cyan-100/55 text-xs">How events are routed in the workspace</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">How events are routed in the workspace</p>
           </div>
         </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3 rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
+          <div className="flex items-center justify-between gap-3 rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
             <div>
               <p className="font-semibold text-sm">Publish events</p>
-              <p className="text-cyan-100/55 text-xs mt-0.5">Route creator approvals, rejected offers, and publish events to workspace</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5">Route creator approvals, rejected offers, and publish events to workspace</p>
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
               settings?.policies?.notification_policy?.route_publish_events_to_workspace
                 ? 'bg-emerald-500/15 text-emerald-300'
-                : 'bg-white/8 text-cyan-100/60'
+                : 'bg-white/8 text-[var(--olu-text-secondary)]'
             }`}>
               {settings?.policies?.notification_policy?.route_publish_events_to_workspace ? 'On' : 'Off'}
             </span>
@@ -202,42 +202,42 @@ export default function BusinessSettings() {
       </section>
 
       {/* Security */}
-      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center">
             <KeyRound size={18} />
           </span>
           <div>
             <p className="font-bold">Security</p>
-            <p className="text-cyan-100/55 text-xs">Session and access controls</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">Session and access controls</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-            <p className="text-cyan-100/55 text-xs mb-1">Operator role</p>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Operator role</p>
             <p className="font-semibold text-sm capitalize">{settings?.membership.membership_role || 'Owner'}</p>
           </div>
-          <div className="rounded-2xl p-4 bg-[#0d1726] border border-cyan-500/10">
-            <p className="text-cyan-100/55 text-xs mb-1">Sandbox takeover</p>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Sandbox takeover</p>
             <p className="font-semibold text-sm capitalize">{settings?.policies?.sandbox_policy?.takeover_mode || 'Manual'}</p>
           </div>
         </div>
       </section>
 
       {/* Session */}
-      <section className="rounded-3xl p-6 border border-cyan-500/10 bg-[#091422]">
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-300 flex items-center justify-center">
             <LogOut size={18} />
           </span>
           <div>
             <p className="font-bold">Session</p>
-            <p className="text-cyan-100/55 text-xs">Sign out from this device</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">Sign out from this device</p>
           </div>
         </div>
         <button
           onClick={() => setShowSignOutConfirm(true)}
-          className="w-full rounded-2xl bg-[#0d1726] border border-cyan-500/10 hover:bg-[#111e30] text-cyan-100/70 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+          className="w-full rounded-2xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[#111e30] text-[var(--olu-sidebar-text)] py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
         >
           <LogOut size={14} />
           Sign out
@@ -258,14 +258,14 @@ export default function BusinessSettings() {
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="w-full max-w-sm bg-[#091422] border border-cyan-500/10 rounded-2xl p-5">
+              <div className="w-full max-w-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-5">
                 <h3 className="font-bold text-lg mb-1">Sign out?</h3>
-                <p className="text-cyan-100/55 text-sm mb-4">You will need to sign in again to continue.</p>
+                <p className="text-[var(--olu-text-secondary)] text-sm mb-4">You will need to sign in again to continue.</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowSignOutConfirm(false)}
                     disabled={signingOut}
-                    className="flex-1 rounded-xl bg-[#0d1726] border border-cyan-500/10 hover:bg-[#111e30] disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
+                    className="flex-1 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[#111e30] disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
                   >
                     Cancel
                   </button>

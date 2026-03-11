@@ -64,11 +64,11 @@ export default function EmployeeProfile() {
               <img
                 src={employee.avatar_img}
                 alt={employee.name}
-                className="w-20 h-20 rounded-2xl object-cover border-4 border-[#091422] bg-[var(--olu-card-bg)]"
+                className="w-20 h-20 rounded-2xl object-cover border-4 border-[var(--olu-card-border)] bg-[var(--olu-card-bg)]"
               />
             ) : (
               <div className={clsx(
-                'w-20 h-20 rounded-2xl bg-gradient-to-br flex items-center justify-center text-2xl font-bold text-white border-4 border-[#091422]',
+                'w-20 h-20 rounded-2xl bg-gradient-to-br flex items-center justify-center text-2xl font-bold text-white border-4 border-[var(--olu-card-border)]',
                 employee.color
               )}>
                 {employee.name.split(' ').map((n) => n[0]).join('')}

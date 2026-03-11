@@ -109,7 +109,7 @@ export default function WalletPage() {
       {tab === 'overview' && (
         <div className="space-y-4">
           <div className="grid md:grid-cols-3 gap-3">
-            <div className="rounded-[28px] p-4 md:col-span-2 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 md:col-span-2 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Total Wallet Balance</p>
               <p className="font-black text-3xl mb-3">${balances.totalUsd.toLocaleString()}</p>
               <div className="grid grid-cols-3 gap-2 text-xs">
@@ -128,7 +128,7 @@ export default function WalletPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <p className="text-[var(--olu-text-secondary)] text-xs mb-2">Withdraw</p>
               <input
                 value={withdrawAmount}
@@ -160,7 +160,7 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-3">Revenue Mix (30 days)</p>
             <div className="space-y-3">
               {REVENUE_SPLIT.map((item) => (
@@ -178,7 +178,7 @@ export default function WalletPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-3">
-            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-emerald-300">
                 <ArrowDownLeft size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Inflow</p>
@@ -187,7 +187,7 @@ export default function WalletPage() {
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Last 30 days</p>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-cyan-300">
                 <Coins size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Treasury</p>
@@ -196,7 +196,7 @@ export default function WalletPage() {
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Treasury balance</p>
             </div>
 
-            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+            <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
               <div className="flex items-center gap-2 mb-2 text-amber-300">
                 <Clock3 size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Next Payout</p>
@@ -209,7 +209,7 @@ export default function WalletPage() {
       )}
 
       {tab === 'transactions' && (
-        <div className="rounded-[28px] p-4 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+        <div className="rounded-[28px] p-4 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
           {TRANSACTIONS.map((tx) => (
             <motion.div key={tx.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-3">
               <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/15 text-cyan-300')}>
@@ -234,7 +234,7 @@ export default function WalletPage() {
 
       {tab === 'payouts' && (
         <div className="space-y-4">
-          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-3">Payout Methods</p>
             <div className="space-y-2.5">
               <div className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-between">
@@ -261,7 +261,7 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-2">Risk & Compliance</p>
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <ShieldCheck size={16} className="text-emerald-300 mt-0.5" />

@@ -17,7 +17,7 @@ function AgentCard({
   onHire: (agent: AgentTemplate) => void
 }) {
   return (
-    <motion.div whileHover={{ y: -3 }} className="rounded-[28px] p-4 flex flex-col border border-cyan-400/10 bg-[#091523] shadow-[0_16px_40px_rgba(3,8,19,0.28)] hover:bg-[#0e1b2d] transition-colors">
+    <motion.div whileHover={{ y: -3 }} className="rounded-[28px] p-4 flex flex-col border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(3,8,19,0.28)] hover:bg-[var(--olu-card-hover)] transition-colors">
       <img src={agent.avatar_img || ''} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
@@ -199,7 +199,7 @@ export default function AIAgentConfig() {
       </AnimatePresence>
 
       {loading ? (
-        <div className="rounded-3xl border border-cyan-400/10 bg-[#091523] p-8 text-[var(--olu-text-secondary)] text-sm">
+        <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-8 text-[var(--olu-text-secondary)] text-sm">
           Loading workspace agents...
         </div>
       ) : (
@@ -223,14 +223,14 @@ export default function AIAgentConfig() {
                         navigate(`/business/team/${agent.agent_key || agent.id}`)
                       }
                     }}
-                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-cyan-400/10 bg-[#091523] hover:bg-[var(--olu-card-hover)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
+                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-hover)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
                   >
                     <div className="relative flex-shrink-0">
                       {agent.avatar_img
                         ? <img src={agent.avatar_img} alt={agent.name} className="w-11 h-11 rounded-xl object-cover" />
                         : <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${agent.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xl font-bold text-white`}>{agent.name[0]}</div>
                       }
-                      <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#091523]', agent.status === 'online' ? 'bg-emerald-400' : 'bg-amber-400')} />
+                      <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--olu-section-bg)]', agent.status === 'online' ? 'bg-emerald-400' : 'bg-amber-400')} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">{agent.name}</p>
@@ -250,7 +250,7 @@ export default function AIAgentConfig() {
             <div className="flex items-center gap-2 mb-4">
               <ShoppingBag size={16} className="text-[var(--olu-text-secondary)]" />
               <p className="font-bold text-lg">Agent Marketplace</p>
-              <div className="ml-auto flex items-center gap-1 p-1 bg-[#091523] border border-[var(--olu-card-border)] rounded-xl overflow-x-auto scrollbar-hide">
+              <div className="ml-auto flex items-center gap-1 p-1 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-xl overflow-x-auto scrollbar-hide">
                 {categories.map((category) => (
                   <button
                     key={category}

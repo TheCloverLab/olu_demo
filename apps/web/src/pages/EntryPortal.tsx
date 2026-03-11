@@ -3,7 +3,7 @@ import { ArrowRight, Briefcase, Users } from 'lucide-react'
 
 export default function EntryPortal() {
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-10 md:py-16">
+    <div className="min-h-screen bg-olu-bg text-olu-text px-4 py-10 md:py-16">
       <div className="max-w-5xl mx-auto">
         <div className="max-w-2xl mb-10">
           <p className="text-xs uppercase tracking-[0.24em] text-olu-muted mb-4">OLU</p>

@@ -276,7 +276,7 @@ export default function Home() {
               ].map((item) => (
                 <div key={item.label} className="rounded-full border border-olu-border bg-white/5 px-3 py-2">
                   <span className="font-semibold text-sm">{item.value}</span>
-                  <span className="ml-2 text-xs text-white/60">{item.label}</span>
+                  <span className="ml-2 text-xs text-olu-muted">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -391,7 +391,7 @@ export default function Home() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 p-4">
                       <div>
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-white/60">{post.creator?.name || 'Community host'}</p>
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted">{post.creator?.name || 'Community host'}</p>
                         <p className="mt-1 font-semibold text-white">{post.title}</p>
                       </div>
                       {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> Members</span> : null}

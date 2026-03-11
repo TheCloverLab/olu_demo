@@ -63,7 +63,7 @@ function DiscoverCard({
           <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300 backdrop-blur-sm">
             {app.price_label}
           </span>
-          <span className="text-xs text-white/60">{app.owner_name}</span>
+          <span className="text-xs text-olu-muted">{app.owner_name}</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {app.highlights.map((item) => (
@@ -181,7 +181,7 @@ export default function Discover() {
             Communities to join, academies to learn from.
           </p>
         </div>
-        <div className="rounded-2xl border border-olu-border bg-[#101217] px-4 py-3 flex items-center gap-3">
+        <div className="rounded-2xl border border-olu-border bg-olu-surface px-4 py-3 flex items-center gap-3">
           <Search size={16} className="text-white/35" />
           <input
             value={query}

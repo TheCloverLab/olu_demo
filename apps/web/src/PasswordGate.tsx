@@ -40,7 +40,7 @@ export default function PasswordGate({ children }: PasswordGateProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-olu-bg flex flex-col items-center justify-center px-4">
       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mb-6">
         <Zap size={20} className="text-black" fill="black" />
       </div>
@@ -54,7 +54,7 @@ export default function PasswordGate({ children }: PasswordGateProps) {
           onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="Password"
           autoFocus
-          className={`w-full px-4 py-3 rounded-xl bg-[#1c1c1c] border text-sm placeholder:text-olu-muted focus:outline-none transition-colors ${error ? 'border-red-500' : 'border-olu-border focus:border-white/20'}`}
+          className={`w-full px-4 py-3 rounded-xl bg-olu-card border text-sm placeholder:text-olu-muted focus:outline-none transition-colors ${error ? 'border-red-500' : 'border-olu-border focus:border-[var(--olu-input-focus)]'}`}
         />
         <button onClick={submit} disabled={loading} className="w-full py-3 rounded-xl bg-white text-black font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
           {loading ? 'Checking...' : 'Enter'}

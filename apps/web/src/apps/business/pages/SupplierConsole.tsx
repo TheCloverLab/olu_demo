@@ -19,7 +19,7 @@ function compactNumber(value: number) {
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[var(--olu-text-secondary)] text-xs">{label}</p>
         <Icon size={14} className="text-[var(--olu-text-secondary)]" />
@@ -108,7 +108,7 @@ export default function SupplierConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[#091523] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
             )}
           >
             <Icon size={14} />
@@ -131,7 +131,7 @@ export default function SupplierConsole() {
             <MetricCard label="Products" value={products.length.toString()} icon={TrendingUp} />
           </div>
 
-          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
             <p className="font-bold">Active Partnerships</p>
             {activePartnerships.map((partnership) => (
               <div key={partnership.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
@@ -153,7 +153,7 @@ export default function SupplierConsole() {
             .slice()
             .sort((a, b) => Number(b.sold_month || 0) - Number(a.sold_month || 0))
             .map((product, index) => (
-              <div key={product.id} className="rounded-[28px] p-4 flex items-center gap-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+              <div key={product.id} className="rounded-[28px] p-4 flex items-center gap-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
                 <div className="w-8 h-8 rounded-lg bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-center font-black text-sm">{index + 1}</div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm line-clamp-1">{product.name}</p>
@@ -172,7 +172,7 @@ export default function SupplierConsole() {
       {tab === 'creators' && (
         <div className="space-y-3">
           {partnerships.map((partnership) => (
-            <div key={partnership.id} className="rounded-[32px] p-4 border border-[var(--olu-card-border)] bg-[#091523] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+            <div key={partnership.id} className="rounded-[32px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">

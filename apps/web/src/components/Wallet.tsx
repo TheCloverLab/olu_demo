@@ -50,7 +50,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
           {/* Header */}
           <div className="p-5 border-b border-olu-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[var(--olu-glass-hover)] flex items-center justify-center">
                 <Wallet size={18} className="text-white" />
               </div>
               <div>
@@ -58,7 +58,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 <p className="text-olu-muted text-xs">Manage your earnings</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-[#2a2a2a] rounded-lg transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-[var(--olu-glass-hover)] rounded-lg transition-colors">
               <X size={18} className="text-olu-muted" />
             </button>
           </div>

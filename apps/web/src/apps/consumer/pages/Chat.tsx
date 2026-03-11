@@ -162,7 +162,7 @@ export default function Chat() {
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <h1 className="font-black text-2xl mb-4">Messages</h1>
       {activeTopic && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 mb-4">
+        <div className="rounded-2xl border border-olu-border bg-white/5 p-4 mb-4">
           <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Topic lobby</p>
           <p className="font-semibold text-sm">{activeTopic.name}</p>
           <p className="text-sm text-olu-muted mt-2">{activeTopic.description}</p>

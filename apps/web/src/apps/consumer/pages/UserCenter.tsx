@@ -56,7 +56,7 @@ export default function UserCenter() {
                   {user.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
                 </div>
                 <p className="text-olu-muted text-sm mt-1">{user.handle}</p>
-                {user.bio && <p className="text-sm text-white/60 mt-2 line-clamp-2">{user.bio}</p>}
+                {user.bio && <p className="text-sm text-olu-muted mt-2 line-clamp-2">{user.bio}</p>}
               </div>
             </div>
           </div>

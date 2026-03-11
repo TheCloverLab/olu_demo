@@ -121,7 +121,7 @@ export default function HumanEmployees() {
               <div className={clsx('w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-sm', emp.color)}>
                 {emp.name.split(' ').map((n) => n[0]).join('')}
               </div>
-              <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#091422]', STATUS_DOT[emp.status])} />
+              <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--olu-card-border)]', STATUS_DOT[emp.status])} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

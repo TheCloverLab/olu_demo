@@ -37,7 +37,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-olu-bg px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -48,7 +48,7 @@ export default function Signup() {
           <p className="text-olu-muted">Create your account and start connecting</p>
         </div>
 
-        <div className="bg-[#111111] rounded-2xl p-6">
+        <div className="bg-olu-surface rounded-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm">
@@ -64,7 +64,7 @@ export default function Signup() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="you@example.com"
                 required
-                className="w-full bg-[#1c1c1c] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
               />
             </div>
 
@@ -81,7 +81,7 @@ export default function Signup() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full bg-[#1c1c1c] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
               />
             </div>
 
@@ -107,7 +107,7 @@ export default function Signup() {
           <div className="mt-6 text-center">
             <p className="text-sm text-olu-muted">
               Already have an account?{' '}
-              <Link to="/login" className="text-white hover:underline font-medium">
+              <Link to="/login" className="text-olu-text hover:underline font-medium">
                 Sign in
               </Link>
             </p>

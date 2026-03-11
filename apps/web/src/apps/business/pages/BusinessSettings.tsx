@@ -237,7 +237,7 @@ export default function BusinessSettings() {
         </div>
         <button
           onClick={() => setShowSignOutConfirm(true)}
-          className="w-full rounded-2xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[#111e30] text-[var(--olu-sidebar-text)] py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+          className="w-full rounded-2xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] text-[var(--olu-sidebar-text)] py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
         >
           <LogOut size={14} />
           Sign out
@@ -265,7 +265,7 @@ export default function BusinessSettings() {
                   <button
                     onClick={() => setShowSignOutConfirm(false)}
                     disabled={signingOut}
-                    className="flex-1 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[#111e30] disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
+                    className="flex-1 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] disabled:opacity-50 py-2.5 text-sm font-semibold transition-colors"
                   >
                     Cancel
                   </button>

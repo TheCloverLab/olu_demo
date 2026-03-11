@@ -28,7 +28,7 @@ export default function StandaloneAppLayout() {
 
   if (loading) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center bg-[#04111f] text-white">
+      <div className="h-[100dvh] flex items-center justify-center bg-olu-bg text-white">
         <p className="text-cyan-100/55 text-sm">Loading app...</p>
       </div>
     )
@@ -36,7 +36,7 @@ export default function StandaloneAppLayout() {
 
   if (!appCtx) {
     return (
-      <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#04111f] text-white gap-4">
+      <div className="h-[100dvh] flex flex-col items-center justify-center bg-olu-bg text-white gap-4">
         <p className="text-cyan-100/55 text-sm">App not found</p>
         <button onClick={() => navigate('/')} className="text-cyan-300 text-sm hover:underline">Go home</button>
       </div>
@@ -52,9 +52,9 @@ export default function StandaloneAppLayout() {
   ]
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-[#04111f] text-white">
+    <div className="h-[100dvh] flex flex-col bg-olu-bg text-white">
       {/* Minimal header */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-cyan-500/10 bg-[#08111d]/95 backdrop-blur flex-shrink-0">
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-cyan-500/10 bg-olu-bg/95 backdrop-blur flex-shrink-0">
         <p className="font-bold text-sm truncate">{appCtx.title}</p>
       </header>
 
@@ -64,7 +64,7 @@ export default function StandaloneAppLayout() {
       </main>
 
       {/* Bottom tab navigation */}
-      <nav className="flex items-center border-t border-cyan-500/10 bg-[#08111d]/95 backdrop-blur flex-shrink-0 safe-area-bottom">
+      <nav className="flex items-center border-t border-cyan-500/10 bg-olu-bg/95 backdrop-blur flex-shrink-0 safe-area-bottom">
         {tabs.map(({ to, icon: Icon, label, exact }) => (
           <NavLink
             key={to}

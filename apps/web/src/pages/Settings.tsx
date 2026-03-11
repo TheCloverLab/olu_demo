@@ -88,13 +88,13 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-olu-bg">
       <div className="max-w-2xl mx-auto">
-        <div className="sticky top-0 bg-black/80 backdrop-blur-xl border-b border-olu-border z-10">
+        <div className="sticky top-0 bg-[var(--olu-header-bg)] backdrop-blur-xl border-b border-olu-border z-10">
           <div className="flex items-center gap-3 px-4 py-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-[#1c1c1c] transition-colors"
+              className="p-2 rounded-full hover:bg-olu-card transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
@@ -106,7 +106,7 @@ export default function Settings() {
         </div>
 
         <div className="p-4 space-y-6">
-          <div className="bg-[#111111] rounded-2xl p-6">
+          <div className="bg-olu-surface rounded-2xl p-6">
             <h2 className="font-semibold mb-4">Account</h2>
             <div className="space-y-4">
               <div>
@@ -115,7 +115,7 @@ export default function Settings() {
               </div>
               <div>
                 <p className="text-olu-muted text-xs mb-1">Handle</p>
-                <div className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm flex items-center">
+                <div className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm flex items-center">
                   <span className="text-olu-muted mr-1">@</span>
                   <input
                     value={handle}
@@ -139,7 +139,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-[#111111] rounded-2xl p-6">
+          <div className="bg-olu-surface rounded-2xl p-6">
             <h2 className="font-semibold mb-4">Password</h2>
             <div className="space-y-4">
               <div>
@@ -148,7 +148,7 @@ export default function Settings() {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                  className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-input-focus)]"
                 />
               </div>
               <div>
@@ -157,7 +157,7 @@ export default function Settings() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                  className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-input-focus)]"
                 />
               </div>
               <div>
@@ -166,7 +166,7 @@ export default function Settings() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+                  className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-input-focus)]"
                 />
               </div>
               {passwordMessage && (
@@ -196,20 +196,20 @@ export default function Settings() {
                   </span>
                   <div>
                     <p className="font-bold text-base">Business OS</p>
-                    <p className="text-white/60 text-sm mt-0.5">Modules, approvals, operators, and AI agents</p>
+                    <p className="text-olu-muted text-sm mt-0.5">Modules, approvals, operators, and AI agents</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-white/40" />
+                <ChevronRight size={18} className="text-olu-muted" />
               </button>
             </div>
           ) : null}
 
-          <div className="bg-[#111111] rounded-2xl p-6">
+          <div className="bg-olu-surface rounded-2xl p-6">
             <h2 className="font-semibold mb-3">Session</h2>
             <p className="text-olu-muted text-sm mb-4">Sign out from this device.</p>
             <button
               onClick={() => setShowSignOutConfirm(true)}
-              className="w-full rounded-xl bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+              className="w-full rounded-xl bg-olu-card hover:bg-[var(--olu-glass-hover)] text-olu-muted py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
             >
               <LogOut size={14} />
               Sign out
@@ -233,14 +233,14 @@ export default function Settings() {
                 exit={{ opacity: 0, scale: 0.96, y: 12 }}
                 className="fixed inset-0 z-50 flex items-center justify-center p-4"
               >
-                <div className="w-full max-w-sm bg-[#111111] border border-olu-border rounded-2xl p-5">
+                <div className="w-full max-w-sm bg-olu-surface border border-olu-border rounded-2xl p-5">
                   <h3 className="font-bold text-lg mb-1">Sign out?</h3>
                   <p className="text-olu-muted text-sm mb-4">You will need to sign in again to continue.</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowSignOutConfirm(false)}
                       disabled={signingOut}
-                      className="flex-1 rounded-xl bg-[#1c1c1c] hover:bg-[#242424] disabled:opacity-50 py-2.5 text-sm font-medium"
+                      className="flex-1 rounded-xl bg-olu-card hover:bg-[var(--olu-glass-hover)] disabled:opacity-50 py-2.5 text-sm font-medium"
                     >
                       Cancel
                     </button>

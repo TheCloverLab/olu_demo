@@ -216,7 +216,7 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
               onMouseDown={e => { e.preventDefault(); onSelect(p) }}
               className={clsx(
                 'w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
-                i === mentionIndex ? 'bg-cyan-300 text-[#04111f]' : 'text-white hover:bg-[#121f31]'
+                i === mentionIndex ? 'bg-cyan-300 text-[#04111f]' : 'text-white hover:bg-[var(--olu-card-hover)]'
               )}
             >
               {p.avatarImg
@@ -1049,12 +1049,12 @@ export default function TeamChat() {
 
           {/* Input */}
           {thinking && (
-            <div className="px-4 py-2 border-x border-[var(--olu-card-border)] bg-[#071221]">
+            <div className="px-4 py-2 border-x border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
               <p className="text-[var(--olu-text-secondary)] text-xs italic line-clamp-2">Thinking: {thinking}...</p>
             </div>
           )}
           <div
-            className="p-4 border-x border-b border-[var(--olu-card-border)] rounded-b-[28px] bg-[#071221] flex-shrink-0"
+            className="p-4 border-x border-b border-[var(--olu-card-border)] rounded-b-[28px] bg-[var(--olu-section-bg)] flex-shrink-0"
             onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
             onDrop={e => {
               e.preventDefault()

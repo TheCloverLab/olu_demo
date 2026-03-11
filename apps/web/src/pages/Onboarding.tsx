@@ -82,7 +82,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
+    <div className="min-h-screen bg-olu-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md glass rounded-2xl p-6">
         <h1 className="text-2xl font-black mb-1">Complete your profile</h1>
         <p className="text-olu-muted text-sm mb-6">One quick step before you start.</p>
@@ -93,7 +93,7 @@ export default function Onboarding() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-white/30"
+              className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-input-focus)]"
               placeholder="Your name"
               required
             />
@@ -101,7 +101,7 @@ export default function Onboarding() {
 
           <div>
             <label className="block text-sm font-medium mb-1.5">Handle</label>
-            <div className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm flex items-center">
+            <div className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm flex items-center">
               <span className="text-olu-muted mr-1">@</span>
               <input
                 value={handle}
@@ -119,7 +119,7 @@ export default function Onboarding() {
               type="file"
               accept="image/*"
               onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-              className="w-full rounded-xl bg-[#161616] border border-olu-border px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black"
+              className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black"
             />
           </div>
 

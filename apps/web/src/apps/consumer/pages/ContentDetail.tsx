@@ -91,8 +91,8 @@ function FanCreateModal({ post, onClose }) {
 
           {step === 1 && (
             <div className="p-5">
-              <div className="flex items-center gap-3 p-4 glass rounded-xl border border-white/10 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center text-xl">⚖️</div>
+              <div className="flex items-center gap-3 p-4 glass rounded-xl border border-olu-border mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[var(--olu-glass-hover)] flex items-center justify-center text-xl">⚖️</div>
                 <div>
                   <p className="font-semibold text-sm">Lisa — IP Manager</p>
                   <p className="text-xs text-olu-muted">Reviewing license request...</p>
@@ -285,9 +285,9 @@ export default function ContentDetail() {
 
         {/* Fan Creation CTA */}
         {post.allow_fan_creation && (
-          <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-white/10 mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
+          <motion.div whileHover={{ scale: 1.01 }} className="p-4 glass rounded-2xl border border-olu-border mb-6 cursor-pointer" onClick={() => setShowFanCreate(true)}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[var(--olu-glass-hover)] flex items-center justify-center flex-shrink-0">
                 <Repeat2 size={18} className="text-white" />
               </div>
               <div className="flex-1">
@@ -303,7 +303,7 @@ export default function ContentDetail() {
         <div className="mb-6">
           <h3 className="font-bold mb-4">Comments</h3>
           <div className="flex gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center font-bold text-white text-xs flex-shrink-0">YU</div>
+            <div className="w-8 h-8 rounded-full bg-[var(--olu-glass-hover)] flex items-center justify-center font-bold text-olu-text text-xs flex-shrink-0">YU</div>
             <div className="flex-1 flex gap-2">
               <input
                 value={comment}

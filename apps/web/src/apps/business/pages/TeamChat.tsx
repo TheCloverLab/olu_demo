@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X } from 'lucide-react'
@@ -652,6 +653,7 @@ export default function TeamChat() {
                             'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[#0b1523]'
                           )}>
                             <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
                               components={{
                                 img: ({ src, alt }) => (
                                   <img
@@ -661,6 +663,28 @@ export default function TeamChat() {
                                     style={{ maxHeight: 400 }}
                                     loading="lazy"
                                   />
+                                ),
+                                table: ({ children }) => (
+                                  <div className="my-3 overflow-x-auto">
+                                    <table className="min-w-full border-collapse text-sm">
+                                      {children}
+                                    </table>
+                                  </div>
+                                ),
+                                thead: ({ children }) => (
+                                  <thead className="border-b border-cyan-500/20 text-cyan-100/70">
+                                    {children}
+                                  </thead>
+                                ),
+                                th: ({ children }) => (
+                                  <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">
+                                    {children}
+                                  </th>
+                                ),
+                                td: ({ children }) => (
+                                  <td className="px-3 py-2 align-top border-t border-cyan-500/10">
+                                    {children}
+                                  </td>
                                 ),
                               }}
                             >{preprocessMarkdown(msg.text)}</ReactMarkdown>

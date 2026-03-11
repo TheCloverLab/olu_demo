@@ -14,6 +14,7 @@ ACCOUNT_ID="749391130736"
 ECR_REPO="olu-agent-runtime"
 ECS_CLUSTER="test-demo"
 SERVICE_NAME="olu-agent-runtime"
+LOG_GROUP="/ecs/olu-agent-runtime"
 IMAGE_TAG="${1:-latest}"
 IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG"
 

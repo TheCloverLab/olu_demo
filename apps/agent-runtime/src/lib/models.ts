@@ -345,15 +345,5 @@ export function resolveProviderForChat(name: string | undefined, needsVision: bo
       effectiveModel: requestedModel,
     }
   }
-
-  const fallback = listAvailableProviders().find((candidate) => candidate.apiKey && candidate.supportsVision)
-  if (!fallback) {
-    throw new Error('vision-unsupported')
-  }
-
-  return {
-    provider: fallback,
-    fallbackFrom: requested.name,
-    effectiveModel: fallback.visionModel || fallback.model,
-  }
+  throw new Error('vision-unsupported')
 }

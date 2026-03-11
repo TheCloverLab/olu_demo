@@ -55,7 +55,7 @@ function fileToDataUrl(file: File): Promise<string> {
 function runtimeErrorMessage(code) {
   const map = {
     'provider-fetch-failed': 'Agent runtime could not reach the model provider. No AI reply was generated.',
-    'vision-unsupported': 'No vision-capable model is configured for agent chat, so the image was not sent to the model.',
+    'vision-unsupported': 'The selected model does not support images.',
   }
 
   if (code in map) return map[code as keyof typeof map]
@@ -386,11 +386,19 @@ export default function TeamChat() {
   }, [])
 
   const selectedModelOption = availableModels.find((option) => option.id === selectedModel) || null
+  const selectedModelSupportsVision = Boolean(selectedModelOption?.supportsVision)
   const groupedModels = availableModels.reduce<Record<string, ModelOption[]>>((acc, option) => {
     if (!acc[option.providerLabel]) acc[option.providerLabel] = []
     acc[option.providerLabel].push(option)
     return acc
   }, {})
+
+  useEffect(() => {
+    if (selectedModelSupportsVision || attachedImages.length === 0) return
+    attachedImages.forEach((img) => URL.revokeObjectURL(img.preview))
+    setAttachedImages([])
+    setRuntimeError(runtimeErrorMessage('vision-unsupported'))
+  }, [selectedModelSupportsVision, attachedImages])
 
   const addImages = useCallback((files: FileList | File[]) => {
     const newImages = Array.from(files)
@@ -417,7 +425,7 @@ export default function TeamChat() {
     const imageFiles = images.map((img) => img.file)
     let runtimeImages: string[] | undefined
 
-    if (!isGroup && imageFiles.length > 0 && availableModels.length > 0 && !availableModels.some((model) => model.supportsVision)) {
+    if (imageFiles.length > 0 && !selectedModelSupportsVision) {
       setRuntimeError(runtimeErrorMessage('vision-unsupported'))
       return
     }
@@ -515,15 +523,13 @@ export default function TeamChat() {
 
       const result = await res.json()
       const assistantText = result.response || 'Done.'
-      const noticeInfo = result.notice ? `\n\n---\n*${result.notice}*` : ''
-
       const toolInfo = result.toolCalls?.length
         ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
         : ''
 
       setMessages(prev => [...prev, {
         from: 'agent',
-        text: assistantText + noticeInfo + toolInfo,
+        text: assistantText + toolInfo,
         reasoning: result.reasoning,
         time: 'Just now',
       }])
@@ -759,6 +765,10 @@ export default function TeamChat() {
                     const files = Array.from(e.clipboardData.files)
                     if (files.some(f => f.type.startsWith('image/'))) {
                       e.preventDefault()
+                      if (!selectedModelSupportsVision) {
+                        setRuntimeError(runtimeErrorMessage('vision-unsupported'))
+                        return
+                      }
                       addImages(files)
                     }
                   }}
@@ -771,22 +781,26 @@ export default function TeamChat() {
                 <div className="flex items-center justify-between px-2 pb-2">
                   <div className="flex items-center gap-0.5">
                     {/* Image attach */}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
-                    />
-                    <button
-                      onMouseDown={e => e.preventDefault()}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 rounded-lg text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all"
-                      title="Attach image"
-                    >
-                      <ImageIcon size={16} />
-                    </button>
+                    {selectedModelSupportsVision && (
+                      <>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
+                        />
+                        <button
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => fileInputRef.current?.click()}
+                          className="p-2 rounded-lg text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all"
+                          title="Attach image"
+                        >
+                          <ImageIcon size={16} />
+                        </button>
+                      </>
+                    )}
                     {/* Reasoning toggle — only for models that support it (Kimi) */}
                     {(['default', 'kimi'].includes(selectedModelOption?.provider || '')) && (
                       <button

@@ -751,7 +751,7 @@ export default function TeamChat() {
                   <div className="flex items-center gap-1.5">
                     {/* Model selector */}
                     {availableModels.length > 1 && (
-                      <>
+                      <div className="relative">
                         <button
                           onMouseDown={e => e.preventDefault()}
                           onClick={() => setShowModelMenu(!showModelMenu)}
@@ -763,35 +763,33 @@ export default function TeamChat() {
                           {showModelMenu && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
-                              <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-32 pointer-events-none">
-                                <motion.div
-                                  initial={{ opacity: 0, y: 8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: 8 }}
-                                  className="flex flex-col min-w-[180px] py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl pointer-events-auto"
-                                >
-                                  {availableModels.map(m => (
-                                    <button
-                                      key={m.name}
-                                      onClick={() => {
-                                        setSelectedModel(m.name)
-                                        localStorage.setItem('olu-chat-model', m.name)
-                                        setShowModelMenu(false)
-                                      }}
-                                      className={clsx(
-                                        'px-4 py-2.5 text-left text-sm whitespace-nowrap transition-colors',
-                                        selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
-                                      )}
-                                    >
-                                      {m.model}
-                                    </button>
-                                  ))}
-                                </motion.div>
-                              </div>
+                              <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 8 }}
+                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[180px] py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl"
+                              >
+                                {availableModels.map(m => (
+                                  <button
+                                    key={m.name}
+                                    onClick={() => {
+                                      setSelectedModel(m.name)
+                                      localStorage.setItem('olu-chat-model', m.name)
+                                      setShowModelMenu(false)
+                                    }}
+                                    className={clsx(
+                                      'px-4 py-2.5 text-left text-sm whitespace-nowrap transition-colors',
+                                      selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                                    )}
+                                  >
+                                    {m.model}
+                                  </button>
+                                ))}
+                              </motion.div>
                             </>
                           )}
                         </AnimatePresence>
-                      </>
+                      </div>
                     )}
 
                     {/* Send */}

@@ -23,33 +23,67 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Verify AWS deploy secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "::error::Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY repository secrets."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to ECR
+      - name: Build and push image to ECR
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/agent-runtime/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha,scope=agent-runtime
+          cache-to: type=gha,scope=agent-runtime,mode=max
+
+      - name: Register ECS task definition
+        id: register-task-def
         run: |
-          docker build -f apps/agent-runtime/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          EXEC_ROLE_ARN=$(aws iam get-role --role-name ecsTaskExecutionRole --query 'Role.Arn' --output text)
+          TMPFILE=$(mktemp)
+          sed "s|\${EXECUTION_ROLE_ARN}|$EXEC_ROLE_ARN|g; s|\${TASK_ROLE_ARN}|$EXEC_ROLE_ARN|g" \
+            apps/agent-runtime/infra/task-definition.json > "$TMPFILE"
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "file://$TMPFILE" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          rm -f "$TMPFILE"
+          echo "task_definition=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Update ECS service
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
+            --task-definition "${{ steps.register-task-def.outputs.task_definition }}" \
             --force-new-deployment
+
+      - name: Wait for ECS service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE

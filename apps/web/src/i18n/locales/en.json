@@ -1,0 +1,70 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "back": "Back",
+    "settings": "Settings",
+    "done": "Done",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "online": "Online",
+    "offline": "Offline",
+    "balance": "Balance",
+    "wallet": "Wallet"
+  },
+  "nav": {
+    "overview": "Overview",
+    "apps": "Apps",
+    "team": "Team",
+    "tasks": "Tasks",
+    "approvals": "Approvals",
+    "connectors": "Connectors",
+    "creatorOps": "Creator Ops",
+    "marketing": "Marketing",
+    "supplyChain": "Supply Chain",
+    "aiAgentMarketplace": "AI Agent Marketplace",
+    "openOlu": "Open OLU",
+    "workspaceOperator": "Workspace operator",
+    "modulesEnabled": "{{count}} modules enabled",
+    "workspace": "Workspace"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "language": "Language",
+    "general": "General",
+    "account": "Account"
+  },
+  "chat": {
+    "messageAgent": "Message {{name}}...",
+    "messageGroup": "Message the group... (@ to mention)",
+    "thinking": "Thinking...",
+    "agentNotFound": "Agent not found.",
+    "loadingChat": "Loading chat...",
+    "activeTasks": "Active Tasks",
+    "attachImage": "Attach image",
+    "showReasoning": "Show reasoning",
+    "hideReasoning": "Hide reasoning"
+  },
+  "team": {
+    "title": "Team",
+    "agents": "AI Agents",
+    "groups": "Group Chats",
+    "noAgents": "No agents configured yet.",
+    "noGroups": "No group chats yet."
+  },
+  "priority": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索",
+    "loading": "加载中...",
+    "back": "返回",
+    "settings": "设置",
+    "done": "已完成",
+    "pending": "待处理",
+    "inProgress": "进行中",
+    "online": "在线",
+    "offline": "离线",
+    "balance": "余额",
+    "wallet": "钱包"
+  },
+  "nav": {
+    "overview": "概览",
+    "apps": "应用",
+    "team": "团队",
+    "tasks": "任务",
+    "approvals": "审批",
+    "connectors": "连接器",
+    "creatorOps": "创作者运营",
+    "marketing": "营销",
+    "supplyChain": "供应链",
+    "aiAgentMarketplace": "AI 智能体市场",
+    "openOlu": "打开 OLU",
+    "workspaceOperator": "工作区操作员",
+    "modulesEnabled": "已启用 {{count}} 个模块",
+    "workspace": "工作区"
+  },
+  "settings": {
+    "title": "设置",
+    "appearance": "外观",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "language": "语言",
+    "general": "通用",
+    "account": "账户"
+  },
+  "chat": {
+    "messageAgent": "发送消息给 {{name}}...",
+    "messageGroup": "发送群消息... (@ 提及成员)",
+    "thinking": "思考中...",
+    "agentNotFound": "未找到智能体。",
+    "loadingChat": "加载聊天中...",
+    "activeTasks": "进行中的任务",
+    "attachImage": "添加图片",
+    "showReasoning": "显示推理过程",
+    "hideReasoning": "隐藏推理过程"
+  },
+  "team": {
+    "title": "团队",
+    "agents": "AI 智能体",
+    "groups": "群聊",
+    "noAgents": "暂无智能体配置。",
+    "noGroups": "暂无群聊。"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  }
+}

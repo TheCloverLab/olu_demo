@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Briefcase,
@@ -19,29 +20,34 @@ import {
   Cable,
   Wallet,
   ExternalLink,
+  Sun,
+  Moon,
+  Monitor,
+  Globe,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
+import { useTheme } from '../../../context/ThemeContext'
 import { getWorkspaceWalletForUser } from '../../../domain/workspace/api'
 import { APP_VERSION } from '../../../lib/version'
 import type { WorkspaceWallet } from '../../../lib/supabase'
 
 import type { BusinessModuleKey } from '../../../lib/supabase'
 
-const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; label: string; exact?: boolean; moduleKey?: BusinessModuleKey }> = [
-  { to: '/business', icon: PanelsTopLeft, label: 'Overview', exact: true },
-  { to: '/business/apps', icon: AppWindow, label: 'Apps', moduleKey: 'creator_ops' },
-  { to: '/business/team', icon: Users, label: 'Team', exact: true },
-  { to: '/business/tasks', icon: ListTodo, label: 'Tasks' },
-  { to: '/business/approvals', icon: ShieldCheck, label: 'Approvals' },
-  { to: '/business/connectors', icon: Cable, label: 'Connectors' },
+const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }> = [
+  { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
+  { to: '/business/apps', icon: AppWindow, labelKey: 'nav.apps', moduleKey: 'creator_ops' },
+  { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
+  { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
+  { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },
+  { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
 ]
 
-const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; label: string; moduleKey: BusinessModuleKey }> = [
-  { to: '/business/modules/creator', icon: LayoutDashboard, label: 'Creator Ops', moduleKey: 'creator_ops' },
-  { to: '/business/modules/marketing', icon: Megaphone, label: 'Marketing', moduleKey: 'marketing' },
-  { to: '/business/modules/supply', icon: Package, label: 'Supply Chain', moduleKey: 'supply_chain' },
+const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; labelKey: string; moduleKey: BusinessModuleKey }> = [
+  { to: '/business/modules/creator', icon: LayoutDashboard, labelKey: 'nav.creatorOps', moduleKey: 'creator_ops' },
+  { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
+  { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
 ]
 
 function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
@@ -65,17 +71,61 @@ function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; on
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#0d1a2d] transition-colors text-left rounded-xl"
+      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left rounded-xl"
     >
-      <Icon size={20} className="text-cyan-100/55" />
+      <Icon size={20} className="text-[var(--olu-sidebar-muted)]" />
       <span className="text-sm font-medium">{label}</span>
-      <ChevronRight size={16} className="text-cyan-100/45 ml-auto" />
+      <ChevronRight size={16} className="text-[var(--olu-sidebar-muted)] ml-auto" />
+    </button>
+  )
+}
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  const options = [
+    { value: 'light' as const, icon: Sun },
+    { value: 'dark' as const, icon: Moon },
+    { value: 'system' as const, icon: Monitor },
+  ]
+
+  return (
+    <div className="flex items-center gap-0.5 rounded-lg border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)] p-0.5">
+      {options.map(({ value, icon: Icon }) => (
+        <button
+          key={value}
+          onClick={() => setTheme(value)}
+          className={clsx(
+            'p-1.5 rounded-md transition-colors',
+            theme === value
+              ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]'
+              : 'text-[var(--olu-muted)] hover:text-[var(--olu-text)]'
+          )}
+        >
+          <Icon size={14} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function LanguageToggle() {
+  const { i18n } = useTranslation()
+  const isZh = i18n.language?.startsWith('zh')
+
+  return (
+    <button
+      onClick={() => i18n.changeLanguage(isZh ? 'en' : 'zh')}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)] text-xs font-medium text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
+    >
+      <Globe size={14} />
+      {isZh ? 'EN' : '中文'}
     </button>
   )
 }
 
 function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () => void; wallet: WorkspaceWallet | null }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { currentUser, hasModule } = useApp()
 
   const go = (path: string) => {
@@ -91,7 +141,7 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-40"
+            className="fixed inset-0 bg-[var(--olu-overlay-bg)] z-40"
             onClick={onClose}
           />
           <motion.div
@@ -99,49 +149,49 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.22 }}
-            className="fixed top-0 left-0 bottom-0 w-72 bg-[#07111f] z-50 flex flex-col border-r border-cyan-500/10"
+            className="fixed top-0 left-0 bottom-0 w-72 bg-[var(--olu-sidebar-bg)] z-50 flex flex-col border-r border-[var(--olu-border)]"
           >
-            <div className="flex items-center justify-between px-4 py-4 border-b border-cyan-500/10">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--olu-border)]">
               <span className="font-black text-xl tracking-tight">OLU Business</span>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-[#0d1a2d] transition-colors">
-                <X size={18} className="text-cyan-100/45" />
+              <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--olu-sidebar-hover)] transition-colors">
+                <X size={18} className="text-[var(--olu-sidebar-muted)]" />
               </button>
             </div>
 
-            <button onClick={() => go('/business/account')} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#111827] rounded-2xl border border-cyan-500/20">
+            <button onClick={() => go('/business/account')} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[var(--olu-input-bg)] rounded-2xl border border-[var(--olu-input-border)]">
               <Avatar user={currentUser} size="md" />
               <div className="min-w-0 text-left">
                 <p className="font-semibold text-sm">{currentUser.name}</p>
-                <p className="text-cyan-200/70 text-xs">Workspace operator</p>
+                <p className="text-[var(--olu-sidebar-muted)] text-xs">{t('nav.workspaceOperator')}</p>
               </div>
             </button>
 
-            <button onClick={() => go('/business/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[#0a1525] border border-cyan-500/10 hover:bg-[#0d1a2d] transition-colors text-left">
+            <button onClick={() => go('/business/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left">
               <div className="px-3 py-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Wallet size={14} className="text-emerald-400" />
-                  <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
+                  <span className="text-xs text-[var(--olu-sidebar-muted)] font-medium">{t('common.wallet')}</span>
                 </div>
                 <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-                <p className="text-emerald-400 text-xs mt-1">Balance</p>
+                <p className="text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
               </div>
             </button>
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={PanelsTopLeft} label="Workspace Overview" onClick={() => go('/business')} />
-              {hasModule('creator_ops') && <MenuItem icon={AppWindow} label="Apps" onClick={() => go('/business/apps')} />}
-              <MenuItem icon={Users} label="Team" onClick={() => go('/business/team')} />
-              <MenuItem icon={ListTodo} label="Tasks" onClick={() => go('/business/tasks')} />
-              <MenuItem icon={ShieldCheck} label="Approvals" onClick={() => go('/business/approvals')} />
-              <MenuItem icon={Cable} label="Connectors" onClick={() => go('/business/connectors')} />
+              <MenuItem icon={PanelsTopLeft} label={t('nav.overview')} onClick={() => go('/business')} />
+              {hasModule('creator_ops') && <MenuItem icon={AppWindow} label={t('nav.apps')} onClick={() => go('/business/apps')} />}
+              <MenuItem icon={Users} label={t('nav.team')} onClick={() => go('/business/team')} />
+              <MenuItem icon={ListTodo} label={t('nav.tasks')} onClick={() => go('/business/tasks')} />
+              <MenuItem icon={ShieldCheck} label={t('nav.approvals')} onClick={() => go('/business/approvals')} />
+              <MenuItem icon={Cable} label={t('nav.connectors')} onClick={() => go('/business/connectors')} />
               {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
-                <MenuItem key={m.to} icon={m.icon} label={m.label} onClick={() => go(m.to)} />
+                <MenuItem key={m.to} icon={m.icon} label={t(m.labelKey)} onClick={() => go(m.to)} />
               ))}
-              <MenuItem icon={Settings} label="Settings" onClick={() => go('/business/settings')} />
-              <div className="border-t border-cyan-500/10 my-2 mx-2" />
-              <MenuItem icon={Bot} label="AI Agent Marketplace" onClick={() => go('/business/agents')} />
-              <div className="border-t border-cyan-500/10 my-2 mx-2" />
-              <MenuItem icon={ExternalLink} label="Open OLU" onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
+              <MenuItem icon={Settings} label={t('common.settings')} onClick={() => go('/business/settings')} />
+              <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
+              <MenuItem icon={Bot} label={t('nav.aiAgentMarketplace')} onClick={() => go('/business/agents')} />
+              <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
+              <MenuItem icon={ExternalLink} label={t('nav.openOlu')} onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
             </div>
 
           </motion.div>
@@ -154,6 +204,7 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
 export default function BusinessLayout() {
   const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [wallet, setWallet] = useState<WorkspaceWallet | null>(null)
   const navigate = useNavigate()
@@ -165,125 +216,142 @@ export default function BusinessLayout() {
     }
   }, [user?.id])
 
-  const allNav = [...CORE_NAV, { to: '/business/wallet', icon: Wallet, label: 'Wallet' }, { to: '/business/agents', icon: Bot, label: 'AI Agent Marketplace' }, ...MODULE_NAV]
-  const activeModuleLabel = allNav.find((item) =>
-    ('exact' in item && item.exact) ? location.pathname === item.to : location.pathname.startsWith(item.to)
-  )?.label
+  const allNav = [
+    ...CORE_NAV,
+    { to: '/business/wallet', icon: Wallet, labelKey: 'common.wallet' },
+    { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
+    ...MODULE_NAV,
+  ]
+  const activeModuleLabel = (() => {
+    const item = allNav.find((item) =>
+      ('exact' in item && item.exact) ? location.pathname === item.to : location.pathname.startsWith(item.to)
+    )
+    return item ? t(item.labelKey) : undefined
+  })()
 
   return (
     <div className="business-shell flex h-[100dvh] overflow-hidden">
-      <aside className="hidden md:flex flex-col w-64 border-r border-cyan-500/10 bg-[#07111f] flex-shrink-0">
+      <aside className="hidden md:flex flex-col w-64 border-r border-[var(--olu-border)] bg-[var(--olu-sidebar-bg)] flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-cyan-300 text-[#04111f] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">
+          <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">
             <Briefcase size={16} />
           </div>
           <div>
             <p className="font-black text-lg leading-none">OLU Business</p>
-            <p className="text-cyan-100/60 text-xs mt-1">Merchant operations cockpit</p>
+            <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1">Merchant operations cockpit</p>
           </div>
         </div>
 
         <div className="px-3 pb-3 space-y-2">
-          <button onClick={() => navigate('/business/account')} className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#0d1a2d] transition-colors text-left border border-cyan-500/10 bg-[#0a1525]">
+          <button onClick={() => navigate('/business/account')} className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)]">
             <Avatar user={currentUser} size="md" />
             <div className="min-w-0">
               <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-              <p className="text-cyan-100/60 text-xs truncate">{enabledBusinessModules.length} modules enabled</p>
+              <p className="text-[var(--olu-sidebar-muted)] text-xs truncate">{t('nav.modulesEnabled', { count: enabledBusinessModules.length })}</p>
             </div>
           </button>
           <NavLink
             to="/business/wallet"
             className={({ isActive }) => clsx(
               'block rounded-2xl transition-colors cursor-pointer border',
-              isActive ? 'bg-cyan-300/10 border-cyan-400/20' : 'bg-[#0a1525] border-cyan-500/10 hover:bg-[#0d1a2d]'
+              isActive ? 'bg-[var(--olu-sidebar-active-bg)]/10 border-[var(--olu-sidebar-active-bg)]/20' : 'bg-[var(--olu-input-bg)] border-[var(--olu-input-border)] hover:bg-[var(--olu-sidebar-hover)]'
             )}
           >
             <div className="px-3 py-3">
               <div className="flex items-center gap-2 mb-2">
                 <Wallet size={14} className="text-emerald-400" />
-                <span className="text-xs text-cyan-100/55 font-medium">Wallet</span>
+                <span className="text-xs text-[var(--olu-sidebar-muted)] font-medium">{t('common.wallet')}</span>
               </div>
               <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-              <p className="text-emerald-400 text-xs mt-1">Balance</p>
+              <p className="text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
             </div>
           </NavLink>
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {CORE_NAV.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey)).map(({ to, icon: Icon, label, exact }) => (
+          {CORE_NAV.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey)).map(({ to, icon: Icon, labelKey, exact }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
               className={({ isActive }) => clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+                isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
               )}
             >
               <Icon size={18} />
-              {label}
+              {t(labelKey)}
             </NavLink>
           ))}
-          {MODULE_NAV.filter((m) => enabledBusinessModules.includes(m.moduleKey)).map(({ to, icon: Icon, label }) => (
+          {MODULE_NAV.filter((m) => enabledBusinessModules.includes(m.moduleKey)).map(({ to, icon: Icon, labelKey }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) => clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+                isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
               )}
             >
               <Icon size={18} />
-              {label}
+              {t(labelKey)}
             </NavLink>
           ))}
 
-          <div className="border-t border-cyan-500/10 my-2" />
+          <div className="border-t border-[var(--olu-border)] my-2" />
           <NavLink
             to="/business/agents"
             className={({ isActive }) => clsx(
               'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-              isActive ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-50/72 hover:text-white hover:bg-[#0d1a2d]'
+              isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
             )}
           >
             <Bot size={18} />
-            AI Agent Marketplace
+            {t('nav.aiAgentMarketplace')}
           </NavLink>
         </nav>
 
-        <div className="p-3 border-t border-cyan-500/10 space-y-2">
+        <div className="p-3 border-t border-[var(--olu-border)] space-y-2">
+          <div className="flex items-center justify-center gap-2 py-1">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
           <button
             onClick={() => navigate('/business/settings')}
-            className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
+            className="w-full py-2.5 px-3 rounded-2xl bg-[var(--olu-sidebar-hover)] hover:opacity-80 text-[var(--olu-sidebar-text)] text-sm font-medium transition-colors"
           >
-            Settings
+            {t('common.settings')}
           </button>
           <button
             onClick={() => window.open('/', '_blank', 'noopener,noreferrer')}
-            className="w-full py-2.5 px-3 rounded-2xl bg-[#0d1a2d] hover:bg-[#12213a] text-cyan-50/72 text-sm font-medium transition-colors"
+            className="w-full py-2.5 px-3 rounded-2xl bg-[var(--olu-sidebar-hover)] hover:opacity-80 text-[var(--olu-sidebar-text)] text-sm font-medium transition-colors"
           >
-            Open OLU
+            {t('nav.openOlu')}
           </button>
-          <div className="px-3 py-2 rounded-2xl border border-cyan-500/10 bg-[#0a1525] text-[11px] text-cyan-100/55 text-center tracking-[0.16em] uppercase">
+          <div className="px-3 py-2 rounded-2xl border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)] text-[11px] text-[var(--olu-muted)] text-center tracking-[0.16em] uppercase">
             {APP_VERSION}
           </div>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-cyan-500/10 bg-[#08111d]/95 backdrop-blur flex-shrink-0">
+        <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-[var(--olu-border)] bg-[var(--olu-header-bg)] backdrop-blur flex-shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setMenuOpen(true)} className="md:hidden p-1.5">
               <Menu size={22} />
             </button>
             <div className="min-w-0">
               <p className="md:hidden font-black text-lg">{activeModuleLabel || 'Business'}</p>
-              <p className="hidden md:block text-cyan-100/45 text-xs tracking-[0.16em] uppercase">
-                Workspace / {activeModuleLabel || 'Business'}
+              <p className="hidden md:block text-[var(--olu-muted)] text-xs tracking-[0.16em] uppercase">
+                {t('nav.workspace')} / {activeModuleLabel || 'Business'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2" />
+          <div className="flex items-center gap-2">
+            <div className="md:hidden flex items-center gap-1.5">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">

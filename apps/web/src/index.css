@@ -2,6 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme variables ─── */
+:root {
+  --olu-bg: #ffffff;
+  --olu-surface: #f5f5f5;
+  --olu-card: #ffffff;
+  --olu-border: #e5e5e5;
+  --olu-text: #111111;
+  --olu-muted: #6b7280;
+  --olu-shell-bg: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  --olu-shell-accent1: rgba(34, 211, 238, 0.06);
+  --olu-shell-accent2: rgba(59, 130, 246, 0.04);
+  --olu-sidebar-bg: #ffffff;
+  --olu-sidebar-hover: #f3f4f6;
+  --olu-sidebar-active-bg: #0ea5e9;
+  --olu-sidebar-active-text: #ffffff;
+  --olu-sidebar-text: #374151;
+  --olu-sidebar-muted: #6b7280;
+  --olu-header-bg: rgba(255, 255, 255, 0.95);
+  --olu-chat-user-bg: #0ea5e9;
+  --olu-chat-user-text: #ffffff;
+  --olu-chat-user-border: rgba(14, 165, 233, 0.4);
+  --olu-chat-agent-bg: #f3f4f6;
+  --olu-chat-agent-text: #111827;
+  --olu-chat-agent-border: #e5e7eb;
+  --olu-input-bg: #f9fafb;
+  --olu-input-border: #e5e7eb;
+  --olu-input-focus: rgba(14, 165, 233, 0.4);
+  --olu-input-text: #111827;
+  --olu-input-placeholder: #9ca3af;
+  --olu-overlay-bg: rgba(0, 0, 0, 0.3);
+  --olu-scrollbar: #d1d5db;
+  --olu-scrollbar-hover: #9ca3af;
+  --olu-glass: #ffffff;
+  --olu-glass-hover: #f3f4f6;
+  --olu-chip-active-bg: #111827;
+  --olu-chip-active-text: #ffffff;
+  --olu-chip-inactive-border: #d1d5db;
+  --olu-chip-inactive-hover-bg: #f3f4f6;
+  --olu-chip-inactive-hover-border: #9ca3af;
+}
+
+.dark {
+  --olu-bg: #000000;
+  --olu-surface: #111111;
+  --olu-card: #1c1c1c;
+  --olu-border: #2e2e2e;
+  --olu-text: #ffffff;
+  --olu-muted: #888888;
+  --olu-shell-bg: linear-gradient(180deg, #07111f 0%, #050b14 100%);
+  --olu-shell-accent1: rgba(34, 211, 238, 0.12);
+  --olu-shell-accent2: rgba(59, 130, 246, 0.09);
+  --olu-sidebar-bg: #07111f;
+  --olu-sidebar-hover: #0d1a2d;
+  --olu-sidebar-active-bg: #67e8f9;
+  --olu-sidebar-active-text: #04111f;
+  --olu-sidebar-text: rgba(236, 254, 255, 0.72);
+  --olu-sidebar-muted: rgba(207, 250, 254, 0.6);
+  --olu-header-bg: rgba(8, 17, 29, 0.95);
+  --olu-chat-user-bg: #67e8f9;
+  --olu-chat-user-text: #04111f;
+  --olu-chat-user-border: rgba(103, 232, 249, 0.6);
+  --olu-chat-agent-bg: #121821;
+  --olu-chat-agent-text: #ffffff;
+  --olu-chat-agent-border: rgba(6, 182, 212, 0.1);
+  --olu-input-bg: #0b1523;
+  --olu-input-border: rgba(6, 182, 212, 0.1);
+  --olu-input-focus: rgba(103, 232, 249, 0.4);
+  --olu-input-text: #ffffff;
+  --olu-input-placeholder: rgba(207, 250, 254, 0.35);
+  --olu-overlay-bg: rgba(0, 0, 0, 0.8);
+  --olu-scrollbar: #333333;
+  --olu-scrollbar-hover: #555555;
+  --olu-glass: #1c1c1c;
+  --olu-glass-hover: #242424;
+  --olu-chip-active-bg: #ffffff;
+  --olu-chip-active-text: #000000;
+  --olu-chip-inactive-border: #3a3a3a;
+  --olu-chip-inactive-hover-bg: #1c1c1c;
+  --olu-chip-inactive-hover-border: #666666;
+}
+
 /* ─── Global cursor — outside all Tailwind layers ─── */
 button,
 a,
@@ -34,12 +115,13 @@ textarea {
   }
 
   body {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: var(--olu-bg);
+    color: var(--olu-text);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   ::-webkit-scrollbar {
@@ -52,18 +134,18 @@ textarea {
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #333333;
+    background: var(--olu-scrollbar);
     border-radius: 2px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #555555;
+    background: var(--olu-scrollbar-hover);
   }
 }
 
 @layer utilities {
   .glass {
-    background: #1c1c1c;
+    background: var(--olu-glass);
   }
 
   .glass-hover {
@@ -71,14 +153,14 @@ textarea {
   }
 
   .glass-hover:hover {
-    background: #242424;
+    background: var(--olu-glass-hover);
   }
 
   .business-shell {
     background:
-      radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 24%),
-      radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 20%),
-      linear-gradient(180deg, #07111f 0%, #050b14 100%);
+      radial-gradient(circle at top left, var(--olu-shell-accent1), transparent 24%),
+      radial-gradient(circle at top right, var(--olu-shell-accent2), transparent 20%),
+      var(--olu-shell-bg);
   }
 
   .gradient-text {
@@ -113,18 +195,18 @@ textarea {
   }
 
   .chip-active {
-    background: #ffffff;
-    color: #000000;
+    background: var(--olu-chip-active-bg);
+    color: var(--olu-chip-active-text);
   }
 
   .chip-inactive {
     background: transparent;
-    color: #ffffff;
-    border: 1px solid #3a3a3a;
+    color: var(--olu-text);
+    border: 1px solid var(--olu-chip-inactive-border);
   }
 
   .chip-inactive:hover {
-    border-color: #666666;
-    background: #1c1c1c;
+    border-color: var(--olu-chip-inactive-hover-border);
+    background: var(--olu-chip-inactive-hover-bg);
   }
 }

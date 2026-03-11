@@ -1,19 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         olu: {
-          bg: '#000000',
-          surface: '#111111',
-          card: '#1c1c1c',
-          border: '#2e2e2e',
+          bg: 'var(--olu-bg)',
+          surface: 'var(--olu-surface)',
+          card: 'var(--olu-card)',
+          border: 'var(--olu-border)',
           primary: '#7c3aed',
           secondary: '#4f46e5',
           accent: '#a78bfa',
-          text: '#ffffff',
-          muted: '#888888',
+          text: 'var(--olu-text)',
+          muted: 'var(--olu-muted)',
         },
       },
       fontFamily: {

@@ -16,6 +16,8 @@ import { Navigate } from 'react-router-dom'
 import EmployeeProfile from './pages/EmployeeProfile'
 import AppManagement from './pages/AppManagement'
 import Connectors from './pages/Connectors'
+import CreatorStudio from './pages/CreatorStudio'
+import CourseEditor from './pages/CourseEditor'
 import RoleProtected from '../../components/auth/RoleProtected'
 
 export const businessRoutes: RouteObject[] = [
@@ -36,6 +38,8 @@ export const businessRoutes: RouteObject[] = [
       { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <BusinessSettings /> },
       { path: 'wallet', element: <WalletPage /> },
+      { path: 'creator-studio', element: <RoleProtected requiredModule="creator_ops"><CreatorStudio /></RoleProtected> },
+      { path: 'course-editor', element: <RoleProtected requiredModule="creator_ops"><CourseEditor /></RoleProtected> },
       { path: 'modules/creator', element: <RoleProtected requiredModule="creator_ops"><CreatorConsole /></RoleProtected> },
       { path: 'modules/marketing', element: <RoleProtected requiredModule="marketing"><AdvertiserConsole /></RoleProtected> },
       { path: 'modules/supply', element: <RoleProtected requiredModule="supply_chain"><SupplierConsole /></RoleProtected> },

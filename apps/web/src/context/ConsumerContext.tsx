@@ -38,6 +38,16 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
+    const isDemo = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
+    if (isDemo) {
+      // In demo mode, use defaults — no Supabase calls
+      setConsumerTemplateState((prev) => prev || DEFAULT_TEMPLATE)
+      if (typeof window !== 'undefined' && !window.localStorage.getItem('olu.consumerTemplate')) {
+        window.localStorage.setItem('olu.consumerTemplate', DEFAULT_TEMPLATE)
+      }
+      return
+    }
+
     let cancelled = false
 
     async function sync() {

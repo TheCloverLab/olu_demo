@@ -17,6 +17,8 @@ import Checkout from './pages/Checkout'
 import LearningHub from './pages/LearningHub'
 import Subscriptions from './pages/Subscriptions'
 import Wallet from './pages/Wallet'
+import Gallery from './pages/Gallery'
+import Feed from './pages/Feed'
 import Settings from '../../pages/Settings'
 import RoleProtected from '../../components/auth/RoleProtected'
 
@@ -46,6 +48,8 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'wallet', element: <Wallet /> },
       { path: 'settings', element: <Settings /> },
       { path: 'shop', element: <Shop /> },
+      { path: 'gallery', element: <Gallery /> },
+      { path: 'feed', element: <Feed /> },
     ],
   },
 ]

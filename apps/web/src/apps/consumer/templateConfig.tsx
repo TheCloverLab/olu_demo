@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { BookOpen, Calendar, Compass, GraduationCap, MessageCircle, Sparkles, User, Users, Video } from 'lucide-react'
+import { BookOpen, Calendar, Camera, Compass, GraduationCap, MessageCircle, Rss, Sparkles, User, Users, Video } from 'lucide-react'
 
 export type ConsumerNavItem = {
   to: string
@@ -42,6 +42,8 @@ const CONSUMER_TEMPLATES = {
     quickLinks: [
       { to: '/membership', icon: Sparkles, label: 'consumer.membership' },
       { to: '/topics', icon: Users, label: 'consumer.topics' },
+      { to: '/gallery', icon: Camera, label: 'consumer.gallery' },
+      { to: '/feed', icon: Rss, label: 'consumer.feed' },
     ],
     profile: {
       ctaLabel: 'Open membership',

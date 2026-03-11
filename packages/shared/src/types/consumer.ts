@@ -156,3 +156,112 @@ export type ConsumerLessonProgress = {
   created_at?: string
   updated_at?: string
 }
+
+// --- Creator Theme & Layout Customization ---
+
+export type CreatorThemePreset = 'default' | 'neon' | 'pastel' | 'minimal' | 'bold' | 'earth'
+
+export type CreatorTheme = {
+  preset: CreatorThemePreset
+  accentColor: string       // hex, e.g. '#e11d48'
+  bgStyle: 'solid' | 'gradient' | 'image'
+  bgValue: string           // color, gradient class, or image URL
+  cardRadius: 'sm' | 'md' | 'lg' | 'xl'
+  fontStyle: 'modern' | 'serif' | 'mono'
+}
+
+export type CreatorLayoutSection =
+  | 'hero'
+  | 'feed'
+  | 'topics'
+  | 'gallery'
+  | 'courses'
+  | 'membership'
+  | 'shop'
+  | 'about'
+
+export type CreatorTabConfig = {
+  key: string
+  label: string
+  visible: boolean
+  order: number
+}
+
+export type CreatorCustomization = {
+  theme: CreatorTheme
+  sections: CreatorLayoutSection[]   // ordered list of visible sections
+  tabs: CreatorTabConfig[]
+  heroStyle: 'fullscreen' | 'card' | 'minimal' | 'video'
+  logo?: string
+  tagline?: string
+}
+
+// --- Comment System ---
+
+export type PostComment = {
+  id: string
+  post_id: string
+  user_id: string
+  parent_id?: string | null     // nested replies
+  text: string
+  likes: number
+  pinned: boolean
+  created_at?: string
+  updated_at?: string
+  user?: {
+    name: string
+    handle?: string
+    avatar_img?: string
+    avatar_color?: string
+    initials?: string
+  }
+  replies?: PostComment[]
+}
+
+// --- Gallery ---
+
+export type GalleryAlbum = {
+  id: string
+  creator_id: string
+  title: string
+  description?: string
+  cover_img?: string
+  image_count: number
+  created_at?: string
+}
+
+export type GalleryImage = {
+  id: string
+  album_id?: string
+  creator_id: string
+  url: string
+  thumbnail?: string
+  caption?: string
+  tags: string[]
+  likes: number
+  created_at?: string
+}
+
+// --- Course Module (3-level structure) ---
+
+export type CourseModule = {
+  id: string
+  course_id: string
+  title: string
+  description?: string
+  position: number
+  lessons_count: number
+}
+
+export type CourseLesson = {
+  id: string
+  module_id: string
+  course_id: string
+  title: string
+  type: 'video' | 'article' | 'quiz' | 'assignment'
+  duration: string
+  preview: boolean
+  summary: string
+  video_url?: string
+  position: number
+}

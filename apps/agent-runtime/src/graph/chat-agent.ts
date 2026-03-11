@@ -9,7 +9,7 @@
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import type { StructuredToolInterface } from '@langchain/core/tools'
 import { allTools } from '../tools/workspace-tools.js'
-import { getModelProvider, type ModelProvider } from '../lib/models.js'
+import { resolveProviderForChat, type ModelProvider } from '../lib/models.js'
 import { getAgentTools } from '../lib/skill-registry.js'
 import {
   buildConversationKey,
@@ -49,7 +49,12 @@ function buildToolDefs(tools: StructuredToolInterface[]) {
   }))
 }
 
-async function callLLMWithTools(messages: Message[], provider: ModelProvider, toolDefs: ReturnType<typeof buildToolDefs>) {
+async function callLLMWithTools(
+  messages: Message[],
+  provider: ModelProvider,
+  toolDefs: ReturnType<typeof buildToolDefs>,
+  modelOverride?: string,
+) {
   const res = await fetch(`${provider.baseURL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -58,7 +63,7 @@ async function callLLMWithTools(messages: Message[], provider: ModelProvider, to
       ...(provider.headers || {}),
     },
     body: JSON.stringify({
-      model: provider.model,
+      model: modelOverride || provider.model,
       messages,
       tools: provider.supportsTools && toolDefs.length ? toolDefs : undefined,
       temperature: 0.3,
@@ -81,6 +86,7 @@ export type ChatResult = {
   toolCalls: { name: string; args: Record<string, unknown>; result: string }[]
   model?: string
   provider?: string
+  notice?: string
 }
 
 export async function runChatAgent(params: {
@@ -91,12 +97,12 @@ export async function runChatAgent(params: {
   userMessage: string
   modelProvider?: string
   sourceId?: string  // For multi-turn: Lark chatId, API sessionId, etc.
-  images?: string[]  // Base64 data URLs for vision
+  images?: string[]  // Public image URLs or data URLs for vision
 }): Promise<ChatResult> {
   const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, sourceId, images } = params
 
-  const provider = getModelProvider(modelProvider)
-  console.log(`[chatAgent] Using model: ${provider.model} (${provider.name})`)
+  const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length))
+  console.log(`[chatAgent] Using model: ${effectiveModel} (${provider.name})`)
 
   // Load agent-specific tools based on enabled skills
   const agentTools = await getAgentTools(agentId)
@@ -128,9 +134,7 @@ Be concise and professional. After completing actions, summarize what you did.`
     const parts: any[] = []
     if (userMessage) parts.push({ type: 'text', text: userMessage })
     for (const img of images) {
-      // img is a data URL like "data:image/png;base64,..."
-      const [header, base64] = img.split(',')
-      const mediaType = header?.match(/data:(.*?);/)?.[1] || 'image/png'
+      // img can be a public URL or a data URL like "data:image/png;base64,..."
       parts.push({
         type: 'image_url',
         image_url: { url: img },
@@ -150,7 +154,7 @@ Be concise and professional. After completing actions, summarize what you did.`
   const MAX_ITERATIONS = 8
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const choice = await callLLMWithTools(messages, provider, toolDefs)
+    const choice = await callLLMWithTools(messages, provider, toolDefs, effectiveModel)
     const msg = choice.message
 
     if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
@@ -209,8 +213,9 @@ Be concise and professional. After completing actions, summarize what you did.`
         response,
         reasoning,
         toolCalls: allToolCalls,
-        model: provider.model,
+        model: effectiveModel,
         provider: provider.name,
+        notice: fallbackFrom ? `Images were processed with ${provider.name} because ${fallbackFrom} does not support vision.` : undefined,
       }
     }
   }
@@ -226,7 +231,8 @@ Be concise and professional. After completing actions, summarize what you did.`
   return {
     response: fallbackResponse,
     toolCalls: allToolCalls,
-    model: provider.model,
+    model: effectiveModel,
     provider: provider.name,
+    notice: fallbackFrom ? `Images were processed with ${provider.name} because ${fallbackFrom} does not support vision.` : undefined,
   }
 }

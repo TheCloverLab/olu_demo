@@ -90,8 +90,18 @@ export type Conversation = {
   agent_id: string
   from_type: 'agent' | 'user'
   text: string
+  attachments?: ChatAttachment[]
   time: string
   created_at?: string
+}
+
+export type ChatAttachment = {
+  type: 'image'
+  url: string
+  path?: string
+  mime_type?: string
+  name?: string
+  size_bytes?: number
 }
 
 export type Product = {

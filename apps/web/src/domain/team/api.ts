@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import type { AgentTemplate, User, WorkspaceAgent, WorkspaceAgentWithTasks, WorkspaceAgentTask, WorkspaceEmployee } from '../../lib/supabase'
+import type { ChatAttachment } from '../../lib/supabase'
 import { ensureWorkspaceForUser } from '../workspace/api'
 import {
   addConversationMessage,
@@ -215,8 +216,14 @@ export async function getWorkspaceGroupMessages(groupChatId: string) {
   return await getGroupChatMessages(groupChatId)
 }
 
-export async function postWorkspaceGroupMessage(groupChatId: string, fromName: string, text: string, avatar?: string) {
-  return await addGroupChatMessage(groupChatId, fromName, text, avatar)
+export async function postWorkspaceGroupMessage(
+  groupChatId: string,
+  fromName: string,
+  text: string,
+  avatar?: string,
+  attachments?: ChatAttachment[],
+) {
+  return await addGroupChatMessage(groupChatId, fromName, text, avatar, attachments)
 }
 
 // ---------- Agent conversation ----------
@@ -225,8 +232,50 @@ export async function getAgentConversation(agentId: string) {
   return await getConversations(agentId)
 }
 
-export async function postAgentConversationMessage(agentId: string, fromType: 'agent' | 'user', text: string, time: string) {
-  return await addConversationMessage(agentId, fromType, text, time)
+export async function postAgentConversationMessage(
+  agentId: string,
+  fromType: 'agent' | 'user',
+  text: string,
+  time: string,
+  attachments?: ChatAttachment[],
+) {
+  return await addConversationMessage(agentId, fromType, text, time, attachments)
+}
+
+function sanitizeFileName(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '-')
+}
+
+export async function uploadTeamChatImages(
+  userId: string,
+  scope: string,
+  files: File[],
+): Promise<ChatAttachment[]> {
+  const uploaded: ChatAttachment[] = []
+
+  for (const file of files) {
+    const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : ''
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${sanitizeFileName(file.name || `image${ext}`)}`
+    const path = `${userId}/${scope}/${fileName}`
+
+    const { error } = await supabase.storage
+      .from('chat-attachments')
+      .upload(path, file, { upsert: true, contentType: file.type || 'image/png' })
+
+    if (error) throw error
+
+    const { data } = supabase.storage.from('chat-attachments').getPublicUrl(path)
+    uploaded.push({
+      type: 'image',
+      url: data.publicUrl,
+      path,
+      mime_type: file.type || 'image/png',
+      name: file.name,
+      size_bytes: file.size,
+    })
+  }
+
+  return uploaded
 }
 
 export function getAgentTaskSummaries(tasks: Array<TeamTaskSummary> | undefined) {

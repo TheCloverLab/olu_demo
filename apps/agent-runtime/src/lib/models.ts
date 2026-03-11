@@ -15,6 +15,8 @@ export interface ModelProvider {
   model: string
   headers?: Record<string, string>
   supportsTools?: boolean
+  supportsVision?: boolean
+  visionModel?: string
 }
 
 const builtinProviders: Record<string, Omit<ModelProvider, 'apiKey'>> = {
@@ -24,66 +26,110 @@ const builtinProviders: Record<string, Omit<ModelProvider, 'apiKey'>> = {
     model: 'kimi-for-coding',
     headers: { 'User-Agent': 'claude-code/1.0.0', 'X-Client-Name': 'claude-code' },
     supportsTools: true,
+    supportsVision: false,
   },
   openai: {
     name: 'openai',
     baseURL: 'https://api.openai.com/v1',
     model: 'gpt-4o-mini',
     supportsTools: true,
+    supportsVision: true,
   },
   claude: {
     name: 'claude',
     baseURL: 'https://api.anthropic.com/v1',
     model: 'claude-sonnet-4-20250514',
     supportsTools: true,
+    supportsVision: true,
   },
   deepseek: {
     name: 'deepseek',
     baseURL: 'https://api.deepseek.com/v1',
     model: 'deepseek-chat',
     supportsTools: true,
+    supportsVision: false,
   },
   qwen: {
     name: 'qwen',
     baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     model: 'qwen-max',
+    visionModel: 'qwen-vl-max-latest',
     supportsTools: true,
+    supportsVision: true,
   },
   gemini: {
     name: 'gemini',
     baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
     model: 'gemini-2.0-flash',
     supportsTools: true,
+    supportsVision: true,
   },
+}
+
+const legacyApiKeyEnvMap: Record<string, string> = {
+  kimi: 'KIMI_API_KEY',
+  openai: 'OPENAI_API_KEY',
+  claude: 'ANTHROPIC_API_KEY',
+  deepseek: 'DEEPSEEK_API_KEY',
+  qwen: 'QWEN_API_KEY',
+  gemini: 'GEMINI_API_KEY',
+}
+
+function parseBooleanEnv(value: string | undefined): boolean | undefined {
+  if (!value) return undefined
+  if (['1', 'true', 'yes', 'on'].includes(value.toLowerCase())) return true
+  if (['0', 'false', 'no', 'off'].includes(value.toLowerCase())) return false
+  return undefined
+}
+
+function inferVisionSupport(model: string, baseURL: string, providerName: string): boolean {
+  const normalized = `${providerName} ${model} ${baseURL}`.toLowerCase()
+  if (normalized.includes('deepseek-chat') || normalized.includes('kimi-for-coding')) return false
+  return /(gpt-4o|gpt-4\.1|gemini|claude|vision|vl|pixtral|llava|minicpm|qvq)/i.test(normalized)
 }
 
 function loadProviderFromEnv(name: string): ModelProvider | null {
   const prefix = `MODEL_${name.toUpperCase()}_`
-  const apiKey = process.env[`${prefix}API_KEY`]
+  const apiKey = process.env[`${prefix}API_KEY`] || process.env[legacyApiKeyEnvMap[name.toLowerCase()]]
   if (!apiKey) return null
 
   const builtin = builtinProviders[name.toLowerCase()]
+  const baseURL = process.env[`${prefix}BASE_URL`] || builtin?.baseURL || 'https://api.openai.com/v1'
+  const model = process.env[`${prefix}MODEL`] || builtin?.model || 'gpt-4o-mini'
+  const envSupportsVision = parseBooleanEnv(process.env[`${prefix}SUPPORTS_VISION`])
+  const visionModel = process.env[`${prefix}VISION_MODEL`] || builtin?.visionModel
   return {
     name,
     apiKey,
-    baseURL: process.env[`${prefix}BASE_URL`] || builtin?.baseURL || 'https://api.openai.com/v1',
-    model: process.env[`${prefix}MODEL`] || builtin?.model || 'gpt-4o-mini',
+    baseURL,
+    model,
     headers: builtin?.headers,
     supportsTools: builtin?.supportsTools ?? true,
+    supportsVision: envSupportsVision ?? builtin?.supportsVision ?? inferVisionSupport(model, baseURL, name),
+    visionModel,
   }
 }
 
 function getDefaultProvider(): ModelProvider {
+  const legacyFallback = ['openai', 'gemini', 'qwen', 'claude', 'kimi', 'deepseek']
+    .map((name) => loadProviderFromEnv(name))
+    .find((provider) => provider?.apiKey)
+  const baseURL = process.env.LLM_BASE_URL || legacyFallback?.baseURL || 'https://api.openai.com/v1'
+  const model = process.env.LLM_MODEL || legacyFallback?.model || 'gpt-4o-mini'
+  const envSupportsVision = parseBooleanEnv(process.env.LLM_SUPPORTS_VISION)
+  const visionModel = process.env.LLM_VISION_MODEL
   return {
     name: 'default',
-    apiKey: process.env.LLM_API_KEY || '',
-    baseURL: process.env.LLM_BASE_URL || 'https://api.openai.com/v1',
-    model: process.env.LLM_MODEL || 'gpt-4o-mini',
-    headers: {
+    apiKey: process.env.LLM_API_KEY || legacyFallback?.apiKey || '',
+    baseURL,
+    model,
+    headers: legacyFallback?.headers || {
       'User-Agent': 'claude-code/1.0.0',
       'X-Client-Name': 'claude-code',
     },
-    supportsTools: true,
+    supportsTools: legacyFallback?.supportsTools ?? true,
+    supportsVision: envSupportsVision ?? legacyFallback?.supportsVision ?? inferVisionSupport(model, baseURL, 'default'),
+    visionModel: visionModel || legacyFallback?.visionModel,
   }
 }
 
@@ -164,4 +210,31 @@ export function listAvailableProviders(): ModelProvider[] {
   }
 
   return providers
+}
+
+export function resolveProviderForChat(name: string | undefined, needsVision: boolean): {
+  provider: ModelProvider
+  fallbackFrom?: string
+  effectiveModel: string
+} {
+  const requested = getModelProvider(name)
+  const requestedModel = needsVision && requested.visionModel ? requested.visionModel : requested.model
+
+  if (!needsVision || requested.supportsVision) {
+    return {
+      provider: requested,
+      effectiveModel: requestedModel,
+    }
+  }
+
+  const fallback = listAvailableProviders().find((candidate) => candidate.apiKey && candidate.supportsVision)
+  if (!fallback) {
+    throw new Error('vision-unsupported')
+  }
+
+  return {
+    provider: fallback,
+    fallbackFrom: requested.name,
+    effectiveModel: fallback.visionModel || fallback.model,
+  }
 }

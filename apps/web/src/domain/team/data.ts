@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import type { AIAgent, AgentTask, Conversation } from '../../lib/supabase'
+import type { AIAgent, AgentTask, ChatAttachment, Conversation } from '../../lib/supabase'
 
 export async function getAgentsByUser(userId: string) {
   const { data, error } = await supabase
@@ -55,10 +55,22 @@ export async function getConversations(agentId: string) {
   return data as Conversation[]
 }
 
-export async function addConversationMessage(agentId: string, fromType: 'agent' | 'user', text: string, time: string) {
+export async function addConversationMessage(
+  agentId: string,
+  fromType: 'agent' | 'user',
+  text: string,
+  time: string,
+  attachments?: ChatAttachment[],
+) {
   const { data, error } = await supabase
     .from('conversations')
-    .insert({ agent_id: agentId, from_type: fromType, text, time })
+    .insert({
+      agent_id: agentId,
+      from_type: fromType,
+      text,
+      time,
+      attachments: attachments || [],
+    })
     .select()
     .single()
 
@@ -88,7 +100,13 @@ export async function getGroupChatMessages(groupChatId: string) {
   return data
 }
 
-export async function addGroupChatMessage(groupChatId: string, fromName: string, text: string, avatar?: string) {
+export async function addGroupChatMessage(
+  groupChatId: string,
+  fromName: string,
+  text: string,
+  avatar?: string,
+  attachments?: ChatAttachment[],
+) {
   const { data, error } = await supabase
     .from('group_chat_messages')
     .insert({
@@ -96,6 +114,7 @@ export async function addGroupChatMessage(groupChatId: string, fromName: string,
       from_name: fromName,
       avatar: avatar ?? null,
       text,
+      attachments: attachments || [],
       time: 'Just now',
     })
     .select()

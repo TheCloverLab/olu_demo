@@ -346,6 +346,8 @@ const server = createServer(async (req, res) => {
           model: p.model,
           baseURL: p.baseURL,
           supportsTools: p.supportsTools,
+          supportsVision: p.supportsVision,
+          visionModel: p.visionModel,
         })),
       })
       return
@@ -394,6 +396,10 @@ const server = createServer(async (req, res) => {
     json(res, 404, { error: 'not found' })
   } catch (err: any) {
     console.error('Request error:', err)
+    if (err?.message === 'vision-unsupported') {
+      json(res, 422, { error: 'vision-unsupported' })
+      return
+    }
     json(res, 500, { error: err.message || 'internal error' })
   }
 })

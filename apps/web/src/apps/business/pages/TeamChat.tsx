@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Plus, X, Mic, MicOff, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import {
@@ -11,7 +11,9 @@ import {
   getWorkspaceGroupMessages,
   postAgentConversationMessage,
   postWorkspaceGroupMessage,
+  uploadTeamChatImages,
 } from '../../../domain/team/api'
+import type { ChatAttachment } from '../../../lib/supabase'
 import clsx from 'clsx'
 
 const STATUS_CONFIG = {
@@ -34,6 +36,7 @@ function preprocessMarkdown(text) {
 function runtimeErrorMessage(code) {
   const map = {
     'provider-fetch-failed': 'Agent runtime could not reach the model provider. No AI reply was generated.',
+    'vision-unsupported': 'No vision-capable model is configured for agent chat, so the image was not sent to the model.',
   }
 
   if (code in map) return map[code as keyof typeof map]
@@ -218,7 +221,7 @@ export default function TeamChat() {
   const [attachedImages, setAttachedImages] = useState<{ file: File; preview: string }[]>([])
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || 'default')
   const [showModelMenu, setShowModelMenu] = useState(false)
-  const [availableModels, setAvailableModels] = useState<{ name: string; model: string }[]>([])
+  const [availableModels, setAvailableModels] = useState<{ name: string; model: string; supportsVision?: boolean }[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -279,6 +282,7 @@ export default function TeamChat() {
               (groupMessages || []).map((m: any) => ({
                 from: m.from_name === 'You' ? 'user' : m.from_name,
                 text: m.text,
+                images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
                 time: m.time,
               }))
             )
@@ -312,6 +316,7 @@ export default function TeamChat() {
           (conv || []).map((m: any) => ({
             from: m.from_type === 'user' ? 'user' : 'agent',
             text: m.text,
+            images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
             time: m.time,
           }))
         )
@@ -361,19 +366,41 @@ export default function TeamChat() {
 
   const sendMessage = async () => {
     if ((!input.trim() && attachedImages.length === 0) || loading) return
-    const userText = input.trim()
-    setInput('')
-    setRuntimeError(null)
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    if (!user?.id) return
 
-    // Capture and clear images
+    const userText = input.trim()
+    setRuntimeError(null)
     const images = [...attachedImages]
+    const imageFiles = images.map((img) => img.file)
+
+    if (!isGroup && imageFiles.length > 0 && availableModels.length > 0 && !availableModels.some((model) => model.supportsVision)) {
+      setRuntimeError(runtimeErrorMessage('vision-unsupported'))
+      return
+    }
+
+    let attachments: ChatAttachment[] = []
+    if (imageFiles.length > 0) {
+      try {
+        const scope = isGroup
+          ? `group-${selectedGroupDbId || agentId || 'unknown'}`
+          : `agent-${selectedAgentDbId || agentId || 'unknown'}`
+        attachments = await uploadTeamChatImages(user.id, scope, imageFiles)
+      } catch (err) {
+        console.error('Failed uploading chat images', err)
+        setRuntimeError('Image upload failed. The message was not sent.')
+        return
+      }
+    }
+
+    setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    images.forEach((img) => URL.revokeObjectURL(img.preview))
     setAttachedImages([])
 
     const userMsg = {
       from: 'user',
-      text: userText || (images.length ? `[${images.length} image(s)]` : ''),
-      images: images.map(img => img.preview),
+      text: userText || (attachments.length ? `[${attachments.length} image(s)]` : ''),
+      images: attachments.map((attachment) => attachment.url),
       time: 'Just now',
     }
     const next = [...messages, userMsg]
@@ -382,7 +409,7 @@ export default function TeamChat() {
     if (isGroup) {
       if (selectedGroupDbId) {
         try {
-          await postWorkspaceGroupMessage(selectedGroupDbId, 'You', userText)
+          await postWorkspaceGroupMessage(selectedGroupDbId, 'You', userText, undefined, attachments)
         } catch (err) {
           console.error('Failed saving group message', err)
         }
@@ -395,22 +422,13 @@ export default function TeamChat() {
     try {
       if (selectedAgentDbId) {
         try {
-          await postAgentConversationMessage(selectedAgentDbId, 'user', userText, 'Just now')
+          await postAgentConversationMessage(selectedAgentDbId, 'user', userText, 'Just now', attachments)
         } catch (err) {
           console.error('Failed saving user message', err)
         }
       }
 
       const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
-
-      // Convert images to base64 for the API
-      const imageBase64s = await Promise.all(
-        images.map(img => new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.readAsDataURL(img.file)
-        }))
-      )
 
       const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
         method: 'POST',
@@ -422,19 +440,27 @@ export default function TeamChat() {
           agentRole: agent.role,
           message: userText,
           model: selectedModel !== 'default' ? selectedModel : undefined,
-          images: imageBase64s.length ? imageBase64s : undefined,
+          images: attachments.length ? attachments.map((attachment) => attachment.url) : undefined,
         }),
       })
 
       if (!res.ok) {
         const errorText = await res.text()
         console.error('agent-runtime /chat error:', res.status, errorText)
-        setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+        let errorCode = 'provider-fetch-failed'
+        try {
+          const parsed = JSON.parse(errorText)
+          if (parsed?.error === 'vision-unsupported') errorCode = 'vision-unsupported'
+        } catch {
+          // Ignore invalid JSON and keep the generic error code.
+        }
+        setRuntimeError(runtimeErrorMessage(errorCode))
         return
       }
 
       const result = await res.json()
       const assistantText = result.response || 'Done.'
+      const noticeInfo = result.notice ? `\n\n---\n*${result.notice}*` : ''
 
       const toolInfo = result.toolCalls?.length
         ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
@@ -442,7 +468,7 @@ export default function TeamChat() {
 
       setMessages(prev => [...prev, {
         from: 'agent',
-        text: assistantText + toolInfo,
+        text: assistantText + noticeInfo + toolInfo,
         reasoning: result.reasoning,
         time: 'Just now',
       }])
@@ -704,7 +730,7 @@ export default function TeamChat() {
                       className="p-2 rounded-lg text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all"
                       title="Attach image"
                     >
-                      <Plus size={16} />
+                      <ImageIcon size={16} />
                     </button>
                     {/* Reasoning toggle — only for models that support it (Kimi) */}
                     {(selectedModel === 'default' || selectedModel === 'kimi') && (

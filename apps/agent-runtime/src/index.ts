@@ -17,6 +17,7 @@ import { listAvailableProviders } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
 import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
+import { listSkills } from './lib/skill-registry.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -360,6 +361,12 @@ const server = createServer(async (req, res) => {
     // List registered Lark bots
     if (url.pathname === '/bots' && req.method === 'GET') {
       json(res, 200, { bots: getRegisteredBots() })
+      return
+    }
+
+    // List available skills
+    if (url.pathname === '/skills' && req.method === 'GET') {
+      json(res, 200, { skills: listSkills() })
       return
     }
 

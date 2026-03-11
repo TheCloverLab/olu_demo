@@ -7,8 +7,10 @@
  */
 
 import { zodToJsonSchema } from 'zod-to-json-schema'
+import type { StructuredToolInterface } from '@langchain/core/tools'
 import { allTools } from '../tools/workspace-tools.js'
 import { getModelProvider, type ModelProvider } from '../lib/models.js'
+import { getAgentTools } from '../lib/skill-registry.js'
 import {
   buildConversationKey,
   loadConversationHistory,
@@ -31,23 +33,23 @@ type ToolCall = {
   function: { name: string; arguments: string }
 }
 
-const toolMap = Object.fromEntries(allTools.map((t) => [t.name, t]))
-
 function cleanSchema(schema: Record<string, unknown>): Record<string, unknown> {
   const { $schema, additionalProperties, ...rest } = schema as any
   return rest
 }
 
-const toolDefs = allTools.map((t) => ({
-  type: 'function' as const,
-  function: {
-    name: t.name,
-    description: t.description,
-    parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema) as Record<string, unknown>) : { type: 'object', properties: {} },
-  },
-}))
+function buildToolDefs(tools: StructuredToolInterface[]) {
+  return tools.map((t) => ({
+    type: 'function' as const,
+    function: {
+      name: t.name,
+      description: t.description,
+      parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema as any) as Record<string, unknown>) : { type: 'object', properties: {} },
+    },
+  }))
+}
 
-async function callLLMWithTools(messages: Message[], provider: ModelProvider) {
+async function callLLMWithTools(messages: Message[], provider: ModelProvider, toolDefs: ReturnType<typeof buildToolDefs>) {
   const res = await fetch(`${provider.baseURL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -58,7 +60,7 @@ async function callLLMWithTools(messages: Message[], provider: ModelProvider) {
     body: JSON.stringify({
       model: provider.model,
       messages,
-      tools: provider.supportsTools ? toolDefs : undefined,
+      tools: provider.supportsTools && toolDefs.length ? toolDefs : undefined,
       temperature: 0.3,
       max_tokens: 2048,
     }),
@@ -94,6 +96,12 @@ export async function runChatAgent(params: {
   const provider = getModelProvider(modelProvider)
   console.log(`[chatAgent] Using model: ${provider.model} (${provider.name})`)
 
+  // Load agent-specific tools based on enabled skills
+  const agentTools = await getAgentTools(agentId)
+  const toolMap = Object.fromEntries(agentTools.map((t) => [t.name, t]))
+  const toolDefs = buildToolDefs(agentTools)
+  console.log(`[chatAgent] Loaded ${agentTools.length} tools for agent ${agentId}`)
+
   const systemPrompt = `You are ${agentName}, a ${agentRole} AI agent in a workspace (workspace_id: ${workspaceId}, your agent_id: ${agentId}).
 
 You have access to tools for managing tasks, searching the web, posting team messages, and viewing team overview.
@@ -123,7 +131,7 @@ Be concise and professional. After completing actions, summarize what you did.`
   const MAX_ITERATIONS = 8
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const choice = await callLLMWithTools(messages, provider)
+    const choice = await callLLMWithTools(messages, provider, toolDefs)
     const msg = choice.message
 
     if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {

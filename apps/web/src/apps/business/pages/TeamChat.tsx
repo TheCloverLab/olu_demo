@@ -664,113 +664,114 @@ export default function TeamChat() {
               </div>
             )}
 
-            <div className="flex gap-2 items-end">
-              <div className="flex-1 relative">
-                {isGroup && (
-                  <MentionDropdown
-                    filtered={mention.filtered}
-                    mentionIndex={mention.mentionIndex}
-                    onSelect={p => mention.accept(input, setInput, p)}
-                  />
-                )}
-                <div className="rounded-2xl overflow-hidden border border-cyan-500/10 bg-[#0b1523] focus-within:border-cyan-300/40 transition-colors">
-                  <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={e => {
-                      setInput(e.target.value)
-                      if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
-                      e.target.style.height = 'auto'
-                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
-                    }}
-                    onKeyDown={e => {
-                      if (isGroup && mention.handleKey(e, input, setInput)) return
-                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
-                    }}
-                    onPaste={e => {
-                      const files = Array.from(e.clipboardData.files)
-                      if (files.some(f => f.type.startsWith('image/'))) {
-                        e.preventDefault()
-                        addImages(files)
-                      }
-                    }}
-                    placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
-                    rows={1}
-                    className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
-                    style={{ maxHeight: 120 }}
-                  />
-                </div>
-              </div>
-
-              {/* Toolbar buttons */}
-              <div className="flex gap-1 items-center flex-shrink-0">
-                {/* Image attach */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
+            <div className="relative">
+              {isGroup && (
+                <MentionDropdown
+                  filtered={mention.filtered}
+                  mentionIndex={mention.mentionIndex}
+                  onSelect={p => mention.accept(input, setInput, p)}
                 />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2.5 rounded-xl text-cyan-100/45 hover:text-cyan-100/80 hover:bg-cyan-500/10 transition-all"
-                  title="Attach image"
-                >
-                  <Plus size={16} />
-                </button>
-
-                {/* Model selector */}
-                {availableModels.length > 1 && (
-                  <div className="relative">
+              )}
+              <div className="rounded-2xl border border-cyan-500/10 bg-[#0b1523] focus-within:border-cyan-300/40 transition-colors">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={e => {
+                    setInput(e.target.value)
+                    if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
+                    e.target.style.height = 'auto'
+                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+                  }}
+                  onKeyDown={e => {
+                    if (isGroup && mention.handleKey(e, input, setInput)) return
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+                  }}
+                  onPaste={e => {
+                    const files = Array.from(e.clipboardData.files)
+                    if (files.some(f => f.type.startsWith('image/'))) {
+                      e.preventDefault()
+                      addImages(files)
+                    }
+                  }}
+                  placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
+                  rows={1}
+                  className="w-full px-4 pt-3 pb-1 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
+                  style={{ maxHeight: 120 }}
+                />
+                {/* Toolbar row inside the input container */}
+                <div className="flex items-center justify-between px-2 pb-2">
+                  <div className="flex items-center gap-0.5">
+                    {/* Image attach */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
+                    />
                     <button
-                      onClick={() => setShowModelMenu(!showModelMenu)}
-                      className="px-2 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide uppercase text-cyan-100/50 hover:text-cyan-100/80 hover:bg-cyan-500/10 border border-cyan-500/10 transition-all whitespace-nowrap"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 rounded-lg text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all"
+                      title="Attach image"
                     >
-                      {(availableModels.find(m => m.name === selectedModel)?.model || 'default').split('-').slice(0, 2).join('-')}
+                      <Plus size={16} />
                     </button>
-                    <AnimatePresence>
-                      {showModelMenu && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
-                          <motion.div
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 4 }}
-                            className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl z-50 whitespace-nowrap"
-                          >
-                            {availableModels.map(m => (
-                              <button
-                                key={m.name}
-                                onClick={() => {
-                                  setSelectedModel(m.name)
-                                  localStorage.setItem('olu-chat-model', m.name)
-                                  setShowModelMenu(false)
-                                }}
-                                className={clsx(
-                                  'w-full px-3 py-2 text-left text-xs transition-colors',
-                                  selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
-                                )}
-                              >
-                                {m.model}
-                              </button>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
                   </div>
-                )}
 
-                {/* Send */}
-                <button
-                  onClick={sendMessage}
-                  disabled={(!input.trim() && attachedImages.length === 0) || loading}
-                  className="p-2.5 rounded-xl bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90"
-                >
-                  <Send size={16} />
-                </button>
+                  <div className="flex items-center gap-1.5">
+                    {/* Model selector */}
+                    {availableModels.length > 1 && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowModelMenu(!showModelMenu)}
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all whitespace-nowrap"
+                        >
+                          {(availableModels.find(m => m.name === selectedModel)?.model || 'default').split('-').slice(0, 2).join('-')}
+                        </button>
+                        <AnimatePresence>
+                          {showModelMenu && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
+                              <motion.div
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 4 }}
+                                className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl z-50 whitespace-nowrap"
+                              >
+                                {availableModels.map(m => (
+                                  <button
+                                    key={m.name}
+                                    onClick={() => {
+                                      setSelectedModel(m.name)
+                                      localStorage.setItem('olu-chat-model', m.name)
+                                      setShowModelMenu(false)
+                                    }}
+                                    className={clsx(
+                                      'w-full px-3 py-2 text-left text-xs transition-colors',
+                                      selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                                    )}
+                                  >
+                                    {m.model}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+
+                    {/* Send */}
+                    <button
+                      onClick={sendMessage}
+                      disabled={(!input.trim() && attachedImages.length === 0) || loading}
+                      className="p-2 rounded-lg bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90"
+                    >
+                      <Send size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

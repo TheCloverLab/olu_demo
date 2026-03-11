@@ -33,6 +33,15 @@ function preprocessMarkdown(text) {
   return text.replace(/([^\n])\s*•\s*/g, '$1\n- ').replace(/^\s*•\s*/gm, '- ')
 }
 
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(reader.error || new Error('Failed reading image'))
+    reader.readAsDataURL(file)
+  })
+}
+
 function runtimeErrorMessage(code) {
   const map = {
     'provider-fetch-failed': 'Agent runtime could not reach the model provider. No AI reply was generated.',
@@ -372,10 +381,21 @@ export default function TeamChat() {
     setRuntimeError(null)
     const images = [...attachedImages]
     const imageFiles = images.map((img) => img.file)
+    let runtimeImages: string[] | undefined
 
     if (!isGroup && imageFiles.length > 0 && availableModels.length > 0 && !availableModels.some((model) => model.supportsVision)) {
       setRuntimeError(runtimeErrorMessage('vision-unsupported'))
       return
+    }
+
+    if (imageFiles.length > 0) {
+      try {
+        runtimeImages = await Promise.all(imageFiles.map((file) => fileToDataUrl(file)))
+      } catch (err) {
+        console.error('Failed encoding chat images', err)
+        setRuntimeError('Image processing failed. The message was not sent.')
+        return
+      }
     }
 
     let attachments: ChatAttachment[] = []
@@ -440,7 +460,7 @@ export default function TeamChat() {
           agentRole: agent.role,
           message: userText,
           model: selectedModel !== 'default' ? selectedModel : undefined,
-          images: attachments.length ? attachments.map((attachment) => attachment.url) : undefined,
+          images: runtimeImages,
         }),
       })
 

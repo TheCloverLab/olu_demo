@@ -1,1 +1,1 @@
-export const APP_VERSION = 'v232-c9b3472-dirty'
+export const APP_VERSION = 'v239-cc24f90-dirty'

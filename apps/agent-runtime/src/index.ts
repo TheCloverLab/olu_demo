@@ -308,7 +308,7 @@ const server = createServer(async (req, res) => {
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
       const body = JSON.parse(await readBody(req))
-      const { workspaceId, agentId, agentName, agentRole, message, model } = body
+      const { workspaceId, agentId, agentName, agentRole, message, model, sessionId } = body
 
       if (!workspaceId || !agentId || !message) {
         json(res, 400, { error: 'Missing required fields: workspaceId, agentId, message' })
@@ -322,6 +322,7 @@ const server = createServer(async (req, res) => {
         agentRole: agentRole || 'AI Agent',
         userMessage: message,
         modelProvider: model,
+        sourceId: sessionId,  // Optional: pass sessionId for multi-turn conversations
       })
 
       json(res, 200, result)

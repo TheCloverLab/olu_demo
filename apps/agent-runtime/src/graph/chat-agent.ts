@@ -9,6 +9,13 @@
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { allTools } from '../tools/workspace-tools.js'
 import { getModelProvider, type ModelProvider } from '../lib/models.js'
+import {
+  buildConversationKey,
+  loadConversationHistory,
+  saveConversationMessages,
+  trimConversationHistory,
+  type ConversationMessage,
+} from '../lib/conversation.js'
 
 type Message = {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -80,8 +87,9 @@ export async function runChatAgent(params: {
   workspaceId: string
   userMessage: string
   modelProvider?: string
+  sourceId?: string  // For multi-turn: Lark chatId, API sessionId, etc.
 }): Promise<ChatResult> {
-  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider } = params
+  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, sourceId } = params
 
   const provider = getModelProvider(modelProvider)
   console.log(`[chatAgent] Using model: ${provider.model} (${provider.name})`)
@@ -94,8 +102,20 @@ When using tools that need workspaceId, use "${workspaceId}".
 
 Be concise and professional. After completing actions, summarize what you did.`
 
+  // Load conversation history if sourceId is provided (multi-turn)
+  const conversationKey = sourceId ? buildConversationKey(agentId, sourceId) : null
+  let history: ConversationMessage[] = []
+  if (conversationKey) {
+    history = await loadConversationHistory(conversationKey)
+    if (history.length) {
+      console.log(`[chatAgent] Loaded ${history.length} messages from conversation history`)
+    }
+  }
+
   const messages: Message[] = [
     { role: 'system', content: systemPrompt },
+    // Insert conversation history (skip system messages from history)
+    ...history.filter(m => m.role !== 'system'),
     { role: 'user', content: userMessage },
   ]
 
@@ -143,9 +163,22 @@ Be concise and professional. After completing actions, summarize what you did.`
         })
       }
     } else {
-      // LLM is done — return the final response
+      // LLM is done — save conversation and return
+      const response = msg.content || msg.reasoning_content || 'Done.'
+
+      if (conversationKey) {
+        // Save user message + assistant response to history
+        saveConversationMessages(conversationKey, [
+          { role: 'user', content: userMessage },
+          { role: 'assistant', content: response },
+        ]).catch(err => console.error('[chatAgent] Failed to save conversation:', err.message))
+
+        // Trim old messages in background
+        trimConversationHistory(conversationKey).catch(() => {})
+      }
+
       return {
-        response: msg.content || msg.reasoning_content || 'Done.',
+        response,
         toolCalls: allToolCalls,
         model: provider.model,
         provider: provider.name,
@@ -153,8 +186,16 @@ Be concise and professional. After completing actions, summarize what you did.`
     }
   }
 
+  const fallbackResponse = 'Reached maximum tool call iterations.'
+  if (conversationKey) {
+    saveConversationMessages(conversationKey, [
+      { role: 'user', content: userMessage },
+      { role: 'assistant', content: fallbackResponse },
+    ]).catch(() => {})
+  }
+
   return {
-    response: 'Reached maximum tool call iterations.',
+    response: fallbackResponse,
     toolCalls: allToolCalls,
     model: provider.model,
     provider: provider.name,

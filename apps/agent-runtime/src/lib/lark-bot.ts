@@ -146,12 +146,14 @@ export async function handleLarkWebhook(body: any): Promise<{ challenge?: string
   console.log(`[lark-bot] Agent "${bot.agentName}" received: "${userMessage.slice(0, 100)}"`)
 
   // Run the chat agent (fire-and-forget for speed)
+  // Pass chatId as sourceId for multi-turn conversation memory
   runChatAgent({
     workspaceId: bot.workspaceId,
     agentId: bot.agentId,
     agentName: bot.agentName,
     agentRole: bot.agentRole,
     userMessage,
+    sourceId: chatId,
   }).then(async (result) => {
     await sendBotReply(bot, chatId, result.response)
     console.log(`[lark-bot] Agent "${bot.agentName}" replied: "${result.response.slice(0, 100)}"`)

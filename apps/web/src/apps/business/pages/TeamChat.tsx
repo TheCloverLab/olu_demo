@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import {
@@ -174,6 +174,36 @@ function renderWithMentions(text, participantNames) {
   )
 }
 
+function ReasoningBlock({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="mb-2 rounded-xl border border-purple-500/20 bg-purple-500/5 overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 w-full px-3 py-2 text-xs text-purple-300/80 hover:text-purple-200 transition-colors"
+      >
+        <Brain size={12} />
+        <span className="font-medium">Thinking</span>
+        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 pb-3 text-xs text-purple-100/60 leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
+              {text}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
@@ -184,6 +214,7 @@ export default function TeamChat() {
   const [streaming, setStreaming] = useState(false)
   const [thinking, setThinking] = useState('')
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [showReasoning, setShowReasoning] = useState(true)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [liveAgents, setLiveAgents] = useState<any[]>([])
@@ -358,7 +389,12 @@ export default function TeamChat() {
         ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
         : ''
 
-      setMessages(prev => [...prev, { from: 'agent', text: assistantText + toolInfo, time: 'Just now' }])
+      setMessages(prev => [...prev, {
+        from: 'agent',
+        text: assistantText + toolInfo,
+        reasoning: result.reasoning,
+        time: 'Just now',
+      }])
 
       if (selectedAgentDbId && assistantText.trim()) {
         try {
@@ -409,16 +445,28 @@ export default function TeamChat() {
             <p className="text-cyan-100/55 text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
           </div>
         </div>
-        {!isGroup && tasks.length > 0 && (
-          <div className="flex gap-1">
-            {['chat', 'tasks'].map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/55 hover:text-white bg-[#0b1523] border border-cyan-500/10')}>
-                {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-1 items-center">
+          <button
+            onClick={() => setShowReasoning(!showReasoning)}
+            title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
+            className={clsx(
+              'p-1.5 rounded-lg transition-all',
+              showReasoning ? 'text-purple-300 bg-purple-500/15' : 'text-cyan-100/35 hover:text-cyan-100/55'
+            )}
+          >
+            <Brain size={16} />
+          </button>
+          {!isGroup && tasks.length > 0 && (
+            <>
+              {['chat', 'tasks'].map(t => (
+                <button key={t} onClick={() => setTab(t)}
+                  className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/55 hover:text-white bg-[#0b1523] border border-cyan-500/10')}>
+                  {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
       {tab === 'tasks' ? (
@@ -469,26 +517,29 @@ export default function TeamChat() {
                   )}>
                     {msg.from === 'agent' ? (
                       msg.text ? (
-                        <div className={clsx(
-                          'prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded prose-headings:mb-2',
-                          msg.from === 'user'
-                            ? 'prose-headings:text-[#04111f] prose-p:text-[#04111f] prose-li:text-[#04111f] prose-strong:text-[#04111f] prose-code:bg-black/10 prose-code:text-[#04111f] prose-pre:bg-black/10'
-                            : 'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[#0b1523]'
-                        )}>
-                          <ReactMarkdown
-                            components={{
-                              img: ({ src, alt }) => (
-                                <img
-                                  src={src}
-                                  alt={alt || 'Generated image'}
-                                  className="rounded-xl max-w-full my-2 border border-cyan-500/10"
-                                  style={{ maxHeight: 400 }}
-                                  loading="lazy"
-                                />
-                              ),
-                            }}
-                          >{preprocessMarkdown(msg.text)}</ReactMarkdown>
-                        </div>
+                        <>
+                          {showReasoning && msg.reasoning && (
+                            <ReasoningBlock text={msg.reasoning} />
+                          )}
+                          <div className={clsx(
+                            'prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded prose-headings:mb-2',
+                            'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[#0b1523]'
+                          )}>
+                            <ReactMarkdown
+                              components={{
+                                img: ({ src, alt }) => (
+                                  <img
+                                    src={src}
+                                    alt={alt || 'Generated image'}
+                                    className="rounded-xl max-w-full my-2 border border-cyan-500/10"
+                                    style={{ maxHeight: 400 }}
+                                    loading="lazy"
+                                  />
+                                ),
+                              }}
+                            >{preprocessMarkdown(msg.text)}</ReactMarkdown>
+                          </div>
+                        </>
                       ) : (
                         <span className="flex gap-1 items-center h-4">
                           <span className="w-1.5 h-1.5 rounded-full bg-cyan-100/45 animate-bounce" style={{ animationDelay: '0ms' }} />

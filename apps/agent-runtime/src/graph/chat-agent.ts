@@ -77,6 +77,7 @@ async function callLLMWithTools(messages: Message[], provider: ModelProvider, to
 
 export type ChatResult = {
   response: string
+  reasoning?: string
   toolCalls: { name: string; args: Record<string, unknown>; result: string }[]
   model?: string
   provider?: string
@@ -173,6 +174,7 @@ Be concise and professional. After completing actions, summarize what you did.`
     } else {
       // LLM is done — save conversation and return
       const response = msg.content || msg.reasoning_content || 'Done.'
+      const reasoning = msg.reasoning_content && msg.content ? msg.reasoning_content : undefined
 
       if (conversationKey) {
         // Save user message + assistant response to history
@@ -187,6 +189,7 @@ Be concise and professional. After completing actions, summarize what you did.`
 
       return {
         response,
+        reasoning,
         toolCalls: allToolCalls,
         model: provider.model,
         provider: provider.name,

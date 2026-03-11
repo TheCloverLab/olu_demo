@@ -699,6 +699,7 @@ export default function TeamChat() {
                       onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
                     />
                     <button
+                      onMouseDown={e => e.preventDefault()}
                       onClick={() => fileInputRef.current?.click()}
                       className="p-2 rounded-lg text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all"
                       title="Attach image"
@@ -708,6 +709,7 @@ export default function TeamChat() {
                     {/* Reasoning toggle — only for models that support it (Kimi) */}
                     {(selectedModel === 'default' || selectedModel === 'kimi') && (
                       <button
+                        onMouseDown={e => e.preventDefault()}
                         onClick={() => setShowReasoning(!showReasoning)}
                         title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
                         className={clsx(
@@ -725,6 +727,7 @@ export default function TeamChat() {
                     {availableModels.length > 1 && (
                       <>
                         <button
+                          onMouseDown={e => e.preventDefault()}
                           onClick={() => setShowModelMenu(!showModelMenu)}
                           className="px-2 py-1 rounded-lg text-[10px] font-medium text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all whitespace-nowrap"
                         >

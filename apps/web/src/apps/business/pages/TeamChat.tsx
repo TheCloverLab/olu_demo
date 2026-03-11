@@ -496,28 +496,16 @@ export default function TeamChat() {
             <p className="text-cyan-100/55 text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
           </div>
         </div>
-        <div className="flex gap-1 items-center">
-          <button
-            onClick={() => setShowReasoning(!showReasoning)}
-            title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
-            className={clsx(
-              'p-1.5 rounded-lg transition-all',
-              showReasoning ? 'text-purple-300 bg-purple-500/15' : 'text-cyan-100/35 hover:text-cyan-100/55'
-            )}
-          >
-            <Brain size={16} />
-          </button>
-          {!isGroup && tasks.length > 0 && (
-            <>
-              {['chat', 'tasks'].map(t => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/55 hover:text-white bg-[#0b1523] border border-cyan-500/10')}>
-                  {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
-                </button>
-              ))}
-            </>
-          )}
-        </div>
+        {!isGroup && tasks.length > 0 && (
+          <div className="flex gap-1">
+            {['chat', 'tasks'].map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-cyan-100/55 hover:text-white bg-[#0b1523] border border-cyan-500/10')}>
+                {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {tab === 'tasks' ? (
@@ -717,6 +705,19 @@ export default function TeamChat() {
                     >
                       <Plus size={16} />
                     </button>
+                    {/* Reasoning toggle — only for models that support it (Kimi) */}
+                    {(selectedModel === 'default' || selectedModel === 'kimi') && (
+                      <button
+                        onClick={() => setShowReasoning(!showReasoning)}
+                        title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
+                        className={clsx(
+                          'p-2 rounded-lg transition-all',
+                          showReasoning ? 'text-purple-300 bg-purple-500/10' : 'text-cyan-100/30 hover:text-cyan-100/60'
+                        )}
+                      >
+                        <Brain size={16} />
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5">

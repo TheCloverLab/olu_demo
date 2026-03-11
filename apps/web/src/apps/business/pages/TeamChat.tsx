@@ -31,18 +31,8 @@ function preprocessMarkdown(text) {
   return text.replace(/([^\n])\s*•\s*/g, '$1\n- ').replace(/^\s*•\s*/gm, '- ')
 }
 
-function buildSystemPrompt(agent, principalName) {
-  return `You are ${agent.name}, an AI agent on the OLU platform — a next-gen creator economy platform.
-
-Your role: ${agent.role}
-Your specialty: ${agent.description}
-
-You are chatting with ${principalName || 'the workspace owner'}. They are your principal. Be proactive, concise, and professional. Use brief bullet points when listing items. Don't use excessive emojis. Respond in the same language the user writes in (English or Chinese).`
-}
-
 function runtimeErrorMessage(code) {
   const map = {
-    'missing-api-key': 'Agent runtime is unavailable because `KIMI_API_KEY` is not configured on the server.',
     'provider-fetch-failed': 'Agent runtime could not reach the model provider. No AI reply was generated.',
   }
 
@@ -187,7 +177,7 @@ function renderWithMentions(text, participantNames) {
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
-  const { user, session } = useAuth()
+  const { user } = useAuth()
   const [tab, setTab] = useState('chat')
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -340,133 +330,45 @@ export default function TeamChat() {
         }
       }
 
-      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || ''
+      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL
+      if (!AGENT_RUNTIME_URL) {
+        setRuntimeError('VITE_AGENT_RUNTIME_URL is not configured. Agent chat is unavailable.')
+        return
+      }
 
-      // Use agent-runtime /chat (tool-calling mode) if configured, otherwise fall back to edge function
-      if (AGENT_RUNTIME_URL) {
-        const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            workspaceId: agent.workspace_id || '',
-            agentId: selectedAgentDbId,
-            agentName: agent.name,
-            agentRole: agent.role,
-            message: userText,
-          }),
-        })
+      const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId: agent.workspace_id || '',
+          agentId: selectedAgentDbId,
+          agentName: agent.name,
+          agentRole: agent.role,
+          message: userText,
+        }),
+      })
 
-        if (!res.ok) {
-          const errorText = await res.text()
-          console.error('agent-runtime /chat error:', res.status, errorText)
-          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
-          return
-        }
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('agent-runtime /chat error:', res.status, errorText)
+        setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+        return
+      }
 
-        const result = await res.json()
-        const assistantText = result.response || 'Done.'
+      const result = await res.json()
+      const assistantText = result.response || 'Done.'
 
-        // Show tool calls if any
-        const toolInfo = result.toolCalls?.length
-          ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
-          : ''
+      const toolInfo = result.toolCalls?.length
+        ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
+        : ''
 
-        setMessages(prev => [...prev, { from: 'agent', text: assistantText + toolInfo, time: 'Just now' }])
+      setMessages(prev => [...prev, { from: 'agent', text: assistantText + toolInfo, time: 'Just now' }])
 
-        if (selectedAgentDbId && assistantText.trim()) {
-          try {
-            await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
-          } catch (err) {
-            console.error('Failed saving assistant message', err)
-          }
-        }
-      } else {
-        // Fallback: Supabase edge function (streaming, no tools)
-        const apiMessages = [
-          { role: 'system', content: buildSystemPrompt(agent, user?.name) },
-          ...next
-            .filter(m => m.text && m.text.trim())
-            .slice(-20)
-            .map(m => ({
-              role: m.from === 'user' ? 'user' : 'assistant',
-              content: m.text,
-            })),
-        ]
-
-        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${session?.access_token || ''}`,
-          },
-          body: JSON.stringify({ messages: apiMessages }),
-        })
-
-        const contentType = res.headers.get('content-type') || ''
-        if (!res.ok) {
-          const errorText = await res.text()
-          console.error('agent-chat http error:', res.status, errorText)
-          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
-          return
-        }
-
-        if (!contentType.includes('text/event-stream') || !res.body) {
-          setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
-          return
-        }
-
-        const reader = res.body.getReader()
-        const decoder = new TextDecoder()
-
-        setMessages(prev => [...prev, { from: 'agent', text: '', time: 'Just now' }])
-        setLoading(false)
-        setStreaming(true)
-        let assistantText = ''
-
-        let buffer = ''
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-
-          for (const line of lines) {
-            if (!line.startsWith('data:')) continue
-            const payload = line.slice(5).trim()
-            if (payload === '[DONE]') break
-            if (payload.startsWith('[ERROR:')) {
-              setRuntimeError(runtimeErrorMessage(payload.slice(7, -1)))
-              setMessages(prev => prev.filter((_, index) => !(index === prev.length - 1)))
-              break
-            }
-            try {
-              const json = JSON.parse(payload)
-              const delta = json.choices?.[0]?.delta || {}
-              if (delta.reasoning_content) {
-                setThinking(prev => (prev + delta.reasoning_content).slice(-120))
-              }
-              const token = delta.content || ''
-              if (token) {
-                setThinking('')
-                assistantText += token
-                setMessages(prev => {
-                  const msgs = [...prev]
-                  msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], text: msgs[msgs.length - 1].text + token }
-                  return msgs
-                })
-              }
-            } catch (_) {}
-          }
-        }
-
-        if (selectedAgentDbId && assistantText.trim()) {
-          try {
-            await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
-          } catch (err) {
-            console.error('Failed saving assistant message', err)
-          }
+      if (selectedAgentDbId && assistantText.trim()) {
+        try {
+          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+        } catch (err) {
+          console.error('Failed saving assistant message', err)
         }
       }
     } catch (e) {

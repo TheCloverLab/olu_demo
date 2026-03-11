@@ -61,7 +61,7 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
   }
 
   return (
-    <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+    <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-base">Edit Profile</h2>
         <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-white/[0.06] transition-colors">
@@ -71,19 +71,19 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
       <div className="space-y-4">
         <div>
           <p className="text-olu-muted text-xs mb-1">Display Name</p>
-          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-white/30" />
+          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-olu-primary/40" />
         </div>
         <div>
           <p className="text-olu-muted text-xs mb-1">Bio</p>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-white/30 resize-none" />
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-olu-primary/40 resize-none" />
         </div>
         <div>
           <p className="text-olu-muted text-xs mb-1">Avatar (optional)</p>
-          <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
+          <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
         </div>
         <div>
           <p className="text-olu-muted text-xs mb-1">Cover Image (optional)</p>
-          <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-[#161616] border border-white/10 px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
+          <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
         </div>
         {message && <p className={`text-sm ${message.includes('Saved') ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
         <button onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
@@ -154,7 +154,7 @@ export default function PublicProfile() {
       </div>
 
       <div className="px-4">
-        <section className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+        <section className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-start gap-4">
             {creator.avatar_img ? (
               <img src={creator.avatar_img} alt={creator.name} className="w-18 h-18 rounded-2xl object-cover" />
@@ -184,11 +184,11 @@ export default function PublicProfile() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+            <div className="rounded-full border border-olu-border bg-white/5 px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creator.followers || 0)}</span>
               <span className="ml-2 text-olu-muted">Followers</span>
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+            <div className="rounded-full border border-olu-border bg-white/5 px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creatorApps.length)}</span>
               <span className="ml-2 text-olu-muted">Open apps</span>
             </div>
@@ -200,7 +200,7 @@ export default function PublicProfile() {
         )}
 
         {creatorApps.length > 0 ? (
-          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Apps</p>
@@ -214,7 +214,7 @@ export default function PublicProfile() {
                 <button
                   key={app.id}
                   onClick={() => navigate(app.href)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                  className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -229,7 +229,7 @@ export default function PublicProfile() {
             </div>
           </section>
         ) : (
-          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Profile</p>
             <p className="font-semibold text-base mt-1">No public communities or academies yet</p>
             <p className="text-sm text-olu-muted mt-2">
@@ -239,7 +239,7 @@ export default function PublicProfile() {
         )}
 
         {creatorApps.some((app) => app.app_type === 'academy') ? (
-          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Academy</p>
@@ -252,7 +252,7 @@ export default function PublicProfile() {
                 <button
                   key={app.id}
                   onClick={() => navigate(app.href)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                  className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>

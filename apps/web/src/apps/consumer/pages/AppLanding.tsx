@@ -185,7 +185,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
       )}
 
       <div className={clsx('px-4 relative', isCommunity ? 'pt-2' : '-mt-10')}>
-        <div className={clsx('backdrop-blur', isCommunity ? 'rounded-2xl bg-[#111111] p-4 md:p-5' : 'rounded-3xl bg-[#111111]/90 p-5 md:p-6')}>
+        <div className={clsx('backdrop-blur', isCommunity ? 'rounded-2xl bg-olu-surface p-4 md:p-5' : 'rounded-3xl bg-olu-surface/90 p-5 md:p-6')}>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
             <div className="flex gap-4">
               {isCommunity ? null : (
@@ -228,7 +228,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     ) : (
                       <button
                         onClick={() => navigate(`/chat?with=${creator.id}`)}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
+                        className="rounded-full border border-olu-border bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
                       >
                         Message host
                       </button>
@@ -266,7 +266,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                   onClick={() => setFollowing(!following)}
                   className={clsx(
                     'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                    following ? 'bg-white/10 text-sky-400 border border-white/10' : 'glass glass-hover text-olu-muted'
+                    following ? 'bg-white/10 text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
                   )}
                 >
                   {following ? 'Following' : 'Follow'}
@@ -277,7 +277,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
 
           <div className={clsx('grid gap-3 mt-5', isCommunity ? 'grid-cols-3' : 'grid-cols-3')}>
             {appCopy.stats.map((item) => (
-              <div key={item.label} className={clsx('border border-white/[0.04] px-4 py-3', isCommunity ? 'rounded-2xl bg-white/5' : 'rounded-2xl bg-[#181818]')}>
+              <div key={item.label} className={clsx('border border-olu-border px-4 py-3', isCommunity ? 'rounded-2xl bg-white/5' : 'rounded-2xl bg-olu-card')}>
                 <p className={clsx('font-black', isCommunity ? 'text-base' : 'text-xl')}>{item.val}</p>
                 <p className="text-olu-muted text-xs mt-1">{item.label}</p>
               </div>
@@ -311,7 +311,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                       <button
                         key={post.id}
                         onClick={() => navigate(`/content/${post.id}`)}
-                        className="w-full rounded-xl border border-white/[0.04] bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.05] transition-colors"
+                        className="w-full rounded-xl border border-olu-border bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.05] transition-colors"
                       >
                         <p className="font-medium text-sm text-white">{post.title}</p>
                         <p className="mt-1 text-xs text-olu-muted line-clamp-2">{post.preview}</p>
@@ -321,7 +321,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                 ) : (
                   <div className="space-y-2 text-sm text-olu-muted">
                     {appCopy.included.map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-olu-border px-3 py-2">
                         {item}
                       </div>
                     ))}
@@ -337,7 +337,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                       'Topics',
                       membershipStatus ? `${membershipStatus.tier_name} member access` : 'Membership access',
                     ].map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-olu-border px-3 py-2">
                         {item}
                       </div>
                     ))}
@@ -345,7 +345,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                 ) : (
                   <div className="space-y-2 text-sm text-olu-muted">
                     {appCopy.nowLive.map((item) => (
-                      <div key={item} className="rounded-xl bg-white/[0.03] border border-white/[0.04] px-3 py-2">
+                      <div key={item} className="rounded-xl bg-white/[0.03] border border-olu-border px-3 py-2">
                         {item}
                       </div>
                     ))}
@@ -395,7 +395,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
               <div className="grid grid-cols-2 gap-3">
                 {products.map((p) => (
                   <div key={p.id} className="glass rounded-2xl overflow-hidden">
-                    <div className="aspect-square bg-[#161616]">
+                    <div className="aspect-square bg-olu-card">
                       {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" /> : null}
                     </div>
                     <div className="p-3">

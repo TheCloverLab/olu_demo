@@ -102,7 +102,7 @@ export default function Membership() {
                 ? 'bg-white text-black border-white'
                 : index === 2
                   ? 'bg-amber-500/10 border-amber-400/20'
-                  : 'bg-white/5 border-white/10'
+                  : 'bg-white/5 border-olu-border'
             }`}
           >
             <div className="flex items-center justify-between mb-4">
@@ -137,15 +137,15 @@ export default function Membership() {
       </div>
 
       {summary.activeFans > 0 && (
-        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+        <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
               {summary.activeFans} active now
             </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
               Member chat
             </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
               Weekly drops
             </span>
           </div>

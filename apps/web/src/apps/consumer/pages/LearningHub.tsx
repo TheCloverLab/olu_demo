@@ -60,12 +60,12 @@ export default function LearningHub() {
 
       <div className="grid md:grid-cols-2 gap-4">
         {courseLibrary.length === 0 && (
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 text-sm text-olu-muted">
+          <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 text-sm text-olu-muted">
             No courses in your library yet.
           </div>
         )}
         {courseLibrary.map((course) => (
-          <div key={course.id} className="rounded-[24px] overflow-hidden border border-white/10 bg-[#111111]">
+          <div key={course.id} className="rounded-[24px] overflow-hidden border border-olu-border bg-olu-surface">
             {(() => {
               const computed = computeCourseProgress(course, progressBySlug[course.slug] || [])
               return (
@@ -85,7 +85,7 @@ export default function LearningHub() {
               <div className="h-full bg-white rounded-full" style={{ width: `${computed.percent}%` }} />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <div className="rounded-2xl bg-white/5 border border-olu-border p-4">
                 <div className="flex items-center gap-2">
                   <Clock3 size={14} className="text-amber-300" />
                   <p className="text-xs text-olu-muted">Next lesson</p>
@@ -105,7 +105,7 @@ export default function LearningHub() {
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {course.sections.slice(0, 2).map((section) => (
-                <span key={section.id} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                <span key={section.id} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
                   {section.title}
                 </span>
               ))}

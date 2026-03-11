@@ -66,7 +66,7 @@ function ContinueCourseCard({
   return (
     <button
       onClick={onOpen}
-      className="rounded-[24px] overflow-hidden border border-white/10 bg-[#111111] text-left hover:-translate-y-0.5 transition-all"
+      className="rounded-[24px] overflow-hidden border border-olu-border bg-olu-surface text-left hover:-translate-y-0.5 transition-all"
     >
       <div className={`h-36 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-between`}>
         <span className="inline-flex w-fit items-center gap-2 rounded-full bg-black/15 px-3 py-1 text-xs font-medium text-black/75">
@@ -81,15 +81,15 @@ function ContinueCourseCard({
       <div className="p-5">
         <p className="text-sm text-olu-muted line-clamp-2">{course.subtitle}</p>
         <div className="grid grid-cols-3 gap-2 mt-4">
-          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+          <div className="rounded-2xl bg-white/5 p-3 border border-olu-border">
             <p className="font-bold text-sm">{summary.completedCount}/{course.sections.length}</p>
             <p className="text-[11px] text-olu-muted">Lessons</p>
           </div>
-          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+          <div className="rounded-2xl bg-white/5 p-3 border border-olu-border">
             <p className="font-bold text-sm">{summary.percent}%</p>
             <p className="text-[11px] text-olu-muted">Progress</p>
           </div>
-          <div className="rounded-2xl bg-white/5 p-3 border border-white/10">
+          <div className="rounded-2xl bg-white/5 p-3 border border-olu-border">
             <p className="font-bold text-sm">{course.stats.completionRate}</p>
             <p className="text-[11px] text-olu-muted">Avg. complete</p>
           </div>
@@ -228,14 +228,14 @@ export default function Home() {
     return (
       <div className="pb-24 md:pb-6">
         <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-          <div className="rounded-[28px] border border-white/10 bg-[#111318] p-5 animate-pulse">
+          <div className="rounded-[28px] border border-olu-border bg-olu-surface p-5 animate-pulse">
             <div className="h-4 w-24 bg-white/10 rounded-full mb-4" />
             <div className="h-7 w-64 bg-white/10 rounded-full mb-3" />
             <div className="h-4 w-48 bg-white/10 rounded-full" />
           </div>
           <div className="grid lg:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
-              <div key={i} className="rounded-[24px] border border-white/10 bg-[#111111] overflow-hidden animate-pulse">
+              <div key={i} className="rounded-[24px] border border-olu-border bg-olu-surface overflow-hidden animate-pulse">
                 <div className="h-36 bg-white/5" />
                 <div className="p-5 space-y-3">
                   <div className="h-4 w-3/4 bg-white/10 rounded-full" />
@@ -252,7 +252,7 @@ export default function Home() {
   return (
     <div className="pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-        <section className="rounded-[28px] overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(135deg,#131825,#090c12)] p-4 md:p-5">
+        <section className="rounded-[28px] overflow-hidden border border-olu-border bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(135deg,#131825,#090c12)] p-4 md:p-5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 mb-3">
@@ -274,7 +274,7 @@ export default function Home() {
                 { label: 'Communities', value: formatNumber(joinedCommunities.length) },
                 { label: 'Academies', value: formatNumber(purchasedCourses.length) },
               ].map((item) => (
-                <div key={item.label} className="rounded-full border border-white/10 bg-white/5 px-3 py-2">
+                <div key={item.label} className="rounded-full border border-olu-border bg-white/5 px-3 py-2">
                   <span className="font-semibold text-sm">{item.value}</span>
                   <span className="ml-2 text-xs text-white/60">{item.label}</span>
                 </div>
@@ -312,7 +312,7 @@ export default function Home() {
         ) : null}
 
         {joinedCommunities.length > 0 ? (
-          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Community</p>
@@ -325,7 +325,7 @@ export default function Home() {
                 <button
                   key={creator.id}
                   onClick={() => navigate(communityCardsById.get(creator.id)?.href || `/communities/${creator.id}`)}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
+                  className="overflow-hidden rounded-2xl border border-olu-border bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   {(() => {
                     const communityApp = communityCardsById.get(creator.id)
@@ -347,7 +347,7 @@ export default function Home() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {['Member updates', 'Private topics', 'Live sessions'].map((item) => (
-                        <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                        <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
                           {item}
                         </span>
                       ))}
@@ -364,7 +364,7 @@ export default function Home() {
         ) : null}
 
         {relatedPosts.length > 0 ? (
-          <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Updates</p>
@@ -377,7 +377,7 @@ export default function Home() {
                 <button
                   key={post.id}
                   onClick={() => navigate(`/content/${post.id}`)}
-                  className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
+                  className="w-full overflow-hidden rounded-2xl border border-olu-border bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${post.gradient_bg || 'from-slate-700 to-slate-900'}`}>
                     {post.cover_img && !brokenPostCovers[post.id] ? (
@@ -407,7 +407,7 @@ export default function Home() {
         ) : null}
 
         <section className="grid lg:grid-cols-2 gap-4">
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended communities</p>
@@ -420,7 +420,7 @@ export default function Home() {
                 <button
                   key={creator.id}
                   onClick={() => navigate(communityCardsById.get(creator.id)?.href || `/communities/${creator.id}`)}
-                  className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
+                  className="w-full overflow-hidden rounded-2xl border border-olu-border bg-white/5 text-left hover:bg-white/8 transition-colors"
                 >
                   {(() => {
                     const communityApp = communityCardsById.get(creator.id)
@@ -438,7 +438,7 @@ export default function Home() {
                   <div className="p-4">
                     <div className="flex flex-wrap gap-2">
                       {['Weekly drops', 'Private Q&A', 'Community chat'].map((item) => (
-                        <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                        <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
                           {item}
                         </span>
                       ))}
@@ -447,14 +447,14 @@ export default function Home() {
                 </button>
               ))}
               {!loading && recommendedCommunities.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+                <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
                   No new communities to suggest right now.
                 </div>
               ) : null}
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended academies</p>
@@ -469,7 +469,7 @@ export default function Home() {
                   <button
                     key={academyApp.id}
                     onClick={() => navigate(academyApp.href)}
-                    className="w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/8 transition-colors"
+                    className="w-full overflow-hidden rounded-2xl border border-olu-border bg-white/5 text-left hover:bg-white/8 transition-colors"
                   >
                     <AppCover
                       src={academyApp.cover_img || host?.cover_img}
@@ -486,7 +486,7 @@ export default function Home() {
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {academyApp.highlights.slice(0, 2).map((item) => (
-                          <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                          <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
                             {item}
                           </span>
                         ))}
@@ -496,7 +496,7 @@ export default function Home() {
                 )
               })}
               {!loading && recommendedAcademies.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+                <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
                   No new academy apps to suggest right now.
                 </div>
               ) : null}

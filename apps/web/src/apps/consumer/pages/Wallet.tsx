@@ -137,7 +137,7 @@ export default function Wallet() {
       </button>
 
       {/* Balance card */}
-      <section className="rounded-[28px] border border-white/10 bg-gradient-to-br from-[#111111] to-[#0a0e17] p-6">
+      <section className="rounded-[28px] border border-olu-border bg-gradient-to-br from-[#111111] to-[#0a0e17] p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-white/45">Total balance</p>
@@ -148,7 +148,7 @@ export default function Wallet() {
         </div>
 
         <div className="mt-4">
-          <div className="rounded-2xl border border-white/[0.06] bg-white/5 p-3">
+          <div className="rounded-2xl border border-olu-border bg-white/5 p-3">
             <p className="text-xs text-olu-muted">Balance</p>
             <p className="font-bold text-lg mt-1">${balanceUsdc.toFixed(2)}</p>
           </div>
@@ -164,15 +164,15 @@ export default function Wallet() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-olu-border bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{totalMemberships}</span>
             <span className="ml-2 text-olu-muted">Memberships</span>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-olu-border bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{totalAcademies}</span>
             <span className="ml-2 text-olu-muted">Academies</span>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-white/5 px-3 py-2 text-sm">
+          <div className="rounded-2xl border border-olu-border bg-white/5 px-3 py-2 text-sm">
             <span className="font-semibold">{recentCharges.length}</span>
             <span className="ml-2 text-olu-muted">Charges</span>
           </div>
@@ -180,7 +180,7 @@ export default function Wallet() {
       </section>
 
       {/* Recent transactions */}
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Transactions</p>
@@ -193,7 +193,7 @@ export default function Wallet() {
           {DEMO_TRANSACTIONS.map((txn) => (
             <div
               key={txn.id}
-              className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5"
+              className="flex items-center gap-3 rounded-2xl border border-olu-border bg-white/[0.02] p-3.5"
             >
               <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                 txn.direction === 'in' ? 'bg-emerald-500/15' : 'bg-white/5'
@@ -218,7 +218,7 @@ export default function Wallet() {
       </section>
 
       {/* Memberships */}
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Memberships</p>
@@ -235,7 +235,7 @@ export default function Wallet() {
               <button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -248,14 +248,14 @@ export default function Wallet() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
             No recurring memberships yet.
           </div>
         )}
       </section>
 
       {/* Course purchases */}
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Purchases</p>
@@ -272,7 +272,7 @@ export default function Wallet() {
               <button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -285,14 +285,14 @@ export default function Wallet() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
             No academy purchases yet.
           </div>
         )}
       </section>
 
       {/* Payment methods */}
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Payment methods</p>
@@ -302,7 +302,7 @@ export default function Wallet() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5">
+          <div className="flex items-center gap-3 rounded-2xl border border-olu-border bg-white/[0.02] p-3.5">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">AP</div>
             <div className="flex-1">
               <p className="text-sm font-medium">Apple Pay</p>
@@ -310,7 +310,7 @@ export default function Wallet() {
             </div>
             <span className="text-xs text-emerald-400">Connected</span>
           </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-3.5">
+          <div className="flex items-center gap-3 rounded-2xl border border-olu-border bg-white/[0.02] p-3.5">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">V</div>
             <div className="flex-1">
               <p className="text-sm font-medium">Visa ····4829</p>
@@ -320,7 +320,7 @@ export default function Wallet() {
           </div>
         </div>
 
-        <button className="mt-3 w-full rounded-2xl border border-dashed border-white/10 px-4 py-3 text-sm text-olu-muted hover:bg-white/[0.03] transition-colors">
+        <button className="mt-3 w-full rounded-2xl border border-dashed border-olu-border px-4 py-3 text-sm text-olu-muted hover:bg-white/[0.03] transition-colors">
           + Add payment method
         </button>
       </section>

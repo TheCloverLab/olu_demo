@@ -181,7 +181,7 @@ export default function Discover() {
             Communities to join, academies to learn from.
           </p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-[#101217] px-4 py-3 flex items-center gap-3">
+        <div className="rounded-2xl border border-olu-border bg-[#101217] px-4 py-3 flex items-center gap-3">
           <Search size={16} className="text-white/35" />
           <input
             value={query}
@@ -204,7 +204,7 @@ export default function Discover() {
                   'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
                   category === key
                     ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/55 border border-white/10 hover:bg-white/10'
+                    : 'bg-white/5 text-white/55 border border-olu-border hover:bg-white/10'
                 )}
               >
                 {label}
@@ -222,7 +222,7 @@ export default function Discover() {
         ) : null}
 
         {!loading && filteredApps.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-sm text-white/45">
+          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-8 text-sm text-white/45">
             {emptyLabel}
           </div>
         ) : null}
@@ -230,7 +230,7 @@ export default function Discover() {
         {(loading || loadingMore) ? (
           <div className="grid md:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
-              <div key={i} className="rounded-[24px] bg-[#111111] overflow-hidden animate-pulse min-h-[260px] flex flex-col justify-end">
+              <div key={i} className="rounded-[24px] bg-olu-surface overflow-hidden animate-pulse min-h-[260px] flex flex-col justify-end">
                 <div className="h-full bg-white/[0.03]" />
                 <div className="p-4 space-y-3">
                   <div className="h-3 w-20 bg-white/[0.06] rounded-full" />

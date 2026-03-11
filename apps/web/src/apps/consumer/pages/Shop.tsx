@@ -29,7 +29,7 @@ interface ProductCardProps {
 function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
   return (
     <motion.div whileHover={{ y: -3 }} className="glass glass-hover rounded-2xl overflow-hidden">
-      <div className="aspect-square bg-[#1c1c1c] relative overflow-hidden">
+      <div className="aspect-square bg-olu-card relative overflow-hidden">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
         ) : (
@@ -168,7 +168,7 @@ function UserShopView({ products }: { products: Product[] }) {
             <div className="space-y-3 mb-6">
               {cart.map(item => (
                 <div key={item.id} className="glass rounded-xl p-3 flex gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-[#1c1c1c] flex-shrink-0" />
+                  <div className="w-16 h-16 rounded-lg bg-olu-card flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
                     <p className="text-olu-muted text-xs">Qty: {item.quantity}</p>
@@ -299,7 +299,7 @@ export default function Shop() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-[#2a2a2a] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-olu-card flex items-center justify-center">
           <ShoppingCart size={18} className="text-white" />
         </div>
         <div>

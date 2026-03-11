@@ -71,7 +71,7 @@ export default function Checkout() {
         </div>
       </div>
       <div className="grid md:grid-cols-[1.05fr,0.95fr] gap-4">
-        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+        <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Order summary</p>
           <h2 className="font-bold text-xl">{course.title}</h2>
           <p className="text-sm text-olu-muted mt-2">{course.subtitle}</p>
@@ -80,7 +80,7 @@ export default function Checkout() {
             <span className="font-black text-2xl">${course.price}</span>
           </div>
         </div>
-        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+        <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck size={16} className="text-sky-300" />
             <p className="font-semibold">Payment CTA</p>

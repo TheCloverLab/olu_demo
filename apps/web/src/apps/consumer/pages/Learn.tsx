@@ -63,7 +63,7 @@ export default function Learn() {
   if (!section.preview && !purchased) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-6">
+        <div className="rounded-[24px] border border-olu-border bg-olu-surface p-6">
           <p className="font-bold text-xl mb-2">Purchase required</p>
           <p className="text-olu-muted text-sm mb-4">This lesson is locked until you buy the course.</p>
           <button
@@ -97,7 +97,7 @@ export default function Learn() {
         {detail.catalogLabel}
       </button>
       <div className="grid lg:grid-cols-[1.15fr,0.85fr] gap-4">
-        <div className="rounded-[28px] border border-white/10 bg-[#111111] overflow-hidden">
+        <div className="rounded-[28px] border border-olu-border bg-olu-surface overflow-hidden">
           <div className={`h-64 bg-gradient-to-br ${course.hero} p-6 flex items-end`}>
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-black/60 mb-2">{course.title}</p>
@@ -106,7 +106,7 @@ export default function Learn() {
           </div>
           <div className="p-6">
             <p className="text-white/78 leading-relaxed">{section.summary}</p>
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mt-5">
+            <div className="rounded-2xl bg-white/5 border border-olu-border p-4 mt-5">
               <p className="text-sm text-olu-muted">Learning surface placeholder</p>
               <p className="font-semibold mt-1">This is where the video / audio / article lesson player goes.</p>
             </div>
@@ -119,7 +119,7 @@ export default function Learn() {
             </button>
           </div>
         </div>
-        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+        <div className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen size={16} className="text-sky-300" />
             <p className="font-semibold">{consumerExperience.courses.learning.title}</p>
@@ -134,7 +134,7 @@ export default function Learn() {
               <button
                 key={item.id}
                 onClick={() => navigate(`/learn/${course.slug}/${item.id}`)}
-                className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                className="w-full rounded-2xl border border-olu-border bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>

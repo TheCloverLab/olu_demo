@@ -40,7 +40,7 @@ export default function UserCenter() {
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-6">
       <div className="px-4 pt-4">
-        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+        <div className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
               {user.avatar_img ? (
@@ -64,7 +64,7 @@ export default function UserCenter() {
       </div>
 
       <div className="px-4 mt-5">
-        <section className="rounded-[24px] border border-white/10 bg-[#111111] overflow-hidden">
+        <section className="rounded-[24px] border border-olu-border bg-olu-surface overflow-hidden">
           <div className="px-5 pt-5 pb-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Account</p>
             <p className="font-semibold text-base mt-1">Manage your account</p>

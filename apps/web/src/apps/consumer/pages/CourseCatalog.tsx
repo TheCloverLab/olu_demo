@@ -53,7 +53,7 @@ export default function CourseCatalog() {
           <button
             key={section.id}
             onClick={() => navigate(section.preview || purchased ? `/learn/${course.slug}/${section.id}` : `/checkout/${course.slug}`)}
-            className="w-full rounded-[24px] border border-white/10 bg-[#111111] p-5 text-left hover:bg-[#151515] transition-colors"
+            className="w-full rounded-[24px] border border-olu-border bg-olu-surface p-5 text-left hover:bg-olu-card transition-colors"
           >
             <div className="flex items-center justify-between gap-3">
               <div>

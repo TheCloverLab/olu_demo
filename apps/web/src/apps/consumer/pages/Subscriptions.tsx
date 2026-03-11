@@ -66,7 +66,7 @@ export default function Subscriptions() {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <section className="rounded-[28px] border border-white/10 bg-[#111111] p-5">
+      <section className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
         <p className="text-xs uppercase tracking-[0.18em] text-white/45">Subscriptions</p>
         <h1 className="font-black text-2xl mt-2">Your active memberships</h1>
         <p className="text-sm text-olu-muted mt-2">
@@ -74,7 +74,7 @@ export default function Subscriptions() {
         </p>
       </section>
 
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         {loading ? (
           <div className="text-sm text-olu-muted">Loading memberships...</div>
         ) : subscriptions.length > 0 ? (
@@ -83,7 +83,7 @@ export default function Subscriptions() {
               <button
                 key={creator.id}
                 onClick={() => navigate(`/communities/${creator.id}`)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -102,13 +102,13 @@ export default function Subscriptions() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-olu-muted">
+          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
             No active memberships yet.
           </div>
         )}
       </section>
 
-      <section className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mt-5">
+      <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="font-semibold text-sm">Renewals and changes</p>

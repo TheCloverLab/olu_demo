@@ -26,7 +26,7 @@ export default function Topics() {
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
+        <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Flame size={15} className="text-orange-300" />
             <p className="font-semibold">About this topic</p>
@@ -35,17 +35,17 @@ export default function Topics() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">What happens here</p>
             <div className="flex flex-wrap gap-2">
               {['Discussion threads', 'Member feedback', 'Host replies'].map((item) => (
-                <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
                   {item}
                 </span>
               ))}
             </div>
           </div>
-          <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5">
+          <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Join the conversation</p>
             <button
               onClick={() => navigate(`/chat?topic=${activeTopic.id}`)}
@@ -71,14 +71,14 @@ export default function Topics() {
         </div>
       </div>
 
-      <div className="rounded-[24px] border border-white/10 bg-[#111111] p-5 mb-5">
+      <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mb-5">
         <div className="flex items-center gap-2 mb-2">
           <Flame size={15} className="text-orange-300" />
           <p className="font-semibold">Active right now</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {['Weekly critique', 'Member Q&A', 'Drop watch'].map((item) => (
-            <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+            <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
               {item}
             </span>
           ))}
@@ -90,7 +90,7 @@ export default function Topics() {
           <button
             key={topic.id}
             onClick={() => navigate(`/topics/${topic.id}`)}
-            className="w-full rounded-[24px] border border-white/10 bg-[#111111] p-5 text-left hover:bg-[#151515] transition-colors"
+            className="w-full rounded-[24px] border border-olu-border bg-olu-surface p-5 text-left hover:bg-olu-card transition-colors"
           >
             <div className="flex items-start justify-between gap-3">
               <div>

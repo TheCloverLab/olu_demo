@@ -123,11 +123,11 @@ function TaskItem({ task }) {
   const Icon = cfg.icon
   return (
     <div className="flex items-start gap-3 p-4 rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-400' : 'text-[var(--olu-text-secondary)] hover:text-white')}>
+      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-400' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]')}>
         <Icon size={16} />
       </button>
       <div className="flex-1 min-w-0">
-        <p className={clsx('text-sm font-medium text-white', status === 'done' && 'line-through text-[var(--olu-text-secondary)]')}>{task.title}</p>
+        <p className={clsx('text-sm font-medium', status === 'done' && 'line-through text-[var(--olu-text-secondary)]')}>{task.title}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', PRIORITY_COLOR[task.priority])}>{task.priority}</span>
           <span className="text-[var(--olu-text-secondary)] text-xs">{task.due}</span>
@@ -792,7 +792,7 @@ export default function TeamChat() {
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto px-4 md:px-0">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--olu-card-border)] flex-shrink-0 rounded-t-[28px] bg-[linear-gradient(135deg,rgba(13,27,46,0.92),rgba(8,18,33,0.84))] shadow-[0_18px_60px_rgba(2,8,23,0.18)]">
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--olu-card-border)] flex-shrink-0 rounded-t-[28px] bg-[image:var(--olu-chat-header-bg)] shadow-[0_18px_60px_rgba(2,8,23,0.18)]">
         <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-cyan-400/10 transition-colors mr-1">
           <ArrowLeft size={18} className="text-[var(--olu-text-secondary)]" />
         </button>
@@ -803,7 +803,7 @@ export default function TeamChat() {
           }
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm text-white">{agent.name}</p>
+          <p className="font-semibold text-sm">{agent.name}</p>
           <div className="flex items-center gap-1.5">
             <div className={clsx('w-1.5 h-1.5 rounded-full', loading ? 'bg-amber-400' : agent.status === 'online' ? 'bg-emerald-400' : 'bg-gray-500')} />
             <p className="text-[var(--olu-text-secondary)] text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
@@ -827,7 +827,7 @@ export default function TeamChat() {
       </div>
 
       {tab === 'tasks' ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-b-[28px] bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-b border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-b-[28px] bg-[image:var(--olu-chat-area-bg)] border-x border-b border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
           <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider mb-3">Active Tasks</p>
           {tasks.map(task => <TaskItem key={task.id} task={task} />)}
         </div>
@@ -874,7 +874,7 @@ export default function TeamChat() {
             onScroll={(e) => {
               chatScrollTopRef.current = e.currentTarget.scrollTop
             }}
-            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]"
+            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[image:var(--olu-chat-area-bg)] border-x border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]"
           >
             {messages.map((msg, i) => (
               <motion.div
@@ -902,8 +902,8 @@ export default function TeamChat() {
                   <div className={clsx(
                     'px-5 py-3.5 rounded-[24px] text-[15px] leading-7 border shadow-[0_16px_40px_rgba(2,8,23,0.18)]',
                     msg.from === 'user'
-                      ? 'bg-cyan-300 text-[#04111f] border-cyan-200/60 rounded-tr-[10px]'
-                      : 'bg-[var(--olu-card-bg)] text-white border-[var(--olu-card-border)] rounded-tl-[10px]'
+                      ? 'bg-[var(--olu-chat-user-bg)] text-[var(--olu-chat-user-text)] border-[var(--olu-chat-user-border)] rounded-tr-[10px]'
+                      : 'bg-[var(--olu-chat-agent-bg)] text-[var(--olu-chat-agent-text)] border-[var(--olu-chat-agent-border)] rounded-tl-[10px]'
                   )}>
                     {msg.from === 'agent' ? (
                       msg.text ? (
@@ -913,7 +913,7 @@ export default function TeamChat() {
                           )}
                           <div className={clsx(
                             'prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded prose-headings:mb-2',
-                            'prose-invert prose-headings:text-white prose-code:bg-white/10 prose-code:text-cyan-100 prose-pre:bg-[var(--olu-input-bg)]'
+                            'dark:prose-invert prose-headings:text-[var(--olu-text)] prose-code:bg-black/5 dark:prose-code:bg-white/10 prose-code:text-[var(--olu-text)] prose-pre:bg-[var(--olu-input-bg)]'
                           )}>
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
@@ -1114,7 +1114,7 @@ export default function TeamChat() {
                   }}
                   placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
                   rows={1}
-                  className="w-full px-4 pt-3 pb-1 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
+                  className="w-full px-4 pt-3 pb-1 bg-transparent text-sm text-[var(--olu-input-text)] placeholder:text-[var(--olu-input-placeholder)] focus:outline-none resize-none"
                   style={{ maxHeight: 120 }}
                 />
                 {/* Toolbar row inside the input container */}

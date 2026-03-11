@@ -50,6 +50,8 @@
   --olu-text-secondary: #64748b;
   --olu-hero-bg: linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%);
   --olu-hero-accent: rgba(14, 165, 233, 0.08);
+  --olu-chat-area-bg: linear-gradient(180deg, #f8fafc, #f1f5f9);
+  --olu-chat-header-bg: linear-gradient(135deg, rgba(241,245,249,0.95), rgba(248,250,252,0.9));
 }
 
 .dark {
@@ -99,6 +101,8 @@
   --olu-text-secondary: rgba(207, 250, 254, 0.45);
   --olu-hero-bg: linear-gradient(180deg, #0b1422 0%, #08111d 100%);
   --olu-hero-accent: rgba(34, 211, 238, 0.14);
+  --olu-chat-area-bg: linear-gradient(180deg, rgba(7,18,33,0.92), rgba(4,11,22,0.96));
+  --olu-chat-header-bg: linear-gradient(135deg, rgba(13,27,46,0.92), rgba(8,18,33,0.84));
 }
 
 /* ─── Global cursor — outside all Tailwind layers ─── */

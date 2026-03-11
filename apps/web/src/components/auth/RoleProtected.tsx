@@ -20,7 +20,7 @@ export default function RoleProtected({
   businessOnly = false,
 }: RoleProtectedProps) {
   const { user, loading } = useAuth()
-  const { enabledBusinessModules } = useApp()
+  const { enabledBusinessModules, workspaceLoading } = useApp()
   const location = useLocation()
 
   if (loading) return null
@@ -29,6 +29,9 @@ export default function RoleProtected({
     const returnTo = `${location.pathname}${location.search}`
     return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace state={{ from: returnTo }} />
   }
+
+  // Wait for workspace modules to load before checking business access
+  if (workspaceLoading && (businessOnly || requiredModule)) return null
 
   if (requiredModule && !enabledBusinessModules.includes(requiredModule)) {
     return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/'} replace />

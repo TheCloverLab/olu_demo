@@ -5,6 +5,7 @@ import type { BusinessModuleKey } from '../lib/supabase'
 
 interface WorkspaceContextType {
   enabledBusinessModules: BusinessModuleKey[]
+  workspaceLoading: boolean
   hasModule: (moduleKey: BusinessModuleKey) => boolean
   reloadBusinessModules: () => Promise<void>
 }
@@ -14,10 +15,12 @@ const WorkspaceContext = createContext<WorkspaceContextType | null>(null)
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user: authUser } = useAuth()
   const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModuleKey[]>([])
+  const [workspaceLoading, setWorkspaceLoading] = useState(true)
 
   async function loadWorkspaceModules() {
     if (!authUser) {
       setEnabledBusinessModules([])
+      setWorkspaceLoading(false)
       return
     }
 
@@ -27,15 +30,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to load workspace modules', error)
       setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+    } finally {
+      setWorkspaceLoading(false)
     }
   }
 
   useEffect(() => {
     let cancelled = false
+    setWorkspaceLoading(true)
 
     async function sync() {
       if (!authUser) {
         setEnabledBusinessModules([])
+        if (!cancelled) setWorkspaceLoading(false)
         return
       }
 
@@ -45,6 +52,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Failed to load workspace modules', error)
         if (!cancelled) setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+      } finally {
+        if (!cancelled) setWorkspaceLoading(false)
       }
     }
 
@@ -57,6 +66,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   return (
     <WorkspaceContext.Provider value={{
       enabledBusinessModules,
+      workspaceLoading,
       hasModule,
       reloadBusinessModules: loadWorkspaceModules,
     }}>

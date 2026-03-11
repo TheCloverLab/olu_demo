@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom'
-import { Home, Users, MessageCircle, User } from 'lucide-react'
+import { Users, MessageCircle, User } from 'lucide-react'
 import clsx from 'clsx'
 import { resolveConsumerAppBySlug } from '../../../domain/consumer/apps'
 
@@ -45,7 +45,6 @@ export default function StandaloneAppLayout() {
 
   const basePath = `/app/${slug}`
   const tabs = [
-    { to: basePath, icon: Home, label: 'Home', exact: true },
     { to: `${basePath}/topics`, icon: Users, label: 'Topics' },
     { to: `${basePath}/chat`, icon: MessageCircle, label: 'Chat' },
     { to: `${basePath}/me`, icon: User, label: 'Me' },

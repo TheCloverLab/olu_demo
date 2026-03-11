@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { BookOpen, Calendar, Compass, GraduationCap, Home, MessageCircle, Sparkles, User, Users, Video } from 'lucide-react'
+import { BookOpen, Calendar, Compass, GraduationCap, MessageCircle, Sparkles, User, Users, Video } from 'lucide-react'
 
 export type ConsumerNavItem = {
   to: string
@@ -35,7 +35,6 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Community',
     appType: 'community' as const,
     nav: [
-      { to: '/', icon: Home, label: 'Home', exact: true },
       { to: '/discover', icon: Compass, label: 'Discover' },
       { to: '/chat', icon: MessageCircle, label: 'Chat' },
       { to: '/profile', icon: User, label: 'Me' },
@@ -58,7 +57,6 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Academy',
     appType: 'academy' as const,
     nav: [
-      { to: '/', icon: Home, label: 'Home', exact: true },
       { to: '/discover', icon: Compass, label: 'Discover' },
       { to: '/chat', icon: MessageCircle, label: 'Chat' },
       { to: '/profile', icon: User, label: 'Me' },
@@ -81,7 +79,6 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Consulting',
     appType: 'consulting' as const,
     nav: [
-      { to: '/', icon: Home, label: 'Home', exact: true },
       { to: '/discover', icon: Compass, label: 'Experts' },
       { to: '/chat', icon: MessageCircle, label: 'Chat' },
       { to: '/profile', icon: User, label: 'Me' },

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AppWindow, ChevronDown, Eye, EyeOff, Globe, ImagePlus, Loader2, Pencil, Plus, Save, X } from 'lucide-react'
 import clsx from 'clsx'
-import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import type { ConsumerApp } from '../../../lib/supabase'
 import { supabase } from '../../../lib/supabase'
@@ -233,7 +232,6 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
 
 export default function AppManagement() {
   const { user } = useAuth()
-  const { consumerTemplate } = useApp()
   const [apps, setApps] = useState<ConsumerApp[]>([])
   const [loading, setLoading] = useState(true)
   const [configAppId, setConfigAppId] = useState<string | null>(null)
@@ -252,6 +250,10 @@ export default function AppManagement() {
     reloadApps()
   }, [user?.id])
 
+  const primaryApp = apps[0] || null
+  const hiddenAppCount = Math.max(0, apps.length - 1)
+  const canCreateApp = apps.length === 0
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -267,31 +269,40 @@ export default function AppManagement() {
           <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace</p>
           <h1 className="font-black text-2xl">App Management</h1>
           <p className="text-[var(--olu-text-secondary)] text-sm mt-1">
-            {apps.length} consumer app{apps.length !== 1 ? 's' : ''} · {apps.filter((a) => a.status === 'published').length} published
+            {primaryApp ? '1 app managed in UI' : 'No consumer app yet'} · backend still supports multiple apps
           </p>
         </div>
-        <button
-          onClick={() => { setShowNewApp(!showNewApp); setConfigAppId(null) }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">New app</span>
-        </button>
+        {canCreateApp && (
+          <button
+            onClick={() => { setShowNewApp(!showNewApp); setConfigAppId(null) }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">New app</span>
+          </button>
+        )}
       </div>
+
+      {hiddenAppCount > 0 && (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          This UI currently manages one app per workspace. {hiddenAppCount} additional app{hiddenAppCount !== 1 ? 's remain' : ' remains'} supported in the backend.
+        </div>
+      )}
 
       {showNewApp && (
         <NewAppPanel onClose={() => setShowNewApp(false)} />
       )}
 
-      {apps.length === 0 ? (
+      {!primaryApp ? (
         <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-12 text-center space-y-3">
           <AppWindow size={32} className="text-cyan-100/30 mx-auto" />
-          <p className="text-[var(--olu-text-secondary)] text-sm">No consumer apps yet.</p>
-          <p className="text-[var(--olu-muted)] text-xs">Tap "New app" above to create your first community or academy.</p>
+          <p className="text-[var(--olu-text-secondary)] text-sm">No consumer app yet.</p>
+          <p className="text-[var(--olu-muted)] text-xs">Tap "New app" above to create the one app this UI currently supports.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {apps.map((app) => {
+          {(() => {
+            const app = primaryApp
             const typeBadge = TYPE_BADGE[app.app_type] || { label: app.app_type, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' }
             const statusBadge = STATUS_BADGE[app.status] || STATUS_BADGE.draft
             const isConfiguring = configAppId === app.id
@@ -355,7 +366,7 @@ export default function AppManagement() {
                 )}
               </div>
             )
-          })}
+          })()}
         </div>
       )}
     </div>

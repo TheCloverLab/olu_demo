@@ -23,7 +23,7 @@ function mockApp(overrides: Record<string, any> = {}) {
 }
 
 function renderProtected(
-  props: { requireAuth?: boolean; requiredModule?: any; bypassOnboarding?: boolean; businessOnly?: boolean } = {},
+  props: { requireAuth?: boolean; requiredModule?: any; bypassOnboarding?: boolean } = {},
   initialPath = '/'
 ) {
   return render(
@@ -155,44 +155,6 @@ describe('RoleProtected', () => {
 
     renderProtected({ bypassOnboarding: true })
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
-  })
-
-  it('redirects consumer-only users away from business workspace', () => {
-    vi.mocked(AuthContext.useAuth).mockReturnValue({
-      user: { id: '1', onboarding_completed: true } as any,
-      session: {} as any,
-      loading: false,
-      signIn: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    })
-    mockApp({
-      enabledBusinessModules: [],
-      consumerTemplate: 'fan_community',
-      consumerConfig: {},
-      consumerExperience: {} as any,
-      setConsumerTemplate: vi.fn(),
-      setConsumerConfig: vi.fn(),
-      reloadBusinessModules: vi.fn(),
-    })
-
-    render(
-      <MemoryRouter initialEntries={['/business']}>
-        <Routes>
-          <Route
-            path="/business"
-            element={
-              <RoleProtected businessOnly>
-                <div>Business Content</div>
-              </RoleProtected>
-            }
-          />
-          <Route path="/" element={<div>Consumer Home</div>} />
-        </Routes>
-      </MemoryRouter>
-    )
-
-    expect(screen.getByText('Consumer Home')).toBeInTheDocument()
   })
 
   it('allows unauthenticated access when requireAuth is false', () => {

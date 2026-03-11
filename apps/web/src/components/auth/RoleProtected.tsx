@@ -9,7 +9,6 @@ type RoleProtectedProps = {
   requireAuth?: boolean
   requiredModule?: BusinessModuleKey
   bypassOnboarding?: boolean
-  businessOnly?: boolean
 }
 
 export default function RoleProtected({
@@ -17,7 +16,6 @@ export default function RoleProtected({
   requireAuth = true,
   requiredModule,
   bypassOnboarding = false,
-  businessOnly = false,
 }: RoleProtectedProps) {
   const { user, loading } = useAuth()
   const { enabledBusinessModules, workspaceLoading } = useApp()
@@ -31,14 +29,10 @@ export default function RoleProtected({
   }
 
   // Wait for workspace modules to load before checking business access
-  if (workspaceLoading && (businessOnly || requiredModule)) return null
+  if (workspaceLoading && requiredModule) return null
 
   if (requiredModule && !enabledBusinessModules.includes(requiredModule)) {
     return <Navigate to={location.pathname.startsWith('/business') ? '/business' : '/'} replace />
-  }
-
-  if (businessOnly && enabledBusinessModules.length === 0) {
-    return <Navigate to="/" replace />
   }
 
   if (!bypassOnboarding && user && user.onboarding_completed === false && location.pathname !== '/onboarding') {

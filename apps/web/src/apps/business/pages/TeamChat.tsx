@@ -97,6 +97,26 @@ function runtimeErrorMessage(code) {
   return `Agent runtime failed (${code || 'unknown-error'}). No AI reply was generated.`
 }
 
+function isToolDebugEnabled() {
+  if (typeof window === 'undefined') return false
+
+  const params = new URLSearchParams(window.location.search)
+  const debugTools = params.get('debugTools')
+  const storageKey = 'olu-chat-debug-tools'
+
+  if (debugTools === '1') {
+    window.localStorage.setItem(storageKey, '1')
+    return true
+  }
+
+  if (debugTools === '0') {
+    window.localStorage.removeItem(storageKey)
+    return false
+  }
+
+  return window.localStorage.getItem(storageKey) === '1'
+}
+
 function TaskItem({ task }) {
   const [status, setStatus] = useState(task.status)
   const cfg = STATUS_CONFIG[status]
@@ -355,6 +375,7 @@ export default function TeamChat() {
   const [selectedGroupDbId, setSelectedGroupDbId] = useState<string | null>(null)
   const [liveGroups, setLiveGroups] = useState<any[]>([])
   const [dataLoaded, setDataLoaded] = useState(false)
+  const showToolDebug = isToolDebugEnabled()
 
   const isGroup = agentId?.startsWith('grp-')
   const allAgents = liveAgents
@@ -918,7 +939,7 @@ export default function TeamChat() {
                               {msg.notice}
                             </p>
                           )}
-                          {msg.toolCalls?.length > 0 && <ToolCallCards toolCalls={msg.toolCalls} />}
+                          {showToolDebug && msg.toolCalls?.length > 0 && <ToolCallCards toolCalls={msg.toolCalls} />}
                         </>
                       ) : (
                         <span className="flex gap-1 items-center h-4">

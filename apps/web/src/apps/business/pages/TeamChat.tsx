@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, Zap, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Plus, X, Mic, MicOff, Image as ImageIcon } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import {
@@ -215,6 +215,11 @@ export default function TeamChat() {
   const [thinking, setThinking] = useState('')
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [showReasoning, setShowReasoning] = useState(true)
+  const [attachedImages, setAttachedImages] = useState<{ file: File; preview: string }[]>([])
+  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || 'default')
+  const [showModelMenu, setShowModelMenu] = useState(false)
+  const [availableModels, setAvailableModels] = useState<{ name: string; model: string }[]>([])
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [liveAgents, setLiveAgents] = useState<any[]>([])
@@ -328,14 +333,49 @@ export default function TeamChat() {
     return () => clearTimeout(t)
   }, [messages, loading])
 
+  // Fetch available models
+  useEffect(() => {
+    const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
+    fetch(`${AGENT_RUNTIME_URL}/models`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.providers) setAvailableModels(data.providers)
+      })
+      .catch(() => {})
+  }, [])
+
+  const addImages = useCallback((files: FileList | File[]) => {
+    const newImages = Array.from(files)
+      .filter(f => f.type.startsWith('image/'))
+      .slice(0, 4 - attachedImages.length)
+      .map(file => ({ file, preview: URL.createObjectURL(file) }))
+    setAttachedImages(prev => [...prev, ...newImages].slice(0, 4))
+  }, [attachedImages.length])
+
+  const removeImage = useCallback((index: number) => {
+    setAttachedImages(prev => {
+      URL.revokeObjectURL(prev[index].preview)
+      return prev.filter((_, i) => i !== index)
+    })
+  }, [])
+
   const sendMessage = async () => {
-    if (!input.trim() || loading) return
+    if ((!input.trim() && attachedImages.length === 0) || loading) return
     const userText = input.trim()
     setInput('')
     setRuntimeError(null)
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
 
-    const userMsg = { from: 'user', text: userText, time: 'Just now' }
+    // Capture and clear images
+    const images = [...attachedImages]
+    setAttachedImages([])
+
+    const userMsg = {
+      from: 'user',
+      text: userText || (images.length ? `[${images.length} image(s)]` : ''),
+      images: images.map(img => img.preview),
+      time: 'Just now',
+    }
     const next = [...messages, userMsg]
     setMessages(next)
 
@@ -363,6 +403,15 @@ export default function TeamChat() {
 
       const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
 
+      // Convert images to base64 for the API
+      const imageBase64s = await Promise.all(
+        images.map(img => new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(img.file)
+        }))
+      )
+
       const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -372,6 +421,8 @@ export default function TeamChat() {
           agentName: agent.name,
           agentRole: agent.role,
           message: userText,
+          model: selectedModel !== 'default' ? selectedModel : undefined,
+          images: imageBase64s.length ? imageBase64s : undefined,
         }),
       })
 
@@ -550,6 +601,13 @@ export default function TeamChat() {
                     ) : (isGroup && participantNames.length > 0)
                       ? renderWithMentions(msg.text, participantNames)
                       : msg.text}
+                    {msg.images?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {msg.images.map((src: string, j: number) => (
+                          <img key={j} src={src} alt="" className="rounded-lg max-w-[200px] max-h-[150px] object-cover border border-cyan-200/20" />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
                     <p className="text-cyan-100/45 text-xs px-1">{msg.time}</p>
@@ -580,8 +638,33 @@ export default function TeamChat() {
               <p className="text-cyan-100/45 text-xs italic line-clamp-2">Thinking: {thinking}...</p>
             </div>
           )}
-          <div className="p-4 border-x border-b border-cyan-500/10 rounded-b-[28px] bg-[#071221] flex-shrink-0">
-            <div className="flex gap-3 items-end">
+          <div
+            className="p-4 border-x border-b border-cyan-500/10 rounded-b-[28px] bg-[#071221] flex-shrink-0"
+            onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
+            onDrop={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (e.dataTransfer.files.length) addImages(e.dataTransfer.files)
+            }}
+          >
+            {/* Image previews */}
+            {attachedImages.length > 0 && (
+              <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+                {attachedImages.map((img, i) => (
+                  <div key={i} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-cyan-500/20">
+                    <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 items-end">
               <div className="flex-1 relative">
                 {isGroup && (
                   <MentionDropdown
@@ -591,34 +674,102 @@ export default function TeamChat() {
                   />
                 )}
                 <div className="rounded-2xl overflow-hidden border border-cyan-500/10 bg-[#0b1523] focus-within:border-cyan-300/40 transition-colors">
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={e => {
-                    setInput(e.target.value)
-                    if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
-                    // Auto-resize
-                    e.target.style.height = 'auto'
-                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
-                  }}
-                  onKeyDown={e => {
-                    if (isGroup && mention.handleKey(e, input, setInput)) return
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
-                  }}
-                  placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
-                  rows={1}
-                  className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
-                  style={{ maxHeight: 120 }}
-                />
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={e => {
+                      setInput(e.target.value)
+                      if (isGroup) mention.detect(e.target.value, e.target.selectionStart)
+                      e.target.style.height = 'auto'
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+                    }}
+                    onKeyDown={e => {
+                      if (isGroup && mention.handleKey(e, input, setInput)) return
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+                    }}
+                    onPaste={e => {
+                      const files = Array.from(e.clipboardData.files)
+                      if (files.some(f => f.type.startsWith('image/'))) {
+                        e.preventDefault()
+                        addImages(files)
+                      }
+                    }}
+                    placeholder={isGroup ? `Message the group... (@ to mention)` : `Message ${agent.name}...`}
+                    rows={1}
+                    className="w-full px-4 py-3 bg-transparent text-sm text-white placeholder:text-cyan-100/35 focus:outline-none resize-none"
+                    style={{ maxHeight: 120 }}
+                  />
                 </div>
               </div>
-              <button
-                onClick={sendMessage}
-                disabled={!input.trim() || loading}
-                className="p-3 rounded-xl bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90 flex-shrink-0"
-              >
-                <Send size={16} />
-              </button>
+
+              {/* Toolbar buttons */}
+              <div className="flex gap-1 items-center flex-shrink-0">
+                {/* Image attach */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={e => { if (e.target.files) addImages(e.target.files); e.target.value = '' }}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2.5 rounded-xl text-cyan-100/45 hover:text-cyan-100/80 hover:bg-cyan-500/10 transition-all"
+                  title="Attach image"
+                >
+                  <Plus size={16} />
+                </button>
+
+                {/* Model selector */}
+                {availableModels.length > 1 && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowModelMenu(!showModelMenu)}
+                      className="px-2 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide uppercase text-cyan-100/50 hover:text-cyan-100/80 hover:bg-cyan-500/10 border border-cyan-500/10 transition-all"
+                    >
+                      {(availableModels.find(m => m.name === selectedModel)?.name || 'default').slice(0, 6)}
+                    </button>
+                    <AnimatePresence>
+                      {showModelMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 4 }}
+                          className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl min-w-[140px] z-50"
+                        >
+                          {availableModels.map(m => (
+                            <button
+                              key={m.name}
+                              onClick={() => {
+                                setSelectedModel(m.name)
+                                localStorage.setItem('olu-chat-model', m.name)
+                                setShowModelMenu(false)
+                              }}
+                              className={clsx(
+                                'w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors',
+                                selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                              )}
+                            >
+                              <span className="font-medium capitalize">{m.name}</span>
+                              <span className="text-[10px] text-cyan-100/35">{m.model}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                {/* Send */}
+                <button
+                  onClick={sendMessage}
+                  disabled={(!input.trim() && attachedImages.length === 0) || loading}
+                  className="p-2.5 rounded-xl bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
             </div>
           </div>
         </>

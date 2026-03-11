@@ -21,7 +21,7 @@ import {
 
 type Message = {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string | null
+  content: string | null | any[]
   tool_calls?: ToolCall[]
   tool_call_id?: string
   name?: string
@@ -91,8 +91,9 @@ export async function runChatAgent(params: {
   userMessage: string
   modelProvider?: string
   sourceId?: string  // For multi-turn: Lark chatId, API sessionId, etc.
+  images?: string[]  // Base64 data URLs for vision
 }): Promise<ChatResult> {
-  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, sourceId } = params
+  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, sourceId, images } = params
 
   const provider = getModelProvider(modelProvider)
   console.log(`[chatAgent] Using model: ${provider.model} (${provider.name})`)
@@ -121,11 +122,28 @@ Be concise and professional. After completing actions, summarize what you did.`
     }
   }
 
+  // Build user message with optional images (vision)
+  let userContent: any = userMessage
+  if (images?.length) {
+    const parts: any[] = []
+    if (userMessage) parts.push({ type: 'text', text: userMessage })
+    for (const img of images) {
+      // img is a data URL like "data:image/png;base64,..."
+      const [header, base64] = img.split(',')
+      const mediaType = header?.match(/data:(.*?);/)?.[1] || 'image/png'
+      parts.push({
+        type: 'image_url',
+        image_url: { url: img },
+      })
+    }
+    userContent = parts
+  }
+
   const messages: Message[] = [
     { role: 'system', content: systemPrompt },
     // Insert conversation history (skip system messages from history)
     ...history.filter(m => m.role !== 'system'),
-    { role: 'user', content: userMessage },
+    { role: 'user', content: userContent },
   ]
 
   const allToolCalls: ChatResult['toolCalls'] = []

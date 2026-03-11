@@ -294,6 +294,30 @@ export async function updateWorkspaceConsumerConfigForUser(
   return data as WorkspaceConsumerConfig
 }
 
+// ---------- Integration Config ----------
+
+export async function updateWorkspaceIntegrationConfig(
+  user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
+  provider: string,
+  configJson: Record<string, any>,
+  status: WorkspaceIntegration['status'] = 'connected'
+) {
+  const membership = await ensureWorkspaceForUser(user)
+  const { data, error } = await supabase
+    .from('workspace_integrations')
+    .upsert({
+      workspace_id: membership.workspace_id,
+      provider,
+      status,
+      config_json: configJson,
+    }, { onConflict: 'workspace_id,provider' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as WorkspaceIntegration
+}
+
 // ---------- Wallet ----------
 
 export async function getUserWallet(userId: string): Promise<UserWallet | null> {

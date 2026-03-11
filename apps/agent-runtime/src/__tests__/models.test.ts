@@ -22,18 +22,30 @@ describe('models', () => {
     expect(provider.supportsVision).toBe(false)
   })
 
-  it('falls back image chats from Kimi to OpenAI when OpenAI vision is configured', async () => {
-    process.env.LLM_API_KEY = 'kimi-key'
-    process.env.LLM_BASE_URL = 'https://api.kimi.com/coding/v1'
-    process.env.LLM_MODEL = 'kimi-for-coding'
-    process.env.MODEL_OPENAI_API_KEY = 'openai-key'
-    process.env.MODEL_OPENAI_MODEL = 'gpt-4o-mini'
+  it('uses Claude Opus as the explicit default provider config', async () => {
+    process.env.LLM_API_KEY = 'claude-key'
+    process.env.LLM_BASE_URL = 'https://api123.icu/v1'
+    process.env.LLM_MODEL = 'claude-opus-4-6'
 
-    const { resolveProviderForChat } = await import('../lib/models.js')
-    const resolved = resolveProviderForChat('default', true)
+    const { getModelProvider } = await import('../lib/models.js')
+    const provider = getModelProvider()
 
-    expect(resolved.provider.name).toBe('openai')
-    expect(resolved.fallbackFrom).toBe('default')
-    expect(resolved.effectiveModel).toBe('gpt-4o-mini')
+    expect(provider.name).toBe('default')
+    expect(provider.baseURL).toBe('https://api123.icu/v1')
+    expect(provider.model).toBe('claude-opus-4-6')
+    expect(provider.supportsVision).toBe(true)
+  })
+
+  it('preserves Kimi as a separate provider when default is Claude', async () => {
+    process.env.LLM_API_KEY = 'claude-key'
+    process.env.LLM_BASE_URL = 'https://api123.icu/v1'
+    process.env.LLM_MODEL = 'claude-opus-4-6'
+    process.env.MODEL_KIMI_API_KEY = 'kimi-key'
+
+    const { listAvailableProviders } = await import('../lib/models.js')
+    const providers = listAvailableProviders()
+
+    expect(providers.find((provider) => provider.name === 'default')?.model).toBe('claude-opus-4-6')
+    expect(providers.find((provider) => provider.name === 'kimi')?.model).toBe('kimi-for-coding')
   })
 })

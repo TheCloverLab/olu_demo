@@ -366,6 +366,8 @@ export default function TeamChat() {
   const [retryMode, setRetryMode] = useState<'upload' | 'request' | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
+  const chatScrollRef = useRef<HTMLDivElement | null>(null)
+  const chatScrollTopRef = useRef(0)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const pendingRequestRef = useRef<PendingAgentRequest | null>(null)
@@ -483,9 +485,20 @@ export default function TeamChat() {
   }, [user?.id, agentId, isGroup])
 
   useEffect(() => {
+    if (tab !== 'chat') return
     const t = setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     return () => clearTimeout(t)
   }, [messages, loading])
+
+  useEffect(() => {
+    if (tab !== 'chat') return
+    const t = window.setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollTopRef.current
+      }
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [tab])
 
   useEffect(() => () => {
     abortControllerRef.current?.abort()
@@ -799,7 +812,12 @@ export default function TeamChat() {
         {!isGroup && tasks.length > 0 && (
           <div className="flex gap-1">
             {['chat', 'tasks'].map(t => (
-              <button key={t} onClick={() => setTab(t)}
+              <button key={t} onClick={() => {
+                if (tab === 'chat' && chatScrollRef.current) {
+                  chatScrollTopRef.current = chatScrollRef.current.scrollTop
+                }
+                setTab(t)
+              }}
                 className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-white bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)]')}>
                 {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
               </button>
@@ -851,7 +869,13 @@ export default function TeamChat() {
             </div>
           )}
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
+          <div
+            ref={chatScrollRef}
+            onScroll={(e) => {
+              chatScrollTopRef.current = e.currentTarget.scrollTop
+            }}
+            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[linear-gradient(180deg,rgba(7,18,33,0.92),rgba(4,11,22,0.96))] border-x border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]"
+          >
             {messages.map((msg, i) => (
               <motion.div
                 key={i}

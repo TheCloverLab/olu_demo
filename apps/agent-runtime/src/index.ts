@@ -15,6 +15,8 @@ import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
 import { listAvailableProviders } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
+import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
+import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -346,6 +348,26 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // Lark Bot webhook — receives messages from Lark bots
+    if (url.pathname === '/webhook/lark' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const result = await handleLarkWebhook(body)
+      json(res, 200, result)
+      return
+    }
+
+    // List registered Lark bots
+    if (url.pathname === '/bots' && req.method === 'GET') {
+      json(res, 200, { bots: getRegisteredBots() })
+      return
+    }
+
+    // List MCP tools
+    if (url.pathname === '/mcp/tools' && req.method === 'GET') {
+      json(res, 200, { tools: getMCPTools() })
+      return
+    }
+
     json(res, 404, { error: 'not found' })
   } catch (err: any) {
     console.error('Request error:', err)
@@ -353,11 +375,22 @@ const server = createServer(async (req, res) => {
   }
 })
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`OLU Agent Runtime listening on :${PORT}`)
 
   // Load scheduled jobs on startup
   loadScheduledJobs().catch(err => {
     console.error('[startup] Failed to load scheduled jobs:', err.message)
+  })
+
+  // Load Lark bot registry
+  loadBotRegistry().catch(err => {
+    console.error('[startup] Failed to load bot registry:', err.message)
+  })
+
+  // Initialize MCP servers
+  loadMCPFromEnv()
+  initMCPServers().catch(err => {
+    console.error('[startup] Failed to init MCP servers:', err.message)
   })
 })

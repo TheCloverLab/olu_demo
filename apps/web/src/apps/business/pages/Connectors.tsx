@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Cable, CheckCircle2, Circle, ExternalLink, Loader2, Plus, Settings2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
@@ -25,6 +26,7 @@ const STATUS_CFG = {
 }
 
 export default function Connectors() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [connectors, setConnectors] = useState<ConnectorSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,9 +66,9 @@ export default function Connectors() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace</p>
-          <h1 className="font-black text-2xl">Connectors</h1>
+          <h1 className="font-black text-2xl">{t('connectors.title')}</h1>
           <p className="text-[var(--olu-text-secondary)] text-sm mt-1">
-            {connectedCount} connected · {allPlatforms.length - connectedCount} planned
+            {t('connectors.subtitle', { connected: connectedCount, planned: allPlatforms.length - connectedCount })}
           </p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
@@ -75,9 +77,7 @@ export default function Connectors() {
       </div>
 
       <div className="rounded-3xl border border-cyan-400/15 bg-[var(--olu-section-bg)] p-5">
-        <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-          Connectors are <strong className="text-olu-text">existing platforms</strong> where your AI agents execute tasks on your behalf — managing listings, processing orders, handling support tickets, and tracking analytics. Each connector gives your agents the ability to operate inside these platforms as if they were logged-in employees.
-        </p>
+        <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed" dangerouslySetInnerHTML={{ __html: t('connectors.description') }} />
       </div>
 
       <div className="space-y-3">
@@ -100,18 +100,18 @@ export default function Connectors() {
                   <div className="flex gap-2 mt-3">
                     <button className="px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors flex items-center gap-1.5">
                       <Settings2 size={12} />
-                      Configure
+                      {t('common.configure')}
                     </button>
                     <button className="px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors flex items-center gap-1.5">
                       <ExternalLink size={12} />
-                      Open
+                      {t('common.open')}
                     </button>
                   </div>
                 )}
                 {platform.status === 'planned' && (
                   <button className="mt-3 px-3 py-1.5 rounded-xl bg-cyan-300/10 text-cyan-300 text-xs font-medium hover:bg-cyan-300/20 transition-colors flex items-center gap-1.5">
                     <Plus size={12} />
-                    Connect
+                    {t('common.connect')}
                   </button>
                 )}
               </div>

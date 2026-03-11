@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Compass, Search } from 'lucide-react'
 import clsx from 'clsx'
@@ -28,6 +29,7 @@ function DiscoverCard({
   app: ConsumerAppCard
   onOpen: () => void
 }) {
+  const { t } = useTranslation()
   const [coverBroken, setCoverBroken] = useState(false)
 
   return (
@@ -52,7 +54,7 @@ function DiscoverCard({
       <div className="relative p-4 space-y-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/65">
-            {app.app_type === 'community' ? 'Community' : 'Academy'}
+            {app.app_type === 'community' ? t('discover.community') : t('discover.academy')}
           </p>
           <h3 className="mt-1 text-lg font-black text-white">{app.title}</h3>
           <p className="mt-1 text-xs text-white/72 line-clamp-1">
@@ -80,6 +82,7 @@ function DiscoverCard({
 type CategoryFilter = 'all' | 'community' | 'academy'
 
 export default function Discover() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -164,8 +167,8 @@ export default function Discover() {
   }, [apps, category])
 
   const emptyLabel = useMemo(() => {
-    if (!debouncedQuery) return 'Nothing new right now.'
-    return 'No results matched that search.'
+    if (!debouncedQuery) return t('discover.nothingNew')
+    return t('discover.noResults')
   }, [debouncedQuery])
 
   return (
@@ -174,11 +177,11 @@ export default function Discover() {
         <div>
           <div className="flex items-center gap-2 text-olu-muted text-xs uppercase tracking-[0.18em] mb-2">
             <Compass size={14} />
-            Discover
+            {t('discover.title')}
           </div>
-          <h1 className="font-black text-xl md:text-2xl leading-tight">Find something new.</h1>
+          <h1 className="font-black text-xl md:text-2xl leading-tight">{t('discover.heading')}</h1>
           <p className="text-olu-muted text-sm mt-2">
-            Communities to join, academies to learn from.
+            {t('discover.subtitle')}
           </p>
         </div>
         <div className="rounded-2xl border border-olu-border bg-olu-surface px-4 py-3 flex items-center gap-3">
@@ -186,7 +189,7 @@ export default function Discover() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search creator, community, academy, or topic"
+            placeholder={t('discover.searchPlaceholder')}
             className="w-full bg-transparent outline-none text-sm text-[var(--olu-input-text)] placeholder:text-[var(--olu-input-placeholder)]"
           />
         </div>
@@ -194,9 +197,9 @@ export default function Discover() {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <p className="font-bold text-lg">{debouncedQuery ? 'Results' : 'Recommended for you'}</p>
+          <p className="font-bold text-lg">{debouncedQuery ? t('discover.results') : t('discover.recommended')}</p>
           <div className="flex items-center gap-2">
-            {([['all', 'All'], ['community', 'Communities'], ['academy', 'Academies']] as const).map(([key, label]) => (
+            {([['all', t('common.all')], ['community', t('common.communities')], ['academy', t('common.academies')]] as [CategoryFilter, string][]).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setCategory(key)}

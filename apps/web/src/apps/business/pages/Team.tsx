@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Play, Loader2 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
@@ -188,6 +189,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
 }
 
 export default function Team() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
@@ -313,10 +315,9 @@ export default function Team() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-black text-2xl">Team</h1>
+          <h1 className="font-black text-2xl">{t('team.title')}</h1>
           <p className="text-[var(--olu-text-secondary)] text-sm mt-0.5">
-            {agents.length} AI agent{agents.length > 1 ? 's' : ''} · {humans.length} people ·{' '}
-            {totalTasks > 0 ? `${totalTasks} active task${totalTasks > 1 ? 's' : ''}` : 'All caught up'}
+            {t('team.subtitle', { agents: agents.length, people: humans.length, tasks: totalTasks })}
           </p>
         </div>
         <button
@@ -325,7 +326,7 @@ export default function Team() {
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {runningAll ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-          {runningAll ? 'Running...' : 'Run All Agents'}
+          {runningAll ? t('common.loading') : t('common.runAllAgents')}
         </button>
       </div>
 
@@ -333,7 +334,7 @@ export default function Team() {
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-4">
           <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
           <p className="text-sm text-cyan-100/80 whitespace-pre-line">{lastRunResult}</p>
-          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-100/40 mt-2 hover:text-[var(--olu-text-secondary)]">Dismiss</button>
+          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-100/40 mt-2 hover:text-[var(--olu-text-secondary)]">{t('common.dismiss')}</button>
         </div>
       )}
 
@@ -343,22 +344,22 @@ export default function Team() {
             <ShieldCheck size={18} className="text-cyan-600 dark:text-cyan-300" />
           </div>
           <div>
-            <p className="font-semibold">Workspace command layer</p>
-            <p className="text-[var(--olu-text-secondary)] text-sm">Your team roster now comes from workspace-backed agents and task queues instead of front-end mock state.</p>
+            <p className="font-semibold">{t('team.commandLayer')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-sm">{t('team.commandLayerDesc')}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: 'Agents', value: agents.length, icon: Bot, iconClass: 'text-sky-300', iconBg: 'bg-sky-500/15' },
-          { label: 'Active Tasks', value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15' },
-          { label: 'Online', value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15' },
+          { label: t('team.agents'), value: agents.length, icon: Bot, iconClass: 'text-sky-300', iconBg: 'bg-sky-500/15', fillIcon: false },
+          { label: t('chat.activeTasks'), value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15', fillIcon: false },
+          { label: t('common.online'), value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15', fillIcon: true },
         ].map((card) => (
           <div key={card.label} className="rounded-[24px] p-4 text-center border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <div className="flex justify-center mb-2">
               <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
-                <card.icon size={15} className={card.iconClass} fill={card.label === 'Online' ? 'currentColor' : 'none'} />
+                <card.icon size={15} className={card.iconClass} fill={card.fillIcon ? 'currentColor' : 'none'} />
               </span>
             </div>
             <div className="font-black text-xl">{card.value}</div>
@@ -370,7 +371,7 @@ export default function Team() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
           <MessageCircle size={14} className="text-[var(--olu-text-secondary)]" />
-          <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">Direct</p>
+          <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.direct')}</p>
         </div>
         <div className="space-y-2">
           {agents.map((agent) => (
@@ -398,7 +399,7 @@ export default function Team() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Users size={14} className="text-[var(--olu-text-secondary)]" />
-              <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">People</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.people')}</p>
               <span className="text-[var(--olu-muted)] text-xs">{humans.filter((h) => h.status === 'online').length} online</span>
             </div>
             <button
@@ -406,7 +407,7 @@ export default function Team() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors"
             >
               <UserPlus size={12} />
-              Invite
+              {t('common.invite')}
             </button>
           </div>
 

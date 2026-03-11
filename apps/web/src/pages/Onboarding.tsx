@@ -1,9 +1,11 @@
 import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 export default function Onboarding() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
 
@@ -84,30 +86,29 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-olu-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md glass rounded-2xl p-6">
-        <h1 className="text-2xl font-black mb-1">Complete your profile</h1>
-        <p className="text-olu-muted text-sm mb-6">One quick step before you start.</p>
+        <h1 className="text-2xl font-black mb-6">{t('onboarding.title')}</h1>
 
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5">Display name</label>
+            <label className="block text-sm font-medium mb-1.5">{t('onboarding.namePlaceholder')}</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-input-focus)]"
-              placeholder="Your name"
+              placeholder={t('onboarding.namePlaceholder')}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5">Handle</label>
+            <label className="block text-sm font-medium mb-1.5">{t('settings.handle')}</label>
             <div className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm flex items-center">
               <span className="text-olu-muted mr-1">@</span>
               <input
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
                 className="bg-transparent flex-1 focus:outline-none"
-                placeholder="your_handle"
+                placeholder={t('onboarding.handlePlaceholder')}
                 required
               />
             </div>
@@ -130,7 +131,7 @@ export default function Onboarding() {
             disabled={saving}
             className="w-full rounded-xl bg-white text-black font-semibold py-2.5 disabled:opacity-60"
           >
-            {saving ? 'Saving...' : 'Continue'}
+            {saving ? t('common.saving') : t('onboarding.continueButton')}
           </button>
         </form>
       </div>

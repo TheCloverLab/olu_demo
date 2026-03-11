@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, Send, ArrowLeft } from 'lucide-react'
@@ -13,6 +14,7 @@ import {
 } from '../../../domain/social/api'
 
 export default function Chat() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const { consumerExperience } = useApp()
@@ -160,7 +162,7 @@ export default function Chat() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6">
-      <h1 className="font-black text-2xl mb-4">Messages</h1>
+      <h1 className="font-black text-2xl mb-4">{t('nav.messages')}</h1>
       {activeTopic && (
         <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-4 mb-4">
           <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Topic lobby</p>
@@ -170,7 +172,7 @@ export default function Chat() {
       )}
       <div className="relative mb-4">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-olu-muted" />
-        <input placeholder="Search messages..." className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/15 transition-colors" />
+        <input placeholder={t('chat.searchMessages')} className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/15 transition-colors" />
       </div>
       <div className="space-y-2">
         {chats.map((chat) => (
@@ -195,7 +197,7 @@ export default function Chat() {
             </div>
           </motion.button>
         ))}
-        {chats.length === 0 && <p className="text-olu-muted text-sm">No chats yet.</p>}
+        {chats.length === 0 && <p className="text-olu-muted text-sm">{t('chat.noChats')}</p>}
       </div>
     </div>
   )

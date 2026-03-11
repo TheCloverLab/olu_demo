@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { LogIn, Loader2 } from 'lucide-react'
 
 export default function Login() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { signIn, user, loading: authLoading } = useAuth()
@@ -55,8 +57,7 @@ export default function Login() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
-          <p className="text-olu-muted">Sign in to your OLU account</p>
+          <h1 className="text-3xl font-bold mb-2">{t('login.title')}</h1>
         </div>
 
         <div className="bg-olu-surface rounded-2xl p-6">
@@ -68,13 +69,13 @@ export default function Login() {
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">{t('common.email')}</label>
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder')}
                 required
                 autoComplete="email"
                 className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
@@ -82,13 +83,13 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">{t('common.password')}</label>
               <input
                 type="password"
                 name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder')}
                 required
                 autoComplete="current-password"
                 className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
@@ -108,7 +109,7 @@ export default function Login() {
               ) : (
                 <>
                   <LogIn size={18} />
-                  Sign in
+                  {t('login.signInButton')}
                 </>
               )}
             </button>
@@ -116,9 +117,9 @@ export default function Login() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-olu-muted">
-              Don't have an account?{' '}
+              {t('login.noAccount')}{' '}
               <Link to="/signup" className="text-olu-text hover:underline font-medium">
-                Sign up
+                {t('login.signUpLink')}
               </Link>
             </p>
           </div>

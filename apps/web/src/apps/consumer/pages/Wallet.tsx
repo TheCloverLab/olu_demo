@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, BookOpen, CreditCard, Crown, Plus, ReceiptText } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
@@ -45,6 +46,7 @@ const DEMO_TRANSACTIONS: TxnItem[] = [
 ]
 
 export default function Wallet() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [membershipCharges, setMembershipCharges] = useState<ChargeItem[]>([])
@@ -133,48 +135,48 @@ export default function Wallet() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm mb-4">
-        <ArrowLeft size={16} /> Back
+        <ArrowLeft size={16} /> {t('common.back')}
       </button>
 
       {/* Balance card */}
       <section className="rounded-[28px] border border-olu-border bg-[var(--olu-section-bg)] p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">Total balance</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">{t('wallet.totalBalance')}</p>
             <h1 className="font-black text-4xl mt-2">${balanceUsdc.toFixed(2)}</h1>
-            <p className="text-sm text-olu-muted mt-2">Wallet</p>
+            <p className="text-sm text-olu-muted mt-2">{t('wallet.title')}</p>
           </div>
           <CreditCard size={22} className="text-olu-muted" />
         </div>
 
         <div className="mt-4">
           <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3">
-            <p className="text-xs text-olu-muted">Balance</p>
+            <p className="text-xs text-olu-muted">{t('common.balance')}</p>
             <p className="font-bold text-lg mt-1">${balanceUsdc.toFixed(2)}</p>
           </div>
         </div>
 
         <div className="mt-4 flex gap-3">
           <button className="flex items-center gap-2 rounded-2xl bg-white text-black px-4 py-2.5 text-sm font-semibold hover:bg-white/90 transition-colors">
-            <Plus size={16} /> Top up
+            <Plus size={16} /> {t('common.topUp')}
           </button>
           <button className="flex items-center gap-2 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] px-4 py-2.5 text-sm font-medium hover:bg-[var(--olu-card-hover)] transition-colors">
-            <ArrowUpRight size={16} /> Send
+            <ArrowUpRight size={16} /> {t('common.send')}
           </button>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
             <span className="font-semibold">{totalMemberships}</span>
-            <span className="ml-2 text-olu-muted">Memberships</span>
+            <span className="ml-2 text-olu-muted">{t('common.memberships')}</span>
           </div>
           <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
             <span className="font-semibold">{totalAcademies}</span>
-            <span className="ml-2 text-olu-muted">Academies</span>
+            <span className="ml-2 text-olu-muted">{t('common.academies')}</span>
           </div>
           <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
             <span className="font-semibold">{recentCharges.length}</span>
-            <span className="ml-2 text-olu-muted">Charges</span>
+            <span className="ml-2 text-olu-muted">{t('common.charges')}</span>
           </div>
         </div>
       </section>
@@ -183,8 +185,8 @@ export default function Wallet() {
       <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Transactions</p>
-            <p className="font-semibold text-base mt-1">Recent activity</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('wallet.transactions')}</p>
+            <p className="font-semibold text-base mt-1">{t('wallet.recentActivity')}</p>
           </div>
           <ReceiptText size={18} className="text-olu-muted" />
         </div>
@@ -221,8 +223,8 @@ export default function Wallet() {
       <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Memberships</p>
-            <p className="font-semibold text-base mt-1">Recurring support</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('common.memberships')}</p>
+            <p className="font-semibold text-base mt-1">{t('wallet.recurringSupport')}</p>
           </div>
           <Crown size={18} className="text-olu-muted" />
         </div>
@@ -249,7 +251,7 @@ export default function Wallet() {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
-            No recurring memberships yet.
+            {t('wallet.noMemberships')}
           </div>
         )}
       </section>
@@ -258,8 +260,8 @@ export default function Wallet() {
       <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Purchases</p>
-            <p className="font-semibold text-base mt-1">Academy purchases</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('wallet.purchases')}</p>
+            <p className="font-semibold text-base mt-1">{t('wallet.academyPurchases')}</p>
           </div>
           <BookOpen size={18} className="text-olu-muted" />
         </div>
@@ -286,7 +288,7 @@ export default function Wallet() {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
-            No academy purchases yet.
+            {t('wallet.noPurchases')}
           </div>
         )}
       </section>
@@ -295,8 +297,8 @@ export default function Wallet() {
       <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Payment methods</p>
-            <p className="font-semibold text-base mt-1">Linked accounts</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('wallet.paymentMethods')}</p>
+            <p className="font-semibold text-base mt-1">{t('wallet.linkedAccounts')}</p>
           </div>
           <CreditCard size={18} className="text-olu-muted" />
         </div>
@@ -321,7 +323,7 @@ export default function Wallet() {
         </div>
 
         <button className="mt-3 w-full rounded-2xl border border-dashed border-olu-border px-4 py-3 text-sm text-olu-muted hover:bg-[var(--olu-card-hover)] transition-colors">
-          + Add payment method
+          {t('wallet.addPaymentMethod')}
         </button>
       </section>
     </div>

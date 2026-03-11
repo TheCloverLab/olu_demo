@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
@@ -7,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function Settings() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { enabledBusinessModules } = useApp()
@@ -99,8 +101,8 @@ export default function Settings() {
               <ChevronLeft size={20} />
             </button>
             <div>
-              <h1 className="font-bold text-lg">Account Settings</h1>
-              <p className="text-olu-muted text-xs">Manage your account and security</p>
+              <h1 className="font-bold text-lg">{t('settings.accountSettings')}</h1>
+              <p className="text-olu-muted text-xs">{t('settings.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -110,11 +112,11 @@ export default function Settings() {
             <h2 className="font-semibold mb-4">Account</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-olu-muted text-xs mb-1">Email</p>
+                <p className="text-olu-muted text-xs mb-1">{t('common.email')}</p>
                 <p className="font-medium">{user?.email}</p>
               </div>
               <div>
-                <p className="text-olu-muted text-xs mb-1">Handle</p>
+                <p className="text-olu-muted text-xs mb-1">{t('settings.handle')}</p>
                 <div className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm flex items-center">
                   <span className="text-olu-muted mr-1">@</span>
                   <input
@@ -134,7 +136,7 @@ export default function Settings() {
                 disabled={savingHandle}
                 className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50"
               >
-                {savingHandle ? 'Saving...' : 'Save Handle'}
+                {savingHandle ? t('common.saving') : t('settings.saveHandle')}
               </button>
             </div>
           </div>
@@ -143,7 +145,7 @@ export default function Settings() {
             <h2 className="font-semibold mb-4">Password</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-olu-muted text-xs mb-1">Current Password</p>
+                <p className="text-olu-muted text-xs mb-1">{t('settings.currentPassword')}</p>
                 <input
                   type="password"
                   value={currentPassword}
@@ -152,7 +154,7 @@ export default function Settings() {
                 />
               </div>
               <div>
-                <p className="text-olu-muted text-xs mb-1">New Password</p>
+                <p className="text-olu-muted text-xs mb-1">{t('settings.newPassword')}</p>
                 <input
                   type="password"
                   value={newPassword}
@@ -161,7 +163,7 @@ export default function Settings() {
                 />
               </div>
               <div>
-                <p className="text-olu-muted text-xs mb-1">Confirm New Password</p>
+                <p className="text-olu-muted text-xs mb-1">{t('settings.confirmNewPassword')}</p>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -179,7 +181,7 @@ export default function Settings() {
                 disabled={savingPassword || !currentPassword || !newPassword}
                 className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50"
               >
-                {savingPassword ? 'Updating...' : 'Change Password'}
+                {savingPassword ? t('common.saving') : t('settings.changePassword')}
               </button>
             </div>
           </div>
@@ -195,8 +197,8 @@ export default function Settings() {
                     <Briefcase size={20} className="text-white" />
                   </span>
                   <div>
-                    <p className="font-bold text-base">Business OS</p>
-                    <p className="text-olu-muted text-sm mt-0.5">Modules, approvals, operators, and AI agents</p>
+                    <p className="font-bold text-base">{t('settings.businessOS')}</p>
+                    <p className="text-olu-muted text-sm mt-0.5">{t('settings.businessOSDesc')}</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-olu-muted" />
@@ -206,13 +208,13 @@ export default function Settings() {
 
           <div className="bg-olu-surface rounded-2xl p-6">
             <h2 className="font-semibold mb-3">Session</h2>
-            <p className="text-olu-muted text-sm mb-4">Sign out from this device.</p>
+            <p className="text-olu-muted text-sm mb-4">{t('settings.signOutDevice')}</p>
             <button
               onClick={() => setShowSignOutConfirm(true)}
               className="w-full rounded-xl bg-olu-card hover:bg-[var(--olu-glass-hover)] text-olu-muted py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
             >
               <LogOut size={14} />
-              Sign out
+              {t('common.signOut')}
             </button>
           </div>
         </div>

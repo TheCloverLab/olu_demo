@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { UserPlus, Loader2 } from 'lucide-react'
 
 export default function Signup() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { signUp } = useAuth()
   const [formData, setFormData] = useState({
@@ -44,8 +46,7 @@ export default function Signup() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Join OLU</h1>
-          <p className="text-olu-muted">Create your account and start connecting</p>
+          <h1 className="text-3xl font-bold mb-2">{t('signup.title')}</h1>
         </div>
 
         <div className="bg-olu-surface rounded-2xl p-6">
@@ -57,12 +58,12 @@ export default function Signup() {
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2">{t('common.email')}</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="you@example.com"
+                placeholder={t('signup.emailPlaceholder')}
                 required
                 className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
               />
@@ -73,12 +74,12 @@ export default function Signup() {
             </p>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">{t('common.password')}</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
+                placeholder={t('signup.passwordPlaceholder')}
                 required
                 minLength={6}
                 className="w-full bg-olu-card rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olu-input-focus)]"
@@ -98,7 +99,7 @@ export default function Signup() {
               ) : (
                 <>
                   <UserPlus size={18} />
-                  Sign up
+                  {t('signup.signUpButton')}
                 </>
               )}
             </button>
@@ -106,9 +107,9 @@ export default function Signup() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-olu-muted">
-              Already have an account?{' '}
+              {t('signup.hasAccount')}{' '}
               <Link to="/login" className="text-olu-text hover:underline font-medium">
-                Sign in
+                {t('signup.signInLink')}
               </Link>
             </p>
           </div>

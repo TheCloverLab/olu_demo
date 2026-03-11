@@ -1,37 +1,39 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BadgeCheck, ChevronRight, CreditCard, ExternalLink, Settings, User as UserIcon, Wallet } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 
-const MENU_ITEMS = [
-  {
-    icon: ExternalLink,
-    label: 'Public profile',
-    description: 'See how others see you',
-    pathFn: (userId: string) => `/people/${userId}`,
-  },
-  {
-    icon: CreditCard,
-    label: 'Subscriptions',
-    description: 'Manage active memberships and renewals',
-    path: '/subscriptions',
-  },
-  {
-    icon: Wallet,
-    label: 'Wallet & payments',
-    description: 'Purchase history and payment methods',
-    path: '/wallet',
-  },
-  {
-    icon: Settings,
-    label: 'Settings',
-    description: 'Profile, sign-in, and preferences',
-    path: '/settings',
-  },
-] as const
-
 export default function UserCenter() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  const MENU_ITEMS = [
+    {
+      icon: ExternalLink,
+      label: t('userCenter.profile'),
+      description: 'See how others see you',
+      pathFn: (userId: string) => `/people/${userId}`,
+    },
+    {
+      icon: CreditCard,
+      label: t('userCenter.subscriptions'),
+      description: 'Manage active memberships and renewals',
+      path: '/subscriptions',
+    },
+    {
+      icon: Wallet,
+      label: t('userCenter.wallet'),
+      description: 'Purchase history and payment methods',
+      path: '/wallet',
+    },
+    {
+      icon: Settings,
+      label: t('userCenter.settings'),
+      description: 'Profile, sign-in, and preferences',
+      path: '/settings',
+    },
+  ] as const
 
   if (!user) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>

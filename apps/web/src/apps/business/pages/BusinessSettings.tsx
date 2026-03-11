@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Bell, ChevronLeft, CreditCard, KeyRound, LogOut, Megaphone, PackageCheck, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -9,29 +10,29 @@ import type { BusinessModuleKey, WorkspaceSettingsData } from '../../../lib/supa
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
-  label: string
-  description: string
+  labelKey: string
+  descKey: string
   icon: typeof Sparkles
   accentClass: string
 }> = [
   {
     key: 'creator_ops',
-    label: 'Creator Ops',
-    description: 'Approvals, IP control, customers, and shop operations.',
+    labelKey: 'businessSettings.creatorOps',
+    descKey: 'businessSettings.creatorOpsDesc',
     icon: Sparkles,
     accentClass: 'bg-cyan-400/12 text-cyan-600 dark:text-cyan-300 border-cyan-400/20',
   },
   {
     key: 'marketing',
-    label: 'Marketing',
-    description: 'Campaign sourcing, offer routing, and performance loops.',
+    labelKey: 'businessSettings.marketing',
+    descKey: 'businessSettings.marketingDesc',
     icon: Megaphone,
     accentClass: 'bg-blue-500/12 text-blue-600 dark:text-blue-300 border-blue-400/20',
   },
   {
     key: 'supply_chain',
-    label: 'Supply Chain',
-    description: 'Supplier partnerships, catalog readiness, and merch operations.',
+    labelKey: 'businessSettings.supplyChain',
+    descKey: 'businessSettings.supplyChainDesc',
     icon: PackageCheck,
     accentClass: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300 border-emerald-400/20',
   },
@@ -39,6 +40,7 @@ const MODULE_METADATA: Array<{
 
 export default function BusinessSettings() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { reloadBusinessModules } = useApp()
   const { user, signOut } = useAuth()
   const [settings, setSettings] = useState<WorkspaceSettingsData | null>(null)
@@ -98,7 +100,7 @@ export default function BusinessSettings() {
         </button>
         <div>
           <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Workspace</p>
-          <h1 className="font-black text-2xl">Settings</h1>
+          <h1 className="font-black text-2xl">{t('settings.title')}</h1>
         </div>
       </div>
 
@@ -109,8 +111,8 @@ export default function BusinessSettings() {
             <Sparkles size={18} />
           </span>
           <div>
-            <p className="font-bold">Modules</p>
-            <p className="text-[var(--olu-text-secondary)] text-xs">Enable or disable operator surfaces for this workspace</p>
+            <p className="font-bold">{t('businessSettings.modules')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">{t('businessSettings.modulesDesc')}</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -124,8 +126,8 @@ export default function BusinessSettings() {
                     <Icon size={18} />
                   </span>
                   <div>
-                    <p className="font-semibold text-sm">{module.label}</p>
-                    <p className="text-[var(--olu-text-secondary)] text-xs max-w-md mt-1">{module.description}</p>
+                    <p className="font-semibold text-sm">{t(module.labelKey)}</p>
+                    <p className="text-[var(--olu-text-secondary)] text-xs max-w-md mt-1">{t(module.descKey)}</p>
                   </div>
                 </div>
                 <button
@@ -138,7 +140,7 @@ export default function BusinessSettings() {
                       : 'bg-[var(--olu-card-bg)] text-olu-muted border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)]'
                   }`}
                 >
-                  {isSaving ? 'Saving...' : module.enabled ? 'Enabled' : 'Enable'}
+                  {isSaving ? t('common.saving') : module.enabled ? t('common.enabled') : t('common.enable')}
                 </button>
               </div>
             )
@@ -153,8 +155,8 @@ export default function BusinessSettings() {
             <CreditCard size={18} />
           </span>
           <div>
-            <p className="font-bold">Billing</p>
-            <p className="text-[var(--olu-text-secondary)] text-xs">Plan, status, and billing contact</p>
+            <p className="font-bold">{t('businessSettings.billing')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">{t('businessSettings.billingDesc')}</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
@@ -180,8 +182,8 @@ export default function BusinessSettings() {
             <Bell size={18} />
           </span>
           <div>
-            <p className="font-bold">Notifications</p>
-            <p className="text-[var(--olu-text-secondary)] text-xs">How events are routed in the workspace</p>
+            <p className="font-bold">{t('businessSettings.notifications')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">{t('businessSettings.notificationsDesc')}</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -208,8 +210,8 @@ export default function BusinessSettings() {
             <KeyRound size={18} />
           </span>
           <div>
-            <p className="font-bold">Security</p>
-            <p className="text-[var(--olu-text-secondary)] text-xs">Session and access controls</p>
+            <p className="font-bold">{t('businessSettings.security')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">{t('businessSettings.securityDesc')}</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
@@ -240,7 +242,7 @@ export default function BusinessSettings() {
           className="w-full rounded-2xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] text-[var(--olu-sidebar-text)] py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
         >
           <LogOut size={14} />
-          Sign out
+          {t('common.signOut')}
         </button>
       </section>
 

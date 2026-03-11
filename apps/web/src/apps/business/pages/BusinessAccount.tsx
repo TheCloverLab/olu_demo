@@ -1,10 +1,12 @@
 import { Briefcase, Cable, ShieldCheck, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 
 export default function BusinessAccount() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
 
@@ -12,17 +14,17 @@ export default function BusinessAccount() {
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">Workspace Account</p>
-          <h1 className="font-black text-2xl">Account</h1>
+          <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">{t('account.workspaceAccount')}</p>
+          <h1 className="font-black text-2xl">{t('account.title')}</h1>
           <p className="text-[var(--olu-text-secondary)] text-sm mt-2 max-w-2xl">
-            Workspace identity, enabled modules, and connected platforms.
+            {t('account.subtitle')}
           </p>
         </div>
         <button
           onClick={() => navigate('/business/settings')}
           className="px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity"
         >
-          Open Settings
+          {t('account.openSettings')}
         </button>
       </div>
 
@@ -44,17 +46,17 @@ export default function BusinessAccount() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
-              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Workspace modules</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">{t('account.workspaceModules')}</p>
               <p className="font-black text-2xl">{enabledBusinessModules.length}</p>
             </div>
             <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
-              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Account status</p>
-              <p className="font-semibold text-sm">Active</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs mb-1">{t('account.accountStatus')}</p>
+              <p className="font-semibold text-sm">{t('common.active')}</p>
             </div>
           </div>
 
           <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 mt-4 border border-[var(--olu-card-border)]">
-            <p className="text-[var(--olu-text-secondary)] text-xs mb-2">Enabled workspace modules</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-2">{t('account.enabledModules')}</p>
             <div className="flex flex-wrap gap-2">
               {enabledBusinessModules.map((moduleKey) => (
                 <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-sm capitalize text-olu-text border border-[var(--olu-card-border)]">
@@ -72,12 +74,12 @@ export default function BusinessAccount() {
                 <Briefcase size={18} />
               </span>
               <div>
-                <p className="font-bold">Workspace boundary</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">Separate from consumer profile</p>
+                <p className="font-bold">{t('account.workspaceBoundary')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('account.workspaceBoundaryShort')}</p>
               </div>
             </div>
             <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-              Business account pages should never drop users into content profile/feed pages. Consumer surfaces are only reachable via the explicit consumer app entry.
+              {t('account.workspaceBoundaryDesc')}
             </p>
           </div>
 
@@ -87,12 +89,12 @@ export default function BusinessAccount() {
                 <Users size={18} />
               </span>
               <div>
-                <p className="font-bold">Operator controls</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">People and permissions</p>
+                <p className="font-bold">{t('account.operatorControls')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('account.operatorControlsShort')}</p>
               </div>
             </div>
             <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-              Human employees, AI employees, and module switching all belong to the workspace layer.
+              {t('account.operatorControlsDesc')}
             </p>
           </div>
 
@@ -102,12 +104,12 @@ export default function BusinessAccount() {
                 <Cable size={18} />
               </span>
               <div>
-                <p className="font-bold">Connected systems</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">Shopify, Temu, Zendesk, Mixpanel</p>
+                <p className="font-bold">{t('account.connectedSystems')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('account.connectedSystemsShort')}</p>
               </div>
             </div>
             <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-              Future connectors and sandbox permissions should also be managed from business account and settings surfaces.
+              {t('account.connectedSystemsDesc')}
             </p>
           </div>
 
@@ -117,12 +119,12 @@ export default function BusinessAccount() {
                 <ShieldCheck size={18} />
               </span>
               <div>
-                <p className="font-bold">Approval safety</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">Operational trust model</p>
+                <p className="font-bold">{t('account.approvalSafety')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('account.approvalSafetyShort')}</p>
               </div>
             </div>
             <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-              High-stakes actions such as publishing, payments, and sandbox takeover should remain visible and reviewable from the workspace layer.
+              {t('account.approvalSafetyDesc')}
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   AppWindow, Bot, Briefcase, Cable, CheckCircle2, Clock, LayoutDashboard,
   Loader2, Megaphone, Package, ShieldCheck, UserRound, Users, Zap,
@@ -15,6 +16,7 @@ import type { ConsumerApp } from '../../../lib/supabase'
 import type { ConnectorSummary } from '../../../domain/connectors/types'
 
 export default function BusinessWorkspace() {
+  const { t } = useTranslation()
   const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
 
@@ -68,30 +70,30 @@ export default function BusinessWorkspace() {
       >
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--olu-sidebar-active-bg)]/10 text-xs text-[var(--olu-text-secondary)] mb-4">
           <Briefcase size={14} />
-          Workspace overview
+          {t('workspace.overview')}
         </div>
         <h2 className="font-black text-3xl leading-tight">
-          {currentUser.name}'s Workspace
+          {t('workspace.title', { name: currentUser.name })}
         </h2>
         <p className="text-[var(--olu-text-secondary)] text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
-          Real-time snapshot of your modules, team, apps, and connected platforms.
+          {t('workspace.snapshot')}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
           <Link to="/business/tasks" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{inProgressTasks}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">Tasks in progress</p>
+            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.tasksInProgress')}</p>
           </Link>
           <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{highPriorityApprovals}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">Pending approvals</p>
+            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.pendingApprovals')}</p>
           </Link>
           <Link to="/business/team" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{employees.length}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">Team members</p>
+            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.teamMembers')}</p>
           </Link>
           <Link to="/business/apps" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{publishedApps}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">Published apps</p>
+            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.publishedApps')}</p>
           </Link>
         </div>
       </section>
@@ -101,13 +103,13 @@ export default function BusinessWorkspace() {
         <div className="rounded-3xl p-6 border border-[var(--olu-section-border)] bg-[var(--olu-section-bg)] space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <Zap size={16} className="text-amber-300" />
-            <p className="font-bold">Task pipeline</p>
+            <p className="font-bold">{t('workspace.taskPipeline')}</p>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Pending', value: pendingTasks, icon: Clock, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
-              { label: 'In Progress', value: inProgressTasks, icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-              { label: 'Done', value: doneTasks, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+              { label: t('common.pending'), value: pendingTasks, icon: Clock, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
+              { label: t('common.inProgress'), value: inProgressTasks, icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+              { label: t('common.done'), value: doneTasks, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
             ].map((item) => (
               <div key={item.label} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] text-center">
                 <div className="flex justify-center mb-2">
@@ -122,7 +124,7 @@ export default function BusinessWorkspace() {
           </div>
           {/* Recent activity */}
           <div className="space-y-2 pt-2">
-            <p className="text-xs text-[var(--olu-text-secondary)] uppercase tracking-wider">Recent activity</p>
+            <p className="text-xs text-[var(--olu-text-secondary)] uppercase tracking-wider">{t('workspace.recentActivity')}</p>
             {employees.slice(0, 4).map((emp) => (
               <div key={emp.id} className="flex items-center gap-3 rounded-2xl bg-[var(--olu-card-bg)] p-3 border border-[var(--olu-card-border)]">
                 {emp.avatar_img ? (
@@ -148,36 +150,36 @@ export default function BusinessWorkspace() {
               <Bot size={18} />
             </div>
             <div>
-              <p className="font-bold">Workforce</p>
-              <p className="text-[var(--olu-text-secondary)] text-xs">{onlineAgents} online · {employees.length} total</p>
+              <p className="font-bold">{t('workspace.workforce')}</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.onlineTotal', { online: onlineAgents, total: employees.length })}</p>
             </div>
           </div>
           <div className="space-y-2">
             <Link to="/business/team" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
               <Bot size={16} className="text-cyan-500" />
               <div>
-                <p className="font-semibold text-sm">{employees.length} AI Agents</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">{onlineAgents} online, {allTasks.filter((t) => t.status !== 'done').length} active tasks</p>
+                <p className="font-semibold text-sm">{t('workspace.aiAgents', { count: employees.length })}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.onlineActiveTasks', { online: onlineAgents, tasks: allTasks.filter((t) => t.status !== 'done').length })}</p>
               </div>
             </Link>
             <Link to="/business/team/humans" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
               <UserRound size={16} className="text-purple-400" />
               <div>
-                <p className="font-semibold text-sm">Human team</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">Manage people alongside AI employees</p>
+                <p className="font-semibold text-sm">{t('workspace.humanTeam')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.humanTeamDesc')}</p>
               </div>
             </Link>
             <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
               <ShieldCheck size={16} className="text-amber-400" />
               <div>
-                <p className="font-semibold text-sm">Approval center</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">{highPriorityApprovals} items need your review</p>
+                <p className="font-semibold text-sm">{t('workspace.approvalCenter')}</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.approvalCenterDesc', { count: highPriorityApprovals })}</p>
               </div>
             </Link>
           </div>
           <div className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)]">
-            <p className="font-semibold text-sm mb-1">Sandbox mode</p>
-            <p className="text-[var(--olu-text-secondary)] text-xs">Remote monitoring and takeover are first-class controls.</p>
+            <p className="font-semibold text-sm mb-1">{t('workspace.sandboxMode')}</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.sandboxModeDesc')}</p>
           </div>
         </div>
       </section>

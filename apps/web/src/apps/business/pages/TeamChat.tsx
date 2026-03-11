@@ -290,9 +290,9 @@ function CodeBlock({ className, children }: { className?: string; children?: any
 
   return (
     <div className="my-3 overflow-hidden rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-input-bg)]">
-      <div className="flex items-center justify-between border-b border-[var(--olu-card-border)] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-cyan-100/40">
+      <div className="flex items-center justify-between border-b border-[var(--olu-card-border)] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-[var(--olu-input-placeholder)]">
         <span>{language}</span>
-        <button onClick={onCopy} className="flex items-center gap-1 rounded-md px-2 py-1 text-cyan-100/50 hover:bg-cyan-500/10 hover:text-cyan-100/80 transition-colors">
+        <button onClick={onCopy} className="flex items-center gap-1 rounded-md px-2 py-1 text-[var(--olu-text-secondary)] hover:bg-cyan-500/10 hover:text-olu-text transition-colors">
           {copied ? <Check size={12} /> : <Copy size={12} />}
           <span>{copied ? 'Copied' : 'Copy'}</span>
         </button>
@@ -328,10 +328,10 @@ function ToolCallCards({ toolCalls }: { toolCalls: ToolCallSummary[] }) {
       {toolCalls.map((toolCall, index) => (
         <div key={`${toolCall.name}-${index}`} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-input-bg)]/90 p-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-cyan-100">{toolCall.name}</p>
+            <p className="text-sm font-medium text-olu-text">{toolCall.name}</p>
             <button
               onClick={() => onCopy(index, JSON.stringify(toolCall.args, null, 2))}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--olu-text-secondary)] hover:bg-cyan-500/10 hover:text-cyan-100/80 transition-colors"
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--olu-text-secondary)] hover:bg-cyan-500/10 hover:text-olu-text transition-colors"
             >
               {copiedIndex === index ? <Check size={12} /> : <Copy size={12} />}
               <span>{copiedIndex === index ? 'Copied args' : 'Copy args'}</span>
@@ -920,7 +920,7 @@ export default function TeamChat() {
                               components={{
                                 code: ({ inline, className, children }) => (
                                   inline
-                                    ? <code className="rounded bg-white/10 px-1 py-0.5 text-cyan-100">{children}</code>
+                                    ? <code className="rounded bg-olu-surface px-1 py-0.5 text-olu-text">{children}</code>
                                     : <CodeBlock className={className}>{children}</CodeBlock>
                                 ),
                                 img: ({ src, alt }) => (
@@ -996,7 +996,7 @@ export default function TeamChat() {
                     {!isGroup && msg.from === 'agent' && i === messages.length - 1 && !loading && (
                       <button
                         onClick={regenerateLastResponse}
-                        className="inline-flex items-center gap-1 text-xs text-[var(--olu-text-secondary)] hover:text-cyan-100/80 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs text-[var(--olu-text-secondary)] hover:text-olu-text transition-colors"
                       >
                         <RefreshCcw size={12} />
                         <span>Regenerate</span>
@@ -1134,7 +1134,7 @@ export default function TeamChat() {
                         <button
                           onMouseDown={e => e.preventDefault()}
                           onClick={() => fileInputRef.current?.click()}
-                          className="p-2 rounded-lg text-cyan-100/40 hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all"
+                          className="p-2 rounded-lg text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all"
                           title="Attach image"
                         >
                           <ImageIcon size={16} />
@@ -1149,7 +1149,7 @@ export default function TeamChat() {
                         title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
                         className={clsx(
                           'p-2 rounded-lg transition-all',
-                          showReasoning ? 'text-purple-300 bg-purple-500/10' : 'text-cyan-100/30 hover:text-[var(--olu-text-secondary)]'
+                          showReasoning ? 'text-purple-300 bg-purple-500/10' : 'text-[var(--olu-input-placeholder)] hover:text-[var(--olu-text-secondary)]'
                         )}
                       >
                         <Brain size={16} />
@@ -1164,7 +1164,7 @@ export default function TeamChat() {
                         <button
                           onMouseDown={e => e.preventDefault()}
                           onClick={() => setShowModelMenu(!showModelMenu)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-medium text-cyan-100/40 hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all whitespace-nowrap"
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all whitespace-nowrap"
                         >
                           {selectedModelOption ? `${selectedModelOption.providerLabel} · ${selectedModelOption.model}` : 'Model'}
                         </button>
@@ -1180,7 +1180,7 @@ export default function TeamChat() {
                               >
                                 {Object.entries(groupedModels).map(([providerLabel, models]) => (
                                   <div key={providerLabel} className="py-1">
-                                    <div className="px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-100/35">
+                                    <div className="px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--olu-input-placeholder)]">
                                       {providerLabel}
                                     </div>
                                     {models.map((m) => (

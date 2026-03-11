@@ -330,11 +330,7 @@ export default function TeamChat() {
         }
       }
 
-      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL
-      if (!AGENT_RUNTIME_URL) {
-        setRuntimeError('VITE_AGENT_RUNTIME_URL is not configured. Agent chat is unavailable.')
-        return
-      }
+      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
 
       const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
         method: 'POST',

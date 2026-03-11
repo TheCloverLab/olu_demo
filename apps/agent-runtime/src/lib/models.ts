@@ -393,9 +393,9 @@ export async function listAvailableModelOptions(): Promise<ModelOption[]> {
       options.push({
         id: `${provider.name}::${modelId}`,
         provider: provider.name,
-        providerLabel: provider.name === 'default' ? `${family.label} (default)` : family.label,
+        providerLabel: family.label,
         model: modelId,
-        label: `${provider.name === 'default' ? `${family.label} (default)` : family.label} / ${modelId}`,
+        label: `${family.label} / ${modelId}`,
         supportsTools: provider.supportsTools ?? true,
         supportsVision: inferVisionSupport(modelId, provider.baseURL, family.slug),
         isDefault: provider.name === 'default' && modelId === provider.model,

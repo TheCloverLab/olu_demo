@@ -49,12 +49,30 @@ function buildToolDefs(tools: StructuredToolInterface[]) {
   }))
 }
 
+function usesMaxCompletionTokens(modelName: string): boolean {
+  return /^(gpt-5($|[-.])|o1($|[-.])|o3($|[-.])|o4($|[-.]))/i.test(modelName)
+}
+
 async function callLLMWithTools(
   messages: Message[],
   provider: ModelProvider,
   toolDefs: ReturnType<typeof buildToolDefs>,
   modelOverride?: string,
 ) {
+  const modelName = modelOverride || provider.model
+  const body: Record<string, unknown> = {
+    model: modelName,
+    messages,
+    tools: provider.supportsTools && toolDefs.length ? toolDefs : undefined,
+    temperature: 0.3,
+  }
+
+  if (usesMaxCompletionTokens(modelName)) {
+    body.max_completion_tokens = 2048
+  } else {
+    body.max_tokens = 2048
+  }
+
   const res = await fetch(`${provider.baseURL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -62,13 +80,7 @@ async function callLLMWithTools(
       Authorization: `Bearer ${provider.apiKey}`,
       ...(provider.headers || {}),
     },
-    body: JSON.stringify({
-      model: modelOverride || provider.model,
-      messages,
-      tools: provider.supportsTools && toolDefs.length ? toolDefs : undefined,
-      temperature: 0.3,
-      max_tokens: 2048,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {

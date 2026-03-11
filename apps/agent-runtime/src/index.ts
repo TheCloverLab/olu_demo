@@ -13,7 +13,7 @@ import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
-import { listAvailableModelOptions, listAvailableProviders } from './lib/models.js'
+import { listAvailableModelOptions, listAvailableProviders, parseModelSelection } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
 import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
@@ -316,14 +316,19 @@ const server = createServer(async (req, res) => {
         return
       }
 
+      const parsedModelSelection = parseModelSelection(
+        typeof provider === 'string' ? provider : undefined,
+        typeof model === 'string' ? model : undefined,
+      )
+
       const result = await runChatAgent({
         workspaceId,
         agentId,
         agentName: agentName || 'Agent',
         agentRole: agentRole || 'AI Agent',
         userMessage: message || '',
-        modelProvider: provider || (model && !String(model).includes('::') ? model : undefined),
-        modelOverride: typeof model === 'string' && !String(model).includes('::') ? undefined : model,
+        modelProvider: parsedModelSelection.providerName,
+        modelOverride: parsedModelSelection.modelOverride,
         sourceId: sessionId,
         images,
       })

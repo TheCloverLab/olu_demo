@@ -30,6 +30,53 @@ export interface ModelOption {
   isDefault?: boolean
 }
 
+const empiricalVisionSupport: Record<string, boolean> = {
+  'kimi-for-coding': true,
+  'gpt-4': false,
+  'gpt-4-0125-preview': false,
+  'gpt-4-0613': false,
+  'gpt-4-1106-preview': false,
+  'gpt-4-turbo': false,
+  'gpt-4-turbo-2024-04-09': false,
+  'gpt-4-turbo-preview': false,
+  'gpt-4.1': true,
+  'gpt-4.1-2025-04-14': true,
+  'gpt-4.1-mini': true,
+  'gpt-4.1-mini-2025-04-14': true,
+  'gpt-4.1-nano': true,
+  'gpt-4.1-nano-2025-04-14': true,
+  'gpt-4o': true,
+  'gpt-4o-2024-05-13': true,
+  'gpt-4o-2024-08-06': true,
+  'gpt-4o-2024-11-20': true,
+  'gpt-4o-mini': true,
+  'gpt-4o-mini-2024-07-18': true,
+  'gpt-4o-audio-preview': false,
+  'gpt-4o-audio-preview-2024-12-17': false,
+  'gpt-4o-audio-preview-2025-06-03': false,
+  'gpt-4o-mini-audio-preview': false,
+  'gpt-4o-mini-audio-preview-2024-12-17': false,
+  'gpt-3.5-turbo': false,
+  'gpt-3.5-turbo-0125': false,
+  'gpt-3.5-turbo-1106': false,
+  'gpt-3.5-turbo-16k': false,
+  'gpt-audio': false,
+  'gpt-audio-1.5': false,
+  'gpt-audio-2025-08-28': false,
+  'gpt-audio-mini': false,
+  'gpt-audio-mini-2025-10-06': false,
+  'gpt-audio-mini-2025-12-15': false,
+  'gpt-5-chat-latest': true,
+  'claude-sonnet-4-6': true,
+  'claude-haiku-4-5-20251001': true,
+  'claude-opus-4-5': true,
+  'claude-opus-4-5-20251101-thinking': true,
+  'claude-opus-4-6': true,
+  'claude-opus-4-6-thinking': true,
+  'claude-sonnet-4-5-20250929': true,
+  'claude-sonnet-4-5-20250929-thinking': true,
+}
+
 const builtinProviders: Record<string, Omit<ModelProvider, 'apiKey'>> = {
   kimi: {
     name: 'kimi',
@@ -94,9 +141,37 @@ function parseBooleanEnv(value: string | undefined): boolean | undefined {
 }
 
 function inferVisionSupport(model: string, baseURL: string, providerName: string): boolean {
+  if (model in empiricalVisionSupport) return empiricalVisionSupport[model]
   const normalized = `${providerName} ${model} ${baseURL}`.toLowerCase()
-  if (normalized.includes('deepseek-chat') || normalized.includes('kimi-for-coding')) return false
+  if (normalized.includes('deepseek-chat')) return false
   return /(gpt-4o|gpt-4\.1|gemini|claude|vision|vl|pixtral|llava|minicpm|qvq)/i.test(normalized)
+}
+
+export function parseModelSelection(
+  providerName: string | undefined,
+  modelSelection: string | undefined,
+): { providerName?: string; modelOverride?: string } {
+  if (typeof modelSelection === 'string' && modelSelection.includes('::')) {
+    const [providerFromId, ...rest] = modelSelection.split('::')
+    return {
+      providerName: providerName || providerFromId || undefined,
+      modelOverride: rest.join('::') || undefined,
+    }
+  }
+
+  if (providerName && modelSelection) {
+    return { providerName, modelOverride: modelSelection }
+  }
+
+  if (providerName) {
+    return { providerName }
+  }
+
+  if (modelSelection) {
+    return { providerName: modelSelection }
+  }
+
+  return {}
 }
 
 function titleCase(name: string): string {

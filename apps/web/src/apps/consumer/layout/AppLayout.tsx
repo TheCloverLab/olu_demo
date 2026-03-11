@@ -1,9 +1,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Sun, Moon, Monitor, Globe } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
+import { useTheme } from '../../../context/ThemeContext'
 import { getUserWallet } from '../../../domain/workspace/api'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
@@ -29,11 +31,54 @@ function MenuItem({ icon: Icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#1c1c1c] transition-colors text-left rounded-xl"
+      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-olu-card transition-colors text-left rounded-xl"
     >
       <Icon size={20} className="text-olu-muted" />
       <span className="text-sm font-medium">{label}</span>
       <ChevronRight size={16} className="text-olu-muted ml-auto" />
+    </button>
+  )
+}
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  const options = [
+    { value: 'light' as const, icon: Sun },
+    { value: 'dark' as const, icon: Moon },
+    { value: 'system' as const, icon: Monitor },
+  ]
+
+  return (
+    <div className="flex items-center gap-0.5 rounded-lg border border-olu-border bg-olu-surface p-0.5">
+      {options.map(({ value, icon: Icon }) => (
+        <button
+          key={value}
+          onClick={() => setTheme(value)}
+          className={clsx(
+            'p-1.5 rounded-md transition-colors',
+            theme === value
+              ? 'bg-olu-primary text-white'
+              : 'text-olu-muted hover:text-olu-text'
+          )}
+        >
+          <Icon size={14} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function LanguageToggle() {
+  const { i18n } = useTranslation()
+  const isZh = i18n.language?.startsWith('zh')
+
+  return (
+    <button
+      onClick={() => i18n.changeLanguage(isZh ? 'en' : 'zh')}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-olu-border bg-olu-surface text-xs font-medium text-olu-muted hover:text-olu-text transition-colors"
+    >
+      <Globe size={14} />
+      {isZh ? 'EN' : '中文'}
     </button>
   )
 }
@@ -51,7 +96,7 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-40"
+            className="fixed inset-0 bg-[var(--olu-overlay-bg)] z-40"
             onClick={onClose}
           />
           <motion.div
@@ -61,13 +106,13 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
           >
             <div className="flex items-center justify-between px-4 py-4 border-b border-olu-border">
               <span className="font-black text-xl tracking-tight">OLU</span>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors">
+              <button onClick={onClose} className="p-2 rounded-full hover:bg-olu-card transition-colors">
                 <X size={18} className="text-olu-muted" />
               </button>
             </div>
 
             {authUser ? (
-              <button onClick={() => go(publicProfilePath)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[#1c1c1c] rounded-2xl">
+              <button onClick={() => go(publicProfilePath)} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-olu-card rounded-2xl">
                 <Avatar user={currentUser} size="md" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm">{currentUser.name}</p>
@@ -76,11 +121,11 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
               </button>
             ) : (
               <div className="mx-4 mt-4 mb-2 space-y-2">
-                <button onClick={() => go('/login')} className="w-full bg-white text-black rounded-xl px-4 py-2.5 font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+                <button onClick={() => go('/login')} className="w-full bg-olu-primary text-white rounded-xl px-4 py-2.5 font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2">
                   <LogIn size={16} />
                   Sign in
                 </button>
-                <button onClick={() => go('/signup')} className="w-full bg-[#1c1c1c] text-white rounded-xl px-4 py-2.5 font-semibold hover:bg-[#242424] transition-colors">
+                <button onClick={() => go('/signup')} className="w-full bg-olu-card text-olu-text rounded-xl px-4 py-2.5 font-semibold hover:opacity-80 transition-colors">
                   Sign up
                 </button>
               </div>
@@ -92,6 +137,11 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
                 <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
               )}
               <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
+            </div>
+
+            <div className="p-3 border-t border-olu-border flex items-center justify-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
             </div>
           </motion.div>
         </>
@@ -122,52 +172,34 @@ export default function AppLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-olu-border bg-olu-surface flex-shrink-0">
         <div className="px-5 py-5 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center">
-            <Zap size={14} className="text-black" fill="black" />
+          <div className="w-7 h-7 rounded-lg bg-olu-text flex items-center justify-center">
+            <Zap size={14} className="text-olu-bg" fill="currentColor" />
           </div>
           <span className="font-black text-lg block leading-none">OLU</span>
         </div>
 
         {authUser ? (
           <div className="px-3 pb-3">
-            <button onClick={() => navigate(publicProfilePath)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[#1c1c1c] transition-colors group">
+            <button onClick={() => navigate(publicProfilePath)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-olu-card transition-colors group">
               <Avatar user={currentUser} size="md" />
               <div className="min-w-0 text-left">
                 <p className="font-semibold text-sm truncate">{currentUser.name}</p>
                 <p className="text-olu-muted text-xs">{currentUser.handle}</p>
               </div>
             </button>
-            {/* Wallet preview hidden for now */
-            false && walletBalance !== null && (
-              <NavLink
-                to="/wallet"
-                className={({ isActive }) => clsx(
-                  'block rounded-2xl transition-colors cursor-pointer border mt-2',
-                  isActive ? 'bg-white/10 border-white/20' : 'bg-[#1c1c1c] border-white/[0.06] hover:bg-[#242424]'
-                )}
-              >
-                <div className="px-3 py-2.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Wallet size={13} className="text-emerald-400" />
-                    <span className="text-[11px] text-olu-muted font-medium">Wallet</span>
-                  </div>
-                  <p className="font-black text-base leading-none">${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                </div>
-              </NavLink>
-            )}
           </div>
         ) : (
           <div className="px-3 pb-3 space-y-2">
-            <button 
+            <button
               onClick={() => navigate('/login')}
-              className="w-full bg-white text-black rounded-xl px-4 py-2.5 font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-olu-primary text-white rounded-xl px-4 py-2.5 font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2"
             >
               <LogIn size={16} />
               Sign in
             </button>
-            <button 
+            <button
               onClick={() => navigate('/signup')}
-              className="w-full bg-[#1c1c1c] text-white rounded-xl px-4 py-2.5 font-semibold hover:bg-[#242424] transition-colors text-sm"
+              className="w-full bg-olu-card text-olu-text rounded-xl px-4 py-2.5 font-semibold hover:opacity-80 transition-colors text-sm"
             >
               Sign up
             </button>
@@ -182,7 +214,7 @@ export default function AppLayout() {
               end={exact}
               className={({ isActive }) => clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-[#2a2a2a] text-white' : 'text-olu-muted hover:text-white hover:bg-[#1c1c1c]'
+                isActive ? 'bg-olu-card text-olu-text' : 'text-olu-muted hover:text-olu-text hover:bg-olu-card'
               )}
             >
               <Icon size={18} />
@@ -193,10 +225,14 @@ export default function AppLayout() {
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
+          <div className="flex items-center justify-center gap-2 py-1">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
           {enabledBusinessModules.length > 0 && (
             <button
               onClick={() => navigate('/business')}
-              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 text-white border border-indigo-500/20"
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/20"
             >
               <Briefcase size={14} />
               Business OS
@@ -206,13 +242,13 @@ export default function AppLayout() {
             to="/settings"
             className={({ isActive }) => clsx(
               'w-full py-2 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2',
-              isActive ? 'bg-[#2a2a2a] text-white' : 'bg-[#1c1c1c] hover:bg-[#242424] text-olu-muted'
+              isActive ? 'bg-olu-card text-olu-text' : 'bg-olu-surface hover:bg-olu-card text-olu-muted'
             )}
           >
             <Settings size={14} />
             Settings
           </NavLink>
-          <div className="px-3 py-2 rounded-2xl bg-[#141414] text-[11px] text-olu-muted text-center tracking-wide">
+          <div className="px-3 py-2 rounded-2xl bg-olu-surface border border-olu-border text-[11px] text-olu-muted text-center tracking-wide">
             {APP_VERSION}
           </div>
         </div>
@@ -248,7 +284,7 @@ export default function AppLayout() {
               end={exact}
               className={({ isActive }) => clsx(
                 'flex-1 flex items-center justify-center py-3.5 no-tap-highlight transition-colors',
-                isActive ? 'text-white' : 'text-[#555555]'
+                isActive ? 'text-olu-text' : 'text-olu-muted'
               )}
             >
               {({ isActive }) => (

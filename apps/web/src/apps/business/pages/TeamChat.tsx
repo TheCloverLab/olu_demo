@@ -384,7 +384,7 @@ export default function TeamChat() {
         const scope = isGroup
           ? `group-${selectedGroupDbId || agentId || 'unknown'}`
           : `agent-${selectedAgentDbId || agentId || 'unknown'}`
-        attachments = await uploadTeamChatImages(user.id, scope, imageFiles)
+        attachments = await uploadTeamChatImages(user.auth_id || user.id, scope, imageFiles)
       } catch (err) {
         console.error('Failed uploading chat images', err)
         setRuntimeError('Image upload failed. The message was not sent.')

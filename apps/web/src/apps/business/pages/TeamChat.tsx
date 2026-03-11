@@ -3,7 +3,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X, Copy, Check, Square, RefreshCcw } from 'lucide-react'
+import { Highlight, themes } from 'prism-react-renderer'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import {
@@ -25,6 +26,30 @@ type ModelOption = {
   label: string
   supportsVision: boolean
   isDefault?: boolean
+}
+
+type ToolCallSummary = {
+  name: string
+  args: Record<string, unknown>
+  result: string
+}
+
+type ChatMessage = {
+  from: string
+  text: string
+  rawText?: string
+  images?: string[]
+  attachments?: ChatAttachment[]
+  reasoning?: string
+  notice?: string
+  toolCalls?: ToolCallSummary[]
+  time: string
+}
+
+type PendingAgentRequest = {
+  userText: string
+  attachments: ChatAttachment[]
+  runtimeImages?: string[]
 }
 
 const STATUS_CONFIG = {
@@ -51,6 +76,11 @@ function fileToDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error || new Error('Failed reading image'))
     reader.readAsDataURL(file)
   })
+}
+
+async function copyText(text: string) {
+  if (!text) return
+  await navigator.clipboard.writeText(text)
 }
 
 function runtimeErrorMessage(code) {
@@ -227,6 +257,75 @@ function ReasoningBlock({ text }: { text: string }) {
   )
 }
 
+function CodeBlock({ className, children }: { className?: string; children?: any }) {
+  const [copied, setCopied] = useState(false)
+  const language = className?.replace('language-', '') || 'text'
+  const code = String(children || '').replace(/\n$/, '')
+
+  const onCopy = async () => {
+    await copyText(code)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1200)
+  }
+
+  return (
+    <div className="my-3 overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#0b1523]">
+      <div className="flex items-center justify-between border-b border-cyan-500/10 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-cyan-100/40">
+        <span>{language}</span>
+        <button onClick={onCopy} className="flex items-center gap-1 rounded-md px-2 py-1 text-cyan-100/50 hover:bg-cyan-500/10 hover:text-cyan-100/80 transition-colors">
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          <span>{copied ? 'Copied' : 'Copy'}</span>
+        </button>
+      </div>
+      <Highlight theme={themes.vsDark} code={code} language={language as any}>
+        {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => (
+          <pre className={`${highlightClassName} overflow-x-auto px-4 py-3 text-[13px] leading-6`} style={{ ...style, background: 'transparent', margin: 0 }}>
+            {tokens.map((line, index) => (
+              <div key={index} {...getLineProps({ line })}>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
+    </div>
+  )
+}
+
+function ToolCallCards({ toolCalls }: { toolCalls: ToolCallSummary[] }) {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+
+  const onCopy = async (index: number, value: string) => {
+    await copyText(value)
+    setCopiedIndex(index)
+    window.setTimeout(() => setCopiedIndex(null), 1200)
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {toolCalls.map((toolCall, index) => (
+        <div key={`${toolCall.name}-${index}`} className="rounded-2xl border border-cyan-500/10 bg-[#0b1523]/90 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-cyan-100">{toolCall.name}</p>
+            <button
+              onClick={() => onCopy(index, JSON.stringify(toolCall.args, null, 2))}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-cyan-100/45 hover:bg-cyan-500/10 hover:text-cyan-100/80 transition-colors"
+            >
+              {copiedIndex === index ? <Check size={12} /> : <Copy size={12} />}
+              <span>{copiedIndex === index ? 'Copied args' : 'Copy args'}</span>
+            </button>
+          </div>
+          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-xl bg-black/20 px-3 py-2 text-xs leading-5 text-cyan-100/70">
+            {JSON.stringify(toolCall.args, null, 2)}
+          </pre>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
@@ -242,11 +341,16 @@ export default function TeamChat() {
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || '')
   const [showModelMenu, setShowModelMenu] = useState(false)
   const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
+  const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number; label: string } | null>(null)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const [retryMode, setRetryMode] = useState<'upload' | 'request' | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const pendingRequestRef = useRef<PendingAgentRequest | null>(null)
   const [liveAgents, setLiveAgents] = useState<any[]>([])
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [selectedAgentDbId, setSelectedAgentDbId] = useState<string | null>(null)
   const [selectedGroupDbId, setSelectedGroupDbId] = useState<string | null>(null)
   const [liveGroups, setLiveGroups] = useState<any[]>([])
@@ -302,7 +406,9 @@ export default function TeamChat() {
               (groupMessages || []).map((m: any) => ({
                 from: m.from_name === 'You' ? 'user' : m.from_name,
                 text: m.text,
+                rawText: m.text,
                 images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
+                attachments: m.attachments || [],
                 time: m.time,
               }))
             )
@@ -336,7 +442,9 @@ export default function TeamChat() {
           (conv || []).map((m: any) => ({
             from: m.from_type === 'user' ? 'user' : 'agent',
             text: m.text,
+            rawText: m.text,
             images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
+            attachments: m.attachments || [],
             time: m.time,
           }))
         )
@@ -357,6 +465,10 @@ export default function TeamChat() {
     const t = setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     return () => clearTimeout(t)
   }, [messages, loading])
+
+  useEffect(() => () => {
+    abortControllerRef.current?.abort()
+  }, [])
 
   // Fetch available models
   useEffect(() => {
@@ -416,12 +528,134 @@ export default function TeamChat() {
     })
   }, [])
 
+  const stopGeneration = useCallback(() => {
+    if (!abortControllerRef.current) return
+    abortControllerRef.current.abort()
+    abortControllerRef.current = null
+    setLoading(false)
+    setStreaming(false)
+    setThinking('')
+    setRuntimeError('Generation stopped.')
+    setRetryMode('request')
+  }, [])
+
+  const sendAgentRequest = useCallback(async ({
+    userText,
+    attachments,
+    runtimeImages,
+    replaceLastAgent = false,
+  }: PendingAgentRequest & { replaceLastAgent?: boolean }) => {
+    if (!selectedAgentDbId || !agent) return
+
+    const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    pendingRequestRef.current = { userText, attachments, runtimeImages }
+    setLoading(true)
+    setStreaming(true)
+    setRetryMode(null)
+
+    try {
+      const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          workspaceId: agent.workspace_id || '',
+          agentId: selectedAgentDbId,
+          agentName: agent.name,
+          agentRole: agent.role,
+          message: userText,
+          provider: selectedModelOption?.provider,
+          model: selectedModelOption?.model,
+          images: runtimeImages,
+        }),
+      })
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('agent-runtime /chat error:', res.status, errorText)
+        let errorCode = 'provider-fetch-failed'
+        try {
+          const parsed = JSON.parse(errorText)
+          if (parsed?.error === 'vision-unsupported') errorCode = 'vision-unsupported'
+        } catch {
+          // Ignore invalid JSON and keep the generic error code.
+        }
+        setRetryMode('request')
+        setRuntimeError(runtimeErrorMessage(errorCode))
+        return
+      }
+
+      const result = await res.json()
+      const assistantText = result.response || 'Done.'
+
+      setMessages((prev) => {
+        const base = replaceLastAgent && prev[prev.length - 1]?.from === 'agent' ? prev.slice(0, -1) : prev
+        return [
+          ...base,
+          {
+            from: 'agent',
+            text: assistantText,
+            rawText: assistantText,
+            reasoning: result.reasoning,
+            notice: result.notice,
+            toolCalls: result.toolCalls,
+            time: 'Just now',
+          },
+        ]
+      })
+
+      if (assistantText.trim()) {
+        try {
+          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+        } catch (err) {
+          console.error('Failed saving assistant message', err)
+        }
+      }
+
+      setRuntimeError(null)
+      setRetryMode(null)
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return
+      setRetryMode('request')
+      setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
+    } finally {
+      abortControllerRef.current = null
+      setLoading(false)
+      setStreaming(false)
+      setThinking('')
+    }
+  }, [agent, selectedAgentDbId, selectedModelOption])
+
+  const retryLastAgentRequest = useCallback(async () => {
+    if (!pendingRequestRef.current) return
+    setRuntimeError(null)
+    await sendAgentRequest({
+      ...pendingRequestRef.current,
+      replaceLastAgent: true,
+    })
+  }, [sendAgentRequest])
+
+  const regenerateLastResponse = useCallback(async () => {
+    const lastUser = [...messages].reverse().find((msg) => msg.from === 'user')
+    if (!lastUser || !selectedAgentDbId) return
+    setRuntimeError(null)
+    await sendAgentRequest({
+      userText: lastUser.rawText || '',
+      attachments: lastUser.attachments || [],
+      runtimeImages: lastUser.images,
+      replaceLastAgent: true,
+    })
+  }, [messages, selectedAgentDbId, sendAgentRequest])
+
   const sendMessage = async () => {
     if ((!input.trim() && attachedImages.length === 0) || loading) return
     if (!user?.id) return
 
     const userText = input.trim()
     setRuntimeError(null)
+    setRetryMode(null)
     const images = [...attachedImages]
     const imageFiles = images.map((img) => img.file)
     let runtimeImages: string[] | undefined
@@ -447,13 +681,21 @@ export default function TeamChat() {
         const scope = isGroup
           ? `group-${selectedGroupDbId || agentId || 'unknown'}`
           : `agent-${selectedAgentDbId || agentId || 'unknown'}`
-        attachments = await uploadTeamChatImages(user.auth_id || user.id, scope, imageFiles)
+        setUploadProgress({ completed: 0, total: imageFiles.length, label: 'Uploading images...' })
+        for (const file of imageFiles) {
+          const [attachment] = await uploadTeamChatImages(user.auth_id || user.id, scope, [file])
+          if (attachment) attachments.push(attachment)
+          setUploadProgress((prev) => prev ? { ...prev, completed: prev.completed + 1 } : prev)
+        }
       } catch (err) {
         console.error('Failed uploading chat images', err)
+        setUploadProgress(null)
+        setRetryMode('upload')
         setRuntimeError('Image upload failed. The message was not sent.')
         return
       }
     }
+    setUploadProgress(null)
 
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
@@ -463,7 +705,9 @@ export default function TeamChat() {
     const userMsg = {
       from: 'user',
       text: userText || (attachments.length ? `[${attachments.length} image(s)]` : ''),
+      rawText: userText,
       images: attachments.map((attachment) => attachment.url),
+      attachments,
       time: 'Just now',
     }
     const next = [...messages, userMsg]
@@ -480,8 +724,6 @@ export default function TeamChat() {
       return
     }
 
-    setLoading(true)
-
     try {
       if (selectedAgentDbId) {
         try {
@@ -491,64 +733,13 @@ export default function TeamChat() {
         }
       }
 
-      const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
-
-      const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceId: agent.workspace_id || '',
-          agentId: selectedAgentDbId,
-          agentName: agent.name,
-          agentRole: agent.role,
-          message: userText,
-          provider: selectedModelOption?.provider,
-          model: selectedModelOption?.model,
-          images: runtimeImages,
-        }),
+      await sendAgentRequest({
+        userText,
+        attachments,
+        runtimeImages,
       })
-
-      if (!res.ok) {
-        const errorText = await res.text()
-        console.error('agent-runtime /chat error:', res.status, errorText)
-        let errorCode = 'provider-fetch-failed'
-        try {
-          const parsed = JSON.parse(errorText)
-          if (parsed?.error === 'vision-unsupported') errorCode = 'vision-unsupported'
-        } catch {
-          // Ignore invalid JSON and keep the generic error code.
-        }
-        setRuntimeError(runtimeErrorMessage(errorCode))
-        return
-      }
-
-      const result = await res.json()
-      const assistantText = result.response || 'Done.'
-      const toolInfo = result.toolCalls?.length
-        ? `\n\n---\n*Used ${result.toolCalls.length} tool(s): ${result.toolCalls.map((tc: any) => tc.name).join(', ')}*`
-        : ''
-
-      setMessages(prev => [...prev, {
-        from: 'agent',
-        text: assistantText + toolInfo,
-        reasoning: result.reasoning,
-        time: 'Just now',
-      }])
-
-      if (selectedAgentDbId && assistantText.trim()) {
-        try {
-          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
-        } catch (err) {
-          console.error('Failed saving assistant message', err)
-        }
-      }
     } catch (e) {
       setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
-      setMessages(prev => prev.filter((msg, index) => !(index === prev.length - 1 && msg.from === 'agent' && !msg.text)))
-    } finally {
-      setLoading(false)
-      setStreaming(false)
-      setThinking('')
     }
   }
 
@@ -607,7 +798,34 @@ export default function TeamChat() {
             <div className="px-4 pt-4">
               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-start gap-2 text-sm text-amber-100">
                 <AlertTriangle size={16} className="mt-0.5 text-amber-300 flex-shrink-0" />
-                <span>{runtimeError}</span>
+                <div className="flex-1">
+                  <p>{runtimeError}</p>
+                  {retryMode && (
+                    <button
+                      onClick={retryMode === 'upload' ? sendMessage : retryLastAgentRequest}
+                      className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-400/15"
+                    >
+                      <RefreshCcw size={12} />
+                      <span>{retryMode === 'upload' ? 'Retry upload' : 'Retry request'}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {uploadProgress && (
+            <div className="px-4 pt-4">
+              <div className="rounded-2xl border border-cyan-500/15 bg-cyan-500/5 px-4 py-3">
+                <div className="flex items-center justify-between gap-3 text-sm text-cyan-100/70">
+                  <span>{uploadProgress.label}</span>
+                  <span>{uploadProgress.completed}/{uploadProgress.total}</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-cyan-300 transition-all"
+                    style={{ width: `${Math.max(8, (uploadProgress.completed / uploadProgress.total) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -655,13 +873,19 @@ export default function TeamChat() {
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               components={{
+                                code: ({ inline, className, children }) => (
+                                  inline
+                                    ? <code className="rounded bg-white/10 px-1 py-0.5 text-cyan-100">{children}</code>
+                                    : <CodeBlock className={className}>{children}</CodeBlock>
+                                ),
                                 img: ({ src, alt }) => (
                                   <img
                                     src={src}
                                     alt={alt || 'Generated image'}
-                                    className="rounded-xl max-w-full my-2 border border-cyan-500/10"
+                                    className="rounded-xl max-w-full my-2 cursor-zoom-in border border-cyan-500/10"
                                     style={{ maxHeight: 400 }}
                                     loading="lazy"
+                                    onClick={() => src && setExpandedImage(String(src))}
                                   />
                                 ),
                                 table: ({ children }) => (
@@ -689,6 +913,12 @@ export default function TeamChat() {
                               }}
                             >{preprocessMarkdown(msg.text)}</ReactMarkdown>
                           </div>
+                          {msg.notice && (
+                            <p className="mt-3 rounded-xl border border-cyan-500/10 bg-cyan-500/5 px-3 py-2 text-xs text-cyan-100/70">
+                              {msg.notice}
+                            </p>
+                          )}
+                          {msg.toolCalls?.length > 0 && <ToolCallCards toolCalls={msg.toolCalls} />}
                         </>
                       ) : (
                         <span className="flex gap-1 items-center h-4">
@@ -703,14 +933,31 @@ export default function TeamChat() {
                     {msg.images?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {msg.images.map((src: string, j: number) => (
-                          <img key={j} src={src} alt="" className="rounded-lg max-w-[200px] max-h-[150px] object-cover border border-cyan-200/20" />
+                          <img
+                            key={j}
+                            src={src}
+                            alt=""
+                            onClick={() => setExpandedImage(src)}
+                            className="rounded-lg max-w-[200px] max-h-[150px] cursor-zoom-in object-cover border border-cyan-200/20"
+                          />
                         ))}
                       </div>
                     )}
                   </div>
-                  {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
-                    <p className="text-cyan-100/45 text-xs px-1">{msg.time}</p>
-                  )}
+                  <div className="flex items-center gap-2 px-1">
+                    {!(msg.from === 'agent' && i === messages.length - 1 && (loading || streaming)) && (
+                      <p className="text-cyan-100/45 text-xs">{msg.time}</p>
+                    )}
+                    {!isGroup && msg.from === 'agent' && i === messages.length - 1 && !loading && (
+                      <button
+                        onClick={regenerateLastResponse}
+                        className="inline-flex items-center gap-1 text-xs text-cyan-100/45 hover:text-cyan-100/80 transition-colors"
+                      >
+                        <RefreshCcw size={12} />
+                        <span>Regenerate</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -730,6 +977,30 @@ export default function TeamChat() {
             )}
             <div ref={bottomRef} />
           </div>
+          <AnimatePresence>
+            {expandedImage && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-[#020816]/90 p-6"
+                onClick={() => setExpandedImage(null)}
+              >
+                <button
+                  onClick={() => setExpandedImage(null)}
+                  className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+                >
+                  <X size={18} />
+                </button>
+                <img
+                  src={expandedImage}
+                  alt="Expanded attachment"
+                  onClick={(e) => e.stopPropagation()}
+                  className="max-h-full max-w-full rounded-2xl border border-cyan-500/10 shadow-2xl"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Input */}
           {thinking && (
@@ -897,11 +1168,17 @@ export default function TeamChat() {
 
                     {/* Send */}
                     <button
-                      onClick={sendMessage}
-                      disabled={(!input.trim() && attachedImages.length === 0) || loading}
-                      className="p-2 rounded-lg bg-cyan-300 text-[#04111f] disabled:opacity-40 transition-opacity hover:opacity-90"
+                      onClick={loading ? stopGeneration : sendMessage}
+                      disabled={uploadProgress !== null || (!loading && !input.trim() && attachedImages.length === 0)}
+                      className={clsx(
+                        'p-2 rounded-lg transition-opacity',
+                        loading
+                          ? 'bg-amber-400 text-[#04111f] hover:opacity-90'
+                          : 'bg-cyan-300 text-[#04111f] hover:opacity-90',
+                        (uploadProgress !== null || (!loading && !input.trim() && attachedImages.length === 0)) && 'opacity-40'
+                      )}
                     >
-                      <Send size={14} />
+                      {loading ? <Square size={14} /> : <Send size={14} />}
                     </button>
                   </div>
                 </div>

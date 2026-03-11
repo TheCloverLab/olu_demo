@@ -148,7 +148,7 @@ export default function AdvertiserConsole() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-6">
-      <div className="rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(17,33,53,0.96),rgba(8,19,34,0.88))] p-6 shadow-[0_18px_60px_rgba(2,8,23,0.35)]">
+      <div className="rounded-[32px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">

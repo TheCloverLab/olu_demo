@@ -19,21 +19,21 @@ const MODULE_METADATA: Array<{
     label: 'Creator Ops',
     description: 'Approvals, IP control, customers, and shop operations.',
     icon: Sparkles,
-    accentClass: 'bg-cyan-400/12 text-cyan-200 border-cyan-400/20',
+    accentClass: 'bg-cyan-400/12 text-cyan-600 dark:text-cyan-300 border-cyan-400/20',
   },
   {
     key: 'marketing',
     label: 'Marketing',
     description: 'Campaign sourcing, offer routing, and performance loops.',
     icon: Megaphone,
-    accentClass: 'bg-blue-500/12 text-blue-200 border-blue-400/20',
+    accentClass: 'bg-blue-500/12 text-blue-600 dark:text-blue-300 border-blue-400/20',
   },
   {
     key: 'supply_chain',
     label: 'Supply Chain',
     description: 'Supplier partnerships, catalog readiness, and merch operations.',
     icon: PackageCheck,
-    accentClass: 'bg-emerald-500/12 text-emerald-200 border-emerald-400/20',
+    accentClass: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300 border-emerald-400/20',
   },
 ]
 
@@ -105,7 +105,7 @@ export default function BusinessSettings() {
       {/* Modules */}
       <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-5">
-          <span className="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-200 flex items-center justify-center">
+          <span className="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-600 dark:text-cyan-300 flex items-center justify-center">
             <Sparkles size={18} />
           </span>
           <div>
@@ -135,7 +135,7 @@ export default function BusinessSettings() {
                   className={`min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
                     module.enabled
                       ? 'bg-cyan-300 text-slate-950 hover:bg-cyan-200'
-                      : 'bg-white/8 text-cyan-50 border border-[var(--olu-card-border)] hover:bg-white/12'
+                      : 'bg-[var(--olu-card-bg)] text-olu-muted border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)]'
                   }`}
                 >
                   {isSaving ? 'Saving...' : module.enabled ? 'Enabled' : 'Enable'}
@@ -149,7 +149,7 @@ export default function BusinessSettings() {
       {/* Billing */}
       <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
-          <span className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
+          <span className="w-10 h-10 rounded-2xl bg-[var(--olu-card-bg)] text-olu-muted flex items-center justify-center">
             <CreditCard size={18} />
           </span>
           <div>

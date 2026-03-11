@@ -337,10 +337,10 @@ export default function Team() {
         </div>
       )}
 
-      <div className="rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(135deg,rgba(14,28,48,0.92),rgba(8,18,33,0.86))] p-5 mb-6 shadow-[0_18px_60px_rgba(2,8,23,0.32)]">
+      <div className="rounded-[28px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-[var(--olu-section-bg)] border border-cyan-400/10 flex items-center justify-center">
-            <ShieldCheck size={18} className="text-cyan-200" />
+            <ShieldCheck size={18} className="text-cyan-600 dark:text-cyan-300" />
           </div>
           <div>
             <p className="font-semibold">Workspace command layer</p>

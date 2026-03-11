@@ -27,7 +27,7 @@ export default function BusinessAccount() {
       </div>
 
       <div className="grid lg:grid-cols-[1.1fr,0.9fr] gap-4">
-        <div className="rounded-3xl p-6 border border-cyan-400/15 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_32%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)]">
+        <div className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
           <div className="flex items-center gap-4 mb-5">
             {currentUser.avatar_img ? (
               <img src={currentUser.avatar_img} alt={currentUser.name} className="w-16 h-16 rounded-2xl object-cover" />
@@ -57,7 +57,7 @@ export default function BusinessAccount() {
             <p className="text-[var(--olu-text-secondary)] text-xs mb-2">Enabled workspace modules</p>
             <div className="flex flex-wrap gap-2">
               {enabledBusinessModules.map((moduleKey) => (
-                <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-sm capitalize text-cyan-100/80 border border-[var(--olu-card-border)]">
+                <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-sm capitalize text-olu-text border border-[var(--olu-card-border)]">
                   {moduleKey.replace('_', ' ')}
                 </span>
               ))}
@@ -68,7 +68,7 @@ export default function BusinessAccount() {
         <div className="space-y-4">
           <div className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center">
+              <span className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center">
                 <Briefcase size={18} />
               </span>
               <div>
@@ -83,7 +83,7 @@ export default function BusinessAccount() {
 
           <div className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-300 flex items-center justify-center">
+              <span className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 flex items-center justify-center">
                 <Users size={18} />
               </span>
               <div>
@@ -98,7 +98,7 @@ export default function BusinessAccount() {
 
           <div className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center">
+              <span className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center">
                 <Cable size={18} />
               </span>
               <div>
@@ -113,7 +113,7 @@ export default function BusinessAccount() {
 
           <div className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
+              <span className="w-10 h-10 rounded-2xl bg-[var(--olu-card-bg)] text-olu-muted flex items-center justify-center">
                 <ShieldCheck size={18} />
               </span>
               <div>

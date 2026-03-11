@@ -768,7 +768,7 @@ export default function TeamChat() {
                                   initial={{ opacity: 0, y: 8 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 8 }}
-                                  className="py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl whitespace-nowrap pointer-events-auto"
+                                  className="flex flex-col min-w-[180px] py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl pointer-events-auto"
                                 >
                                   {availableModels.map(m => (
                                     <button
@@ -779,7 +779,7 @@ export default function TeamChat() {
                                         setShowModelMenu(false)
                                       }}
                                       className={clsx(
-                                        'w-full px-4 py-2.5 text-left text-sm transition-colors',
+                                        'px-4 py-2.5 text-left text-sm whitespace-nowrap transition-colors',
                                         selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
                                       )}
                                     >

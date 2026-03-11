@@ -726,36 +726,38 @@ export default function TeamChat() {
                   <div className="relative">
                     <button
                       onClick={() => setShowModelMenu(!showModelMenu)}
-                      className="px-2 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide uppercase text-cyan-100/50 hover:text-cyan-100/80 hover:bg-cyan-500/10 border border-cyan-500/10 transition-all"
+                      className="px-2 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide uppercase text-cyan-100/50 hover:text-cyan-100/80 hover:bg-cyan-500/10 border border-cyan-500/10 transition-all whitespace-nowrap"
                     >
-                      {(availableModels.find(m => m.name === selectedModel)?.name || 'default').slice(0, 6)}
+                      {(availableModels.find(m => m.name === selectedModel)?.model || 'default').split('-').slice(0, 2).join('-')}
                     </button>
                     <AnimatePresence>
                       {showModelMenu && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl min-w-[140px] z-50"
-                        >
-                          {availableModels.map(m => (
-                            <button
-                              key={m.name}
-                              onClick={() => {
-                                setSelectedModel(m.name)
-                                localStorage.setItem('olu-chat-model', m.name)
-                                setShowModelMenu(false)
-                              }}
-                              className={clsx(
-                                'w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors',
-                                selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
-                              )}
-                            >
-                              <span className="font-medium capitalize">{m.name}</span>
-                              <span className="text-[10px] text-cyan-100/35">{m.model}</span>
-                            </button>
-                          ))}
-                        </motion.div>
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 4 }}
+                            className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl z-50 whitespace-nowrap"
+                          >
+                            {availableModels.map(m => (
+                              <button
+                                key={m.name}
+                                onClick={() => {
+                                  setSelectedModel(m.name)
+                                  localStorage.setItem('olu-chat-model', m.name)
+                                  setShowModelMenu(false)
+                                }}
+                                className={clsx(
+                                  'w-full px-3 py-2 text-left text-xs transition-colors',
+                                  selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                                )}
+                              >
+                                {m.model}
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
                       )}
                     </AnimatePresence>
                   </div>

@@ -132,7 +132,7 @@ Be concise and professional. After completing actions, summarize what you did.`
   let userContent: any = userMessage
   if (images?.length) {
     const parts: any[] = []
-    if (userMessage) parts.push({ type: 'text', text: userMessage })
+    parts.push({ type: 'text', text: userMessage || 'Please analyze the attached image(s).' })
     for (const img of images) {
       // img can be a public URL or a data URL like "data:image/png;base64,..."
       parts.push({

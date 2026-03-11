@@ -118,17 +118,26 @@ function getDefaultProvider(): ModelProvider {
   const model = process.env.LLM_MODEL || legacyFallback?.model || 'gpt-4o-mini'
   const envSupportsVision = parseBooleanEnv(process.env.LLM_SUPPORTS_VISION)
   const visionModel = process.env.LLM_VISION_MODEL
+  const hasExplicitDefaultConfig = Boolean(process.env.LLM_BASE_URL || process.env.LLM_MODEL)
+  const explicitBuiltin = Object.values(builtinProviders).find((provider) =>
+    provider.baseURL === baseURL || provider.model === model,
+  )
+  const inferredProviderName = explicitBuiltin?.name || 'default'
+
   return {
     name: 'default',
     apiKey: process.env.LLM_API_KEY || legacyFallback?.apiKey || '',
     baseURL,
     model,
-    headers: legacyFallback?.headers || {
+    headers: explicitBuiltin?.headers || legacyFallback?.headers || {
       'User-Agent': 'claude-code/1.0.0',
       'X-Client-Name': 'claude-code',
     },
-    supportsTools: legacyFallback?.supportsTools ?? true,
-    supportsVision: envSupportsVision ?? legacyFallback?.supportsVision ?? inferVisionSupport(model, baseURL, 'default'),
+    supportsTools: explicitBuiltin?.supportsTools ?? legacyFallback?.supportsTools ?? true,
+    supportsVision: envSupportsVision
+      ?? (hasExplicitDefaultConfig
+        ? (explicitBuiltin?.supportsVision ?? inferVisionSupport(model, baseURL, inferredProviderName))
+        : (legacyFallback?.supportsVision ?? inferVisionSupport(model, baseURL, inferredProviderName))),
     visionModel: visionModel || legacyFallback?.visionModel,
   }
 }

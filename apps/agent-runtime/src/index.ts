@@ -358,6 +358,20 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // Lark card action callback (interactive cards)
+    if (url.pathname === '/webhook/lark/card-action' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      // Handle URL verification challenge
+      if (body.challenge) {
+        json(res, 200, { challenge: body.challenge })
+        return
+      }
+      // Card action events — acknowledge for now
+      console.log('[lark-card] Card action received:', JSON.stringify(body).slice(0, 200))
+      json(res, 200, {})
+      return
+    }
+
     // List registered Lark bots
     if (url.pathname === '/bots' && req.method === 'GET') {
       json(res, 200, { bots: getRegisteredBots() })

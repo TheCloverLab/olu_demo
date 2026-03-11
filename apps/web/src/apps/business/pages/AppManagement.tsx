@@ -251,7 +251,7 @@ export default function AppManagement() {
   }, [user?.id])
 
   const primaryApp = apps[0] || null
-  const hiddenAppCount = Math.max(0, apps.length - 1)
+
   const canCreateApp = apps.length === 0
 
   if (loading) {
@@ -283,11 +283,7 @@ export default function AppManagement() {
         )}
       </div>
 
-      {hiddenAppCount > 0 && (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-          This UI currently manages one app per workspace. {hiddenAppCount} additional app{hiddenAppCount !== 1 ? 's remain' : ' remains'} supported in the backend.
-        </div>
-      )}
+
 
       {showNewApp && (
         <NewAppPanel onClose={() => setShowNewApp(false)} />

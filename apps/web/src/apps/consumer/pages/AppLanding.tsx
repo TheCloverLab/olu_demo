@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { ArrowLeft, BadgeCheck, BookOpen, Crown, FileText, Lock, MessageCircle, Send, ShoppingBag, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
@@ -15,6 +16,7 @@ function formatNumber(value: number) {
 }
 
 export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorId?: string } = {}) {
+  const { t } = useTranslation()
   const { id: paramId } = useParams()
   const id = standaloneCreatorId || paramId
   const navigate = useNavigate()
@@ -96,27 +98,27 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
   const appCopy = useMemo(() => {
     if (isCommunity) {
       return {
-        eyebrow: 'Community',
-        titleSuffix: 'Inner Circle',
-        summary: 'Join recurring conversations, member-only drops, and creator rituals that stay alive every week.',
-        primaryCta: membershipStatus ? 'Open membership' : 'Join membership',
+        eyebrow: t('consumer.community'),
+        titleSuffix: t('consumer.innerCircle'),
+        summary: t('consumer.joinSummary'),
+        primaryCta: membershipStatus ? t('consumer.openMembership') : t('consumer.joinMembership'),
         primaryHref: '/membership',
-        secondaryCta: 'Open topics',
+        secondaryCta: t('consumer.openTopics'),
         secondaryHref: '/topics',
         stats: [
-          { val: formatNumber(tiers.reduce((acc, t) => acc + (t.subscriber_count || 0), 0)), label: 'Members' },
-          { val: formatNumber(posts.length), label: 'Member drops' },
-          { val: formatNumber(creator?.followers || 0), label: 'Followers' },
+          { val: formatNumber(tiers.reduce((acc, tier) => acc + (tier.subscriber_count || 0), 0)), label: t('consumer.members') },
+          { val: formatNumber(posts.length), label: t('consumer.memberDrops') },
+          { val: formatNumber(creator?.followers || 0), label: t('consumer.followers') },
         ],
         tabs: [
-          { key: 'overview', label: 'Overview', icon: Sparkles },
-          { key: 'content', label: 'Recent drops', icon: FileText },
-          { key: 'access', label: 'Membership', icon: Crown },
+          { key: 'overview', label: t('consumer.overview'), icon: Sparkles },
+          { key: 'content', label: t('consumer.recentDrops'), icon: FileText },
+          { key: 'access', label: t('consumer.membership'), icon: Crown },
         ] as const,
         included: [
-          'Member-only updates and creator notes',
-          'Private topics with recurring discussion',
-          'Live sessions and priority Q&A',
+          t('consumer.memberOnlyUpdates'),
+          t('consumer.privateRecurring'),
+          t('consumer.livePriorityQA'),
         ],
         nowLive: [
           posts[0]?.title || 'Weekly critique thread',
@@ -127,27 +129,27 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
     }
 
     return {
-      eyebrow: 'Academy',
-      titleSuffix: 'Academy',
-      summary: 'Browse structured lessons, outcome-led curriculum, and a course flow designed for repeat learning.',
-      primaryCta: hasCourseAccess ? 'Open learning' : 'Browse catalog',
+      eyebrow: t('consumer.academy'),
+      titleSuffix: t('consumer.academy'),
+      summary: t('consumer.academySummary'),
+      primaryCta: hasCourseAccess ? t('consumer.openLearning') : t('consumer.browseCatalog'),
       primaryHref: hasCourseAccess ? '/learning' : '/courses',
-      secondaryCta: 'Browse courses',
+      secondaryCta: t('consumer.browseCourses'),
       secondaryHref: '/courses',
       stats: [
-        { val: formatNumber(posts.length), label: 'Sample lessons' },
-        { val: formatNumber(products.length), label: 'Offers' },
-        { val: formatNumber(creator?.followers || 0), label: 'Followers' },
+        { val: formatNumber(posts.length), label: t('consumer.sampleLessons') },
+        { val: formatNumber(products.length), label: t('consumer.offers') },
+        { val: formatNumber(creator?.followers || 0), label: t('consumer.followers') },
       ],
       tabs: [
-        { key: 'overview', label: 'Overview', icon: BookOpen },
-        { key: 'content', label: 'Curriculum', icon: FileText },
-        { key: 'access', label: 'Offer', icon: ShoppingBag },
+        { key: 'overview', label: t('consumer.overview'), icon: BookOpen },
+        { key: 'content', label: t('consumer.curriculum'), icon: FileText },
+        { key: 'access', label: t('consumer.offer'), icon: ShoppingBag },
       ] as const,
       included: [
-        'Structured lessons and clear outcomes',
-        'Self-paced chapters with progress tracking',
-        'Templates, examples, and rewatchable sessions',
+        t('consumer.structuredLessons'),
+        t('consumer.selfPacedChapters'),
+        t('consumer.templates'),
       ],
       nowLive: [
         posts[0]?.title || 'Course walkthrough and module notes',
@@ -155,17 +157,17 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
         'Learning hub with next-lesson flow',
       ],
     }
-  }, [isCommunity, membershipStatus, hasCourseAccess, tiers, posts, products, creator?.followers])
+  }, [isCommunity, membershipStatus, hasCourseAccess, tiers, posts, products, creator?.followers, t])
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading app...</div>
-  if (!creator) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">App not found.</div>
+  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingApp')}</div>
+  if (!creator) return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.appNotFound')}</div>
 
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-6">
       {!standaloneCreatorId && (
         <div className="px-4 pt-4 mb-2">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm">
-            <ArrowLeft size={16} /> Back
+            <ArrowLeft size={16} /> {t('common.back')}
           </button>
         </div>
       )}
@@ -216,21 +218,21 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                           {creator.initials}
                         </div>
                       )}
-                      Hosted by {creator.name}
+                      {t('consumer.hostedBy', { name: creator.name })}
                     </button>
                     {canManageApp ? (
                       <button
-                        onClick={() => navigate('/business/consumer')}
+                        onClick={() => window.open('/business/consumer', '_blank')}
                         className="rounded-full border border-sky-400/25 bg-sky-400/10 px-3 py-1 text-xs text-sky-200 hover:bg-sky-400/15 transition-colors"
                       >
-                        Manage community
+                        {t('consumer.manageCommunity')}
                       </button>
                     ) : (
                       <button
                         onClick={() => navigate(`/chat?with=${creator.id}`)}
                         className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1 text-xs text-olu-muted hover:bg-[var(--olu-card-hover)] transition-colors"
                       >
-                        Message host
+                        {t('consumer.messageHost')}
                       </button>
                     )}
                   </div>
@@ -269,7 +271,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     following ? 'bg-[var(--olu-card-bg)] text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
                   )}
                 >
-                  {following ? 'Following' : 'Follow'}
+                  {following ? t('consumer.following') : t('consumer.follow')}
                 </button>
               )}
             </div>
@@ -277,7 +279,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
 
           <div className={clsx('grid gap-3 mt-5', isCommunity ? 'grid-cols-3' : 'grid-cols-3')}>
             {appCopy.stats.map((item) => (
-              <div key={item.label} className={clsx('border border-olu-border px-4 py-3', isCommunity ? 'rounded-2xl bg-[var(--olu-card-bg)]' : 'rounded-2xl bg-olu-card')}>
+              <div key={item.label} className="border border-olu-border px-4 py-3 rounded-2xl bg-olu-surface">
                 <p className={clsx('font-black', isCommunity ? 'text-base' : 'text-xl')}>{item.val}</p>
                 <p className="text-olu-muted text-xs mt-1">{item.label}</p>
               </div>
@@ -304,7 +306,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="glass rounded-2xl p-5">
-                <p className="font-semibold text-sm mb-3">{isCommunity ? 'Latest in the community' : 'Included in the academy'}</p>
+                <p className="font-semibold text-sm mb-3">{isCommunity ? t('consumer.latestInCommunity') : t('consumer.includedInAcademy')}</p>
                 {isCommunity ? (
                   <div className="space-y-3">
                     {posts.slice(0, 3).map((post) => (
@@ -329,13 +331,13 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                 )}
               </div>
               <div className="glass rounded-2xl p-5">
-                <p className="font-semibold text-sm mb-3">{isCommunity ? 'Community spaces' : 'Inside right now'}</p>
+                <p className="font-semibold text-sm mb-3">{isCommunity ? t('consumer.communitySpaces') : t('consumer.insideRightNow')}</p>
                 {isCommunity ? (
                   <div className="space-y-2 text-sm text-olu-muted">
                     {[
-                      'General feed',
-                      'Topics',
-                      membershipStatus ? `${membershipStatus.tier_name} member access` : 'Membership access',
+                      t('consumer.generalFeed'),
+                      t('consumer.topics'),
+                      membershipStatus ? t('consumer.memberAccess', { tier: membershipStatus.tier_name }) : t('consumer.memberAccessDefault'),
                     ].map((item) => (
                       <div key={item} className="rounded-xl bg-white/[0.03] border border-olu-border px-3 py-2">
                         {item}
@@ -365,7 +367,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                   {post.locked && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
                       <Lock size={16} className="text-white" />
-                        <span className="text-white text-sm font-medium">Members only</span>
+                        <span className="text-white text-sm font-medium">{t('consumer.membersOnly')}</span>
                     </div>
                   )}
                 </div>
@@ -374,7 +376,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                   <p className="text-olu-muted text-xs mb-3 line-clamp-1">{post.preview}</p>
                 </div>
               </motion.div>
-            )) : <div className="text-center py-12 text-olu-muted text-sm">No content yet</div>}
+            )) : <div className="text-center py-12 text-olu-muted text-sm">{t('consumer.noContentYet')}</div>}
           </div>
         )}
 
@@ -388,9 +390,9 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     <p className="font-bold">{tier.price === 0 ? 'Free' : `$${tier.price}/mo`}</p>
                   </div>
                   <p className="text-olu-muted text-xs mb-2">{tier.description}</p>
-                  <p className="text-olu-muted text-xs">{formatNumber(tier.subscriber_count || 0)} subscribers</p>
+                  <p className="text-olu-muted text-xs">{formatNumber(tier.subscriber_count || 0)} {t('consumer.subscribers')}</p>
                 </div>
-              )) : <div className="text-center py-12 text-olu-muted text-sm">No membership tiers yet</div>
+              )) : <div className="text-center py-12 text-olu-muted text-sm">{t('consumer.noTiersYet')}</div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {products.map((p) => (
@@ -404,7 +406,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     </div>
                   </div>
                 ))}
-                {products.length === 0 && <div className="col-span-2 text-center py-12 text-olu-muted text-sm">No offers yet</div>}
+                {products.length === 0 && <div className="col-span-2 text-center py-12 text-olu-muted text-sm">{t('consumer.noOffersYet')}</div>}
               </div>
             )}
           </div>
@@ -417,7 +419,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
               className="rounded-xl px-4 py-2.5 text-sm font-semibold glass glass-hover text-olu-muted flex items-center gap-2"
             >
               <MessageCircle size={15} />
-              Message creator
+              {t('consumer.messageCreator')}
             </button>
           )}
         </div>

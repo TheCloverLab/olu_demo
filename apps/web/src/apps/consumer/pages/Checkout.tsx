@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CreditCard, ShieldCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
@@ -8,6 +9,7 @@ import { getCourseSnapshotBySlug } from '../../../domain/consumer/api'
 import { hasPurchasedCourse, purchaseCourse } from '../../../domain/consumer/engagement'
 
 export default function Checkout() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { user } = useAuth()
@@ -39,11 +41,11 @@ export default function Checkout() {
   }, [courseSlug])
 
   if (course === undefined) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading checkout...</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingCheckout')}</div>
   }
 
   if (!course) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Course not found.</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.courseNotFound')}</div>
   }
 
   async function handlePurchase() {
@@ -66,34 +68,34 @@ export default function Checkout() {
           <CreditCard size={18} />
         </div>
         <div>
-          <h1 className="font-black text-2xl">Checkout</h1>
+          <h1 className="font-black text-2xl">{t('consumer.checkoutTitle')}</h1>
           <p className="text-olu-muted text-sm">{storefront.description}</p>
         </div>
       </div>
       <div className="grid md:grid-cols-[1.05fr,0.95fr] gap-4">
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Order summary</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">{t('consumer.orderSummary')}</p>
           <h2 className="font-bold text-xl">{course.title}</h2>
           <p className="text-sm text-olu-muted mt-2">{course.subtitle}</p>
           <div className="flex items-center justify-between mt-6">
-            <span className="text-olu-muted">Price</span>
+            <span className="text-olu-muted">{t('consumer.price')}</span>
             <span className="font-black text-2xl">${course.price}</span>
           </div>
         </div>
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck size={16} className="text-sky-300" />
-            <p className="font-semibold">Payment CTA</p>
+            <p className="font-semibold">{t('consumer.paymentCta')}</p>
           </div>
           <p className="text-sm text-olu-muted leading-relaxed">
-            First version records purchase state and unlocks learning flow without full payment gateway integration.
+            {t('consumer.paymentDesc')}
           </p>
           <button
             onClick={handlePurchase}
             disabled={processing || purchased}
             className="mt-6 w-full py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {purchased ? 'Purchased' : processing ? 'Processing...' : 'Complete purchase'}
+            {purchased ? t('consumer.purchased') : processing ? t('consumer.processing') : t('consumer.completePurchase')}
           </button>
         </div>
       </div>

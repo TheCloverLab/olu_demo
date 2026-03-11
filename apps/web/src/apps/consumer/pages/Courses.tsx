@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { GraduationCap } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
@@ -8,6 +9,7 @@ import { getCourseLibrarySnapshot, getCourseSnapshotBySlug } from '../../../doma
 import { hasPurchasedCourse } from '../../../domain/consumer/engagement'
 
 export default function Courses() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { courseSlug } = useParams()
   const { consumerConfig, consumerExperience } = useApp()
@@ -49,7 +51,7 @@ export default function Courses() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8">
         <div className="rounded-[28px] border border-olu-border bg-olu-surface p-6 md:p-8">
-          <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">Academy</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">{t('consumer.academy')}</p>
           <h1 className="font-black text-2xl md:text-3xl">{selected.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
             <button
@@ -59,7 +61,7 @@ export default function Courses() {
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center font-bold text-white text-[10px]">
                 {selected.instructor.split(' ').map(w => w[0]).join('')}
               </div>
-              Hosted by {selected.instructor}
+              {t('consumer.hostedBy', { name: selected.instructor })}
             </button>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--olu-card-bg)] text-xs">
               <GraduationCap size={12} />
@@ -72,15 +74,15 @@ export default function Courses() {
           <div className="grid grid-cols-3 gap-3 mt-5">
             <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">{selected.stats.lessons}</p>
-              <p className="text-xs text-olu-muted mt-1">Lessons</p>
+              <p className="text-xs text-olu-muted mt-1">{t('consumer.lessons')}</p>
             </div>
             <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">{selected.stats.students}</p>
-              <p className="text-xs text-olu-muted mt-1">Students</p>
+              <p className="text-xs text-olu-muted mt-1">{t('consumer.students')}</p>
             </div>
             <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">${selected.price}</p>
-              <p className="text-xs text-olu-muted mt-1">Price</p>
+              <p className="text-xs text-olu-muted mt-1">{t('consumer.price')}</p>
             </div>
           </div>
         </div>
@@ -106,7 +108,7 @@ export default function Courses() {
                 onClick={() => navigate(purchased ? `/learn/${selected.slug}/${selected.sections[0]?.id}` : `/checkout/${selected.slug}`)}
                 className="w-full py-3 rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border font-semibold hover:bg-[var(--olu-card-hover)] transition-colors"
               >
-                {purchased ? 'Continue learning' : courses.detail.buyLabel}
+                {purchased ? t('consumer.continueLearning') : courses.detail.buyLabel}
               </button>
             </div>
           </div>
@@ -116,7 +118,7 @@ export default function Courses() {
   }
 
   if (courseSlug && selected === undefined) {
-    return <div className="max-w-4xl mx-auto px-4 py-8 text-olu-muted">Loading course...</div>
+    return <div className="max-w-4xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingCourse')}</div>
   }
 
   return (

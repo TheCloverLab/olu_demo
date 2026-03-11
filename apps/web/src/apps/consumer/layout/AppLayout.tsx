@@ -86,6 +86,7 @@ function LanguageToggle() {
 function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolean; onClose: () => void; showBusiness?: boolean; walletBalance: number | null }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const go = (path) => { onClose(); navigate(path) }
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
@@ -123,20 +124,20 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
               <div className="mx-4 mt-4 mb-2 space-y-2">
                 <button onClick={() => go('/login')} className="w-full bg-olu-primary text-white rounded-xl px-4 py-2.5 font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2">
                   <LogIn size={16} />
-                  Sign in
+                  {t('common.signIn')}
                 </button>
                 <button onClick={() => go('/signup')} className="w-full bg-olu-card text-olu-text rounded-xl px-4 py-2.5 font-semibold hover:opacity-80 transition-colors">
-                  Sign up
+                  {t('common.signUp')}
                 </button>
               </div>
             )}
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={Wallet} label="Wallet" onClick={() => go('/wallet')} />
+              <MenuItem icon={Wallet} label={t('common.wallet')} onClick={() => go('/wallet')} />
               {showBusiness && (
-                <MenuItem icon={Briefcase} label="Business OS" onClick={() => go('/business')} />
+                <MenuItem icon={Briefcase} label={t('nav.businessOS')} onClick={() => { onClose(); window.open('/business', '_blank') }} />
               )}
-              <MenuItem icon={Settings} label="Settings" onClick={() => go('/settings')} />
+              <MenuItem icon={Settings} label={t('common.settings')} onClick={() => go('/settings')} />
             </div>
 
             <div className="p-3 border-t border-olu-border flex items-center justify-center gap-2">
@@ -153,6 +154,7 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
 export default function AppLayout() {
   const { currentUser, appType, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
+  const { t } = useTranslation()
   const [moreOpen, setMoreOpen] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const navigate = useNavigate()
@@ -195,13 +197,13 @@ export default function AppLayout() {
               className="w-full bg-olu-primary text-white rounded-xl px-4 py-2.5 font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2"
             >
               <LogIn size={16} />
-              Sign in
+              {t('common.signIn')}
             </button>
             <button
               onClick={() => navigate('/signup')}
               className="w-full bg-olu-card text-olu-text rounded-xl px-4 py-2.5 font-semibold hover:opacity-80 transition-colors text-sm"
             >
-              Sign up
+              {t('common.signUp')}
             </button>
           </div>
         )}
@@ -218,7 +220,7 @@ export default function AppLayout() {
               )}
             >
               <Icon size={18} />
-              {label}
+              {t(label)}
             </NavLink>
           ))}
 
@@ -231,11 +233,11 @@ export default function AppLayout() {
           </div>
           {enabledBusinessModules.length > 0 && (
             <button
-              onClick={() => navigate('/business')}
-              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/20"
+              onClick={() => window.open('/business', '_blank')}
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/20"
             >
               <Briefcase size={14} />
-              Business OS
+              {t('nav.businessOS')}
             </button>
           )}
           <NavLink
@@ -246,9 +248,9 @@ export default function AppLayout() {
             )}
           >
             <Settings size={14} />
-            Settings
+            {t('common.settings')}
           </NavLink>
-          <div className="px-3 py-2 rounded-2xl bg-olu-surface border border-olu-border text-[11px] text-olu-muted text-center tracking-wide">
+          <div className="px-3 py-2 rounded-2xl bg-olu-surface text-[11px] text-olu-muted text-center tracking-wide">
             {APP_VERSION}
           </div>
         </div>

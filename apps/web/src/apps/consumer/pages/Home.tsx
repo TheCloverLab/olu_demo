@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, BookOpen, ChevronRight, Crown, Flame, GraduationCap, Lock, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
@@ -61,6 +62,7 @@ function ContinueCourseCard({
   progress: ConsumerLessonProgress[]
   onOpen: () => void
 }) {
+  const { t } = useTranslation()
   const summary = computeCourseProgress(course, progress)
 
   return (
@@ -71,7 +73,7 @@ function ContinueCourseCard({
       <div className={`h-36 bg-gradient-to-br ${course.hero} p-5 flex flex-col justify-between`}>
         <span className="inline-flex w-fit items-center gap-2 rounded-full bg-black/15 px-3 py-1 text-xs font-medium text-black/75">
           <GraduationCap size={13} />
-          Academy
+          {t('consumer.academy')}
         </span>
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-black/60">{course.instructor}</p>
@@ -83,21 +85,21 @@ function ContinueCourseCard({
         <div className="grid grid-cols-3 gap-2 mt-4">
           <div className="rounded-2xl bg-[var(--olu-card-bg)] p-3 border border-olu-border">
             <p className="font-bold text-sm">{summary.completedCount}/{course.sections.length}</p>
-            <p className="text-[11px] text-olu-muted">Lessons</p>
+            <p className="text-[11px] text-olu-muted">{t('consumer.lessons')}</p>
           </div>
           <div className="rounded-2xl bg-[var(--olu-card-bg)] p-3 border border-olu-border">
             <p className="font-bold text-sm">{summary.percent}%</p>
-            <p className="text-[11px] text-olu-muted">Progress</p>
+            <p className="text-[11px] text-olu-muted">{t('consumer.progress')}</p>
           </div>
           <div className="rounded-2xl bg-[var(--olu-card-bg)] p-3 border border-olu-border">
             <p className="font-bold text-sm">{course.stats.completionRate}</p>
-            <p className="text-[11px] text-olu-muted">Avg. complete</p>
+            <p className="text-[11px] text-olu-muted">{t('consumer.avgComplete')}</p>
           </div>
         </div>
         <div className="flex items-center justify-between mt-4">
-          <p className="font-semibold text-sm text-emerald-300">Continue learning</p>
+          <p className="font-semibold text-sm text-emerald-300">{t('consumer.continueLearning')}</p>
           <span className="inline-flex items-center gap-2 text-sm text-olu-muted">
-            Open
+            {t('common.open')}
             <ArrowRight size={15} />
           </span>
         </div>
@@ -107,6 +109,7 @@ function ContinueCourseCard({
 }
 
 export default function Home() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [creators, setCreators] = useState<User[]>([])
@@ -257,22 +260,22 @@ export default function Home() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--olu-card-bg)] text-xs text-olu-muted mb-3">
             <Sparkles size={13} />
-            Home
+            {t('nav.home')}
               </div>
               <h1 className="font-black text-2xl leading-tight max-w-2xl">
-                {activeAppCount > 0 ? 'Welcome back.' : 'Find something worth joining.'}
+                {activeAppCount > 0 ? t('consumer.welcomeBack') : t('consumer.findSomething')}
               </h1>
               <p className="text-olu-muted text-sm mt-2 max-w-2xl leading-relaxed">
                 {activeAppCount > 0
-                  ? 'Jump back into what you joined.'
-                  : 'Explore creators, communities, and academies.'}
+                  ? t('consumer.jumpBack')
+                  : t('consumer.exploreDesc')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
-                { label: 'Joined', value: formatNumber(activeAppCount) },
-                { label: 'Communities', value: formatNumber(joinedCommunities.length) },
-                { label: 'Academies', value: formatNumber(purchasedCourses.length) },
+                { label: t('consumer.joined'), value: formatNumber(activeAppCount) },
+                { label: t('common.communities'), value: formatNumber(joinedCommunities.length) },
+                { label: t('common.academies'), value: formatNumber(purchasedCourses.length) },
               ].map((item) => (
                 <div key={item.label} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2">
                   <span className="font-semibold text-sm">{item.value}</span>
@@ -287,11 +290,11 @@ export default function Home() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Academy</p>
-                <h2 className="font-bold text-2xl">Continue learning</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.academy')}</p>
+                <h2 className="font-bold text-2xl">{t('consumer.continueLearning')}</h2>
               </div>
               <button onClick={() => navigate('/learning')} className="text-sm text-olu-muted hover:text-white transition-colors">
-                Open learning hub
+                {t('consumer.openLearningHub')}
               </button>
             </div>
             <div className="grid lg:grid-cols-2 gap-4">
@@ -315,8 +318,8 @@ export default function Home() {
           <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Community</p>
-                <h2 className="font-bold text-xl">Your communities</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.community')}</p>
+                <h2 className="font-bold text-xl">{t('consumer.yourCommunities')}</h2>
               </div>
               <Users size={18} className="text-sky-300" />
             </div>
@@ -334,7 +337,7 @@ export default function Home() {
                     src={communityApp?.cover_img || creator.cover_img}
                     alt={`${creator.name} community`}
                     gradient={creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500'}
-                    eyebrow="Community"
+                    eyebrow={t('consumer.community')}
                     title={communityApp?.title || `${creator.name} Community`}
                     subtitle={communityApp?.summary || creator.bio || 'Member updates, private topics, and recurring drops.'}
                   />
@@ -343,17 +346,17 @@ export default function Home() {
                   <div className="p-4">
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{tierName}</span>
-                      <span className="text-xs text-olu-muted">{formatNumber(creator.followers || 0)} followers</span>
+                      <span className="text-xs text-olu-muted">{formatNumber(creator.followers || 0)} {t('consumer.followers')}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {['Member updates', 'Private topics', 'Live sessions'].map((item) => (
+                      {[t('consumer.memberUpdates'), t('consumer.privateTopics'), t('consumer.liveSessions')].map((item) => (
                         <span key={item} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-2.5 py-1 text-[11px] text-olu-muted">
                           {item}
                         </span>
                       ))}
                     </div>
                     <span className="mt-4 inline-flex items-center gap-2 text-sm text-olu-muted">
-                      Open community
+                      {t('consumer.openCommunity')}
                       <ChevronRight size={15} />
                     </span>
                   </div>
@@ -367,8 +370,8 @@ export default function Home() {
           <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Updates</p>
-                <h2 className="font-bold text-xl">New for you</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.updates')}</p>
+                <h2 className="font-bold text-xl">{t('consumer.newForYou')}</h2>
               </div>
               <Flame size={18} className="text-orange-300" />
             </div>
@@ -394,7 +397,7 @@ export default function Home() {
                         <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted">{post.creator?.name || 'Community host'}</p>
                         <p className="mt-1 font-semibold text-white">{post.title}</p>
                       </div>
-                      {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> Members</span> : null}
+                      {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> {t('consumer.members')}</span> : null}
                     </div>
                   </div>
                   <div className="p-4">
@@ -410,8 +413,8 @@ export default function Home() {
           <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended communities</p>
-                <h2 className="font-bold text-xl">Find a new community</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.recommendedCommunities')}</p>
+                <h2 className="font-bold text-xl">{t('consumer.findNewCommunity')}</h2>
               </div>
               <Crown size={18} className="text-amber-300" />
             </div>
@@ -429,7 +432,7 @@ export default function Home() {
                     src={communityApp?.cover_img || creator.cover_img}
                     alt={`${creator.name} community`}
                     gradient={creator.avatar_color || 'from-fuchsia-700 via-rose-600 to-orange-500'}
-                    eyebrow="Community"
+                    eyebrow={t('consumer.community')}
                     title={communityApp?.title || `${creator.name} Community`}
                     subtitle={communityApp?.summary || creator.bio || 'Membership, access, and recurring updates.'}
                   />
@@ -437,7 +440,7 @@ export default function Home() {
                   })()}
                   <div className="p-4">
                     <div className="flex flex-wrap gap-2">
-                      {['Weekly drops', 'Private Q&A', 'Community chat'].map((item) => (
+                      {[t('consumer.weeklyDrops'), t('consumer.privateQA'), t('consumer.communityChat')].map((item) => (
                         <span key={item} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-2.5 py-1 text-[11px] text-olu-muted">
                           {item}
                         </span>
@@ -448,7 +451,7 @@ export default function Home() {
               ))}
               {!loading && recommendedCommunities.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
-                  No new communities to suggest right now.
+                  {t('consumer.noCommunities')}
                 </div>
               ) : null}
             </div>
@@ -457,8 +460,8 @@ export default function Home() {
           <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">Recommended academies</p>
-                <h2 className="font-bold text-xl">Pick your next academy</h2>
+                <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.recommendedAcademies')}</p>
+                <h2 className="font-bold text-xl">{t('consumer.pickNextAcademy')}</h2>
               </div>
               <BookOpen size={18} className="text-emerald-300" />
             </div>
@@ -475,7 +478,7 @@ export default function Home() {
                       src={academyApp.cover_img || host?.cover_img}
                       alt={`${academyApp.title} academy`}
                       gradient="from-sky-500 via-cyan-500 to-emerald-400"
-                      eyebrow="Academy"
+                      eyebrow={t('consumer.academy')}
                       title={academyApp.title}
                       subtitle={academyApp.summary || academyApp.owner_name}
                     />
@@ -497,7 +500,7 @@ export default function Home() {
               })}
               {!loading && recommendedAcademies.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
-                  No new academy apps to suggest right now.
+                  {t('consumer.noAcademies')}
                 </div>
               ) : null}
             </div>

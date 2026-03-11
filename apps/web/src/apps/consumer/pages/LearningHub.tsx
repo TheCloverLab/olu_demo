@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BookOpen, Clock3, PlayCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
@@ -13,6 +14,7 @@ import {
 import type { ConsumerLessonProgress } from '../../../lib/supabase'
 
 export default function LearningHub() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { consumerConfig, consumerExperience } = useApp()
   const { user } = useAuth()
@@ -52,8 +54,8 @@ export default function LearningHub() {
           <h1 className="font-black text-2xl">{learning.title}</h1>
           <p className="text-olu-muted text-sm">
             {courseLibrary.length > 0
-              ? `${courseLibrary.length} course${courseLibrary.length > 1 ? 's' : ''} in your library`
-              : 'Your purchased courses show up here.'}
+              ? t('consumer.coursesInLibrary', { count: courseLibrary.length })
+              : t('consumer.coursesShowUpHere')}
           </p>
         </div>
       </div>
@@ -61,7 +63,7 @@ export default function LearningHub() {
       <div className="grid md:grid-cols-2 gap-4">
         {courseLibrary.length === 0 && (
           <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 text-sm text-olu-muted">
-            No courses in your library yet.
+            {t('consumer.noCoursesInLibrary')}
           </div>
         )}
         {courseLibrary.map((course) => (
@@ -88,7 +90,7 @@ export default function LearningHub() {
               <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
                 <div className="flex items-center gap-2">
                   <Clock3 size={14} className="text-amber-300" />
-                  <p className="text-xs text-olu-muted">Next lesson</p>
+                  <p className="text-xs text-olu-muted">{t('consumer.nextLesson')}</p>
                 </div>
                 <p className="font-semibold text-sm mt-2">{computed.nextSection?.title || course.sections[0]?.title}</p>
               </div>
@@ -98,9 +100,9 @@ export default function LearningHub() {
               >
                 <div className="flex items-center gap-2">
                   <PlayCircle size={14} />
-                  <p className="text-xs">Continue</p>
+                  <p className="text-xs">{t('consumer.continue')}</p>
                 </div>
-                <p className="font-semibold text-sm mt-2">Resume learning</p>
+                <p className="font-semibold text-sm mt-2">{t('consumer.resumeLearning')}</p>
               </button>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">

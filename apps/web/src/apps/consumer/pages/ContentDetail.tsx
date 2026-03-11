@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Heart, MessageCircle, Share2, Gift, Lock, Repeat2, BadgeCheck, Check, X, Send } from 'lucide-react'
 import { getCommunityPostDetail } from '../../../domain/consumer/data'
@@ -19,6 +20,7 @@ const MOCK_COMMENTS = [
 const TIP_AMOUNTS = [1, 2, 5, 10, 20]
 
 function TipModal({ post, onClose }) {
+  const { t } = useTranslation()
   const [amount, setAmount] = useState(5)
   const [custom, setCustom] = useState('')
   const [done, setDone] = useState(false)
@@ -28,10 +30,10 @@ function TipModal({ post, onClose }) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/70 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-olu-surface rounded-2xl p-8 text-center max-w-sm w-full border border-olu-border">
           <div className="text-5xl mb-4">🎉</div>
-          <h3 className="font-bold text-xl mb-2">Tip Sent!</h3>
+          <h3 className="font-bold text-xl mb-2">{t('consumer.tipSent')}</h3>
           <p className="text-olu-muted text-sm mb-1">You tipped <span className="text-amber-400 font-bold">${amount}</span> to {post.creator?.name || 'Creator'}</p>
           <p className="text-olu-muted text-xs mt-2">Transaction processed instantly via OLU Pay</p>
-          <button onClick={onClose} className="mt-6 px-8 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm">Done</button>
+          <button onClick={onClose} className="mt-6 px-8 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm">{t('consumer.done')}</button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -43,8 +45,8 @@ function TipModal({ post, onClose }) {
         <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-sm bg-olu-surface border border-olu-border rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
           <div className="p-5 border-b border-olu-border flex items-center justify-between">
             <div>
-              <h3 className="font-bold">Send a Tip 🎁</h3>
-               <p className="text-olu-muted text-xs mt-0.5">Support {post.creator?.name || 'Creator'} directly</p>
+              <h3 className="font-bold">{t('consumer.sendTip') + ' 🎁'}</h3>
+               <p className="text-olu-muted text-xs mt-0.5">{t('consumer.support', { name: post.creator?.name || 'Creator' })}</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)]"><X size={18} className="text-olu-muted" /></button>
           </div>
@@ -61,11 +63,11 @@ function TipModal({ post, onClose }) {
               type="number"
               value={custom}
               onChange={e => { setCustom(e.target.value); setAmount(parseFloat(e.target.value) || 0) }}
-              placeholder="Custom amount..."
+              placeholder={t('consumer.customAmount')}
               className="w-full p-3 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none focus:border-amber-500/60 border border-transparent transition-colors mb-4"
             />
             <button onClick={() => setDone(true)} className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold hover:opacity-90 transition-opacity">
-              Send ${custom || amount} Tip
+              {t('consumer.sendTipAmount', { amount: custom || amount })}
             </button>
           </div>
         </motion.div>
@@ -75,6 +77,7 @@ function TipModal({ post, onClose }) {
 }
 
 function FanCreateModal({ post, onClose }) {
+  const { t } = useTranslation()
   const [step, setStep] = useState(1)
 
   return (
@@ -83,8 +86,8 @@ function FanCreateModal({ post, onClose }) {
         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md bg-olu-surface border border-olu-border rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
           <div className="p-5 border-b border-olu-border flex items-center justify-between">
             <div>
-              <h3 className="font-bold">Create Fan Work</h3>
-              <p className="text-xs text-olu-muted mt-0.5">Powered by OLU IP Platform</p>
+              <h3 className="font-bold">{t('consumer.createFanWork')}</h3>
+              <p className="text-xs text-olu-muted mt-0.5">{t('consumer.poweredByIP')}</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)]"><X size={18} className="text-olu-muted" /></button>
           </div>
@@ -158,6 +161,7 @@ function FanCreateModal({ post, onClose }) {
 }
 
 export default function ContentDetail() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [post, setPost] = useState<any | null>(null)
@@ -190,11 +194,11 @@ export default function ContentDetail() {
   }, [id])
 
   if (loadingPost) {
-    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Loading content...</div>
+    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingContent')}</div>
   }
 
   if (!post) {
-    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">Content not found.</div>
+    return <div className="max-w-2xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.contentNotFound')}</div>
   }
 
   const submitComment = () => {
@@ -207,7 +211,7 @@ export default function ContentDetail() {
     <div className="max-w-2xl mx-auto pb-24 md:pb-6">
       <div className="px-4 pt-4 mb-3 flex items-center gap-2">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> {t('common.back')}
         </button>
       </div>
 
@@ -219,9 +223,9 @@ export default function ContentDetail() {
         {post.locked && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
             <Lock size={32} className="text-white" />
-            <p className="text-white font-semibold">Premium Content</p>
+            <p className="text-white font-semibold">{t('consumer.premiumContent')}</p>
               <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity">
-                Unlock for ${post.lock_price}
+                {t('consumer.unlock', { price: post.lock_price })}
               </button>
           </div>
         )}
@@ -261,8 +265,8 @@ export default function ContentDetail() {
 
         {/* Tags */}
         <div className="flex gap-2 mb-5 flex-wrap">
-          {post.tags?.map(t => (
-            <span key={t} className="text-xs bg-olu-card text-olu-muted px-2.5 py-1 rounded-full">{t}</span>
+          {post.tags?.map(tag => (
+            <span key={tag} className="text-xs bg-olu-card text-olu-muted px-2.5 py-1 rounded-full">{tag}</span>
           ))}
         </div>
 
@@ -276,10 +280,10 @@ export default function ContentDetail() {
             <MessageCircle size={16} /> {formatNumber(post.comments)}
           </button>
           <button onClick={() => setShowTip(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-500/10 text-olu-muted hover:text-amber-400 transition-all flex-1 justify-center">
-            <Gift size={16} /> Tip
+            <Gift size={16} /> {t('consumer.tip')}
           </button>
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-[var(--olu-card-hover)] text-olu-muted transition-all flex-1 justify-center">
-            <Share2 size={16} /> Share
+            <Share2 size={16} /> {t('consumer.share')}
           </button>
         </div>
 
@@ -301,7 +305,7 @@ export default function ContentDetail() {
 
         {/* Comments */}
         <div className="mb-6">
-          <h3 className="font-bold mb-4">Comments</h3>
+          <h3 className="font-bold mb-4">{t('consumer.comments')}</h3>
           <div className="flex gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-[var(--olu-glass-hover)] flex items-center justify-center font-bold text-olu-text text-xs flex-shrink-0">YU</div>
             <div className="flex-1 flex gap-2">
@@ -309,7 +313,7 @@ export default function ContentDetail() {
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && submitComment()}
-                placeholder="Add a comment..."
+                placeholder={t('consumer.addComment')}
                 className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/20 transition-colors"
               />
               <button
@@ -334,7 +338,7 @@ export default function ContentDetail() {
                     <button className="flex items-center gap-1 text-xs text-olu-muted hover:text-pink-400 transition-colors">
                       <Heart size={11} /> {c.likes}
                     </button>
-                    <button className="text-xs text-olu-muted hover:text-olu-text transition-colors">Reply</button>
+                    <button className="text-xs text-olu-muted hover:text-olu-text transition-colors">{t('consumer.reply')}</button>
                   </div>
                 </div>
               </div>

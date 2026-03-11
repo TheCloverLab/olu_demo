@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, BookOpen, Pencil, Save, Users, X } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
@@ -13,6 +14,7 @@ function formatNumber(value: number) {
 }
 
 function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(user.name)
   const [bio, setBio] = useState(user.bio || '')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -51,10 +53,10 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
       const { error } = await supabase.from('users').update(updates).eq('id', user.id)
       if (error) throw error
 
-      setMessage('Saved! Refreshing...')
+      setMessage(t('consumer.savedRefreshing'))
       setTimeout(() => { onSaved(); window.location.reload() }, 500)
     } catch (err: any) {
-      setMessage(err.message || 'Failed to save')
+      setMessage(err.message || t('consumer.failedToSave'))
     } finally {
       setSaving(false)
     }
@@ -63,32 +65,32 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
   return (
     <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-base">Edit Profile</h2>
+        <h2 className="font-semibold text-base">{t('consumer.editProfile')}</h2>
         <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-white/[0.06] transition-colors">
           <X size={16} className="text-olu-muted" />
         </button>
       </div>
       <div className="space-y-4">
         <div>
-          <p className="text-olu-muted text-xs mb-1">Display Name</p>
+          <p className="text-olu-muted text-xs mb-1">{t('consumer.displayName')}</p>
           <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-olu-primary/40" />
         </div>
         <div>
-          <p className="text-olu-muted text-xs mb-1">Bio</p>
+          <p className="text-olu-muted text-xs mb-1">{t('consumer.bio')}</p>
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2.5 text-sm focus:outline-none focus:border-olu-primary/40 resize-none" />
         </div>
         <div>
-          <p className="text-olu-muted text-xs mb-1">Avatar (optional)</p>
+          <p className="text-olu-muted text-xs mb-1">{t('consumer.avatarOptional')}</p>
           <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
         </div>
         <div>
-          <p className="text-olu-muted text-xs mb-1">Cover Image (optional)</p>
+          <p className="text-olu-muted text-xs mb-1">{t('consumer.coverOptional')}</p>
           <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
         </div>
         {message && <p className={`text-sm ${message.includes('Saved') ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
         <button onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
           <Save size={14} />
-          {saving ? 'Saving...' : 'Save Profile'}
+          {saving ? t('common.saving') : t('consumer.saveProfile')}
         </button>
       </div>
     </section>
@@ -96,6 +98,7 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
 }
 
 export default function PublicProfile() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const { user: authUser } = useAuth()
@@ -138,18 +141,18 @@ export default function PublicProfile() {
   const creatorApps = useMemo(() => publicApps, [publicApps])
 
   if (loading) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading profile...</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingProfile')}</div>
   }
 
   if (!creator) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Profile not found.</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.profileNotFound')}</div>
   }
 
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-6">
       <div className="px-4 pt-4 mb-2">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-olu-muted hover:text-olu-text transition-colors text-sm">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> {t('common.back')}
         </button>
       </div>
 
@@ -179,18 +182,18 @@ export default function PublicProfile() {
                 )}
               </div>
               <p className="text-olu-muted text-sm mt-1">{creator.handle}</p>
-              <p className="text-sm text-olu-muted mt-3 leading-relaxed">{creator.bio || 'No bio yet.'}</p>
+              <p className="text-sm text-olu-muted mt-3 leading-relaxed">{creator.bio || t('consumer.noBioYet')}</p>
             </div>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
             <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creator.followers || 0)}</span>
-              <span className="ml-2 text-olu-muted">Followers</span>
+              <span className="ml-2 text-olu-muted">{t('consumer.followers')}</span>
             </div>
             <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creatorApps.length)}</span>
-              <span className="ml-2 text-olu-muted">Open apps</span>
+              <span className="ml-2 text-olu-muted">{t('consumer.openApps')}</span>
             </div>
           </div>
         </section>
@@ -203,8 +206,8 @@ export default function PublicProfile() {
           <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Apps</p>
-                <p className="font-semibold text-base mt-1">Open with {creator.name}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('nav.apps')}</p>
+                <p className="font-semibold text-base mt-1">{t('consumer.openWith', { name: creator.name })}</p>
               </div>
               <Users size={18} className="text-olu-muted" />
             </div>
@@ -218,7 +221,7 @@ export default function PublicProfile() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">{app.app_type === 'community' ? 'Community' : 'Academy'}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">{app.app_type === 'community' ? t('consumer.community') : t('consumer.academy')}</p>
                       <p className="font-semibold text-sm mt-1">{app.title}</p>
                       <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
                     </div>
@@ -230,10 +233,10 @@ export default function PublicProfile() {
           </section>
         ) : (
           <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Profile</p>
-            <p className="font-semibold text-base mt-1">No public communities or academies yet</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('userCenter.profile')}</p>
+            <p className="font-semibold text-base mt-1">{t('consumer.noPublicApps')}</p>
             <p className="text-sm text-olu-muted mt-2">
-              {creator.name} does not have any public apps open right now.
+              {t('consumer.noPublicAppsDesc', { name: creator.name })}
             </p>
           </section>
         )}
@@ -242,8 +245,8 @@ export default function PublicProfile() {
           <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Academy</p>
-                <p className="font-semibold text-base mt-1">Courses by {creator.name}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('consumer.academy')}</p>
+                <p className="font-semibold text-base mt-1">{t('consumer.coursesBy', { name: creator.name })}</p>
               </div>
               <BookOpen size={18} className="text-olu-muted" />
             </div>

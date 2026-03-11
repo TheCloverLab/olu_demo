@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BookOpen, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../../context/AppContext'
@@ -14,6 +15,7 @@ import {
 import type { ConsumerLessonProgress } from '../../../lib/supabase'
 
 export default function Learn() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { courseSlug, sectionId } = useParams()
   const { consumerConfig, consumerExperience } = useApp()
@@ -53,24 +55,24 @@ export default function Learn() {
   const courseProgress = course ? computeCourseProgress(course, progress) : null
 
   if (course === undefined) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Loading lesson...</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingLesson')}</div>
   }
 
   if (!course || !section) {
-    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">Lesson not found.</div>
+    return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.lessonNotFound')}</div>
   }
 
   if (!section.preview && !purchased) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-6">
-          <p className="font-bold text-xl mb-2">Purchase required</p>
-          <p className="text-olu-muted text-sm mb-4">This lesson is locked until you buy the course.</p>
+          <p className="font-bold text-xl mb-2">{t('consumer.purchaseRequired')}</p>
+          <p className="text-olu-muted text-sm mb-4">{t('consumer.lessonLocked')}</p>
           <button
             onClick={() => navigate(`/checkout/${course.slug}`)}
             className="px-4 py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity"
           >
-            Go to checkout
+            {t('consumer.goToCheckout')}
           </button>
         </div>
       </div>
@@ -107,15 +109,15 @@ export default function Learn() {
           <div className="p-6">
             <p className="text-olu-text leading-relaxed">{section.summary}</p>
             <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4 mt-5">
-              <p className="text-sm text-olu-muted">Learning surface placeholder</p>
-              <p className="font-semibold mt-1">This is where the video / audio / article lesson player goes.</p>
+              <p className="text-sm text-olu-muted">{t('consumer.learningPlaceholder')}</p>
+              <p className="font-semibold mt-1">{t('consumer.learningPlaceholderDesc')}</p>
             </div>
             <button
               onClick={handleMarkComplete}
               disabled={markingComplete}
               className="mt-5 px-4 py-3 rounded-2xl bg-white text-black font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
             >
-              {markingComplete ? 'Saving...' : 'Mark lesson complete'}
+              {markingComplete ? t('common.saving') : t('consumer.markComplete')}
             </button>
           </div>
         </div>
@@ -126,7 +128,7 @@ export default function Learn() {
           </div>
           {courseProgress && (
             <p className="text-xs text-olu-muted mb-3">
-              {courseProgress.completedCount}/{course.sections.length} lessons completed
+              {t('consumer.lessonsCompleted', { completed: courseProgress.completedCount, total: course.sections.length })}
             </p>
           )}
           <div className="space-y-3">

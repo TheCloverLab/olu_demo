@@ -35,13 +35,13 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Community',
     appType: 'community' as const,
     nav: [
-      { to: '/discover', icon: Compass, label: 'Discover' },
-      { to: '/chat', icon: MessageCircle, label: 'Chat' },
-      { to: '/profile', icon: User, label: 'Me' },
+      { to: '/discover', icon: Compass, label: 'nav.discover' },
+      { to: '/chat', icon: MessageCircle, label: 'nav.chat' },
+      { to: '/profile', icon: User, label: 'nav.me' },
     ],
     quickLinks: [
-      { to: '/membership', icon: Sparkles, label: 'Membership' },
-      { to: '/topics', icon: Users, label: 'Topics' },
+      { to: '/membership', icon: Sparkles, label: 'consumer.membership' },
+      { to: '/topics', icon: Users, label: 'consumer.topics' },
     ],
     profile: {
       ctaLabel: 'Open membership',
@@ -57,13 +57,13 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Academy',
     appType: 'academy' as const,
     nav: [
-      { to: '/discover', icon: Compass, label: 'Discover' },
-      { to: '/chat', icon: MessageCircle, label: 'Chat' },
-      { to: '/profile', icon: User, label: 'Me' },
+      { to: '/discover', icon: Compass, label: 'nav.discover' },
+      { to: '/chat', icon: MessageCircle, label: 'nav.chat' },
+      { to: '/profile', icon: User, label: 'nav.me' },
     ],
     quickLinks: [
-      { to: '/courses', icon: GraduationCap, label: 'Catalog' },
-      { to: '/learning', icon: BookOpen, label: 'Learning' },
+      { to: '/courses', icon: GraduationCap, label: 'consumer.catalog' },
+      { to: '/learning', icon: BookOpen, label: 'consumer.learning' },
     ],
     profile: {
       ctaLabel: 'Open catalog',
@@ -79,13 +79,13 @@ const CONSUMER_TEMPLATES = {
     homeTitle: 'Consulting',
     appType: 'consulting' as const,
     nav: [
-      { to: '/discover', icon: Compass, label: 'Experts' },
-      { to: '/chat', icon: MessageCircle, label: 'Chat' },
-      { to: '/profile', icon: User, label: 'Me' },
+      { to: '/discover', icon: Compass, label: 'consumer.experts' },
+      { to: '/chat', icon: MessageCircle, label: 'nav.chat' },
+      { to: '/profile', icon: User, label: 'nav.me' },
     ],
     quickLinks: [
-      { to: '/bookings', icon: Calendar, label: 'Bookings' },
-      { to: '/sessions', icon: Video, label: 'Sessions' },
+      { to: '/bookings', icon: Calendar, label: 'consumer.bookings' },
+      { to: '/sessions', icon: Video, label: 'consumer.sessions' },
     ],
     profile: {
       ctaLabel: 'Book a session',

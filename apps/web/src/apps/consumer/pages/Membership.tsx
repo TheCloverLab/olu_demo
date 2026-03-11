@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Crown, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -6,6 +7,7 @@ import { getCommunityMembershipSnapshot, type CommunityTier } from '../../../dom
 import { getMembershipStatus, joinMembership } from '../../../domain/consumer/engagement'
 
 export default function Membership() {
+  const { t } = useTranslation()
   const { consumerConfig, consumerExperience } = useApp()
   const { user } = useAuth()
   const { membership } = consumerExperience.community
@@ -84,7 +86,7 @@ export default function Membership() {
           <Crown size={18} />
         </div>
         <div>
-          <h1 className="font-black text-2xl">Membership</h1>
+          <h1 className="font-black text-2xl">{t('consumer.membership')}</h1>
           <p className="text-olu-muted text-sm">
             {summary.hostName
               ? `${summary.hostName} · ${summary.totalMembers} members`
@@ -125,12 +127,12 @@ export default function Membership() {
               className={`mt-5 w-full py-3 rounded-2xl font-semibold transition-opacity disabled:opacity-60 ${index === 1 ? 'bg-black text-white hover:opacity-90' : 'bg-white text-black hover:opacity-90'}`}
             >
               {activeTierKey === tier.key
-                ? 'Current plan'
+                ? t('consumer.currentPlan')
                 : joiningTier === tier.name
-                  ? 'Joining...'
+                  ? t('consumer.joining')
                   : tier.name === 'Free'
-                    ? 'Stay free'
-                    : `Choose ${tier.name}`}
+                    ? t('consumer.stayFree')
+                    : t('consumer.choose', { name: tier.name })}
             </button>
           </div>
         ))}
@@ -140,13 +142,13 @@ export default function Membership() {
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
-              {summary.activeFans} active now
+              {t('consumer.activeNow', { count: summary.activeFans })}
             </span>
             <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
-              Member chat
+              {t('consumer.memberChat')}
             </span>
             <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
-              Weekly drops
+              {t('consumer.weeklyDrops')}
             </span>
           </div>
         </div>

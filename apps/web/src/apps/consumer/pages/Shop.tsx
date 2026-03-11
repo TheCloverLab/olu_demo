@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Plus, Package, DollarSign, TrendingUp } from 'lucide-react'
@@ -27,6 +28,7 @@ interface ProductCardProps {
 }
 
 function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
+  const { t } = useTranslation()
   return (
     <motion.div whileHover={{ y: -3 }} className="glass glass-hover rounded-2xl overflow-hidden">
       <div className="aspect-square bg-olu-card relative overflow-hidden">
@@ -39,7 +41,7 @@ function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
         )}
         {product.stock < 20 && (
           <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-red-500/90 text-white text-xs font-semibold">
-            Low Stock
+            {t('consumer.lowStock')}
           </div>
         )}
       </div>
@@ -52,13 +54,13 @@ function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
               onClick={() => onAddToCart(product)}
               className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:opacity-90 transition-opacity"
             >
-              Add to Cart
+              {t('consumer.addToCart')}
             </button>
           )}
         </div>
         {isCreator && (
           <div className="mt-2 text-xs text-olu-muted">
-            Stock: {product.stock} units
+            {t('consumer.stock', { count: product.stock })}
           </div>
         )}
       </div>
@@ -67,6 +69,7 @@ function ProductCard({ product, onAddToCart, isCreator }: ProductCardProps) {
 }
 
 function CreatorShopView({ products }: { products: Product[] }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const totalRevenue = products.reduce((acc, p) => acc + p.price * 10, 0) // estimated
@@ -79,21 +82,21 @@ function CreatorShopView({ products }: { products: Product[] }) {
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <DollarSign size={16} className="text-emerald-400" />
-            <p className="text-xs font-semibold text-olu-muted">Revenue</p>
+            <p className="text-xs font-semibold text-olu-muted">{t('consumer.revenue')}</p>
           </div>
           <p className="font-bold text-xl">${totalRevenue.toFixed(2)}</p>
         </div>
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} className="text-blue-400" />
-            <p className="text-xs font-semibold text-olu-muted">Sold</p>
+            <p className="text-xs font-semibold text-olu-muted">{t('consumer.sold')}</p>
           </div>
           <p className="font-bold text-xl">{totalSold}</p>
         </div>
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Package size={16} className="text-purple-400" />
-            <p className="text-xs font-semibold text-olu-muted">Products</p>
+            <p className="text-xs font-semibold text-olu-muted">{t('consumer.products')}</p>
           </div>
           <p className="font-bold text-xl">{products.length}</p>
         </div>
@@ -105,12 +108,12 @@ function CreatorShopView({ products }: { products: Product[] }) {
         className="w-full py-3 rounded-xl bg-white text-black font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
       >
         <Plus size={18} />
-        Add New Product
+        {t('consumer.addNewProduct')}
       </button>
 
       {/* Products Grid */}
       <div>
-        <h2 className="font-bold text-lg mb-3">My Products</h2>
+        <h2 className="font-bold text-lg mb-3">{t('consumer.myProducts')}</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {products.map(product => (
             <ProductCard key={product.id} product={product} isCreator={true} />
@@ -122,6 +125,7 @@ function CreatorShopView({ products }: { products: Product[] }) {
 }
 
 function UserShopView({ products }: { products: Product[] }) {
+  const { t } = useTranslation()
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
 
@@ -164,14 +168,14 @@ function UserShopView({ products }: { products: Product[] }) {
             className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-olu-surface border-l border-olu-border p-6 overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="font-bold text-xl mb-4">Shopping Cart</h2>
+            <h2 className="font-bold text-xl mb-4">{t('consumer.shoppingCart')}</h2>
             <div className="space-y-3 mb-6">
               {cart.map(item => (
                 <div key={item.id} className="glass rounded-xl p-3 flex gap-3">
                   <div className="w-16 h-16 rounded-lg bg-olu-card flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
-                    <p className="text-olu-muted text-xs">Qty: {item.quantity}</p>
+                    <p className="text-olu-muted text-xs">{t('consumer.qty', { count: item.quantity })}</p>
                     <p className="font-bold text-sm mt-1">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
@@ -179,7 +183,7 @@ function UserShopView({ products }: { products: Product[] }) {
             </div>
             <div className="border-t border-olu-border pt-4 mb-4">
               <div className="flex justify-between mb-2">
-                <span className="font-semibold">Total</span>
+                <span className="font-semibold">{t('consumer.total')}</span>
                 <span className="font-bold text-lg">${cartTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -187,7 +191,7 @@ function UserShopView({ products }: { products: Product[] }) {
               onClick={() => alert('Checkout - TODO')}
               className="w-full py-3 rounded-xl bg-white text-black font-semibold hover:opacity-90 transition-opacity"
             >
-              Checkout
+              {t('consumer.checkoutTitle')}
             </button>
           </motion.div>
         </div>
@@ -195,7 +199,7 @@ function UserShopView({ products }: { products: Product[] }) {
 
       {/* Products Grid */}
       <div>
-        <h2 className="font-bold text-lg mb-3">All Products</h2>
+        <h2 className="font-bold text-lg mb-3">{t('consumer.allProducts')}</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {products.map(product => (
             <ProductCard key={product.id} product={product} onAddToCart={addToCart} isCreator={false} />
@@ -207,6 +211,7 @@ function UserShopView({ products }: { products: Product[] }) {
 }
 
 export default function Shop() {
+  const { t } = useTranslation()
   const { consumerConfig, hasModule, appType, consumerExperience } = useApp()
   const isCreator = hasModule('creator_ops')
   const [courseLibrary, setCourseLibrary] = useState<Course[]>([])
@@ -303,9 +308,9 @@ export default function Shop() {
           <ShoppingCart size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="font-black text-2xl">Shop</h1>
+          <h1 className="font-black text-2xl">{t('consumer.shop')}</h1>
           <p className="text-olu-muted text-sm">
-            {isCreator ? 'Manage your products' : 'Browse and buy products'}
+            {isCreator ? t('consumer.manageProducts') : t('consumer.browseProducts')}
           </p>
         </div>
       </div>

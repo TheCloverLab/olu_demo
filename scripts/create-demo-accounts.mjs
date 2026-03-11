@@ -42,18 +42,18 @@ const ACCOUNTS = [
 // Agent templates to hire per workspace
 const WORKSPACE_AGENTS = {
   creator_ops: [
-    { agentKey: 'lisa', templateKey: 'ip_manager', name: 'Lisa', role: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', description: 'Manages and licenses creator IP.', lastMessage: 'Received 3 new IP licensing requests.', lastTime: '12m ago' },
-    { agentKey: 'eric', templateKey: 'data_analyst', name: 'Eric', role: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-blue-700', description: 'Analyzes performance and growth metrics.', lastMessage: 'Weekly report ready.', lastTime: '2h ago' },
-    { agentKey: 'aria', templateKey: 'community_manager', name: 'Aria', role: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', description: 'Runs community events and rewards top fans.', lastMessage: 'Community engagement up 12% this week.', lastTime: '30m ago' },
+    { agentKey: 'lisa', templateKey: 'ip_manager', name: 'Lisa', role: 'IP Manager', avatarImg: '/images/agents/lisa.jpg', color: 'from-zinc-600 to-zinc-500', description: 'Manages and licenses creator IP.', lastMessage: 'Received 3 new IP licensing requests.', lastTime: '12m ago', larkAppId: 'cli_a93a6cd212b89ed4', larkAppSecret: 'Xabt1Z2xWK7KP1vqZ9kJzbD5Z2vpUVXO' },
+    { agentKey: 'eric', templateKey: 'data_analyst', name: 'Eric', role: 'Data Analyst', avatarImg: '/images/agents/eric.jpg', color: 'from-blue-500 to-blue-700', description: 'Analyzes performance and growth metrics.', lastMessage: 'Weekly report ready.', lastTime: '2h ago', larkAppId: 'cli_a93a74d7aab99ed1', larkAppSecret: 'J9fS4RqN0Ts6lEaYTNKMFbDHAmOTcroX' },
+    { agentKey: 'aria', templateKey: 'community_manager', name: 'Aria', role: 'Community Manager', avatarImg: '/images/agents/aria.jpg', color: 'from-pink-500 to-rose-500', description: 'Runs community events and rewards top fans.', lastMessage: 'Community engagement up 12% this week.', lastTime: '30m ago', larkAppId: 'cli_a93a7467a9385ed0', larkAppSecret: 'RFhZ9C2KWBoFu3RxUYEYeb8POaLWeLzK' },
     { agentKey: 'zephyr', templateKey: 'growth_officer', name: 'Zephyr', role: 'Growth Officer', avatarImg: '/images/agents/zephyr.jpg', color: 'from-emerald-500 to-teal-600', description: 'Drives follower and subscriber growth.', lastMessage: 'Identified 3 new audience segments.', lastTime: '45m ago' },
   ],
   marketing: [
-    { agentKey: 'max', templateKey: 'marketing_manager', name: 'Max', role: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', description: 'Plans influencer campaigns end-to-end.', lastMessage: 'Luna team responded positively.', lastTime: '15m ago' },
+    { agentKey: 'max', templateKey: 'marketing_manager', name: 'Max', role: 'Marketing Manager', avatarImg: '/images/agents/max.jpg', color: 'from-blue-500 to-cyan-500', description: 'Plans influencer campaigns end-to-end.', lastMessage: 'Luna team responded positively.', lastTime: '15m ago', larkAppId: 'cli_a93a70897d789ed0', larkAppSecret: 'XnZiZ5VltpRk7EvGXGxgmcxT4M5mGSgX' },
     { agentKey: 'debian', templateKey: 'ip_manager', name: 'Debian', role: 'IP Manager', avatarImg: '/images/agents/debian.jpg', color: 'from-red-500 to-rose-600', description: 'Reviews IP and brand compliance.', lastMessage: 'Reviewing IP portfolio.', lastTime: '1h ago' },
     { agentKey: 'sage', templateKey: 'data_analyst', name: 'Sage', role: 'Data Analyst', avatarImg: '/images/agents/finance.jpg', color: 'from-yellow-500 to-amber-600', description: 'Tracks campaign analytics and ROI.', lastMessage: 'Campaign metrics compiled.', lastTime: '35m ago' },
   ],
   supply_chain: [
-    { agentKey: 'chan', templateKey: 'channel_manager', name: 'Chan', role: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', description: 'Manages supplier and creator partnerships.', lastMessage: 'Hoodie design approved.', lastTime: '20m ago' },
+    { agentKey: 'chan', templateKey: 'channel_manager', name: 'Chan', role: 'Channel Manager', avatarImg: '/images/agents/chan.jpg', color: 'from-emerald-500 to-green-600', description: 'Manages supplier and creator partnerships.', lastMessage: 'Hoodie design approved.', lastTime: '20m ago', larkAppId: 'cli_a93a71cc64789ed3', larkAppSecret: 'tEmmHMpP01fG3xmhg0FSrbTzzVgsUS6A' },
   ],
 }
 
@@ -313,6 +313,8 @@ async function createWorkspaceWithModules(userId, account) {
           description: agentDef.description,
           last_message: agentDef.lastMessage,
           last_time: agentDef.lastTime,
+          ...(agentDef.larkAppId && { lark_app_id: agentDef.larkAppId }),
+          ...(agentDef.larkAppSecret && { lark_app_secret: agentDef.larkAppSecret }),
         })
         .select('id')
         .single()

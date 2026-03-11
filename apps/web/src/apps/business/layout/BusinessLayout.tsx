@@ -327,9 +327,9 @@ export default function BusinessLayout() {
           >
             {t('nav.openOlu')}
           </button>
-          <div className="px-3 py-2 rounded-2xl border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)] text-[11px] text-[var(--olu-muted)] text-center tracking-[0.16em] uppercase">
+          <p className="text-[10px] text-[var(--olu-muted)] text-center tracking-wide">
             {APP_VERSION}
-          </div>
+          </p>
         </div>
       </aside>
 
@@ -341,7 +341,7 @@ export default function BusinessLayout() {
             </button>
             <div className="min-w-0">
               <p className="md:hidden font-black text-lg">{activeModuleLabel || 'Business'}</p>
-              <p className="hidden md:block text-[var(--olu-muted)] text-xs tracking-[0.16em] uppercase">
+              <p className="hidden md:block text-[var(--olu-muted)] text-xs tracking-wide">
                 {t('nav.workspace')} / {activeModuleLabel || 'Business'}
               </p>
             </div>

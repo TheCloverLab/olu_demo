@@ -722,7 +722,7 @@ export default function TeamChat() {
                   <div className="flex items-center gap-1.5">
                     {/* Model selector */}
                     {availableModels.length > 1 && (
-                      <div className="relative">
+                      <>
                         <button
                           onClick={() => setShowModelMenu(!showModelMenu)}
                           className="px-2 py-1 rounded-lg text-[10px] font-medium text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all whitespace-nowrap"
@@ -733,33 +733,35 @@ export default function TeamChat() {
                           {showModelMenu && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
-                              <motion.div
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 4 }}
-                                className="absolute bottom-full right-0 mb-2 py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-xl z-50 whitespace-nowrap"
-                              >
-                                {availableModels.map(m => (
-                                  <button
-                                    key={m.name}
-                                    onClick={() => {
-                                      setSelectedModel(m.name)
-                                      localStorage.setItem('olu-chat-model', m.name)
-                                      setShowModelMenu(false)
-                                    }}
-                                    className={clsx(
-                                      'w-full px-3 py-2 text-left text-xs transition-colors',
-                                      selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
-                                    )}
-                                  >
-                                    {m.model}
-                                  </button>
-                                ))}
-                              </motion.div>
+                              <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-32 pointer-events-none">
+                                <motion.div
+                                  initial={{ opacity: 0, y: 8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 8 }}
+                                  className="py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl whitespace-nowrap pointer-events-auto"
+                                >
+                                  {availableModels.map(m => (
+                                    <button
+                                      key={m.name}
+                                      onClick={() => {
+                                        setSelectedModel(m.name)
+                                        localStorage.setItem('olu-chat-model', m.name)
+                                        setShowModelMenu(false)
+                                      }}
+                                      className={clsx(
+                                        'w-full px-4 py-2.5 text-left text-sm transition-colors',
+                                        selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                                      )}
+                                    >
+                                      {m.model}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              </div>
                             </>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </>
                     )}
 
                     {/* Send */}

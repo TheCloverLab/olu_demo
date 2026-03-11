@@ -16,6 +16,16 @@ import {
 import type { ChatAttachment } from '../../../lib/supabase'
 import clsx from 'clsx'
 
+type ModelOption = {
+  id: string
+  provider: string
+  providerLabel: string
+  model: string
+  label: string
+  supportsVision: boolean
+  isDefault?: boolean
+}
+
 const STATUS_CONFIG = {
   done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
   in_progress: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
@@ -228,9 +238,9 @@ export default function TeamChat() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [showReasoning, setShowReasoning] = useState(true)
   const [attachedImages, setAttachedImages] = useState<{ file: File; preview: string }[]>([])
-  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || 'default')
+  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || '')
   const [showModelMenu, setShowModelMenu] = useState(false)
-  const [availableModels, setAvailableModels] = useState<{ name: string; model: string; supportsVision?: boolean }[]>([])
+  const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -353,10 +363,34 @@ export default function TeamChat() {
     fetch(`${AGENT_RUNTIME_URL}/models`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.providers) setAvailableModels(data.providers)
+        if (!data?.models?.length) return
+
+        const options: ModelOption[] = data.models
+        setAvailableModels(options)
+
+        setSelectedModel((current) => {
+          if (current && options.some((option) => option.id === current)) return current
+          if (current) {
+            const legacyMatch = options.find((option) => option.provider === current)
+            if (legacyMatch) {
+              localStorage.setItem('olu-chat-model', legacyMatch.id)
+              return legacyMatch.id
+            }
+          }
+          const fallback = options.find((option) => option.isDefault) || options[0]
+          if (fallback) localStorage.setItem('olu-chat-model', fallback.id)
+          return fallback?.id || current
+        })
       })
       .catch(() => {})
   }, [])
+
+  const selectedModelOption = availableModels.find((option) => option.id === selectedModel) || null
+  const groupedModels = availableModels.reduce<Record<string, ModelOption[]>>((acc, option) => {
+    if (!acc[option.providerLabel]) acc[option.providerLabel] = []
+    acc[option.providerLabel].push(option)
+    return acc
+  }, {})
 
   const addImages = useCallback((files: FileList | File[]) => {
     const newImages = Array.from(files)
@@ -459,7 +493,8 @@ export default function TeamChat() {
           agentName: agent.name,
           agentRole: agent.role,
           message: userText,
-          model: selectedModel !== 'default' ? selectedModel : undefined,
+          provider: selectedModelOption?.provider,
+          model: selectedModelOption?.model,
           images: runtimeImages,
         }),
       })
@@ -753,7 +788,7 @@ export default function TeamChat() {
                       <ImageIcon size={16} />
                     </button>
                     {/* Reasoning toggle — only for models that support it (Kimi) */}
-                    {(selectedModel === 'default' || selectedModel === 'kimi') && (
+                    {(['default', 'kimi'].includes(selectedModelOption?.provider || '')) && (
                       <button
                         onMouseDown={e => e.preventDefault()}
                         onClick={() => setShowReasoning(!showReasoning)}
@@ -777,7 +812,7 @@ export default function TeamChat() {
                           onClick={() => setShowModelMenu(!showModelMenu)}
                           className="px-2 py-1 rounded-lg text-[10px] font-medium text-cyan-100/40 hover:text-cyan-100/70 hover:bg-cyan-500/10 transition-all whitespace-nowrap"
                         >
-                          {(availableModels.find(m => m.name === selectedModel)?.model || 'default').split('-').slice(0, 2).join('-')}
+                          {selectedModelOption ? `${selectedModelOption.providerLabel} · ${selectedModelOption.model}` : 'Model'}
                         </button>
                         <AnimatePresence>
                           {showModelMenu && (
@@ -787,23 +822,33 @@ export default function TeamChat() {
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 8 }}
-                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[180px] py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl"
+                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[260px] max-h-80 overflow-y-auto py-1 rounded-xl bg-[#0b1523] border border-cyan-500/20 shadow-2xl"
                               >
-                                {availableModels.map(m => (
-                                  <button
-                                    key={m.name}
-                                    onClick={() => {
-                                      setSelectedModel(m.name)
-                                      localStorage.setItem('olu-chat-model', m.name)
-                                      setShowModelMenu(false)
-                                    }}
-                                    className={clsx(
-                                      'px-4 py-2.5 text-left text-sm whitespace-nowrap transition-colors',
-                                      selectedModel === m.name ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
-                                    )}
-                                  >
-                                    {m.model}
-                                  </button>
+                                {Object.entries(groupedModels).map(([providerLabel, models]) => (
+                                  <div key={providerLabel} className="py-1">
+                                    <div className="px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-100/35">
+                                      {providerLabel}
+                                    </div>
+                                    {models.map((m) => (
+                                      <button
+                                        key={m.id}
+                                        onClick={() => {
+                                          setSelectedModel(m.id)
+                                          localStorage.setItem('olu-chat-model', m.id)
+                                          setShowModelMenu(false)
+                                        }}
+                                        className={clsx(
+                                          'w-full px-4 py-2.5 text-left text-sm transition-colors',
+                                          selectedModel === m.id ? 'text-cyan-300 bg-cyan-500/10' : 'text-cyan-100/60 hover:text-white hover:bg-cyan-500/5'
+                                        )}
+                                      >
+                                        <div className="flex items-center justify-between gap-3">
+                                          <span className="truncate">{m.model}</span>
+                                          {m.supportsVision && <span className="text-[10px] text-emerald-300 flex-shrink-0">Vision</span>}
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
                                 ))}
                               </motion.div>
                             </>

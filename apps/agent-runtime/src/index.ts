@@ -13,7 +13,7 @@ import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
-import { listAvailableProviders } from './lib/models.js'
+import { listAvailableModelOptions, listAvailableProviders } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
 import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
@@ -309,7 +309,7 @@ const server = createServer(async (req, res) => {
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
       const body = JSON.parse(await readBody(req))
-      const { workspaceId, agentId, agentName, agentRole, message, model, sessionId, images } = body
+      const { workspaceId, agentId, agentName, agentRole, message, provider, model, sessionId, images } = body
 
       if (!workspaceId || !agentId || (!message && !images?.length)) {
         json(res, 400, { error: 'Missing required fields: workspaceId, agentId, message' })
@@ -322,7 +322,8 @@ const server = createServer(async (req, res) => {
         agentName: agentName || 'Agent',
         agentRole: agentRole || 'AI Agent',
         userMessage: message || '',
-        modelProvider: model,
+        modelProvider: provider || (model && !String(model).includes('::') ? model : undefined),
+        modelOverride: typeof model === 'string' && !String(model).includes('::') ? undefined : model,
         sourceId: sessionId,
         images,
       })
@@ -340,6 +341,7 @@ const server = createServer(async (req, res) => {
     // List available model providers
     if (url.pathname === '/models' && req.method === 'GET') {
       const providers = listAvailableProviders()
+      const models = await listAvailableModelOptions()
       json(res, 200, {
         providers: providers.map(p => ({
           name: p.name,
@@ -349,6 +351,7 @@ const server = createServer(async (req, res) => {
           supportsVision: p.supportsVision,
           visionModel: p.visionModel,
         })),
+        models,
       })
       return
     }

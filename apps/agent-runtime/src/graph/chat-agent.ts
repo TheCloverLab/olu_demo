@@ -96,12 +96,13 @@ export async function runChatAgent(params: {
   workspaceId: string
   userMessage: string
   modelProvider?: string
+  modelOverride?: string
   sourceId?: string  // For multi-turn: Lark chatId, API sessionId, etc.
   images?: string[]  // Public image URLs or data URLs for vision
 }): Promise<ChatResult> {
-  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, sourceId, images } = params
+  const { agentId, agentName, agentRole, workspaceId, userMessage, modelProvider, modelOverride, sourceId, images } = params
 
-  const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length))
+  const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
   console.log(`[chatAgent] Using model: ${effectiveModel} (${provider.name})`)
 
   // Load agent-specific tools based on enabled skills

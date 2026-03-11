@@ -19,6 +19,17 @@ export interface ModelProvider {
   visionModel?: string
 }
 
+export interface ModelOption {
+  id: string
+  provider: string
+  providerLabel: string
+  model: string
+  label: string
+  supportsTools: boolean
+  supportsVision: boolean
+  isDefault?: boolean
+}
+
 const builtinProviders: Record<string, Omit<ModelProvider, 'apiKey'>> = {
   kimi: {
     name: 'kimi',
@@ -86,6 +97,42 @@ function inferVisionSupport(model: string, baseURL: string, providerName: string
   const normalized = `${providerName} ${model} ${baseURL}`.toLowerCase()
   if (normalized.includes('deepseek-chat') || normalized.includes('kimi-for-coding')) return false
   return /(gpt-4o|gpt-4\.1|gemini|claude|vision|vl|pixtral|llava|minicpm|qvq)/i.test(normalized)
+}
+
+function titleCase(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
+function inferProviderFamily(provider: Pick<ModelProvider, 'name' | 'baseURL' | 'model'>): { slug: string; label: string } {
+  const normalized = `${provider.name} ${provider.baseURL} ${provider.model}`.toLowerCase()
+
+  if (normalized.includes('kimi') || normalized.includes('moonshot')) return { slug: 'kimi', label: 'Kimi' }
+  if (normalized.includes('api.openai.com') || normalized.includes(' gpt-') || /\bo\d/.test(normalized)) return { slug: 'openai', label: 'OpenAI' }
+  if (normalized.includes('claude') || normalized.includes('anthropic') || normalized.includes('api123')) return { slug: 'claude', label: 'Claude' }
+  if (normalized.includes('gemini') || normalized.includes('generativelanguage.googleapis.com')) return { slug: 'gemini', label: 'Gemini' }
+  if (normalized.includes('qwen') || normalized.includes('dashscope')) return { slug: 'qwen', label: 'Qwen' }
+  if (normalized.includes('deepseek')) return { slug: 'deepseek', label: 'DeepSeek' }
+
+  return { slug: provider.name, label: titleCase(provider.name) }
+}
+
+function shouldExposeModel(modelId: string, providerName: string): boolean {
+  const normalized = modelId.toLowerCase()
+  const likelyChatPrefix = /^(gpt|o\d|chatgpt|claude|kimi|moonshot|deepseek|qwen|gemini|learnlm|glm|doubao|llama|mistral|mixtral|pixtral|codestral|command|c4ai)/
+  const excluded = /(embedding|whisper|tts|transcribe|realtime|moderation|image|dall-e|sora)/
+
+  if (excluded.test(normalized)) return false
+  if (likelyChatPrefix.test(normalized)) return true
+  if (providerName === 'claude' && normalized.startsWith('claude')) return true
+  if (providerName === 'kimi' && (normalized.startsWith('kimi') || normalized.startsWith('moonshot'))) return true
+
+  return false
+}
+
+function modelSort(a: string, b: string, preferred: string) {
+  if (a === preferred) return -1
+  if (b === preferred) return 1
+  return a.localeCompare(b)
 }
 
 function loadProviderFromEnv(name: string): ModelProvider | null {
@@ -221,13 +268,76 @@ export function listAvailableProviders(): ModelProvider[] {
   return providers
 }
 
-export function resolveProviderForChat(name: string | undefined, needsVision: boolean): {
+async function fetchProviderModelIds(provider: ModelProvider): Promise<string[]> {
+  const res = await fetch(`${provider.baseURL}/models`, {
+    headers: {
+      Authorization: `Bearer ${provider.apiKey}`,
+      ...(provider.headers || {}),
+    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`models-${provider.name}-${res.status}`)
+  }
+
+  const data = await res.json()
+  const rows = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data?.models)
+        ? data.models
+        : []
+
+  return rows
+    .map((row: any) => row?.id || row?.name)
+    .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0)
+}
+
+export async function listAvailableModelOptions(): Promise<ModelOption[]> {
+  const providers = listAvailableProviders()
+  const options: ModelOption[] = []
+
+  for (const provider of providers) {
+    const family = inferProviderFamily(provider)
+    const preferredModel = provider.model
+    const candidateIds = new Set<string>([provider.model])
+    if (provider.visionModel) candidateIds.add(provider.visionModel)
+
+    try {
+      const remoteIds = await fetchProviderModelIds(provider)
+      for (const modelId of remoteIds) {
+        if (shouldExposeModel(modelId, family.slug)) candidateIds.add(modelId)
+      }
+    } catch {
+      // Fall back to configured defaults when the provider does not expose /models.
+    }
+
+    const sortedIds = Array.from(candidateIds).sort((a, b) => modelSort(a, b, preferredModel))
+    for (const modelId of sortedIds) {
+      options.push({
+        id: `${provider.name}::${modelId}`,
+        provider: provider.name,
+        providerLabel: provider.name === 'default' ? `${family.label} (default)` : family.label,
+        model: modelId,
+        label: `${provider.name === 'default' ? `${family.label} (default)` : family.label} / ${modelId}`,
+        supportsTools: provider.supportsTools ?? true,
+        supportsVision: inferVisionSupport(modelId, provider.baseURL, family.slug),
+        isDefault: provider.name === 'default' && modelId === provider.model,
+      })
+    }
+  }
+
+  return options
+}
+
+export function resolveProviderForChat(name: string | undefined, needsVision: boolean, modelOverride?: string): {
   provider: ModelProvider
   fallbackFrom?: string
   effectiveModel: string
 } {
   const requested = getModelProvider(name)
-  const requestedModel = needsVision && requested.visionModel ? requested.visionModel : requested.model
+  const requestedModel = modelOverride || (needsVision && requested.visionModel ? requested.visionModel : requested.model)
 
   if (!needsVision || requested.supportsVision) {
     return {

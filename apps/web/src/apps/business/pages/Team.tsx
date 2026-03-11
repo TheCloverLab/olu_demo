@@ -48,7 +48,7 @@ function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: 
   const pendingTasks = tasks.filter((t) => t.status !== 'done').length
 
   return (
-    <div className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]">
+    <div className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_2px_8px_rgba(2,8,23,0.12)]">
       <motion.button
         whileHover={{ x: 4 }}
         onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
@@ -106,7 +106,7 @@ function GroupRow({ group }: { group: GroupChat }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/business/team/grp-${group.chat_key || group.id}`)}
-      className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)]"
+      className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_2px_8px_rgba(2,8,23,0.12)]"
     >
       <div className="relative flex-shrink-0">
         <div className="w-12 h-12 rounded-xl bg-[var(--olu-card-bg)] flex items-center justify-center border border-[var(--olu-card-border)]">
@@ -139,7 +139,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
     <motion.button
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/business/team/person/${emp.id}`)}
-      className="w-full rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 flex items-start gap-3 shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left hover:bg-[var(--olu-card-bg)] transition-colors"
+      className="w-full rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 flex items-start gap-3 shadow-[0_2px_8px_rgba(2,8,23,0.12)] text-left hover:bg-[var(--olu-card-bg)] transition-colors"
     >
       <div className="relative flex-shrink-0">
         {emp.avatar_img ? (
@@ -356,7 +356,7 @@ export default function Team() {
           { label: t('chat.activeTasks'), value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15', fillIcon: false },
           { label: t('common.online'), value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15', fillIcon: true },
         ].map((card) => (
-          <div key={card.label} className="rounded-[24px] p-4 text-center border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+          <div key={card.label} className="rounded-[24px] p-4 text-center border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_8px_rgba(2,8,23,0.12)]">
             <div className="flex justify-center mb-2">
               <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
                 <card.icon size={15} className={card.iconClass} fill={card.fillIcon ? 'currentColor' : 'none'} />

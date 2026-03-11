@@ -602,6 +602,7 @@ export default function TeamChat() {
           message: userText,
           provider: selectedModelOption?.provider,
           model: selectedModelOption?.model,
+          sessionId: `web-${selectedAgentDbId}`,
           images: runtimeImages,
         }),
       })

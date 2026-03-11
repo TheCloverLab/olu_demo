@@ -102,12 +102,12 @@ export default function Membership() {
                 ? 'bg-white text-black border-white'
                 : index === 2
                   ? 'bg-amber-500/10 border-amber-400/20'
-                  : 'bg-white/5 border-olu-border'
+                  : 'bg-[var(--olu-card-bg)] border-olu-border'
             }`}
           >
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-lg">{tier.name}</p>
-              {index === 1 ? <Star size={16} className="text-black" fill="currentColor" /> : <Sparkles size={16} className={index === 2 ? 'text-amber-300' : 'text-white/70'} />}
+              {index === 1 ? <Star size={16} className="text-black" fill="currentColor" /> : <Sparkles size={16} className={index === 2 ? 'text-amber-300' : 'text-olu-muted'} />}
             </div>
             <p className={`font-black text-3xl ${index === 1 ? 'text-black' : 'text-white'}`}>{tier.price}</p>
             <p className={`text-sm mt-2 ${index === 1 ? 'text-black/72' : 'text-olu-muted'}`}>{tier.note}</p>
@@ -115,7 +115,7 @@ export default function Membership() {
               {tier.perks.map((perk) => (
                 <div key={perk} className="flex items-center gap-2">
                   <ShieldCheck size={14} className={index === 1 ? 'text-black/70' : 'text-emerald-300'} />
-                  <p className={`text-sm ${index === 1 ? 'text-black/72' : 'text-white/72'}`}>{perk}</p>
+                  <p className={`text-sm ${index === 1 ? 'text-black/72' : 'text-olu-muted'}`}>{perk}</p>
                 </div>
               ))}
             </div>
@@ -139,13 +139,13 @@ export default function Membership() {
       {summary.activeFans > 0 && (
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
               {summary.activeFans} active now
             </span>
-            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
               Member chat
             </span>
-            <span className="rounded-full border border-olu-border bg-white/5 px-3 py-1.5 text-xs text-white/75">
+            <span className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1.5 text-xs text-olu-muted">
               Weekly drops
             </span>
           </div>

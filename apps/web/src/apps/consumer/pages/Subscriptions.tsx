@@ -67,7 +67,7 @@ export default function Subscriptions() {
       </button>
 
       <section className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
-        <p className="text-xs uppercase tracking-[0.18em] text-white/45">Subscriptions</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">Subscriptions</p>
         <h1 className="font-black text-2xl mt-2">Your active memberships</h1>
         <p className="text-sm text-olu-muted mt-2">
           Review the communities you support, the tier you are on, and where to jump back in.
@@ -116,7 +116,7 @@ export default function Subscriptions() {
               Membership renewals are automatic in the final product. For now, use the community page to review access.
             </p>
           </div>
-          <RefreshCcw size={18} className="text-white/45" />
+          <RefreshCcw size={18} className="text-olu-muted" />
         </div>
       </section>
     </div>

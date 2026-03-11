@@ -65,7 +65,7 @@ export default function CourseCatalog() {
                 <p className="text-xs text-olu-muted">{section.preview ? 'Preview' : 'Locked after purchase'}</p>
               </div>
             </div>
-            <p className="text-sm text-white/72 mt-3">{section.summary}</p>
+            <p className="text-sm text-olu-muted mt-3">{section.summary}</p>
           </button>
         ))}
       </div>

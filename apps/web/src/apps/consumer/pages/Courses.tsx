@@ -61,24 +61,24 @@ export default function Courses() {
               </div>
               Hosted by {selected.instructor}
             </button>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 text-xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--olu-card-bg)] text-xs">
               <GraduationCap size={12} />
               {selected.level}
             </div>
           </div>
           {selected.description && (
-            <p className="text-sm text-white/55 mt-3 leading-relaxed max-w-2xl">{selected.description}</p>
+            <p className="text-sm text-olu-muted mt-3 leading-relaxed max-w-2xl">{selected.description}</p>
           )}
           <div className="grid grid-cols-3 gap-3 mt-5">
-            <div className="rounded-2xl bg-white/5 border border-olu-border p-4">
+            <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">{selected.stats.lessons}</p>
               <p className="text-xs text-olu-muted mt-1">Lessons</p>
             </div>
-            <div className="rounded-2xl bg-white/5 border border-olu-border p-4">
+            <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">{selected.stats.students}</p>
               <p className="text-xs text-olu-muted mt-1">Students</p>
             </div>
-            <div className="rounded-2xl bg-white/5 border border-olu-border p-4">
+            <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
               <p className="font-black text-2xl">${selected.price}</p>
               <p className="text-xs text-olu-muted mt-1">Price</p>
             </div>
@@ -90,7 +90,7 @@ export default function Courses() {
             <h2 className="font-bold text-xl mb-3">{courses.detail.learnTitle}</h2>
             <div className="space-y-3">
               {selected.outcomes.map((outcome) => (
-                <div key={outcome} className="rounded-2xl bg-white/5 border border-olu-border p-4 text-sm text-white/78">
+                <div key={outcome} className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4 text-sm text-olu-text">
                   {outcome}
                 </div>
               ))}
@@ -104,7 +104,7 @@ export default function Courses() {
               </button>
               <button
                 onClick={() => navigate(purchased ? `/learn/${selected.slug}/${selected.sections[0]?.id}` : `/checkout/${selected.slug}`)}
-                className="w-full py-3 rounded-2xl bg-white/10 border border-olu-border font-semibold hover:bg-white/15 transition-colors"
+                className="w-full py-3 rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border font-semibold hover:bg-[var(--olu-card-hover)] transition-colors"
               >
                 {purchased ? 'Continue learning' : courses.detail.buyLabel}
               </button>

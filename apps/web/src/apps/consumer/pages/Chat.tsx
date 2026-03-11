@@ -108,7 +108,7 @@ export default function Chat() {
     return (
       <div className="flex flex-col h-full max-w-2xl mx-auto">
         <div className="flex items-center gap-3 px-4 py-4 border-b border-olu-border flex-shrink-0">
-          <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-white/08 transition-colors">
+          <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors">
             <ArrowLeft size={18} className="text-olu-muted" />
           </button>
           {withUser?.avatar_img ? (
@@ -162,7 +162,7 @@ export default function Chat() {
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <h1 className="font-black text-2xl mb-4">Messages</h1>
       {activeTopic && (
-        <div className="rounded-2xl border border-olu-border bg-white/5 p-4 mb-4">
+        <div className="rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-4 mb-4">
           <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">Topic lobby</p>
           <p className="font-semibold text-sm">{activeTopic.name}</p>
           <p className="text-sm text-olu-muted mt-2">{activeTopic.description}</p>

@@ -39,7 +39,7 @@ export default function Topics() {
             <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-2">What happens here</p>
             <div className="flex flex-wrap gap-2">
               {['Discussion threads', 'Member feedback', 'Host replies'].map((item) => (
-                <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                <span key={item} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-2.5 py-1 text-[11px] text-olu-muted">
                   {item}
                 </span>
               ))}
@@ -78,7 +78,7 @@ export default function Topics() {
         </div>
         <div className="flex flex-wrap gap-2">
           {['Weekly critique', 'Member Q&A', 'Drop watch'].map((item) => (
-            <span key={item} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+            <span key={item} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-2.5 py-1 text-[11px] text-olu-muted">
               {item}
             </span>
           ))}
@@ -99,7 +99,7 @@ export default function Topics() {
               </div>
               <ChevronRight size={16} className="text-olu-muted" />
             </div>
-            <p className="text-sm text-white/72 mt-3 leading-relaxed">{topic.description}</p>
+            <p className="text-sm text-olu-muted mt-3 leading-relaxed">{topic.description}</p>
             <div className="inline-flex items-center gap-2 mt-4 text-sm text-sky-300">
               <MessageCircle size={14} />
               Open discussion

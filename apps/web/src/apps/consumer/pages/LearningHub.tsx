@@ -81,11 +81,11 @@ export default function LearningHub() {
               </div>
               <span className="text-sm font-semibold text-emerald-300">{computed.percent}%</span>
             </div>
-            <div className="rounded-full h-2 bg-white/10 overflow-hidden">
+            <div className="rounded-full h-2 bg-[var(--olu-card-bg)] overflow-hidden">
               <div className="h-full bg-white rounded-full" style={{ width: `${computed.percent}%` }} />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="rounded-2xl bg-white/5 border border-olu-border p-4">
+              <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
                 <div className="flex items-center gap-2">
                   <Clock3 size={14} className="text-amber-300" />
                   <p className="text-xs text-olu-muted">Next lesson</p>
@@ -105,7 +105,7 @@ export default function LearningHub() {
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {course.sections.slice(0, 2).map((section) => (
-                <span key={section.id} className="rounded-full border border-olu-border bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+                <span key={section.id} className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-2.5 py-1 text-[11px] text-olu-muted">
                   {section.title}
                 </span>
               ))}

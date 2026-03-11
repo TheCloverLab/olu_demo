@@ -105,8 +105,8 @@ export default function Learn() {
             </div>
           </div>
           <div className="p-6">
-            <p className="text-white/78 leading-relaxed">{section.summary}</p>
-            <div className="rounded-2xl bg-white/5 border border-olu-border p-4 mt-5">
+            <p className="text-olu-text leading-relaxed">{section.summary}</p>
+            <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4 mt-5">
               <p className="text-sm text-olu-muted">Learning surface placeholder</p>
               <p className="font-semibold mt-1">This is where the video / audio / article lesson player goes.</p>
             </div>
@@ -134,7 +134,7 @@ export default function Learn() {
               <button
                 key={item.id}
                 onClick={() => navigate(`/learn/${course.slug}/${item.id}`)}
-                className="w-full rounded-2xl border border-olu-border bg-white/5 p-4 text-left hover:bg-white/8 transition-colors"
+                className="w-full rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-4 text-left hover:bg-[var(--olu-card-hover)] transition-colors"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>

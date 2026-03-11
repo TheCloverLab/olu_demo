@@ -228,7 +228,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     ) : (
                       <button
                         onClick={() => navigate(`/chat?with=${creator.id}`)}
-                        className="rounded-full border border-olu-border bg-white/5 px-3 py-1 text-xs text-white/72 hover:bg-white/8 transition-colors"
+                        className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-1 text-xs text-olu-muted hover:bg-[var(--olu-card-hover)] transition-colors"
                       >
                         Message host
                       </button>
@@ -266,7 +266,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                   onClick={() => setFollowing(!following)}
                   className={clsx(
                     'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                    following ? 'bg-white/10 text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
+                    following ? 'bg-[var(--olu-card-bg)] text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
                   )}
                 >
                   {following ? 'Following' : 'Follow'}
@@ -277,7 +277,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
 
           <div className={clsx('grid gap-3 mt-5', isCommunity ? 'grid-cols-3' : 'grid-cols-3')}>
             {appCopy.stats.map((item) => (
-              <div key={item.label} className={clsx('border border-olu-border px-4 py-3', isCommunity ? 'rounded-2xl bg-white/5' : 'rounded-2xl bg-olu-card')}>
+              <div key={item.label} className={clsx('border border-olu-border px-4 py-3', isCommunity ? 'rounded-2xl bg-[var(--olu-card-bg)]' : 'rounded-2xl bg-olu-card')}>
                 <p className={clsx('font-black', isCommunity ? 'text-base' : 'text-xl')}>{item.val}</p>
                 <p className="text-olu-muted text-xs mt-1">{item.label}</p>
               </div>

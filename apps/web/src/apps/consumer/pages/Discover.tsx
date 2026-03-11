@@ -172,22 +172,22 @@ export default function Discover() {
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
       <section className="space-y-4">
         <div>
-          <div className="flex items-center gap-2 text-white/45 text-xs uppercase tracking-[0.18em] mb-2">
+          <div className="flex items-center gap-2 text-olu-muted text-xs uppercase tracking-[0.18em] mb-2">
             <Compass size={14} />
             Discover
           </div>
           <h1 className="font-black text-xl md:text-2xl leading-tight">Find something new.</h1>
-          <p className="text-white/58 text-sm mt-2">
+          <p className="text-olu-muted text-sm mt-2">
             Communities to join, academies to learn from.
           </p>
         </div>
         <div className="rounded-2xl border border-olu-border bg-olu-surface px-4 py-3 flex items-center gap-3">
-          <Search size={16} className="text-white/35" />
+          <Search size={16} className="text-olu-muted" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search creator, community, academy, or topic"
-            className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/35"
+            className="w-full bg-transparent outline-none text-sm text-[var(--olu-input-text)] placeholder:text-[var(--olu-input-placeholder)]"
           />
         </div>
       </section>
@@ -203,8 +203,8 @@ export default function Discover() {
                 className={clsx(
                   'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
                   category === key
-                    ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/55 border border-olu-border hover:bg-white/10'
+                    ? 'bg-[var(--olu-chip-active-bg)] text-[var(--olu-chip-active-text)]'
+                    : 'bg-transparent text-olu-muted border border-olu-border hover:bg-olu-card'
                 )}
               >
                 {label}
@@ -222,7 +222,7 @@ export default function Discover() {
         ) : null}
 
         {!loading && filteredApps.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-8 text-sm text-white/45">
+          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-8 text-sm text-olu-muted">
             {emptyLabel}
           </div>
         ) : null}
@@ -231,14 +231,14 @@ export default function Discover() {
           <div className="grid md:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
               <div key={i} className="rounded-[24px] bg-olu-surface overflow-hidden animate-pulse min-h-[260px] flex flex-col justify-end">
-                <div className="h-full bg-white/[0.03]" />
+                <div className="h-full bg-[var(--olu-card-bg)]" />
                 <div className="p-4 space-y-3">
-                  <div className="h-3 w-20 bg-white/[0.06] rounded-full" />
-                  <div className="h-5 w-3/4 bg-white/[0.06] rounded-full" />
-                  <div className="h-3 w-1/2 bg-white/[0.06] rounded-full" />
+                  <div className="h-3 w-20 bg-olu-border rounded-full" />
+                  <div className="h-5 w-3/4 bg-olu-border rounded-full" />
+                  <div className="h-3 w-1/2 bg-olu-border rounded-full" />
                   <div className="flex gap-2 mt-2">
-                    <div className="h-6 w-16 bg-white/[0.06] rounded-full" />
-                    <div className="h-6 w-16 bg-white/[0.06] rounded-full" />
+                    <div className="h-6 w-16 bg-olu-border rounded-full" />
+                    <div className="h-6 w-16 bg-olu-border rounded-full" />
                   </div>
                 </div>
               </div>

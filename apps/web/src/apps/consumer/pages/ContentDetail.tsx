@@ -46,7 +46,7 @@ function TipModal({ post, onClose }) {
               <h3 className="font-bold">Send a Tip 🎁</h3>
                <p className="text-olu-muted text-xs mt-0.5">Support {post.creator?.name || 'Creator'} directly</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/08"><X size={18} className="text-olu-muted" /></button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)]"><X size={18} className="text-olu-muted" /></button>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-5 gap-2 mb-4">
@@ -86,7 +86,7 @@ function FanCreateModal({ post, onClose }) {
               <h3 className="font-bold">Create Fan Work</h3>
               <p className="text-xs text-olu-muted mt-0.5">Powered by OLU IP Platform</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/08"><X size={18} className="text-olu-muted" /></button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)]"><X size={18} className="text-olu-muted" /></button>
           </div>
 
           {step === 1 && (
@@ -262,23 +262,23 @@ export default function ContentDetail() {
         {/* Tags */}
         <div className="flex gap-2 mb-5 flex-wrap">
           {post.tags?.map(t => (
-            <span key={t} className="text-xs bg-white/06 text-olu-muted px-2.5 py-1 rounded-full">{t}</span>
+            <span key={t} className="text-xs bg-olu-card text-olu-muted px-2.5 py-1 rounded-full">{t}</span>
           ))}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 mb-6 p-3 glass rounded-2xl">
-          <button onClick={() => setLiked(!liked)} className={clsx('flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all flex-1 justify-center', liked ? 'bg-pink-500/20 text-pink-400' : 'hover:bg-white/08 text-olu-muted')}>
+          <button onClick={() => setLiked(!liked)} className={clsx('flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all flex-1 justify-center', liked ? 'bg-pink-500/20 text-pink-400' : 'hover:bg-[var(--olu-card-hover)] text-olu-muted')}>
             <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
             {formatNumber(post.likes + (liked ? 1 : 0))}
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/08 text-olu-muted transition-all flex-1 justify-center">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-[var(--olu-card-hover)] text-olu-muted transition-all flex-1 justify-center">
             <MessageCircle size={16} /> {formatNumber(post.comments)}
           </button>
           <button onClick={() => setShowTip(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-500/10 text-olu-muted hover:text-amber-400 transition-all flex-1 justify-center">
             <Gift size={16} /> Tip
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/08 text-olu-muted transition-all flex-1 justify-center">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-[var(--olu-card-hover)] text-olu-muted transition-all flex-1 justify-center">
             <Share2 size={16} /> Share
           </button>
         </div>

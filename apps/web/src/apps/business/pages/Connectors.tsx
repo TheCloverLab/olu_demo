@@ -74,9 +74,9 @@ export default function Connectors() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-cyan-400/15 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.08),transparent_40%),linear-gradient(180deg,#0b1422_0%,#08111d_100%)] p-5">
+      <div className="rounded-3xl border border-cyan-400/15 bg-[var(--olu-section-bg)] p-5">
         <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">
-          Connectors are <strong className="text-cyan-100/80">existing platforms</strong> where your AI agents execute tasks on your behalf — managing listings, processing orders, handling support tickets, and tracking analytics. Each connector gives your agents the ability to operate inside these platforms as if they were logged-in employees.
+          Connectors are <strong className="text-olu-text">existing platforms</strong> where your AI agents execute tasks on your behalf — managing listings, processing orders, handling support tickets, and tracking analytics. Each connector gives your agents the ability to operate inside these platforms as if they were logged-in employees.
         </p>
       </div>
 

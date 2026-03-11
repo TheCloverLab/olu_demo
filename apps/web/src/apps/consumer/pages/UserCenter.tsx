@@ -80,13 +80,13 @@ export default function UserCenter() {
                   className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
                 >
                   <span className="rounded-xl bg-white/[0.06] p-2.5 flex-shrink-0">
-                    <Icon size={18} className="text-white/70" />
+                    <Icon size={18} className="text-olu-muted" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm">{item.label}</p>
                     <p className="text-xs text-olu-muted mt-0.5">{item.description}</p>
                   </div>
-                  <ChevronRight size={16} className="text-white/25 flex-shrink-0" />
+                  <ChevronRight size={16} className="text-olu-muted flex-shrink-0" />
                 </button>
               )
             })}

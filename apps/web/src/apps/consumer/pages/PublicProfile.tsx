@@ -184,11 +184,11 @@ export default function PublicProfile() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <div className="rounded-full border border-olu-border bg-white/5 px-3 py-2 text-sm">
+            <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creator.followers || 0)}</span>
               <span className="ml-2 text-olu-muted">Followers</span>
             </div>
-            <div className="rounded-full border border-olu-border bg-white/5 px-3 py-2 text-sm">
+            <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
               <span className="font-semibold">{formatNumber(creatorApps.length)}</span>
               <span className="ml-2 text-olu-muted">Open apps</span>
             </div>
@@ -206,7 +206,7 @@ export default function PublicProfile() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Apps</p>
                 <p className="font-semibold text-base mt-1">Open with {creator.name}</p>
               </div>
-              <Users size={18} className="text-white/45" />
+              <Users size={18} className="text-olu-muted" />
             </div>
 
             <div className="space-y-3">
@@ -218,11 +218,11 @@ export default function PublicProfile() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-white/45">{app.app_type === 'community' ? 'Community' : 'Academy'}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">{app.app_type === 'community' ? 'Community' : 'Academy'}</p>
                       <p className="font-semibold text-sm mt-1">{app.title}</p>
                       <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
                     </div>
-                    <span className="text-xs text-white/65">{app.price_label}</span>
+                    <span className="text-xs text-olu-muted">{app.price_label}</span>
                   </div>
                 </button>
               ))}
@@ -245,7 +245,7 @@ export default function PublicProfile() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">Academy</p>
                 <p className="font-semibold text-base mt-1">Courses by {creator.name}</p>
               </div>
-              <BookOpen size={18} className="text-white/45" />
+              <BookOpen size={18} className="text-olu-muted" />
             </div>
             <div className="space-y-3">
               {creatorApps.filter((app) => app.app_type === 'academy').map((app) => (

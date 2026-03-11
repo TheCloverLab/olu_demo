@@ -6,6 +6,8 @@
  *   POST /invoke          — invoke the task agent
  *   POST /resume/:threadId — resume an interrupted graph (approval flow)
  *   GET  /threads/:threadId — get thread state
+ *   GET  /oauth/twitter    — initiate Twitter OAuth 2.0 PKCE flow
+ *   GET  /oauth/twitter/callback — handle Twitter OAuth callback
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
@@ -18,6 +20,7 @@ import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.j
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
 import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
 import { listSkills } from './lib/skill-registry.js'
+import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -398,6 +401,49 @@ const server = createServer(async (req, res) => {
     // List MCP tools
     if (url.pathname === '/mcp/tools' && req.method === 'GET') {
       json(res, 200, { tools: getMCPTools() })
+      return
+    }
+
+    // Twitter OAuth — initiate
+    if (url.pathname === '/oauth/twitter' && req.method === 'GET') {
+      const workspaceId = url.searchParams.get('workspace_id')
+      const clientId = process.env.TWITTER_CLIENT_ID
+      if (!workspaceId || !clientId) {
+        json(res, 400, { error: 'Missing workspace_id or TWITTER_CLIENT_ID not configured' })
+        return
+      }
+      const origin = url.searchParams.get('origin') || `http://localhost:${PORT}`
+      const redirectUri = `${origin}/oauth/twitter/callback`
+      const auth = getAuthorizationUrl(workspaceId, redirectUri, clientId)
+      // Redirect browser to Twitter authorization page
+      res.writeHead(302, { Location: auth.url })
+      res.end()
+      return
+    }
+
+    // Twitter OAuth — callback
+    if (url.pathname === '/oauth/twitter/callback' && req.method === 'GET') {
+      const code = url.searchParams.get('code')
+      const state = url.searchParams.get('state')
+      const clientId = process.env.TWITTER_CLIENT_ID || ''
+      const clientSecret = process.env.TWITTER_CLIENT_SECRET
+
+      if (!code || !state) {
+        json(res, 400, { error: 'Missing code or state' })
+        return
+      }
+
+      try {
+        const result = await handleCallback(code, state, clientId, clientSecret)
+        // Redirect back to the app's connectors page with success
+        const appUrl = process.env.APP_URL || 'http://localhost:5173'
+        res.writeHead(302, {
+          Location: `${appUrl}/business/connectors?twitter=connected&username=${result.username || ''}`,
+        })
+        res.end()
+      } catch (err: any) {
+        json(res, 400, { error: err.message })
+      }
       return
     }
 

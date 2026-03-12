@@ -737,6 +737,7 @@ export type WorkspaceHomeConfig = {
   headline?: string | null
   layout?: WorkspaceHomeLayout | null
   tabs: WorkspaceHomeTab[]
+  ai_support_enabled?: boolean
   created_at?: string
   updated_at?: string
 }

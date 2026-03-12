@@ -10,8 +10,9 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
-import { setAiSupportEnabled, getAiSupportEnabled, setAiSupportModel, getAiSupportModel } from '../../../domain/product/api'
-import { getAvailableModels, type ModelOption } from '../../../domain/agent/runtime-api'
+import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
+import { getWorkspaceAgentsForUser, toggleAgentSupport } from '../../../domain/team/api'
+import type { WorkspaceAgent } from '../../../lib/supabase'
 
 type SupportChat = {
   id: string
@@ -219,13 +220,18 @@ export default function SupportCenter() {
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
   const [aiEnabled, setAiEnabled] = useState(false)
-  const [aiModel, setAiModel] = useState<string | null>(null)
-  const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
+  const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
 
   useEffect(() => {
     if (!user?.id) return
-    getSupportChatsForOwner(user.id)
-      .then((data) => setChats(data as SupportChat[]))
+    Promise.all([
+      getSupportChatsForOwner(user.id),
+      getWorkspaceAgentsForUser(user),
+    ])
+      .then(([chatData, agentData]) => {
+        setChats(chatData as SupportChat[])
+        setAllAgents(agentData)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [user?.id])
@@ -233,8 +239,6 @@ export default function SupportCenter() {
   useEffect(() => {
     if (!workspace?.id) return
     getAiSupportEnabled(workspace.id).then(setAiEnabled).catch(() => {})
-    getAiSupportModel(workspace.id).then(setAiModel).catch(() => {})
-    getAvailableModels().then(setAvailableModels).catch(() => {})
   }, [workspace?.id])
 
   async function toggleAi() {
@@ -245,6 +249,15 @@ export default function SupportCenter() {
       await setAiSupportEnabled(workspace.id, next)
     } catch {
       setAiEnabled(!next)
+    }
+  }
+
+  async function toggleAgentForSupport(agentId: string, enabled: boolean) {
+    setAllAgents((prev) => prev.map((a) => a.id === agentId ? { ...a, support_enabled: enabled } : a))
+    try {
+      await toggleAgentSupport(agentId, enabled)
+    } catch {
+      setAllAgents((prev) => prev.map((a) => a.id === agentId ? { ...a, support_enabled: !enabled } : a))
     }
   }
 
@@ -275,7 +288,7 @@ export default function SupportCenter() {
               {chats.length} conversation{chats.length !== 1 ? 's' : ''}
             </span>
           </div>
-          {/* AI Agent toggle */}
+          {/* AI master toggle */}
           <button
             onClick={toggleAi}
             className={clsx(
@@ -287,9 +300,9 @@ export default function SupportCenter() {
           >
             <Bot size={16} className={aiEnabled ? 'text-cyan-500' : 'text-[var(--olu-muted)]'} />
             <div className="flex-1 text-left">
-              <p className="text-xs font-medium">AI Agent</p>
+              <p className="text-xs font-medium">AI Support</p>
               <p className="text-[10px] text-[var(--olu-muted)]">
-                {aiEnabled ? 'Auto-replies enabled' : 'Manual replies only'}
+                {aiEnabled ? 'Auto-replies enabled' : 'Off — manual replies only'}
               </p>
             </div>
             <div className={clsx(
@@ -302,24 +315,42 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
-          {/* Model selector */}
-          {aiEnabled && availableModels.length > 0 && (
-            <select
-              value={aiModel || ''}
-              onChange={async (e) => {
-                const val = e.target.value || null
-                setAiModel(val)
-                if (workspace?.id) {
-                  setAiSupportModel(workspace.id, val).catch(() => {})
-                }
-              }}
-              className="w-full px-3 py-2 rounded-xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] text-xs focus:outline-none focus:border-cyan-400"
-            >
-              <option value="">Default model</option>
-              {availableModels.map((m) => (
-                <option key={m.id} value={m.id}>{m.provider} / {m.model}</option>
+          {/* Per-agent support assignment (only when AI is enabled) */}
+          {aiEnabled && allAgents.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[10px] text-[var(--olu-muted)] font-medium px-1">Assign agents</p>
+              {allAgents.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => toggleAgentForSupport(a.id, !a.support_enabled)}
+                  className={clsx(
+                    'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border transition-colors text-left',
+                    a.support_enabled
+                      ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
+                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
+                  )}
+                >
+                  {a.avatar_img ? (
+                    <img src={a.avatar_img} alt="" className="w-6 h-6 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <Bot size={14} className={a.support_enabled ? 'text-cyan-500' : 'text-[var(--olu-muted)]'} />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{a.name}</p>
+                    <p className="text-[10px] text-[var(--olu-muted)] truncate">{a.role}</p>
+                  </div>
+                  <div className={clsx(
+                    'w-8 h-4.5 rounded-full transition-colors relative flex-shrink-0',
+                    a.support_enabled ? 'bg-cyan-500' : 'bg-[var(--olu-card-border)]'
+                  )}>
+                    <div className={clsx(
+                      'absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform',
+                      a.support_enabled ? 'translate-x-3.5' : 'translate-x-0.5'
+                    )} />
+                  </div>
+                </button>
               ))}
-            </select>
+            </div>
           )}
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">

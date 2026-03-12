@@ -158,6 +158,32 @@ export async function hireWorkspaceAgent(
   return data as WorkspaceAgent
 }
 
+export async function updateAgentModel(agentId: string, model: string | null) {
+  const { error } = await supabase
+    .from('workspace_agents')
+    .update({ model, updated_at: new Date().toISOString() })
+    .eq('id', agentId)
+  if (error) throw error
+}
+
+export async function toggleAgentSupport(agentId: string, enabled: boolean) {
+  const { error } = await supabase
+    .from('workspace_agents')
+    .update({ support_enabled: enabled, updated_at: new Date().toISOString() })
+    .eq('id', agentId)
+  if (error) throw error
+}
+
+export async function getSupportAgents(workspaceId: string): Promise<WorkspaceAgent[]> {
+  const { data, error } = await supabase
+    .from('workspace_agents')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .eq('support_enabled', true)
+  if (error) throw error
+  return (data || []) as WorkspaceAgent[]
+}
+
 // ---------- HR-model team queries ----------
 
 export async function getWorkspaceEmployeesForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<WorkspaceEmployee[]> {

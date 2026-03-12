@@ -9,11 +9,11 @@ const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 
 type PresetKey = 'community' | 'academy' | 'hybrid' | 'blank'
 
-const PRESETS: { key: PresetKey; icon: typeof Users; label: string; desc: string; gradient: string }[] = [
-  { key: 'community', icon: Users, label: 'Community', desc: 'Forums, group chat, fan engagement', gradient: 'from-purple-500 to-violet-600' },
-  { key: 'academy', icon: BookOpen, label: 'Academy', desc: 'Courses, Q&A, structured learning', gradient: 'from-blue-500 to-cyan-600' },
-  { key: 'hybrid', icon: Layers, label: 'Hybrid', desc: 'Community + courses + support', gradient: 'from-amber-500 to-orange-600' },
-  { key: 'blank', icon: Box, label: 'Blank', desc: 'Start from scratch', gradient: 'from-gray-500 to-gray-600' },
+const PRESETS: { key: PresetKey; icon: typeof Users; labelKey: string; descKey: string; gradient: string }[] = [
+  { key: 'community', icon: Users, labelKey: 'onboarding.presetCommunity', descKey: 'onboarding.presetCommunityDesc', gradient: 'from-purple-500 to-violet-600' },
+  { key: 'academy', icon: BookOpen, labelKey: 'onboarding.presetAcademy', descKey: 'onboarding.presetAcademyDesc', gradient: 'from-blue-500 to-cyan-600' },
+  { key: 'hybrid', icon: Layers, labelKey: 'onboarding.presetHybrid', descKey: 'onboarding.presetHybridDesc', gradient: 'from-amber-500 to-orange-600' },
+  { key: 'blank', icon: Box, labelKey: 'onboarding.presetBlank', descKey: 'onboarding.presetBlankDesc', gradient: 'from-gray-500 to-gray-600' },
 ]
 
 export default function Onboarding() {
@@ -167,7 +167,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Avatar (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('onboarding.avatarOptional')}</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -193,7 +193,7 @@ export default function Onboarding() {
             <p className="text-sm text-[var(--olu-muted)] mb-5">{t('onboarding.presetSubtitle', 'This sets up your workspace with starter content. You can customize everything later.')}</p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {PRESETS.map(({ key, icon: Icon, label, desc, gradient }) => (
+              {PRESETS.map(({ key, icon: Icon, labelKey, descKey, gradient }) => (
                 <button
                   key={key}
                   onClick={() => setSelectedPreset(key)}
@@ -207,8 +207,8 @@ export default function Onboarding() {
                   <div className={clsx('w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center mb-3', gradient)}>
                     <Icon size={20} className="text-white" />
                   </div>
-                  <p className="font-semibold text-sm">{label}</p>
-                  <p className="text-xs text-[var(--olu-muted)] mt-0.5 leading-snug">{desc}</p>
+                  <p className="font-semibold text-sm">{t(labelKey)}</p>
+                  <p className="text-xs text-[var(--olu-muted)] mt-0.5 leading-snug">{t(descKey)}</p>
                   {selectedPreset === key && (
                     <div className="mt-2">
                       <Check size={16} className="text-emerald-400" />
@@ -226,7 +226,7 @@ export default function Onboarding() {
               {saving ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Setting up...
+                  {t('onboarding.settingUp')}
                 </>
               ) : (
                 t('onboarding.continueButton')

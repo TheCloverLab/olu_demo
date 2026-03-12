@@ -1023,9 +1023,9 @@ export default function TeamChat() {
                   ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
                   : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
                 }
-                <div className="px-4 py-3 rounded-[24px] rounded-tl-[10px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1.5 shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
-                  <Loader2 size={14} className="text-[var(--olu-text-secondary)] animate-spin" />
-                  <span className="text-[var(--olu-text-secondary)] text-sm">Thinking...</span>
+                <div className="px-5 py-3.5 rounded-[24px] rounded-tl-[10px] bg-[var(--olu-chat-agent-bg)] border border-[var(--olu-chat-agent-border)] flex items-center gap-2 shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
+                  <Loader2 size={15} className="text-[var(--olu-text-secondary)] animate-spin" />
+                  <span className="text-[var(--olu-text-secondary)] text-[15px] leading-7">Thinking...</span>
                 </div>
               </motion.div>
             )}

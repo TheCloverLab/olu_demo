@@ -262,14 +262,35 @@
     "hasAccount": "Already have an account?",
     "signInLink": "Sign in"
   },
+  "members": {
+    "totalPurchases": "{{count}} total purchase",
+    "totalPurchases_other": "{{count}} total purchases",
+    "activeCount": "{{count}} active",
+    "activeMembers": "Active Members",
+    "free": "Free",
+    "paid": "Paid",
+    "churned": "Churned",
+    "purchaseRecords": "Purchase Records",
+    "noPurchases": "No purchases yet."
+  },
   "onboarding": {
     "title": "Set up your profile",
     "namePlaceholder": "Display name",
     "handlePlaceholder": "Choose a handle",
     "continueButton": "Continue",
     "uploadAvatar": "Upload avatar",
+    "avatarOptional": "Avatar (optional)",
+    "settingUp": "Setting up...",
     "presetTitle": "Choose your template",
-    "presetSubtitle": "This sets up your workspace with starter content. You can customize everything later."
+    "presetSubtitle": "This sets up your workspace with starter content. You can customize everything later.",
+    "presetCommunity": "Community",
+    "presetCommunityDesc": "Forums, group chat, fan engagement",
+    "presetAcademy": "Academy",
+    "presetAcademyDesc": "Courses, Q&A, structured learning",
+    "presetHybrid": "Hybrid",
+    "presetHybridDesc": "Community + courses + support",
+    "presetBlank": "Blank",
+    "presetBlankDesc": "Start from scratch"
   },
   "consumer": {
     "topics": "Topics",

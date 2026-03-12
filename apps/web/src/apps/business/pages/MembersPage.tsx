@@ -65,12 +65,12 @@ export default function MembersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-black text-xl">{t('nav.members', 'Members')}</h1>
-          <p className="text-sm text-[var(--olu-muted)]">{purchases.length} total purchase{purchases.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-[var(--olu-muted)]">{t('members.totalPurchases', { count: purchases.length })}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
             <Users size={14} />
-            {active.length} active
+            {t('members.activeCount', { count: active.length })}
           </div>
         </div>
       </div>
@@ -78,10 +78,10 @@ export default function MembersPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Active Members', value: active.length, color: 'text-emerald-500' },
-          { label: 'Free', value: active.filter((p) => p.plan_label === 'Free').length, color: 'text-blue-500' },
-          { label: 'Paid', value: active.filter((p) => p.plan_label !== 'Free').length, color: 'text-amber-500' },
-          { label: 'Churned', value: other.length, color: 'text-red-500' },
+          { label: t('members.activeMembers'), value: active.length, color: 'text-emerald-500' },
+          { label: t('members.free'), value: active.filter((p) => p.plan_label === 'Free').length, color: 'text-blue-500' },
+          { label: t('members.paid'), value: active.filter((p) => p.plan_label !== 'Free').length, color: 'text-amber-500' },
+          { label: t('members.churned'), value: other.length, color: 'text-red-500' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-3">
             <p className="text-xs text-[var(--olu-muted)]">{stat.label}</p>
@@ -93,12 +93,12 @@ export default function MembersPage() {
       {/* Table */}
       <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
         <div className="px-4 py-3 border-b border-[var(--olu-card-border)]">
-          <h2 className="font-semibold text-sm">Purchase Records</h2>
+          <h2 className="font-semibold text-sm">{t('members.purchaseRecords')}</h2>
         </div>
         {purchases.length === 0 ? (
           <div className="p-8 text-center">
             <CreditCard size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
-            <p className="text-sm text-[var(--olu-muted)]">No purchases yet.</p>
+            <p className="text-sm text-[var(--olu-muted)]">{t('members.noPurchases')}</p>
           </div>
         ) : (
           <div className="divide-y divide-[var(--olu-card-border)]">

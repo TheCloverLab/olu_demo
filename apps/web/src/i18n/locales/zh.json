@@ -262,14 +262,35 @@
     "hasAccount": "已有账户？",
     "signInLink": "登录"
   },
+  "members": {
+    "totalPurchases": "共 {{count}} 笔购买",
+    "totalPurchases_other": "共 {{count}} 笔购买",
+    "activeCount": "{{count}} 个活跃",
+    "activeMembers": "活跃成员",
+    "free": "免费",
+    "paid": "付费",
+    "churned": "已流失",
+    "purchaseRecords": "购买记录",
+    "noPurchases": "暂无购买记录。"
+  },
   "onboarding": {
     "title": "设置你的个人资料",
     "namePlaceholder": "显示名称",
     "handlePlaceholder": "选择一个用户名",
     "continueButton": "继续",
     "uploadAvatar": "上传头像",
+    "avatarOptional": "头像（可选）",
+    "settingUp": "设置中...",
     "presetTitle": "选择你的模板",
-    "presetSubtitle": "这将为你的工作区配置初始内容，之后可以随时修改。"
+    "presetSubtitle": "这将为你的工作区配置初始内容，之后可以随时修改。",
+    "presetCommunity": "社区",
+    "presetCommunityDesc": "论坛、群聊、粉丝互动",
+    "presetAcademy": "学院",
+    "presetAcademyDesc": "课程、问答、结构化学习",
+    "presetHybrid": "综合",
+    "presetHybridDesc": "社区 + 课程 + 客服",
+    "presetBlank": "空白",
+    "presetBlankDesc": "从零开始"
   },
   "consumer": {
     "topics": "话题",

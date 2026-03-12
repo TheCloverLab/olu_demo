@@ -26,6 +26,8 @@ FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ARG BUILD_TIME
+ENV BUILD_TIME=${BUILD_TIME}
 
 # npm workspaces hoists all deps to root node_modules
 COPY --from=deps /app/node_modules ./node_modules

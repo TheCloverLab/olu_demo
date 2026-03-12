@@ -57,7 +57,7 @@ const server = createServer(async (req, res) => {
   try {
     // Health check
     if (url.pathname === '/health' && req.method === 'GET') {
-      json(res, 200, { status: 'ok', version: '0.1.0' })
+      json(res, 200, { status: 'ok', version: '0.1.0', buildTime: process.env.BUILD_TIME || null })
       return
     }
 
@@ -422,6 +422,34 @@ const server = createServer(async (req, res) => {
       // Discover tools immediately
       const tools = await initMCPServers()
       json(res, 200, { ok: true, totalTools: tools.length })
+      return
+    }
+
+    // Store MCP server credentials for a workspace
+    if (url.pathname === '/mcp/credentials' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { workspaceId, serverName, credentials } = body
+      if (!workspaceId || !serverName || !credentials) {
+        json(res, 400, { error: 'Missing workspaceId, serverName, or credentials' })
+        return
+      }
+      const provider = `mcp:${serverName}`
+      const { data, error: upsertError } = await supabase
+        .from('workspace_integrations')
+        .upsert({
+          workspace_id: workspaceId,
+          provider,
+          status: 'connected',
+          config_json: credentials,
+        }, { onConflict: 'workspace_id,provider' })
+        .select('provider, status')
+        .single()
+
+      if (upsertError) {
+        json(res, 500, { error: upsertError.message })
+        return
+      }
+      json(res, 200, { ok: true, provider: data.provider })
       return
     }
 

@@ -64,7 +64,7 @@
     "support": "Support",
     "supportChats": "Support Chats",
     "homeEditor": "Home Editor",
-    "members": "Members",
+    "members": "Customers",
     "aiAgentMarketplace": "AI Agent Marketplace",
     "openOlu": "Open OLU",
     "workspaceOperator": "Workspace operator",
@@ -264,13 +264,15 @@
     "signInLink": "Sign in"
   },
   "members": {
+    "totalMembers": "Total Customers",
     "totalPurchases": "{{count}} total purchase",
     "totalPurchases_other": "{{count}} total purchases",
     "activeCount": "{{count}} active",
-    "activeMembers": "Active Members",
+    "activeMembers": "Active Subscriptions",
     "free": "Free",
     "paid": "Paid",
     "churned": "Churned",
+    "joinedMembers": "Customers",
     "purchaseRecords": "Purchase Records",
     "noPurchases": "No purchases yet."
   },

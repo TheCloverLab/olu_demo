@@ -3,10 +3,11 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Loader2, BookOpen, ChevronRight,
   GripVertical, Pencil, Trash2, Play, FileText, Upload,
-  ChevronDown, Save, X,
+  ChevronDown, Save, X, ImagePlus,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { getExperience, deleteExperience } from '../../../domain/experience/api'
+import { supabase } from '../../../lib/supabase'
+import { getExperience, deleteExperience, updateExperience } from '../../../domain/experience/api'
 import {
   listCourses, createCourse, updateCourse, deleteCourse,
   createChapter, updateChapter, deleteChapter,
@@ -27,16 +28,39 @@ function CourseListView({
   onSelect,
   onCreated,
   onDeleteExperience,
+  onCoverUpdated,
 }: {
   experience: WorkspaceExperience
   courses: ExperienceCourse[]
   onSelect: (id: string) => void
   onCreated: () => void
   onDeleteExperience: () => void
+  onCoverUpdated: () => void
 }) {
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [savingCover, setSavingCover] = useState(false)
+  const coverSrc = coverFile ? URL.createObjectURL(coverFile) : experience.cover
+
+  async function handleCoverUpload(file: File) {
+    setCoverFile(file)
+    setSavingCover(true)
+    try {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `experiences/${experience.id}/cover-${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('covers').upload(path, file, { upsert: true, contentType: file.type })
+      if (error) throw error
+      const coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      await updateExperience(experience.id, { cover: coverUrl })
+      onCoverUpdated()
+    } catch (err) {
+      console.error('Failed to upload cover', err)
+    } finally {
+      setSavingCover(false)
+    }
+  }
 
   async function handleCreate() {
     if (!newName.trim()) return
@@ -71,6 +95,27 @@ function CourseListView({
         >
           <Trash2 size={16} />
         </button>
+      </div>
+
+      {/* Cover Image */}
+      <div className="space-y-2">
+        <label className="text-xs text-[var(--olu-text-secondary)]">Cover Image</label>
+        {coverSrc ? (
+          <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
+            <img src={coverSrc} alt="Cover" className="w-full h-40 object-cover" />
+            <label className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-colors cursor-pointer">
+              <ImagePlus size={14} />
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f) }} />
+            </label>
+            {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+            <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
+            <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f) }} />
+          </label>
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -606,6 +651,7 @@ export default function CourseExperienceEditor() {
       onSelect={setSelectedCourseId}
       onCreated={reload}
       onDeleteExperience={handleDeleteExperience}
+      onCoverUpdated={reload}
     />
   )
 }

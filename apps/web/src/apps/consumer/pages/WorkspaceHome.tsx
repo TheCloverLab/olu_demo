@@ -242,7 +242,7 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace
               disabled={joining}
               className={clsx(
                 'flex items-center gap-1.5 rounded-xl font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex-shrink-0',
-                size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+                size === 'sm' ? 'px-4 py-2 text-sm' : 'px-4 py-2 text-sm'
               )}
             >
               <LogOut size={14} />
@@ -253,7 +253,7 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace
               onClick={() => setConfirmLeave(true)}
               className={clsx(
                 'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 hover:bg-red-500/10 hover:text-red-500 transition-colors flex-shrink-0',
-                size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+                size === 'sm' ? 'px-4 py-2 text-sm' : 'px-4 py-2 text-sm'
               )}
             >
               <Check size={14} />
@@ -264,7 +264,7 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace
             onClick={() => navigate(`/w/${workspace.slug}/support`)}
             className={clsx(
               'flex items-center gap-1.5 rounded-xl font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors flex-shrink-0',
-              size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+              size === 'sm' ? 'px-4 py-2 text-sm' : 'px-4 py-2 text-sm'
             )}
           >
             <Headphones size={14} />
@@ -277,7 +277,7 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace
           disabled={joining}
           className={clsx(
             'flex items-center gap-1.5 rounded-xl font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex-shrink-0 shadow-md shadow-emerald-500/25',
-            size === 'sm' ? 'px-5 py-2 text-sm' : 'px-6 py-2.5 text-sm'
+            size === 'sm' ? 'px-5 py-2 text-sm' : 'px-6 py-2 text-sm'
           )}
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}

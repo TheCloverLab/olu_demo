@@ -12,6 +12,7 @@ import {
   ensureSocialChat,
   getSocialChatMessages,
   addSocialChatMessage,
+  subscribeSocialChatMessages,
 } from '../../../domain/social/data'
 import { getAiSupportEnabled } from '../../../domain/product/api'
 import { getSupportAgents } from '../../../domain/team/api'
@@ -207,6 +208,24 @@ export default function SupportChat() {
     }
     load()
   }, [workspaceSlug, user?.id])
+
+  // Realtime subscription for new messages from other side
+  useEffect(() => {
+    if (!chatId) return
+    const seenIds = new Set(messages.map((m) => m.id))
+    const unsub = subscribeSocialChatMessages(chatId, (raw: any) => {
+      if (seenIds.has(raw.id)) return
+      seenIds.add(raw.id)
+      const msg: ChatMessage = {
+        id: raw.id,
+        fromType: raw.from_type as 'user' | 'other',
+        text: raw.text,
+        time: raw.time || new Date(raw.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }
+      setMessages((prev) => [...prev, msg])
+    })
+    return unsub
+  }, [chatId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

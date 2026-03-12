@@ -125,6 +125,48 @@ export async function getGroupChatMessages(groupChatId: string) {
   return data
 }
 
+export function subscribeGroupChatMessages(
+  groupChatId: string,
+  onMessage: (msg: any) => void,
+) {
+  const channel = supabase
+    .channel(`group-chat-${groupChatId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'group_chat_messages',
+        filter: `group_chat_id=eq.${groupChatId}`,
+      },
+      (payload) => onMessage(payload.new),
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
+}
+
+export function subscribeConversations(
+  agentId: string,
+  onMessage: (msg: any) => void,
+) {
+  const channel = supabase
+    .channel(`conv-${agentId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        filter: `agent_id=eq.${agentId}`,
+      },
+      (payload) => onMessage(payload.new),
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
+}
+
 export async function addGroupChatMessage(
   groupChatId: string,
   fromName: string,

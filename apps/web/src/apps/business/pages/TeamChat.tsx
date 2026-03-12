@@ -16,6 +16,7 @@ import {
   postWorkspaceGroupMessage,
   uploadTeamChatImages,
 } from '../../../domain/team/api'
+import { subscribeGroupChatMessages, subscribeConversations } from '../../../domain/team/data'
 import type { ChatAttachment } from '../../../lib/supabase'
 import clsx from 'clsx'
 
@@ -646,6 +647,42 @@ export default function TeamChat() {
 
     loadLiveData()
   }, [user?.id, agentId, isGroup])
+
+  // Realtime subscription
+  useEffect(() => {
+    if (isGroup && selectedGroupDbId) {
+      return subscribeGroupChatMessages(selectedGroupDbId, (raw: any) => {
+        setMessages((prev) => {
+          if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
+          return [...prev, {
+            from: raw.from_name === 'You' ? 'user' : raw.from_name,
+            text: raw.text,
+            rawText: raw.text,
+            images: (raw.attachments || []).map((a: any) => a.url),
+            attachments: raw.attachments || [],
+            time: raw.time,
+            _realtimeId: raw.id,
+          }]
+        })
+      })
+    }
+    if (!isGroup && selectedAgentDbId) {
+      return subscribeConversations(selectedAgentDbId, (raw: any) => {
+        setMessages((prev) => {
+          if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
+          return [...prev, {
+            from: raw.from_type === 'user' ? 'user' : 'agent',
+            text: raw.text,
+            rawText: raw.text,
+            images: [],
+            attachments: [],
+            time: raw.time,
+            _realtimeId: raw.id,
+          }]
+        })
+      })
+    }
+  }, [isGroup, selectedGroupDbId, selectedAgentDbId])
 
   useEffect(() => {
     if (tab !== 'chat') return

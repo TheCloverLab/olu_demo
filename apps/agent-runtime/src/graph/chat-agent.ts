@@ -183,8 +183,9 @@ Be concise and professional. After completing actions, summarize what you did.${
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const choice = await callLLMWithTools(messages, provider, toolDefs, effectiveModel)
     const msg = choice.message
+    console.log(`[chatAgent] finish_reason=${choice.finish_reason} tool_calls=${msg.tool_calls?.length || 0}`)
 
-    if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
+    if (msg.tool_calls?.length) {
       // LLM wants to call tools — preserve reasoning_content for Kimi compatibility
       const assistantMsg: any = {
         role: 'assistant',

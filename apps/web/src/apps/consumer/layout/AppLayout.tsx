@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Compass, User } from 'lucide-react'
@@ -144,11 +144,11 @@ export default function AppLayout() {
   const navItems = NAV_ITEMS
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
-  function refreshJoined() {
+  const refreshJoined = useCallback(() => {
     if (authUser?.id) {
       getJoinedWorkspaces(authUser.id).then(setJoinedWorkspaces).catch(() => {})
     }
-  }
+  }, [authUser?.id])
 
   useEffect(() => {
     if (authUser?.id) {
@@ -162,7 +162,7 @@ export default function AppLayout() {
   useEffect(() => {
     window.addEventListener('workspace-joined', refreshJoined)
     return () => window.removeEventListener('workspace-joined', refreshJoined)
-  }, [authUser?.id])
+  }, [refreshJoined])
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-olu-bg">

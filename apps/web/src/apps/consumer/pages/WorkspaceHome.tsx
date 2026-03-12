@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, ChevronRight, Check, Sparkles, UserPlus } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
@@ -208,7 +208,7 @@ function ProductCard({
           onClick={() => onJoin(product.id, cheapest?.id)}
           disabled={joining}
           className={clsx(
-            'w-full rounded-xl py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5',
+            'rounded-xl px-5 py-2 text-sm font-semibold transition-colors inline-flex items-center gap-1.5',
             product.access_type === 'free'
               ? 'bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50'
               : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 disabled:opacity-50'
@@ -232,10 +232,13 @@ function ProductCard({
 // Layout-specific headers
 // ────────────────────────────────────────────────────────────────
 
-function JoinButton({ hasJoined, joining, onJoin, t }: { hasJoined: boolean; joining: boolean; onJoin: () => void; t: any }) {
+function JoinButton({ hasJoined, joining, onJoin, t, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; t: any; size?: 'sm' | 'md' }) {
   if (hasJoined) {
     return (
-      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0">
+      <span className={clsx(
+        'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0',
+        size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-xs'
+      )}>
         <Check size={14} />
         {t('consumer.joined', 'Joined')}
       </span>
@@ -245,7 +248,10 @@ function JoinButton({ hasJoined, joining, onJoin, t }: { hasJoined: boolean; joi
     <button
       onClick={onJoin}
       disabled={joining}
-      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-olu-primary text-white hover:opacity-90 transition-colors disabled:opacity-50 flex-shrink-0"
+      className={clsx(
+        'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0',
+        size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
+      )}
     >
       {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
       {t('consumer.join', 'Join')}
@@ -255,69 +261,120 @@ function JoinButton({ hasJoined, joining, onJoin, t }: { hasJoined: boolean; joi
 
 function WorkspaceIcon({ workspace, size = 'md' }: { workspace: Workspace; size?: 'sm' | 'md' | 'lg' }) {
   const sz = size === 'lg' ? 'w-20 h-20 text-3xl' : size === 'md' ? 'w-14 h-14 text-xl' : 'w-10 h-10 text-base'
-  const rounded = size === 'lg' ? 'rounded-3xl' : 'rounded-2xl'
+  const rounded = size === 'lg' ? 'rounded-[20px]' : 'rounded-2xl'
+  const border = 'ring-4 ring-[var(--olu-bg)]'
   if (workspace.icon) {
-    return <img src={workspace.icon} alt="" className={clsx(sz, rounded, 'object-cover shadow-lg')} />
+    return <img src={workspace.icon} alt="" className={clsx(sz, rounded, border, 'object-cover')} />
   }
   return (
-    <div className={clsx(sz, rounded, 'bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg')}>
+    <div className={clsx(sz, rounded, border, 'bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold')}>
       {workspace.name[0]}
     </div>
   )
 }
 
-function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t }: any) {
+function BackButton({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
+  return (
+    <button
+      onClick={() => navigate(-1)}
+      className="flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+    >
+      <ArrowLeft size={16} />
+      <span>Back</span>
+    </button>
+  )
+}
+
+function MemberCount({ count, t }: { count: number; t: any }) {
+  if (count === 0) return null
+  return (
+    <span className="flex items-center gap-1.5 text-sm text-[var(--olu-text-secondary)]">
+      <Users size={14} />
+      {count.toLocaleString()} {t('consumer.joined', 'joined')}
+    </span>
+  )
+}
+
+function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <>
-      <div className="h-44 relative bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)]">
+      <div className="h-52 relative bg-gradient-to-br from-slate-900 to-slate-800">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--olu-bg)]/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+          <BackButton navigate={navigate} />
+        </div>
       </div>
-      <div className="px-4 -mt-6 relative z-10 mb-4">
-        <div className="flex items-end gap-3">
-          <WorkspaceIcon workspace={workspace} />
-          <div className="pb-1 flex-1 min-w-0">
-            <h1 className="font-black text-xl">{workspace.name}</h1>
-            {headline && <p className="text-sm text-[var(--olu-text-secondary)]">{headline}</p>}
+      <div className="px-4 -mt-8 relative z-10 mb-4">
+        <WorkspaceIcon workspace={workspace} size="lg" />
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <h1 className="font-black text-2xl">{workspace.name}</h1>
+            {workspace.verified && <BadgeCheck size={20} className="text-sky-500" fill="currentColor" />}
           </div>
-          {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} />}
+          {headline && <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">{headline}</p>}
+          <div className="flex items-center gap-3 pt-1">
+            <MemberCount count={memberCount} t={t} />
+            {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
+          </div>
         </div>
       </div>
     </>
   )
 }
 
-function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t }: any) {
+function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
-    <div className="relative min-h-[280px] flex flex-col justify-end">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900 to-slate-900">
-        {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-60" />}
+    <div className="relative min-h-[300px] flex flex-col justify-end">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800">
+        {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-50" />}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      <div className="relative z-10 px-4 pb-6 pt-16 space-y-4">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+      <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+        <BackButton navigate={navigate} />
+      </div>
+      <div className="relative z-10 px-4 pb-6 space-y-3">
         <WorkspaceIcon workspace={workspace} size="lg" />
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="font-black text-2xl text-white">{workspace.name}</h1>
-          {headline && <p className="text-sm text-white/70 mt-1 max-w-md">{headline}</p>}
+          {workspace.verified && <BadgeCheck size={20} className="text-sky-400" fill="currentColor" />}
         </div>
-        {userId && (
-          <div>
-            <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} />
-          </div>
-        )}
+        {headline && <p className="text-sm text-white/60 max-w-md leading-relaxed">{headline}</p>}
+        <div className="flex items-center gap-3">
+          {memberCount > 0 && (
+            <span className="flex items-center gap-1.5 text-sm text-white/50">
+              <Users size={14} />
+              {memberCount.toLocaleString()} joined
+            </span>
+          )}
+          {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
+        </div>
       </div>
     </div>
   )
 }
 
-function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, t }: any) {
+function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
-    <div className="px-4 py-6 space-y-4">
+    <div className="px-4 pt-4 pb-2 space-y-4">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1.5 text-sm text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
+      >
+        <ArrowLeft size={16} />
+        <span>Back</span>
+      </button>
       <div className="flex items-center gap-4">
         <WorkspaceIcon workspace={workspace} size="lg" />
         <div className="flex-1 min-w-0">
-          <h1 className="font-black text-2xl">{workspace.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-black text-2xl">{workspace.name}</h1>
+            {workspace.verified && <BadgeCheck size={18} className="text-sky-500" fill="currentColor" />}
+          </div>
           {headline && <p className="text-sm text-[var(--olu-text-secondary)] mt-1">{headline}</p>}
+          <div className="flex items-center gap-3 mt-2">
+            <MemberCount count={memberCount} t={t} />
+          </div>
         </div>
       </div>
       {userId && (
@@ -327,21 +384,28 @@ function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin
   )
 }
 
-function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t }: any) {
+function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <div className="relative overflow-hidden">
-      <div className="h-32 bg-gradient-to-r from-cyan-600 to-blue-700">
+      <div className="h-36 bg-gradient-to-r from-cyan-600 to-blue-700">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-40" />}
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+          <BackButton navigate={navigate} />
+        </div>
       </div>
       <div className="px-4 -mt-10 relative z-10 mb-4">
         <div className="rounded-2xl bg-[var(--olu-surface)] border border-[var(--olu-card-border)] p-4 shadow-lg">
           <div className="flex items-center gap-4">
             <WorkspaceIcon workspace={workspace} />
             <div className="flex-1 min-w-0">
-              <h1 className="font-black text-lg">{workspace.name}</h1>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-black text-lg">{workspace.name}</h1>
+                {workspace.verified && <BadgeCheck size={16} className="text-sky-500" fill="currentColor" />}
+              </div>
               {headline && <p className="text-xs text-[var(--olu-text-secondary)] mt-0.5">{headline}</p>}
+              <MemberCount count={memberCount} t={t} />
             </div>
-            {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} />}
+            {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
           </div>
         </div>
       </div>
@@ -408,6 +472,7 @@ export default function WorkspaceHome() {
   const [hasJoined, setHasJoined] = useState(false)
   const [joiningWorkspace, setJoiningWorkspace] = useState(false)
   const [experienceProductMap, setExperienceProductMap] = useState<Record<string, string>>({})
+  const [memberCount, setMemberCount] = useState(0)
 
   const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
 
@@ -417,6 +482,7 @@ export default function WorkspaceHome() {
     try {
       await joinWorkspace(userId, workspace.id)
       setHasJoined(true)
+      setMemberCount((c) => c + 1)
       window.dispatchEvent(new Event('workspace-joined'))
     } catch (err) {
       console.error('Failed to join workspace', err)
@@ -456,11 +522,13 @@ export default function WorkspaceHome() {
         if (!ws) { setLoading(false); return }
         setWorkspace(ws)
 
-        const [config, exps, prods] = await Promise.all([
+        const [config, exps, prods, { count: joinCount }] = await Promise.all([
           getHomeConfig(ws.id),
           listExperiences(ws.id),
           listProducts(ws.id),
+          supabase.from('workspace_joins').select('*', { count: 'exact', head: true }).eq('workspace_id', ws.id),
         ])
+        setMemberCount(joinCount || 0)
         setHomeConfig(config)
         setExperiences(exps)
 
@@ -516,7 +584,8 @@ export default function WorkspaceHome() {
   const tabs = homeConfig?.tabs || []
   const layout: WorkspaceHomeLayout = (homeConfig?.layout as WorkspaceHomeLayout) || 'classic'
 
-  const headerProps = { workspace, headline, cover, userId, hasJoined, joining: joiningWorkspace, onJoin: handleJoinWorkspace, t }
+  const navigate = useNavigate()
+  const headerProps = { workspace, headline, cover, userId, hasJoined, joining: joiningWorkspace, onJoin: handleJoinWorkspace, t, navigate, memberCount }
 
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-8">

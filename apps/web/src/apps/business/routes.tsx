@@ -18,6 +18,7 @@ import AppManagement from './pages/AppManagement'
 import ExperienceManager from './pages/ExperienceManager'
 import ProductManager from './pages/ProductManager'
 import HomeEditor from './pages/HomeEditor'
+import MembersPage from './pages/MembersPage'
 import Connectors from './pages/Connectors'
 import CreatorStudio from './pages/CreatorStudio'
 import CourseEditor from './pages/CourseEditor'
@@ -38,6 +39,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'experiences', element: <ExperienceManager /> },
       { path: 'products', element: <ProductManager /> },
       { path: 'home-editor', element: <HomeEditor /> },
+      { path: 'members', element: <MembersPage /> },
       { path: 'connectors', element: <Connectors /> },
       { path: 'tasks', element: <TaskCenter /> },
       { path: 'approvals', element: <ApprovalCenter /> },

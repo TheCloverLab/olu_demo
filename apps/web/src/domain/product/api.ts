@@ -12,11 +12,22 @@ const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 const DEMO_PRODUCTS: WorkspaceProduct[] = [
   { id: 'prod-1', workspace_id: 'ws-demo', name: 'Free Community', description: 'Access to public forums and content', access_type: 'free', status: 'active', position: 0, created_at: '', updated_at: '' },
   { id: 'prod-2', workspace_id: 'ws-demo', name: 'Pro Membership', description: 'Unlock all courses, VIP chat, and exclusive content', access_type: 'paid', status: 'active', position: 1, created_at: '', updated_at: '' },
+  { id: 'prod-3', workspace_id: 'ws-demo', name: 'Animation Bundle', description: 'Animation Fundamentals course + exclusive assets pack', access_type: 'paid', status: 'active', position: 2, created_at: '', updated_at: '' },
 ]
 
 const DEMO_PLANS: WorkspaceProductPlan[] = [
   { id: 'plan-1', product_id: 'prod-2', billing_type: 'recurring', price: 9.99, currency: 'USD', interval: 'month', trial_days: 7, status: 'active', created_at: '', updated_at: '' },
   { id: 'plan-2', product_id: 'prod-2', billing_type: 'recurring', price: 89.99, currency: 'USD', interval: 'year', trial_days: 0, status: 'active', created_at: '', updated_at: '' },
+  { id: 'plan-3', product_id: 'prod-3', billing_type: 'one_time', price: 49.99, currency: 'USD', interval: null, trial_days: 0, status: 'active', created_at: '', updated_at: '' },
+]
+
+const DEMO_PURCHASES: ConsumerPurchase[] = [
+  { id: 'purch-1', user_id: 'u2', product_id: 'prod-2', plan_id: 'plan-1', status: 'active', started_at: '2026-02-15T00:00:00Z', expires_at: null, created_at: '2026-02-15T00:00:00Z', updated_at: '' },
+  { id: 'purch-2', user_id: 'u3', product_id: 'prod-2', plan_id: 'plan-2', status: 'active', started_at: '2026-01-10T00:00:00Z', expires_at: null, created_at: '2026-01-10T00:00:00Z', updated_at: '' },
+  { id: 'purch-3', user_id: 'u4', product_id: 'prod-1', plan_id: null, status: 'active', started_at: '2026-03-01T00:00:00Z', expires_at: null, created_at: '2026-03-01T00:00:00Z', updated_at: '' },
+  { id: 'purch-4', user_id: 'u5', product_id: 'prod-3', plan_id: 'plan-3', status: 'active', started_at: '2026-02-20T00:00:00Z', expires_at: null, created_at: '2026-02-20T00:00:00Z', updated_at: '' },
+  { id: 'purch-5', user_id: 'u6', product_id: 'prod-2', plan_id: 'plan-1', status: 'active', started_at: '2026-03-05T00:00:00Z', expires_at: null, created_at: '2026-03-05T00:00:00Z', updated_at: '' },
+  { id: 'purch-6', user_id: 'u7', product_id: 'prod-1', plan_id: null, status: 'active', started_at: '2026-02-28T00:00:00Z', expires_at: null, created_at: '2026-02-28T00:00:00Z', updated_at: '' },
 ]
 
 const DEMO_HOME_CONFIG: WorkspaceHomeConfig = {
@@ -24,16 +35,18 @@ const DEMO_HOME_CONFIG: WorkspaceHomeConfig = {
   cover: '/images/covers/lunachen.jpg',
   headline: 'Welcome to the Pixel Realm — where art meets community',
   tabs: [
-    { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4'] },
-    { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2'] },
+    { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4', 'exp-7'] },
+    { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2', 'exp-6'] },
+    { key: 'connect', label: 'Connect', display_mode: 'list', experience_ids: ['exp-3', 'exp-5'] },
   ],
   created_at: '',
   updated_at: '',
 }
 
 const DEMO_PRODUCT_EXPERIENCE_MAP: Record<string, string[]> = {
-  'prod-1': ['exp-1', 'exp-4'],
-  'prod-2': ['exp-1', 'exp-2', 'exp-3', 'exp-4', 'exp-5'],
+  'prod-1': ['exp-1', 'exp-4', 'exp-7'],
+  'prod-2': ['exp-1', 'exp-2', 'exp-3', 'exp-4', 'exp-5', 'exp-7'],
+  'prod-3': ['exp-6'],
 }
 
 // ── Product CRUD ────────────────────────────────────────────────
@@ -51,6 +64,7 @@ export async function listProducts(workspaceId: string): Promise<WorkspaceProduc
 }
 
 export async function getProduct(productId: string): Promise<WorkspaceProduct | null> {
+  if (IS_DEMO) return DEMO_PRODUCTS.find((p) => p.id === productId) || null
   const { data, error } = await supabase
     .from('workspace_products')
     .select('*')
@@ -220,6 +234,7 @@ export async function getUserPurchases(
   userId: string,
   workspaceId?: string
 ): Promise<ConsumerPurchase[]> {
+  if (IS_DEMO) return DEMO_PURCHASES.filter((p) => p.user_id === userId)
   let query = supabase
     .from('consumer_purchases')
     .select('*')
@@ -240,6 +255,67 @@ export async function getUserPurchases(
   const { data, error } = await query
   if (error) throw error
   return data || []
+}
+
+export type PurchaseWithDetails = ConsumerPurchase & {
+  product_name: string
+  plan_label: string
+  buyer_name: string
+  buyer_handle: string
+  buyer_avatar_color: string
+  buyer_initials: string
+}
+
+export async function getWorkspacePurchases(workspaceId: string): Promise<PurchaseWithDetails[]> {
+  if (IS_DEMO) {
+    const names: Record<string, { name: string; handle: string; color: string; initials: string }> = {
+      u2: { name: 'Alex Park', handle: '@alexpark', color: 'from-pink-500 to-rose-600', initials: 'AP' },
+      u3: { name: 'Jordan Lee', handle: '@jordanlee', color: 'from-blue-500 to-blue-700', initials: 'JL' },
+      u4: { name: 'Mia Zhang', handle: '@miazhang', color: 'from-violet-500 to-purple-600', initials: 'MZ' },
+      u5: { name: 'Sofia Martinez', handle: '@sofiamartinez', color: 'from-rose-500 to-pink-600', initials: 'SM' },
+      u6: { name: 'Emma Wilson', handle: '@emmawilson', color: 'from-sky-500 to-blue-600', initials: 'EW' },
+      u7: { name: 'Nina Patel', handle: '@ninapatel', color: 'from-yellow-500 to-amber-600', initials: 'NP' },
+    }
+    return DEMO_PURCHASES.map((p) => {
+      const product = DEMO_PRODUCTS.find((pr) => pr.id === p.product_id)
+      const plan = DEMO_PLANS.find((pl) => pl.id === p.plan_id)
+      const buyer = names[p.user_id] || { name: 'Unknown', handle: '@unknown', color: 'from-gray-400 to-gray-500', initials: '??' }
+      return {
+        ...p,
+        product_name: product?.name || 'Unknown',
+        plan_label: plan ? `$${plan.price}/${plan.interval || 'once'}` : 'Free',
+        buyer_name: buyer.name,
+        buyer_handle: buyer.handle,
+        buyer_avatar_color: buyer.color,
+        buyer_initials: buyer.initials,
+      }
+    })
+  }
+
+  const products = await listProducts(workspaceId)
+  if (products.length === 0) return []
+  const productIds = products.map((p) => p.id)
+
+  const { data: purchases, error } = await supabase
+    .from('consumer_purchases')
+    .select('*, buyer:users!user_id(name, handle, avatar_color, initials)')
+    .in('product_id', productIds)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+
+  const productMap = Object.fromEntries(products.map((p) => [p.id, p]))
+  const plans = await Promise.all(products.map((p) => listPlans(p.id)))
+  const planMap = Object.fromEntries(plans.flat().map((pl) => [pl.id, pl]))
+
+  return (purchases || []).map((p: any) => ({
+    ...p,
+    product_name: productMap[p.product_id]?.name || 'Unknown',
+    plan_label: p.plan_id && planMap[p.plan_id] ? `$${planMap[p.plan_id].price}/${planMap[p.plan_id].interval || 'once'}` : 'Free',
+    buyer_name: p.buyer?.name || 'Unknown',
+    buyer_handle: p.buyer?.handle || '',
+    buyer_avatar_color: p.buyer?.avatar_color || 'from-gray-400 to-gray-500',
+    buyer_initials: p.buyer?.initials || '??',
+  }))
 }
 
 // ── Home Config ─────────────────────────────────────────────────

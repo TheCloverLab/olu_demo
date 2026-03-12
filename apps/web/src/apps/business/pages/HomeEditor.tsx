@@ -164,9 +164,10 @@ function TabEditor({
 }
 
 function WorkspaceIcon({ workspace, size = 'md' }: { workspace: any; size?: 'sm' | 'md' | 'lg' }) {
+  const [imgError, setImgError] = useState(false)
   const sz = size === 'sm' ? 'w-10 h-10 text-sm' : size === 'lg' ? 'w-16 h-16 text-2xl' : 'w-12 h-12 text-lg'
-  if (workspace?.icon) {
-    return <img src={workspace.icon} alt="" className={clsx(sz, 'rounded-xl border-2 border-[var(--olu-section-bg)] object-cover')} />
+  if (workspace?.icon && !imgError) {
+    return <img src={workspace.icon} alt="" className={clsx(sz, 'rounded-xl border-2 border-[var(--olu-section-bg)] object-cover')} onError={() => setImgError(true)} />
   }
   return (
     <div className={clsx(sz, 'rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-[var(--olu-section-bg)] flex items-center justify-center text-white font-bold')}>

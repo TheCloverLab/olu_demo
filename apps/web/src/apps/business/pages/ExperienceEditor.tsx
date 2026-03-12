@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Trash2, ImagePlus, X } from 'lucide-react'
 import { getExperience, updateExperience, deleteExperience } from '../../../domain/experience/api'
 import { supabase } from '../../../lib/supabase'
 import type { WorkspaceExperience } from '../../../lib/supabase'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 
 export default function ExperienceEditor() {
   const [params] = useSearchParams()
@@ -47,9 +48,10 @@ export default function ExperienceEditor() {
     }
   }
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   async function handleDelete() {
     if (!exp) return
-    if (!confirm(`Delete "${exp.name}"? This cannot be undone.`)) return
     try {
       await deleteExperience(exp.id)
       navigate('/business/experiences')
@@ -91,7 +93,7 @@ export default function ExperienceEditor() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             className="p-2 rounded-xl hover:bg-red-500/10 transition-colors text-[var(--olu-muted)] hover:text-red-500"
           >
             <Trash2 size={16} />
@@ -148,6 +150,14 @@ export default function ExperienceEditor() {
           </label>
         )}
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete experience"
+        message={`Delete "${exp.name}"? This cannot be undone.`}
+        onConfirm={() => { setShowDeleteConfirm(false); handleDelete() }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { ArrowLeft, Upload, Loader2, Users, ShieldCheck, Trash2 } from 'lucide-r
 import clsx from 'clsx'
 import { getExperience, updateExperience, deleteExperience } from '../../../domain/experience/api'
 import type { WorkspaceExperience } from '../../../lib/supabase'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 
 type ForumConfig = {
   banner?: string | null
@@ -102,9 +103,10 @@ export default function ForumEditor() {
     }
   }
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   async function handleDelete() {
     if (!exp) return
-    if (!confirm(`Delete "${exp.name}"? This cannot be undone.`)) return
     try {
       await deleteExperience(exp.id)
       navigate('/business/experiences')
@@ -147,7 +149,7 @@ export default function ForumEditor() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             className="p-2 rounded-xl hover:bg-red-500/10 transition-colors text-[var(--olu-muted)] hover:text-red-500"
           >
             <Trash2 size={16} />
@@ -281,6 +283,14 @@ export default function ForumEditor() {
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete forum"
+        message={`Delete "${exp.name}"? This cannot be undone.`}
+        onConfirm={() => { setShowDeleteConfirm(false); handleDelete() }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

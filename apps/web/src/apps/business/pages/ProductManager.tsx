@@ -212,12 +212,12 @@ function ProductCard({
         {/* Linked experiences */}
         <div>
           <p className="text-[10px] text-[var(--olu-muted)] mb-1">Included experiences ({linkedExps.length})</p>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {linkedExps.map((exp) => (
-              <span key={exp.id} className="text-xs px-2 py-0.5 rounded-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1">
+              <span key={exp.id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1.5 group/exp">
                 {exp.name}
-                <button onClick={() => handleUnlink(exp.id)} className="text-[var(--olu-muted)] hover:text-red-400">
-                  <Unlink size={10} />
+                <button onClick={() => handleUnlink(exp.id)} className="w-4 h-4 rounded-full bg-[var(--olu-card-border)]/50 hover:bg-red-500 flex items-center justify-center transition-colors group-hover/exp:opacity-100 opacity-60">
+                  <X size={10} className="text-[var(--olu-muted)] group-hover/exp:text-white" />
                 </button>
               </span>
             ))}
@@ -226,9 +226,9 @@ function ProductCard({
                 key={exp.id}
                 onClick={() => handleLink(exp.id)}
                 disabled={linking}
-                className="text-xs px-2 py-0.5 rounded-full border border-dashed border-[var(--olu-card-border)] hover:border-cyan-300/40 flex items-center gap-1 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+                className="text-xs px-2.5 py-1 rounded-full border border-dashed border-[var(--olu-card-border)] hover:border-cyan-300/40 hover:bg-cyan-300/5 flex items-center gap-1.5 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
               >
-                <Link2 size={10} />
+                <Plus size={10} />
                 {exp.name}
               </button>
             ))}

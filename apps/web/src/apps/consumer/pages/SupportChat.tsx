@@ -13,8 +13,10 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
-import { getAiSupportEnabled, getAiSupportModel } from '../../../domain/product/api'
+import { getAiSupportEnabled } from '../../../domain/product/api'
+import { getSupportAgents } from '../../../domain/team/api'
 import { chatWithAgent } from '../../../domain/agent/runtime-api'
+import type { WorkspaceAgent } from '../../../lib/supabase'
 
 type ChatMessage = {
   id: string
@@ -143,7 +145,7 @@ export default function SupportChat() {
   const [aiEnabled, setAiEnabled] = useState(false)
   const [aiTyping, setAiTyping] = useState(false)
   const [wsId, setWsId] = useState<string | null>(null)
-  const [aiModel, setAiModel] = useState<string | null>(null)
+  const [supportAgentList, setSupportAgentList] = useState<WorkspaceAgent[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -172,9 +174,9 @@ export default function SupportChat() {
         setWorkspaceName(ws.name)
         setWsId(ws.id)
 
-        // Check if AI support is enabled + load model config
+        // Load AI support config + support agents
         getAiSupportEnabled(ws.id).then(setAiEnabled).catch(() => {})
-        getAiSupportModel(ws.id).then(setAiModel).catch(() => {})
+        getSupportAgents(ws.id).then(setSupportAgentList).catch(() => {})
 
         const staffUserId = ws.owner_user_id
         const { data: staffUser } = await supabase
@@ -231,8 +233,9 @@ export default function SupportChat() {
       }
     }
 
-    // AI auto-reply
-    if (aiEnabled || IS_DEMO) {
+    // AI auto-reply (master toggle + at least one support agent, or demo mode)
+    const supportAgent = supportAgentList[0]
+    if ((aiEnabled && supportAgent) || IS_DEMO) {
       setAiTyping(true)
       const addAiMessage = (reply: string) => {
         const aiMsg: ChatMessage = {
@@ -248,26 +251,26 @@ export default function SupportChat() {
         }
       }
 
-      if (wsId && !IS_DEMO) {
-        // Parse model selection (format: "provider::model" or just "model")
+      if (wsId && supportAgent && !IS_DEMO) {
+        // Parse agent model (format: "provider::model" or just "model")
         let provider: string | undefined
         let model: string | undefined
-        if (aiModel) {
-          if (aiModel.includes('::')) {
-            const [p, m] = aiModel.split('::')
+        if (supportAgent.model) {
+          if (supportAgent.model.includes('::')) {
+            const [p, m] = supportAgent.model.split('::')
             provider = p
             model = m
           } else {
-            model = aiModel
+            model = supportAgent.model
           }
         }
 
         try {
           const result = await chatWithAgent({
             workspaceId: wsId,
-            agentId: 'support-virtual',
-            agentName: workspaceName + ' Support',
-            agentRole: `Customer support assistant for ${workspaceName}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
+            agentId: supportAgent.id,
+            agentName: supportAgent.name,
+            agentRole: `${supportAgent.role || 'Customer support assistant'} for ${workspaceName}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
             message: text,
             sessionId: chatId || undefined,
             ...(provider && { provider }),

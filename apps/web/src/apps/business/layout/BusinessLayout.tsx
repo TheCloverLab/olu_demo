@@ -85,11 +85,11 @@ function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
   const initials = user.initials || 'U'
 
   if (avatarSrc) {
-    return <img src={avatarSrc} alt={user.name} className={clsx('rounded-xl object-cover flex-shrink-0', sz)} />
+    return <img src={avatarSrc} alt={user.name} className={clsx('rounded-full object-cover flex-shrink-0', sz)} />
   }
 
   return (
-    <div className={clsx(`bg-gradient-to-br ${avatarColor} rounded-xl flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
+    <div className={clsx(`bg-gradient-to-br ${avatarColor} rounded-full flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
       {initials}
     </div>
   )
@@ -159,8 +159,8 @@ function WorkspaceSwitcher() {
       {workspace?.icon ? (
         <img src={workspace.icon} alt={workspace.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0" />
       ) : (
-        <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">
-          <Briefcase size={16} />
+        <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center font-bold text-sm shadow-[0_0_24px_rgba(103,232,249,0.25)]">
+          {(workspace?.name || 'O')[0]}
         </div>
       )}
       <div className="min-w-0">
@@ -205,14 +205,6 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
                 <X size={18} className="text-[var(--olu-sidebar-muted)]" />
               </button>
             </div>
-
-            <button onClick={() => go('/business/account')} className="mx-4 mt-4 mb-2 flex items-center gap-3 p-3 bg-[var(--olu-input-bg)] rounded-2xl border border-[var(--olu-input-border)]">
-              <Avatar user={currentUser} size="md" />
-              <div className="min-w-0 text-left">
-                <p className="font-semibold text-sm">{currentUser.name}</p>
-                <p className="text-[var(--olu-sidebar-muted)] text-xs">{t('nav.workspaceOperator')}</p>
-              </div>
-            </button>
 
             <button onClick={() => go('/business/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left">
               <div className="px-3 py-3">
@@ -284,13 +276,6 @@ export default function BusinessLayout() {
         <WorkspaceSwitcher />
 
         <div className="px-3 pb-3 space-y-2">
-          <button onClick={() => navigate('/business/account')} className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)]">
-            <Avatar user={currentUser} size="md" />
-            <div className="min-w-0">
-              <p className="font-semibold text-sm truncate">{currentUser.name}</p>
-              <p className="text-[var(--olu-sidebar-muted)] text-xs truncate">{t('nav.modulesEnabled', { count: enabledBusinessModules.length })}</p>
-            </div>
-          </button>
           <NavLink
             to="/business/wallet"
             className={({ isActive }) => clsx(
@@ -388,6 +373,9 @@ export default function BusinessLayout() {
               <ThemeToggle />
               <LanguageToggle />
             </div>
+            <button onClick={() => navigate('/business/account')} className="flex-shrink-0">
+              <Avatar user={currentUser} size="sm" />
+            </button>
           </div>
         </header>
 

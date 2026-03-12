@@ -141,11 +141,11 @@ export default function Discover() {
         {loading && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="rounded-2xl bg-[var(--olu-surface)] overflow-hidden animate-pulse">
+              <div key={i} className="relative rounded-2xl overflow-hidden animate-pulse">
                 <div className="aspect-[16/9] bg-[var(--olu-border)]/40" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 w-2/3 bg-[var(--olu-border)] rounded-full" />
-                  <div className="h-3 w-1/3 bg-[var(--olu-border)] rounded-full" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 space-y-1.5">
+                  <div className="h-4 w-2/3 bg-white/20 rounded-full" />
+                  <div className="h-3 w-1/3 bg-white/10 rounded-full" />
                 </div>
               </div>
             ))}

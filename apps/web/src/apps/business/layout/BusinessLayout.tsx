@@ -72,6 +72,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
       { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
       { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
       { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
+      { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
     ],
   },
 ]
@@ -250,7 +251,6 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
               })}
               <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
               <MenuItem icon={Settings} label={t('common.settings')} onClick={() => go('/business/settings')} />
-              <MenuItem icon={Bot} label={t('nav.aiAgentMarketplace')} onClick={() => go('/business/agents')} />
               <MenuItem icon={ExternalLink} label={t('nav.openOlu')} onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
             </div>
 
@@ -337,17 +337,6 @@ export default function BusinessLayout() {
             )
           })}
 
-          <div className="border-t border-[var(--olu-border)] my-2" />
-          <NavLink
-            to="/business/agents"
-            className={({ isActive }) => clsx(
-              'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-              isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
-            )}
-          >
-            <Bot size={18} />
-            {t('nav.aiAgentMarketplace')}
-          </NavLink>
         </nav>
 
         <div className="p-3 border-t border-[var(--olu-border)] space-y-2">

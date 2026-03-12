@@ -69,13 +69,13 @@ export default function MembersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-black text-xl">{t('nav.members', 'Members')}</h1>
-          <p className="text-sm text-[var(--olu-muted)]">{members.length} members, {purchases.length} purchases</p>
+          <h1 className="font-black text-xl">{t('nav.members', 'Customers')}</h1>
+          <p className="text-sm text-[var(--olu-muted)]">{members.length} customers, {purchases.length} purchases</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
             <Users size={14} />
-            {members.length} joined
+            {members.length} customers
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@ export default function MembersPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: t('members.totalMembers', 'Total Members'), value: members.length, color: 'text-cyan-500' },
+          { label: t('members.totalMembers', 'Total Customers'), value: members.length, color: 'text-cyan-500' },
           { label: t('members.activeMembers'), value: active.length, color: 'text-emerald-500' },
           { label: t('members.paid'), value: active.filter((p) => p.plan_label !== 'Free').length, color: 'text-amber-500' },
           { label: t('members.churned'), value: other.length, color: 'text-red-500' },
@@ -98,12 +98,12 @@ export default function MembersPage() {
       {/* Members list */}
       <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
         <div className="px-4 py-3 border-b border-[var(--olu-card-border)]">
-          <h2 className="font-semibold text-sm">{t('members.joinedMembers', 'Joined Members')}</h2>
+          <h2 className="font-semibold text-sm">{t('members.joinedMembers', 'Customers')}</h2>
         </div>
         {members.length === 0 ? (
           <div className="p-8 text-center">
             <UserPlus size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
-            <p className="text-sm text-[var(--olu-muted)]">No members yet</p>
+            <p className="text-sm text-[var(--olu-muted)]">No customers yet</p>
           </div>
         ) : (
           <div className="divide-y divide-[var(--olu-card-border)]">
@@ -125,7 +125,7 @@ export default function MembersPage() {
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
                   <Check size={10} />
-                  member
+                  customer
                 </span>
               </div>
             ))}

@@ -64,7 +64,7 @@
     "support": "客服",
     "supportChats": "客服对话",
     "homeEditor": "首页编辑",
-    "members": "成员",
+    "members": "客户",
     "aiAgentMarketplace": "AI 智能体市场",
     "openOlu": "打开 OLU",
     "workspaceOperator": "工作区操作员",
@@ -264,13 +264,15 @@
     "signInLink": "登录"
   },
   "members": {
+    "totalMembers": "总客户数",
     "totalPurchases": "共 {{count}} 笔购买",
     "totalPurchases_other": "共 {{count}} 笔购买",
     "activeCount": "{{count}} 个活跃",
-    "activeMembers": "活跃成员",
+    "activeMembers": "活跃订阅",
     "free": "免费",
     "paid": "付费",
     "churned": "已流失",
+    "joinedMembers": "客户",
     "purchaseRecords": "购买记录",
     "noPurchases": "暂无购买记录。"
   },

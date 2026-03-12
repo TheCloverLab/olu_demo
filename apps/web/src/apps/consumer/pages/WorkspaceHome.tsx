@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones, LogOut } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
-import { joinWorkspace, hasJoinedWorkspace } from '../../../domain/workspace/api'
+import { joinWorkspace, hasJoinedWorkspace, leaveWorkspace } from '../../../domain/workspace/api'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences } from '../../../domain/experience/api'
@@ -229,18 +229,37 @@ function ProductCard({
 // Layout-specific headers
 // ────────────────────────────────────────────────────────────────
 
-function JoinAndSupportButtons({ hasJoined, joining, onJoin, workspace, t, navigate, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; workspace: Workspace; t: any; navigate: ReturnType<typeof useNavigate>; size?: 'sm' | 'md' }) {
+function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace, t, navigate, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; onUnjoin: () => void; workspace: Workspace; t: any; navigate: ReturnType<typeof useNavigate>; size?: 'sm' | 'md' }) {
+  const [confirmLeave, setConfirmLeave] = useState(false)
+
   return (
     <div className="flex items-center gap-2">
       {hasJoined ? (
         <>
-          <span className={clsx(
-            'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0',
-            size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
-          )}>
-            <Check size={14} />
-            {t('consumer.joined', 'Joined')}
-          </span>
+          {confirmLeave ? (
+            <button
+              onClick={() => { onUnjoin(); setConfirmLeave(false) }}
+              disabled={joining}
+              className={clsx(
+                'flex items-center gap-1.5 rounded-xl font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex-shrink-0',
+                size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+              )}
+            >
+              <LogOut size={14} />
+              {t('consumer.confirmLeave', 'Leave?')}
+            </button>
+          ) : (
+            <button
+              onClick={() => setConfirmLeave(true)}
+              className={clsx(
+                'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 hover:bg-red-500/10 hover:text-red-500 transition-colors flex-shrink-0',
+                size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+              )}
+            >
+              <Check size={14} />
+              {t('consumer.joined', 'Joined')}
+            </button>
+          )}
           <button
             onClick={() => navigate(`/w/${workspace.slug}/support`)}
             className={clsx(
@@ -257,8 +276,8 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, workspace, t, navig
           onClick={onJoin}
           disabled={joining}
           className={clsx(
-            'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0',
-            size === 'sm' ? 'px-4 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
+            'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0 shadow-md shadow-white/20',
+            size === 'sm' ? 'px-5 py-2 text-xs' : 'px-6 py-2.5 text-sm'
           )}
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
@@ -326,7 +345,7 @@ function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining,
           {headline && <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">{headline}</p>}
           <div className="flex items-center gap-3 pt-1">
             <MemberCount count={memberCount} t={t} />
-            {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
+            {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} onUnjoin={onUnjoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
           </div>
         </div>
       </div>
@@ -358,7 +377,7 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
               {memberCount.toLocaleString()} joined
             </span>
           )}
-          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
+          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} onUnjoin={onUnjoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
         </div>
       </div>
     </div>
@@ -389,7 +408,7 @@ function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin
         </div>
       </div>
       {userId && (
-        <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} />
+        <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} onUnjoin={onUnjoin} workspace={workspace} t={t} navigate={navigate} />
       )}
     </div>
   )
@@ -417,7 +436,7 @@ function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining,
               <MemberCount count={memberCount} t={t} />
             </div>
           </div>
-          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
+          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} onUnjoin={onUnjoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
         </div>
       </div>
     </div>
@@ -499,6 +518,21 @@ export default function WorkspaceHome() {
       window.dispatchEvent(new Event('workspace-joined'))
     } catch (err) {
       console.error('Failed to join workspace', err)
+    } finally {
+      setJoiningWorkspace(false)
+    }
+  }
+
+  async function handleLeaveWorkspace() {
+    if (!userId || !workspace) return
+    setJoiningWorkspace(true)
+    try {
+      await leaveWorkspace(userId, workspace.id)
+      setHasJoined(false)
+      setMemberCount((c) => Math.max(0, c - 1))
+      window.dispatchEvent(new Event('workspace-left'))
+    } catch (err) {
+      console.error('Failed to leave workspace', err)
     } finally {
       setJoiningWorkspace(false)
     }
@@ -597,7 +631,7 @@ export default function WorkspaceHome() {
   const tabs = homeConfig?.tabs || []
   const layout: WorkspaceHomeLayout = (homeConfig?.layout as WorkspaceHomeLayout) || 'classic'
 
-  const headerProps = { workspace, headline, cover, userId, hasJoined, joining: joiningWorkspace, onJoin: handleJoinWorkspace, t, navigate, memberCount }
+  const headerProps = { workspace, headline, cover, userId, hasJoined, joining: joiningWorkspace, onJoin: handleJoinWorkspace, onUnjoin: handleLeaveWorkspace, t, navigate, memberCount }
 
   return (
     <div className="max-w-3xl mx-auto pb-24 md:pb-8">

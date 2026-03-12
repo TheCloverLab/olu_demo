@@ -10,7 +10,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 import type { StructuredToolInterface } from '@langchain/core/tools'
 import { allTools } from '../tools/workspace-tools.js'
 import { resolveProviderForChat, type ModelProvider } from '../lib/models.js'
-import { getAgentTools } from '../lib/skill-registry.js'
+import { getAgentTools, getAgentSkillPrompts } from '../lib/skill-registry.js'
 import {
   buildConversationKey,
   loadConversationHistory,
@@ -117,8 +117,11 @@ export async function runChatAgent(params: {
   const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
   console.log(`[chatAgent] Using model: ${effectiveModel} (${provider.name})`)
 
-  // Load agent-specific tools based on enabled skills
-  const agentTools = await getAgentTools(agentId)
+  // Load agent-specific tools and skill prompts based on enabled skills
+  const [agentTools, skillPrompts] = await Promise.all([
+    getAgentTools(agentId),
+    getAgentSkillPrompts(agentId),
+  ])
   const toolMap = Object.fromEntries(agentTools.map((t) => [t.name, t]))
   const toolDefs = buildToolDefs(agentTools)
   console.log(`[chatAgent] Loaded ${agentTools.length} tools for agent ${agentId}`)
@@ -129,7 +132,7 @@ You have access to tools for managing tasks, searching the web, posting team mes
 When using tools that need agentId, use "${agentId}".
 When using tools that need workspaceId, use "${workspaceId}".
 
-Be concise and professional. After completing actions, summarize what you did.`
+Be concise and professional. After completing actions, summarize what you did.${skillPrompts ? '\n\n' + skillPrompts : ''}`
 
   // Load conversation history if sourceId is provided (multi-turn)
   const conversationKey = sourceId ? buildConversationKey(agentId, sourceId) : null

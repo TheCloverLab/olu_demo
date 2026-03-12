@@ -21,6 +21,7 @@ import {
 import {
   postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions,
 } from '../tools/twitter-tools.js'
+import { requestBudget, reportBudgetUsage } from '../tools/budget-tools.js'
 import { supabase } from './supabase.js'
 import { getMCPToolsAsLangChain } from './mcp-client.js'
 
@@ -87,6 +88,24 @@ export const SKILL_DEFINITIONS: Record<string, {
     description: 'Post tweets, search, like, and monitor mentions on X/Twitter',
     tools: [postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions],
   },
+  'budget': {
+    name: 'Budget Management',
+    description: 'Request budget approval and report spending progress for paid tasks',
+    tools: [requestBudget, reportBudgetUsage],
+  },
+}
+
+/**
+ * Skill-specific system prompt additions.
+ */
+const SKILL_PROMPTS: Record<string, string> = {
+  budget: `## Budget Protocol
+When the user asks you to perform a task that involves spending money (running ads, influencer outreach, paid promotions, purchasing services, boosting posts, etc.):
+1. ALWAYS call request_budget FIRST. Do NOT proceed until the owner approves a budget.
+2. After the owner approves, begin the task and call report_budget_usage periodically to show progress.
+3. When the task is complete, call report_budget_usage one final time with status "completed" and a full breakdown.
+4. If the owner says "stop" or "pause", immediately call report_budget_usage with status "paused" and stop spending.
+5. Unspent funds are automatically returned to the owner upon completion or pause.`,
 }
 
 /** All available skill names */
@@ -162,6 +181,18 @@ export async function getAgentTools(agentId: string): Promise<StructuredToolInte
   }
 
   return tools
+}
+
+/**
+ * Get skill-specific system prompt additions for an agent.
+ */
+export async function getAgentSkillPrompts(agentId: string): Promise<string> {
+  const config = await loadAgentConfig(agentId)
+  const skillNames = config.enabled_skills || DEFAULT_SKILLS
+  const prompts = skillNames
+    .filter((name) => SKILL_PROMPTS[name])
+    .map((name) => SKILL_PROMPTS[name])
+  return prompts.join('\n\n')
 }
 
 /**

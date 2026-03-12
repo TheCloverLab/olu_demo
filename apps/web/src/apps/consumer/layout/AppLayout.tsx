@@ -274,14 +274,10 @@ export default function AppLayout() {
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
-          <div className="flex items-center justify-center gap-2 py-1">
-            <ThemeToggle />
-            <LanguageToggle />
-          </div>
           {enabledBusinessModules.length > 0 && (
             <button
               onClick={() => window.open('/business', '_blank')}
-              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/20"
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600/20 to-sky-600/20 hover:from-cyan-600/30 hover:to-sky-600/30 border border-cyan-500/20"
             >
               <Briefcase size={14} />
               {t('nav.businessOS')}

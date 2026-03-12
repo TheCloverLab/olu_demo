@@ -325,10 +325,10 @@ export async function getUserWallet(userId: string): Promise<UserWallet | null> 
     .from('user_wallets')
     .select('*')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle()
 
   if (error) return null
-  return data as UserWallet
+  return data as UserWallet | null
 }
 
 export async function getWorkspaceWalletForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>): Promise<WorkspaceWallet | null> {
@@ -340,9 +340,9 @@ export async function getWorkspaceWalletForUser(user: Pick<User, 'id' | 'usernam
     .from('workspace_wallets')
     .select('*')
     .eq('workspace_id', membership.workspace_id)
-    .single()
+    .maybeSingle()
 
   if (error) return null
-  return data as WorkspaceWallet
+  return data as WorkspaceWallet | null
 }
 

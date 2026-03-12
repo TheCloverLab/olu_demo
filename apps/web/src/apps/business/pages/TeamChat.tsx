@@ -46,6 +46,7 @@ type ChatMessage = {
   notice?: string
   toolCalls?: ToolCallSummary[]
   time: string
+  _realtimeId?: string
 }
 
 type PendingAgentRequest = {
@@ -862,7 +863,19 @@ export default function TeamChat() {
               }),
             })
           }
-          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
+          const saved = await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
+          if (saved?.id) {
+            setMessages((prev) => {
+              const last = [...prev]
+              for (let i = last.length - 1; i >= 0; i--) {
+                if (last[i].from === 'agent' && !last[i]._realtimeId) {
+                  last[i] = { ...last[i], _realtimeId: saved.id }
+                  break
+                }
+              }
+              return last
+            })
+          }
         } catch (err) {
           console.error('Failed saving assistant message', err)
         }

@@ -72,6 +72,28 @@ export async function ensureSocialChat(userId: string, withUserId: string) {
   return created
 }
 
+/** Get all support chats where the owner is the "with_user" (consumer initiated the chat) */
+export async function getSupportChatsForOwner(ownerUserId: string) {
+  const { data, error } = await supabase
+    .from('social_chats')
+    .select(`
+      *,
+      customer:users!social_chats_user_id_fkey (
+        id,
+        name,
+        handle,
+        avatar_img,
+        avatar_color,
+        initials
+      )
+    `)
+    .eq('with_user_id', ownerUserId)
+    .order('updated_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
 export async function addSocialChatMessage(socialChatId: string, fromType: 'user' | 'other', text: string, time = 'Just now') {
   const { data, error } = await supabase
     .from('social_chat_messages')

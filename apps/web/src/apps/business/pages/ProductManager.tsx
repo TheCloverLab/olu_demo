@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Loader2, Tag, DollarSign, Link2, Unlink, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
+import { Plus, Loader2, Tag, DollarSign, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience } from '../../../lib/supabase'
@@ -112,9 +112,11 @@ function ProductCard({
   allExperiences: WorkspaceExperience[]
   onUpdated: () => void
 }) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(true)
   const [linking, setLinking] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [showAddExp, setShowAddExp] = useState(false)
 
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))
   const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id))
@@ -138,8 +140,8 @@ function ProductCard({
     }
   }
 
-  async function handleToggleAccess() {
-    const newType = product.access_type === 'free' ? 'paid' : 'free'
+  async function handleAccessChange(newType: 'free' | 'paid') {
+    if (newType === product.access_type) return
     await updateProduct(product.id, { access_type: newType })
     onUpdated()
   }
@@ -155,30 +157,10 @@ function ProductCard({
 
   return (
     <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-4">
+        {/* Header: name + delete/collapse */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleToggleAccess}
-              title={`Switch to ${product.access_type === 'free' ? 'paid' : 'free'}`}
-              className={clsx(
-                'w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:ring-2 hover:ring-cyan-300/30',
-                product.access_type === 'free' ? 'bg-emerald-400/10' : 'bg-amber-400/10'
-              )}
-            >
-              {product.access_type === 'free' ? (
-                <Tag size={16} className="text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <DollarSign size={16} className="text-amber-600 dark:text-amber-400" />
-              )}
-            </button>
-            <div>
-              <h3 className="font-semibold text-sm">{product.name}</h3>
-              <button onClick={handleToggleAccess} className="text-[var(--olu-muted)] text-xs hover:text-cyan-400 transition-colors">
-                {product.access_type === 'free' ? 'Free' : 'Paid'} <span className="text-[10px]">↔</span>
-              </button>
-            </div>
-          </div>
+          <h3 className="font-semibold text-sm">{product.name}</h3>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowDelete(true)}
@@ -199,48 +181,99 @@ function ProductCard({
           <p className="text-xs text-[var(--olu-text-secondary)]">{product.description}</p>
         )}
 
-        {/* Plans */}
-        <div className="flex flex-wrap gap-1.5">
-          {product.plans.map((plan) => (
-            <PlanBadge key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
-          ))}
-          {product.plans.length === 0 && product.access_type === 'free' && (
-            <span className="text-xs text-[var(--olu-muted)]">Free access</span>
-          )}
-        </div>
-
-        {/* Linked experiences */}
-        <div>
-          <p className="text-[10px] text-[var(--olu-muted)] mb-1">Included experiences ({linkedExps.length})</p>
-          <div className="flex flex-wrap gap-1.5">
-            {linkedExps.map((exp) => (
-              <span key={exp.id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1.5 group/exp">
-                {exp.name}
-                <button onClick={() => handleUnlink(exp.id)} className="w-4 h-4 rounded-full bg-[var(--olu-card-border)]/50 hover:bg-red-500 flex items-center justify-center transition-colors group-hover/exp:opacity-100 opacity-60">
-                  <X size={10} className="text-[var(--olu-muted)] group-hover/exp:text-white" />
-                </button>
-              </span>
-            ))}
-            {unlinkedExps.length > 0 && unlinkedExps.map((exp) => (
+        {/* Access Type — explicit selector */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-[var(--olu-text-secondary)]">Access Type</label>
+          <div className="flex gap-2">
+            {(['free', 'paid'] as const).map((v) => (
               <button
-                key={exp.id}
-                onClick={() => handleLink(exp.id)}
-                disabled={linking}
-                className="text-xs px-2.5 py-1 rounded-full border border-dashed border-[var(--olu-card-border)] hover:border-cyan-300/40 hover:bg-cyan-300/5 flex items-center gap-1.5 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+                key={v}
+                onClick={() => handleAccessChange(v)}
+                className={clsx(
+                  'px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5',
+                  product.access_type === v
+                    ? v === 'free'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-amber-500 text-white'
+                    : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:border-cyan-300/40'
+                )}
               >
-                <Plus size={10} />
-                {exp.name}
+                {v === 'free' ? <Tag size={12} /> : <DollarSign size={12} />}
+                {v === 'free' ? 'Free' : 'Paid'}
               </button>
             ))}
           </div>
         </div>
 
-        {expanded && product.access_type === 'paid' && (
-          <div className="pt-3 border-t border-[var(--olu-card-border)]">
-            <p className="text-xs text-[var(--olu-text-secondary)] mb-2">Add pricing plan</p>
-            <AddPlanForm productId={product.id} onCreated={onUpdated} />
+        {/* Plans (only when paid) */}
+        {product.access_type === 'paid' && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-[var(--olu-text-secondary)]">Pricing Plans</label>
+            <div className="flex flex-wrap gap-1.5">
+              {product.plans.map((plan) => (
+                <PlanBadge key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
+              ))}
+              {product.plans.length === 0 && (
+                <span className="text-xs text-[var(--olu-muted)] italic">No plans yet</span>
+              )}
+            </div>
+            {expanded && (
+              <div className="pt-2">
+                <AddPlanForm productId={product.id} onCreated={onUpdated} />
+              </div>
+            )}
           </div>
         )}
+
+        {/* Experiences section */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-[var(--olu-text-secondary)]">
+              Experiences ({linkedExps.length})
+            </label>
+            {unlinkedExps.length > 0 && (
+              <button
+                onClick={() => setShowAddExp(!showAddExp)}
+                className="text-xs px-2.5 py-1 rounded-lg bg-cyan-300/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-300/20 transition-colors flex items-center gap-1 font-medium"
+              >
+                <Plus size={12} />
+                Add
+              </button>
+            )}
+          </div>
+          {linkedExps.length === 0 && !showAddExp && (
+            <p className="text-xs text-[var(--olu-muted)] italic">No experiences linked</p>
+          )}
+          {linkedExps.map((exp) => (
+            <div
+              key={exp.id}
+              className="flex items-center justify-between px-3 py-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]"
+            >
+              <span className="text-xs font-medium">{exp.name}</span>
+              <button
+                onClick={() => handleUnlink(exp.id)}
+                className="text-xs px-2 py-0.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors font-medium"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          {showAddExp && unlinkedExps.length > 0 && (
+            <div className="rounded-xl border border-dashed border-cyan-300/40 bg-cyan-300/5 p-2 space-y-1">
+              {unlinkedExps.map((exp) => (
+                <button
+                  key={exp.id}
+                  onClick={() => { handleLink(exp.id); setShowAddExp(false) }}
+                  disabled={linking}
+                  className="w-full text-left text-xs px-3 py-2 rounded-lg hover:bg-cyan-300/10 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <Plus size={12} className="text-cyan-500" />
+                  {exp.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <ConfirmDialog

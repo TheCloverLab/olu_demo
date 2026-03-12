@@ -24,7 +24,7 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'forum/:experienceId', element: <ForumView /> },
       { path: 'course/:experienceId', element: <CourseView /> },
       { path: 'group-chat/:experienceId', element: <GroupChatView /> },
-      { path: 'support/:experienceId', element: <SupportChat /> },
+      { path: 'w/:workspaceSlug/support', element: <SupportChat /> },
       { path: 'w/:workspaceSlug/product/:productId', element: <ProductDetail /> },
       { path: 'people/:id', element: <PublicProfile /> },
       { path: 'profile', element: <PublicProfile /> },

@@ -97,7 +97,7 @@ function ContinueCourseCard({
           </div>
         </div>
         <div className="flex items-center justify-between mt-4">
-          <p className="font-semibold text-sm text-emerald-300">{t('consumer.continueLearning')}</p>
+          <p className="font-semibold text-sm text-emerald-600 dark:text-emerald-300">{t('consumer.continueLearning')}</p>
           <span className="inline-flex items-center gap-2 text-sm text-olu-muted">
             {t('common.open')}
             <ArrowRight size={15} />
@@ -321,7 +321,7 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.community')}</p>
                 <h2 className="font-bold text-xl">{t('consumer.yourCommunities')}</h2>
               </div>
-              <Users size={18} className="text-sky-300" />
+              <Users size={18} className="text-sky-600 dark:text-sky-300" />
             </div>
             <div className="grid md:grid-cols-3 gap-3">
               {joinedCommunities.slice(0, 3).map(({ creator, tierName }) => (
@@ -345,7 +345,7 @@ export default function Home() {
                   })()}
                   <div className="p-4">
                     <div className="flex items-center justify-between gap-3 mb-3">
-                      <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{tierName}</span>
+                      <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-600 dark:text-amber-300">{tierName}</span>
                       <span className="text-xs text-olu-muted">{formatNumber(creator.followers || 0)} {t('consumer.followers')}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -397,7 +397,7 @@ export default function Home() {
                         <p className="text-[11px] uppercase tracking-[0.18em] text-olu-muted">{post.creator?.name || 'Community host'}</p>
                         <p className="mt-1 font-semibold text-white">{post.title}</p>
                       </div>
-                      {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-300 text-xs"><Lock size={12} /> {t('consumer.members')}</span> : null}
+                      {post.locked ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-amber-500/15 text-amber-600 dark:text-amber-300 text-xs"><Lock size={12} /> {t('consumer.members')}</span> : null}
                     </div>
                   </div>
                   <div className="p-4">
@@ -416,7 +416,7 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.recommendedCommunities')}</p>
                 <h2 className="font-bold text-xl">{t('consumer.findNewCommunity')}</h2>
               </div>
-              <Crown size={18} className="text-amber-300" />
+              <Crown size={18} className="text-amber-600 dark:text-amber-300" />
             </div>
             <div className="space-y-3">
               {recommendedCommunities.map((creator) => (
@@ -463,7 +463,7 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.16em] text-olu-muted mb-1">{t('consumer.recommendedAcademies')}</p>
                 <h2 className="font-bold text-xl">{t('consumer.pickNextAcademy')}</h2>
               </div>
-              <BookOpen size={18} className="text-emerald-300" />
+              <BookOpen size={18} className="text-emerald-600 dark:text-emerald-300" />
             </div>
             <div className="space-y-3">
               {recommendedAcademyCards.map((academyApp) => {
@@ -485,7 +485,7 @@ export default function Home() {
                     <div className="p-4">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm text-olu-muted line-clamp-2">{academyApp.summary}</p>
-                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{academyApp.price_label}</span>
+                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-600 dark:text-emerald-300">{academyApp.price_label}</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {academyApp.highlights.slice(0, 2).map((item) => (

@@ -194,7 +194,7 @@ export default function BusinessSettings() {
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
               settings?.policies?.notification_policy?.route_publish_events_to_workspace
-                ? 'bg-emerald-500/15 text-emerald-300'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
                 : 'bg-white/8 text-[var(--olu-text-secondary)]'
             }`}>
               {settings?.policies?.notification_policy?.route_publish_events_to_workspace ? 'On' : 'Off'}
@@ -206,7 +206,7 @@ export default function BusinessSettings() {
       {/* Security */}
       <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-4">
-          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center">
+          <span className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center">
             <KeyRound size={18} />
           </span>
           <div>

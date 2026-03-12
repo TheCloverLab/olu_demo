@@ -203,7 +203,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                 <p className="text-xs uppercase tracking-[0.18em] text-olu-muted mb-2">{appCopy.eyebrow}</p>
                 <div className="flex items-center gap-2">
                 <h1 className={clsx('font-black', isCommunity ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl')}>{communityTitle || getCommunityTitle(creator)}</h1>
-                  {creator.verified && <BadgeCheck size={18} className="text-sky-400 flex-shrink-0" fill="currentColor" />}
+                  {creator.verified && <BadgeCheck size={18} className="text-sky-600 dark:text-sky-400 flex-shrink-0" fill="currentColor" />}
                 </div>
                 {isCommunity ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-olu-muted">
@@ -223,7 +223,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                     {canManageApp ? (
                       <button
                         onClick={() => window.open('/business/consumer', '_blank')}
-                        className="rounded-full border border-sky-400/25 bg-sky-400/10 px-3 py-1 text-xs text-sky-200 hover:bg-sky-400/15 transition-colors"
+                        className="rounded-full border border-sky-400/25 bg-sky-400/10 px-3 py-1 text-xs text-sky-600 dark:text-sky-200 hover:bg-sky-400/15 transition-colors"
                       >
                         {t('consumer.manageCommunity')}
                       </button>
@@ -268,7 +268,7 @@ export default function AppLanding({ standaloneCreatorId }: { standaloneCreatorI
                   onClick={() => setFollowing(!following)}
                   className={clsx(
                     'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                    following ? 'bg-[var(--olu-card-bg)] text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
+                    following ? 'bg-[var(--olu-card-bg)] text-sky-600 dark:text-sky-400 border border-olu-border' : 'glass glass-hover text-olu-muted'
                   )}
                 >
                   {following ? t('consumer.following') : t('consumer.follow')}

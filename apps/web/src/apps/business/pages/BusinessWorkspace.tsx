@@ -102,14 +102,14 @@ export default function BusinessWorkspace() {
       <section className="grid lg:grid-cols-[1.4fr,0.9fr] gap-4">
         <div className="rounded-3xl p-6 border border-[var(--olu-section-border)] bg-[var(--olu-section-bg)] space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <Zap size={16} className="text-amber-300" />
+            <Zap size={16} className="text-amber-600 dark:text-amber-300" />
             <p className="font-bold">{t('workspace.taskPipeline')}</p>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: t('common.pending'), value: pendingTasks, icon: Clock, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
-              { label: t('common.inProgress'), value: inProgressTasks, icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-              { label: t('common.done'), value: doneTasks, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+              { label: t('common.inProgress'), value: inProgressTasks, icon: Zap, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10' },
+              { label: t('common.done'), value: doneTasks, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
             ].map((item) => (
               <div key={item.label} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] text-center">
                 <div className="flex justify-center mb-2">
@@ -146,7 +146,7 @@ export default function BusinessWorkspace() {
 
         <div className="rounded-3xl p-6 border border-[var(--olu-section-border)] bg-[var(--olu-section-bg)] space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <Bot size={18} />
             </div>
             <div>
@@ -163,14 +163,14 @@ export default function BusinessWorkspace() {
               </div>
             </Link>
             <Link to="/business/team/humans" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
-              <UserRound size={16} className="text-purple-400" />
+              <UserRound size={16} className="text-purple-600 dark:text-purple-400" />
               <div>
                 <p className="font-semibold text-sm">{t('workspace.humanTeam')}</p>
                 <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.humanTeamDesc')}</p>
               </div>
             </Link>
             <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
-              <ShieldCheck size={16} className="text-amber-400" />
+              <ShieldCheck size={16} className="text-amber-600 dark:text-amber-400" />
               <div>
                 <p className="font-semibold text-sm">{t('workspace.approvalCenter')}</p>
                 <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.approvalCenterDesc', { count: highPriorityApprovals })}</p>
@@ -215,7 +215,7 @@ export default function BusinessWorkspace() {
       <section className="grid lg:grid-cols-2 gap-4">
         <Link to="/business/apps" className="rounded-3xl p-6 border border-[var(--olu-section-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-hover)] transition-colors">
           <div className="flex items-center gap-2 mb-4">
-            <AppWindow size={16} className="text-purple-400" />
+            <AppWindow size={16} className="text-purple-600 dark:text-purple-400" />
             <p className="font-bold">Consumer apps</p>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -232,7 +232,7 @@ export default function BusinessWorkspace() {
             {apps.slice(0, 3).map((app) => (
               <div key={app.id} className="rounded-2xl bg-[var(--olu-card-bg)] p-3 border border-[var(--olu-card-border)] flex items-center gap-3">
                 <span className={clsx('text-xs px-2 py-1 rounded-full font-medium',
-                  app.app_type === 'community' ? 'bg-purple-400/10 text-purple-400' : 'bg-blue-400/10 text-blue-400'
+                  app.app_type === 'community' ? 'bg-purple-400/10 text-purple-600 dark:text-purple-400' : 'bg-blue-400/10 text-blue-600 dark:text-blue-400'
                 )}>
                   {app.app_type}
                 </span>

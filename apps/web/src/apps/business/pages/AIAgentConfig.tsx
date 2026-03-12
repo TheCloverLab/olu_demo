@@ -21,18 +21,18 @@ function AgentCard({
       <img src={agent.avatar_img || ''} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
-        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-sidebar-text)]')}>
+        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-sidebar-text)]')}>
           {agent.price_label}
         </span>
       </div>
       <div className="flex items-center gap-1 mb-2">
-        <Star size={11} className="text-amber-400" fill="currentColor" />
+        <Star size={11} className="text-amber-600 dark:text-amber-400" fill="currentColor" />
         <span className="text-xs font-semibold">{agent.rating}</span>
         <span className="text-[var(--olu-text-secondary)] text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
       <p className="text-[var(--olu-text-secondary)] text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
       <div className="flex items-center gap-2 mb-3 text-xs">
-        <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-200 font-medium">{agent.model}</span>
+        <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-200 font-medium">{agent.model}</span>
         <span className="text-[var(--olu-text-secondary)]">${agent.cost_per_1k}/1K tokens</span>
       </div>
       <button
@@ -40,7 +40,7 @@ function AgentCard({
         disabled={hired}
         className={clsx(
           'w-full py-2 rounded-xl text-xs font-semibold transition-opacity flex items-center justify-center gap-1.5',
-          hired ? 'bg-emerald-500/15 text-emerald-300 cursor-default' : 'bg-cyan-300 text-[#04111f] hover:opacity-90'
+          hired ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 cursor-default' : 'bg-cyan-300 text-[#04111f] hover:opacity-90'
         )}
       >
         {hired ? <Check size={12} /> : <Plus size={12} />}
@@ -167,7 +167,7 @@ export default function AIAgentConfig() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-              <Bot size={18} className="text-cyan-200" />
+              <Bot size={18} className="text-cyan-700 dark:text-cyan-200" />
             </div>
             <div>
               <h1 className="font-black text-2xl">AI Agents</h1>
@@ -192,8 +192,8 @@ export default function AIAgentConfig() {
       <AnimatePresence>
         {successAgent && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-2">
-            <Check size={16} className="text-emerald-400" />
-            <p className="text-emerald-300 text-sm font-medium"><strong>{successAgent}</strong> has joined your workspace.</p>
+            <Check size={16} className="text-emerald-600 dark:text-emerald-400" />
+            <p className="text-emerald-600 dark:text-emerald-300 text-sm font-medium"><strong>{successAgent}</strong> has joined your workspace.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -207,7 +207,7 @@ export default function AIAgentConfig() {
           {activeAgents.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-3">
-                <ShieldCheck size={16} className="text-cyan-200" />
+                <ShieldCheck size={16} className="text-cyan-700 dark:text-cyan-200" />
                 <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">Your Team ({activeAgents.length})</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -263,8 +263,8 @@ export default function AIAgentConfig() {
               </div>
             </div>
             <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 mb-4 flex items-center gap-3">
-              <Sparkles size={16} className="text-cyan-200" />
-              <p className="text-sm text-cyan-100/68">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
+              <Sparkles size={16} className="text-cyan-700 dark:text-cyan-200" />
+              <p className="text-sm text-cyan-700/68 dark:text-cyan-100/68">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredMarket.map((agent) => (

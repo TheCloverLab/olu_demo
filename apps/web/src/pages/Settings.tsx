@@ -127,7 +127,7 @@ export default function Settings() {
                 </div>
               </div>
               {handleMessage && (
-                <p className={`text-sm ${handleMessage.includes('updated') ? 'text-emerald-400' : 'text-red-400'}`}>
+                <p className={`text-sm ${handleMessage.includes('updated') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-400'}`}>
                   {handleMessage}
                 </p>
               )}
@@ -172,7 +172,7 @@ export default function Settings() {
                 />
               </div>
               {passwordMessage && (
-                <p className={`text-sm ${passwordMessage.includes('success') ? 'text-emerald-400' : 'text-red-400'}`}>
+                <p className={`text-sm ${passwordMessage.includes('success') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-400'}`}>
                   {passwordMessage}
                 </p>
               )}

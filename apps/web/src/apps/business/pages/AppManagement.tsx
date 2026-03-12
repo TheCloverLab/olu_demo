@@ -8,13 +8,13 @@ import { getOwnedConsumerApps } from '../../../domain/consumer/apps'
 import { updateWorkspaceConsumerConfigForUser } from '../../../domain/workspace/api'
 
 const TYPE_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  community: { label: 'Community', color: 'text-purple-400', bg: 'bg-purple-400/10' },
-  academy: { label: 'Academy', color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  community: { label: 'Community', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-400/10' },
+  academy: { label: 'Academy', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-400/10' },
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  published: { label: 'Published', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  draft: { label: 'Draft', color: 'text-amber-400', bg: 'bg-amber-400/10' },
+  published: { label: 'Published', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
+  draft: { label: 'Draft', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10' },
   archived: { label: 'Archived', color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
 }
 
@@ -85,7 +85,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
     <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm flex items-center gap-2">
-          <Pencil size={14} className="text-cyan-300" />
+          <Pencil size={14} className="text-cyan-700 dark:text-cyan-300" />
           Configure: {app.title}
         </h3>
         <button onClick={onClose} className="p-1 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors">
@@ -99,7 +99,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
             {coverPreview ? (
               <img src={coverPreview} alt="Cover" className="w-full h-28 object-cover" />
             ) : (
-              <div className="w-full h-28 flex items-center justify-center text-cyan-100/25">
+              <div className="w-full h-28 flex items-center justify-center text-cyan-700/25 dark:text-cyan-100/25">
                 <ImagePlus size={24} />
               </div>
             )}
@@ -147,7 +147,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
             ))}
           </div>
         </div>
-        {message && <p className={`text-xs ${message === 'Saved!' ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
+        {message && <p className={`text-xs ${message === 'Saved!' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-400'}`}>{message}</p>}
         <div className="flex items-center gap-2 pt-2">
           <button
             onClick={handleSave}
@@ -177,7 +177,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
     <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm flex items-center gap-2">
-          <Plus size={14} className="text-cyan-300" />
+          <Plus size={14} className="text-cyan-700 dark:text-cyan-300" />
           Create a new app
         </h3>
         <button onClick={onClose} className="p-1 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors">
@@ -217,7 +217,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={`My ${selected} app`}
-              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30"
+              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30"
             />
           </div>
           <button className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -291,7 +291,7 @@ export default function AppManagement() {
 
       {!primaryApp ? (
         <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-12 text-center space-y-3">
-          <AppWindow size={32} className="text-cyan-100/30 mx-auto" />
+          <AppWindow size={32} className="text-cyan-700/30 dark:text-cyan-100/30 mx-auto" />
           <p className="text-[var(--olu-text-secondary)] text-sm">No consumer app yet.</p>
           <p className="text-[var(--olu-muted)] text-xs">Tap "New app" above to create the one app this UI currently supports.</p>
         </div>
@@ -310,7 +310,7 @@ export default function AppManagement() {
                     <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url(${app.cover_img})` }} />
                   ) : (
                     <div className="h-28 bg-gradient-to-br from-cyan-900/40 to-[#091422] flex items-center justify-center">
-                      <AppWindow size={28} className="text-cyan-100/20" />
+                      <AppWindow size={28} className="text-cyan-700/20 dark:text-cyan-100/20" />
                     </div>
                   )}
                   <div className="p-4 space-y-3">
@@ -336,7 +336,7 @@ export default function AppManagement() {
                         className={clsx(
                           'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors',
                           isConfiguring
-                            ? 'bg-cyan-300/20 text-cyan-300'
+                            ? 'bg-cyan-300/20 text-cyan-700 dark:text-cyan-300'
                             : 'bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)] text-[var(--olu-text-secondary)]'
                         )}
                       >

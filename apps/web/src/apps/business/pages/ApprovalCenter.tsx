@@ -14,8 +14,8 @@ type ApprovalItem = {
 }
 
 const STATUS_CFG: Record<ApprovalStatus, { icon: typeof Clock; color: string; bg: string; label: string }> = {
-  pending: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'Pending' },
-  approved: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Approved' },
+  pending: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'Pending' },
+  approved: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Approved' },
   rejected: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Rejected' },
 }
 
@@ -87,7 +87,7 @@ export default function ApprovalCenter() {
           </p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-          <Shield size={18} className="text-cyan-300" />
+          <Shield size={18} className="text-cyan-700 dark:text-cyan-300" />
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function ApprovalCenter() {
                   </div>
                   {item.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
-                      <button className="px-4 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors">
+                      <button className="px-4 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors">
                         Approve
                       </button>
                       <button className="px-4 py-1.5 rounded-xl bg-red-500/20 text-red-400 text-xs font-medium hover:bg-red-500/30 transition-colors">

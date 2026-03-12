@@ -89,21 +89,21 @@ export default function HumanEmployees() {
       {showAdd && (
         <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
           <h3 className="font-semibold text-sm flex items-center gap-2">
-            <Users2 size={16} className="text-cyan-300" />
+            <Users2 size={16} className="text-cyan-700 dark:text-cyan-300" />
             Invite a team member
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Position</label>
-              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div className="flex items-end">
               <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -148,7 +148,7 @@ export default function HumanEmployees() {
                   </span>
                 ))}
                 {emp.salary_label && (
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
                     {emp.salary_label}
                   </span>
                 )}

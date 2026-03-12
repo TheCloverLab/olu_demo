@@ -123,7 +123,7 @@ export default function Learn() {
         </div>
         <div className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-center gap-2 mb-4">
-            <BookOpen size={16} className="text-sky-300" />
+            <BookOpen size={16} className="text-sky-600 dark:text-sky-300" />
             <p className="font-semibold">{consumerExperience.courses.learning.title}</p>
           </div>
           {courseProgress && (
@@ -143,7 +143,7 @@ export default function Learn() {
                     <p className="font-semibold text-sm">{item.title}</p>
                     <p className="text-xs text-olu-muted mt-1">{item.duration}</p>
                   </div>
-                  {(courseProgress?.completedKeys.has(item.id) || item.id === section.id) && <CheckCircle2 size={16} className="text-emerald-300" />}
+                  {(courseProgress?.completedKeys.has(item.id) || item.id === section.id) && <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-300" />}
                 </div>
               </button>
             ))}

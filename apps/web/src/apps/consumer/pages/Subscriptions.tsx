@@ -94,7 +94,7 @@ export default function Subscriptions() {
                     <p className="text-xs text-olu-muted mt-2">{creator.bio || t('consumer.membershipRecurringAccess')}</p>
                   </div>
                   <div className="text-right">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-600 dark:text-amber-300">
                       <Crown size={12} />
                       {tier ? `$${tier.price}/mo` : 'Active'}
                     </span>

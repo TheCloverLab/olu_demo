@@ -179,7 +179,7 @@ export default function WalletPage() {
 
           <div className="grid md:grid-cols-3 gap-3">
             <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-              <div className="flex items-center gap-2 mb-2 text-emerald-300">
+              <div className="flex items-center gap-2 mb-2 text-emerald-600 dark:text-emerald-300">
                 <ArrowDownLeft size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Inflow</p>
               </div>
@@ -188,7 +188,7 @@ export default function WalletPage() {
             </div>
 
             <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-              <div className="flex items-center gap-2 mb-2 text-cyan-300">
+              <div className="flex items-center gap-2 mb-2 text-cyan-700 dark:text-cyan-300">
                 <Coins size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Treasury</p>
               </div>
@@ -197,7 +197,7 @@ export default function WalletPage() {
             </div>
 
             <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-              <div className="flex items-center gap-2 mb-2 text-amber-300">
+              <div className="flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-300">
                 <Clock3 size={14} />
                 <p className="text-xs font-semibold uppercase tracking-wider">Next Payout</p>
               </div>
@@ -212,7 +212,7 @@ export default function WalletPage() {
         <div className="rounded-[28px] p-4 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
           {TRANSACTIONS.map((tx) => (
             <motion.div key={tx.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-3">
-              <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-cyan-500/15 text-cyan-300')}>
+              <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300')}>
                 {tx.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
               </div>
               <div className="flex-1 min-w-0">
@@ -220,10 +220,10 @@ export default function WalletPage() {
                 <p className="text-[var(--olu-text-secondary)] text-xs">{tx.channel} · {tx.at}</p>
               </div>
               <div className="text-right">
-                <p className={clsx('font-semibold', tx.type === 'in' ? 'text-emerald-300' : 'text-cyan-300')}>
+                <p className={clsx('font-semibold', tx.type === 'in' ? 'text-emerald-600 dark:text-emerald-300' : 'text-cyan-700 dark:text-cyan-300')}>
                   {tx.type === 'in' ? '+' : '-'}${tx.amount.toFixed(2)}
                 </p>
-                <p className={clsx('text-[11px] capitalize', tx.status === 'settled' ? 'text-emerald-400' : 'text-amber-400')}>
+                <p className={clsx('text-[11px] capitalize', tx.status === 'settled' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
                   {tx.status}
                 </p>
               </div>
@@ -239,24 +239,24 @@ export default function WalletPage() {
             <div className="space-y-2.5">
               <div className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Landmark size={16} className="text-emerald-300" />
+                  <Landmark size={16} className="text-emerald-600 dark:text-emerald-300" />
                   <div>
                     <p className="text-sm font-medium">Bank Transfer (USD)</p>
                     <p className="text-[var(--olu-text-secondary)] text-xs">Chase **** 9831 · primary</p>
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">Active</span>
+                <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">Active</span>
               </div>
 
               <div className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Coins size={16} className="text-cyan-300" />
+                  <Coins size={16} className="text-cyan-700 dark:text-cyan-300" />
                   <div>
                     <p className="text-sm font-medium">Treasury Wallet</p>
                     <p className="text-[var(--olu-text-secondary)] text-xs">Digital wallet · primary</p>
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300">Active</span>
+                <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-700 dark:text-cyan-300">Active</span>
               </div>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function WalletPage() {
           <div className="rounded-[28px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
             <p className="font-semibold mb-2">Risk & Compliance</p>
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
-              <ShieldCheck size={16} className="text-emerald-300 mt-0.5" />
+              <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-300 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Compliance checks passed</p>
                 <p className="text-[var(--olu-text-secondary)] text-xs">KYC level 2 verified · no payout holds in the last 90 days.</p>

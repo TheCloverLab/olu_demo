@@ -6,8 +6,8 @@ import { getWorkspaceEmployeeById } from '../../../domain/team/api'
 import type { WorkspaceEmployee } from '../../../lib/supabase'
 
 const STATUS_COLOR: Record<string, { dot: string; label: string }> = {
-  online: { dot: 'bg-emerald-400', label: 'text-emerald-400' },
-  busy: { dot: 'bg-amber-400', label: 'text-amber-400' },
+  online: { dot: 'bg-emerald-400', label: 'text-emerald-600 dark:text-emerald-400' },
+  busy: { dot: 'bg-amber-400', label: 'text-amber-600 dark:text-amber-400' },
   offline: { dot: 'bg-gray-500', label: 'text-gray-400' },
 }
 
@@ -36,7 +36,7 @@ export default function EmployeeProfile() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
         <p className="text-[var(--olu-text-secondary)] mb-4">Employee not found</p>
-        <button onClick={() => navigate('/business/team')} className="text-cyan-300 text-sm hover:underline">
+        <button onClick={() => navigate('/business/team')} className="text-cyan-700 dark:text-cyan-300 text-sm hover:underline">
           Back to Team
         </button>
       </div>
@@ -81,7 +81,7 @@ export default function EmployeeProfile() {
                   <Circle size={6} className={sc.dot} fill="currentColor" />
                   {employee.status}
                 </span>
-                <span className="text-cyan-100/30">·</span>
+                <span className="text-cyan-700/30 dark:text-cyan-100/30">·</span>
                 <span className="text-xs text-[var(--olu-text-secondary)] capitalize">{employee.employment_status}</span>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function EmployeeProfile() {
                   <DollarSign size={12} />
                   Compensation
                 </div>
-                <p className="text-sm text-emerald-400 font-medium">{employee.salary_label}</p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">{employee.salary_label}</p>
               </div>
             )}
             {employee.hired_at && (

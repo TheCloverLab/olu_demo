@@ -193,7 +193,7 @@ export default function CreatorConsole() {
                   The creator now sees the same workflow from Supabase, not from local UI state. This is the approval step for an incoming advertiser collaboration.
                 </p>
               </div>
-              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                 {campaignAccepted ? 'Accepted' : hasIncomingCampaign ? 'Needs review' : 'No request'}
               </span>
             </div>
@@ -206,7 +206,7 @@ export default function CreatorConsole() {
                 </div>
                 <span className="text-sm font-semibold">${myTarget?.offer_amount ?? 0}</span>
               </div>
-              <p className="text-sm text-cyan-100/65 leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
+              <p className="text-sm text-cyan-700/65 dark:text-cyan-100/65 leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
               <div className="grid md:grid-cols-3 gap-3 mt-4">
                 <div className="rounded-2xl bg-[var(--olu-header-bg)] p-4 border border-[var(--olu-card-border)]">
                   <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Deliverable</p>
@@ -235,7 +235,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleReject}
                 disabled={!hasIncomingCampaign || actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-100/65 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-700/65 dark:text-cyan-100/65 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
               >
                 <XCircle size={16} />
                 Reject
@@ -243,7 +243,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleRefresh}
                 disabled={actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-100/65 text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-700/65 dark:text-cyan-100/65 text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
               >
                 <RefreshCcw size={14} />
                 Refresh
@@ -261,7 +261,7 @@ export default function CreatorConsole() {
                 { title: 'Metrics returned', desc: 'The creator-side workspace can see when reported results come back from the live placement.', active: ['completed'].includes(workflow?.campaign.status || '') },
               ].map((item) => (
                 <div key={item.title} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
-                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                     {item.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                   </div>
                   <div>

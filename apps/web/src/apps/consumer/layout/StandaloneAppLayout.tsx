@@ -29,7 +29,7 @@ export default function StandaloneAppLayout() {
   if (loading) {
     return (
       <div className="h-[100dvh] flex items-center justify-center bg-olu-bg text-white">
-        <p className="text-cyan-100/55 text-sm">Loading app...</p>
+        <p className="text-cyan-700/55 dark:text-cyan-100/55 text-sm">Loading app...</p>
       </div>
     )
   }
@@ -37,8 +37,8 @@ export default function StandaloneAppLayout() {
   if (!appCtx) {
     return (
       <div className="h-[100dvh] flex flex-col items-center justify-center bg-olu-bg text-white gap-4">
-        <p className="text-cyan-100/55 text-sm">App not found</p>
-        <button onClick={() => navigate('/')} className="text-cyan-300 text-sm hover:underline">Go home</button>
+        <p className="text-cyan-700/55 dark:text-cyan-100/55 text-sm">App not found</p>
+        <button onClick={() => navigate('/')} className="text-cyan-700 dark:text-cyan-300 text-sm hover:underline">Go home</button>
       </div>
     )
   }
@@ -71,7 +71,7 @@ export default function StandaloneAppLayout() {
             end={exact}
             className={({ isActive }) => clsx(
               'flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors',
-              isActive ? 'text-cyan-300' : 'text-cyan-100/40'
+              isActive ? 'text-cyan-700 dark:text-cyan-300' : 'text-cyan-700/40 dark:text-cyan-100/40'
             )}
           >
             <Icon size={20} />

@@ -53,14 +53,14 @@ type PendingAgentRequest = {
 }
 
 const STATUS_CONFIG = {
-  done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
-  in_progress: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
+  done: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
+  in_progress: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
   pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Pending' },
 }
 
 const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
-  medium: 'text-amber-400 bg-amber-400/10',
+  medium: 'text-amber-600 dark:text-amber-400 bg-amber-400/10',
   low: 'text-[var(--olu-text-secondary)] bg-cyan-500/10',
 }
 
@@ -123,7 +123,7 @@ function TaskItem({ task }) {
   const Icon = cfg.icon
   return (
     <div className="flex items-start gap-3 p-4 rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
-      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-400' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]')}>
+      <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]')}>
         <Icon size={16} />
       </button>
       <div className="flex-1 min-w-0">
@@ -242,7 +242,7 @@ function renderWithMentions(text, participantNames) {
   const parts = text.split(pattern)
   return parts.map((part, i) =>
     pattern.test(part)
-      ? <span key={i} className="text-sky-400 font-medium">{part}</span>
+      ? <span key={i} className="text-sky-600 dark:text-sky-400 font-medium">{part}</span>
       : part
   )
 }
@@ -837,7 +837,7 @@ export default function TeamChat() {
           {runtimeError && (
             <div className="px-4 pt-4">
               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-start gap-2 text-sm text-amber-100">
-                <AlertTriangle size={16} className="mt-0.5 text-amber-300 flex-shrink-0" />
+                <AlertTriangle size={16} className="mt-0.5 text-amber-600 dark:text-amber-300 flex-shrink-0" />
                 <div className="flex-1">
                   <p>{runtimeError}</p>
                   {retryMode && (
@@ -1150,7 +1150,7 @@ export default function TeamChat() {
                         title={showReasoning ? 'Hide reasoning' : 'Show reasoning'}
                         className={clsx(
                           'p-2 rounded-lg transition-all',
-                          showReasoning ? 'text-purple-300 bg-purple-500/10' : 'text-[var(--olu-input-placeholder)] hover:text-[var(--olu-text-secondary)]'
+                          showReasoning ? 'text-purple-600 dark:text-purple-300 bg-purple-500/10' : 'text-[var(--olu-input-placeholder)] hover:text-[var(--olu-text-secondary)]'
                         )}
                       >
                         <Brain size={16} />
@@ -1194,12 +1194,12 @@ export default function TeamChat() {
                                         }}
                                         className={clsx(
                                           'w-full px-4 py-2.5 text-left text-sm transition-colors',
-                                          selectedModel === m.id ? 'text-cyan-300 bg-cyan-500/10' : 'text-[var(--olu-text-secondary)] hover:text-white hover:bg-cyan-500/5'
+                                          selectedModel === m.id ? 'text-cyan-700 dark:text-cyan-300 bg-cyan-500/10' : 'text-[var(--olu-text-secondary)] hover:text-white hover:bg-cyan-500/5'
                                         )}
                                       >
                                         <div className="flex items-center justify-between gap-3">
                                           <span className="truncate">{m.model}</span>
-                                          {m.supportsVision && <span className="text-[10px] text-emerald-300 flex-shrink-0">Vision</span>}
+                                          {m.supportsVision && <span className="text-[10px] text-emerald-600 dark:text-emerald-300 flex-shrink-0">Vision</span>}
                                         </div>
                                       </button>
                                     ))}

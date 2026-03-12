@@ -62,7 +62,7 @@ function DiscoverCard({
           </p>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300 backdrop-blur-sm">
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-600 dark:text-amber-300 backdrop-blur-sm">
             {app.price_label}
           </span>
           <span className="text-xs text-olu-muted">{app.owner_name}</span>

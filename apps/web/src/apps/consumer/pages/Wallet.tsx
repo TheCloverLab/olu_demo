@@ -201,7 +201,7 @@ export default function Wallet() {
                 txn.direction === 'in' ? 'bg-emerald-500/15' : 'bg-[var(--olu-card-bg)]'
               }`}>
                 {txn.direction === 'in'
-                  ? <ArrowDownLeft size={14} className="text-emerald-400" />
+                  ? <ArrowDownLeft size={14} className="text-emerald-600 dark:text-emerald-400" />
                   : <ArrowUpRight size={14} className="text-olu-muted" />
                 }
               </div>
@@ -210,7 +210,7 @@ export default function Wallet() {
                 <p className="text-xs text-olu-muted mt-0.5">{txn.detail}</p>
               </div>
               <span className={`text-sm font-semibold ${
-                txn.direction === 'in' ? 'text-emerald-400' : 'text-olu-text'
+                txn.direction === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-olu-text'
               }`}>
                 {txn.amount}
               </span>
@@ -244,7 +244,7 @@ export default function Wallet() {
                     <p className="font-semibold text-sm">{item.label}</p>
                     <p className="text-xs text-olu-muted mt-1">{item.detail}</p>
                   </div>
-                  <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300">{item.amount}</span>
+                  <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-600 dark:text-amber-300">{item.amount}</span>
                 </div>
               </button>
             ))}
@@ -281,7 +281,7 @@ export default function Wallet() {
                     <p className="font-semibold text-sm">{item.label}</p>
                     <p className="text-xs text-olu-muted mt-1">{item.detail}</p>
                   </div>
-                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{item.amount}</span>
+                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-600 dark:text-emerald-300">{item.amount}</span>
                 </div>
               </button>
             ))}
@@ -310,7 +310,7 @@ export default function Wallet() {
               <p className="text-sm font-medium">Apple Pay</p>
               <p className="text-xs text-olu-muted">Default</p>
             </div>
-            <span className="text-xs text-emerald-400">Connected</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">Connected</span>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3.5">
             <div className="w-8 h-8 rounded-full bg-[var(--olu-card-bg)] flex items-center justify-center text-xs font-bold">V</div>
@@ -318,7 +318,7 @@ export default function Wallet() {
               <p className="text-sm font-medium">Visa ····4829</p>
               <p className="text-xs text-olu-muted">Expires 09/27</p>
             </div>
-            <span className="text-xs text-emerald-400">Active</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">Active</span>
           </div>
         </div>
 

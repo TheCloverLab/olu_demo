@@ -307,7 +307,7 @@ export default function SupportCenter() {
             </div>
             <div className={clsx(
               'w-9 h-5 rounded-full transition-colors relative',
-              aiEnabled ? 'bg-cyan-500' : 'bg-[var(--olu-card-border)]'
+              aiEnabled ? 'bg-cyan-500' : 'bg-gray-500/40'
             )}>
               <div className={clsx(
                 'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
@@ -340,12 +340,12 @@ export default function SupportCenter() {
                     <p className="text-[10px] text-[var(--olu-muted)] truncate">{a.role}</p>
                   </div>
                   <div className={clsx(
-                    'w-8 h-4.5 rounded-full transition-colors relative flex-shrink-0',
-                    a.support_enabled ? 'bg-cyan-500' : 'bg-[var(--olu-card-border)]'
+                    'w-9 h-5 rounded-full transition-colors relative flex-shrink-0',
+                    a.support_enabled ? 'bg-cyan-500' : 'bg-gray-500/40'
                   )}>
                     <div className={clsx(
-                      'absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform',
-                      a.support_enabled ? 'translate-x-3.5' : 'translate-x-0.5'
+                      'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
+                      a.support_enabled ? 'translate-x-4' : 'translate-x-0.5'
                     )} />
                   </div>
                 </button>

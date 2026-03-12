@@ -49,7 +49,7 @@ export default function EmployeeProfile() {
     <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
       <button
         onClick={() => navigate('/business/team')}
-        className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-sm hover:text-white transition-colors mb-6"
+        className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-sm hover:text-[var(--olu-text)] transition-colors mb-6"
       >
         <ArrowLeft size={16} />
         Back to Team

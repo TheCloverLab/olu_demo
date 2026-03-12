@@ -181,7 +181,7 @@ export default function AdvertiserConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
             )}
           >
             <Icon size={14} />
@@ -272,7 +272,7 @@ export default function AdvertiserConsole() {
                 <button
                   onClick={handleRefresh}
                   disabled={actionLoading}
-                  className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-sm font-semibold hover:text-white transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-sm font-semibold hover:text-[var(--olu-text)] transition-colors inline-flex items-center gap-2 disabled:opacity-40"
                 >
                   <RefreshCcw size={14} />
                   Refresh

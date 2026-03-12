@@ -343,14 +343,14 @@ export default function CreatorStudio() {
                         <button
                           onClick={() => moveSection(index, -1)}
                           disabled={index <= 0}
-                          className="p-0.5 text-[var(--olu-text-secondary)] hover:text-white disabled:opacity-20 transition-colors"
+                          className="p-0.5 text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] disabled:opacity-20 transition-colors"
                         >
                           ▲
                         </button>
                         <button
                           onClick={() => moveSection(index, 1)}
                           disabled={index >= config.sections.length - 1}
-                          className="p-0.5 text-[var(--olu-text-secondary)] hover:text-white disabled:opacity-20 transition-colors"
+                          className="p-0.5 text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] disabled:opacity-20 transition-colors"
                         >
                           ▼
                         </button>

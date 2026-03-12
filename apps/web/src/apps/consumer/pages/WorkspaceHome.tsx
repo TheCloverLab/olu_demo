@@ -92,8 +92,10 @@ function TabContent({
     if (exp.type === 'forum') {
       navigate(`/forum/${exp.id}`)
     } else if (exp.type === 'course') {
-      navigate(`/courses`)
+      navigate(`/course/${exp.id}`)
     } else if (exp.type === 'group_chat') {
+      navigate(`/group-chat/${exp.id}`)
+    } else if (exp.type === 'support_chat') {
       navigate(`/chat`)
     }
   }
@@ -239,7 +241,7 @@ function AboutTab({
       <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
         <h3 className="font-semibold text-sm">{t('consumer.about', 'About')}</h3>
         <p className="text-sm text-[var(--olu-text-secondary)]">
-          {(workspace as any).headline || 'Welcome to this workspace.'}
+          {workspace.headline || 'Welcome to this workspace.'}
         </p>
       </div>
 
@@ -294,7 +296,7 @@ export default function WorkspaceHome() {
       try {
         let ws: Workspace | null = null
         if (IS_DEMO) {
-          ws = { id: 'ws-demo', name: 'Pixel Realm', slug: workspaceSlug!, owner_id: 'demo-user-001', status: 'active', icon: null, cover: null, headline: 'Where art meets community', created_at: '' } as Workspace
+          ws = { id: 'ws-demo', owner_user_id: 'demo-user-001', name: 'Pixel Realm', slug: workspaceSlug!, icon: null, cover: null, headline: 'Where art meets community', status: 'active', created_at: '' } as Workspace
         } else {
           const { data } = await supabase
             .from('workspaces')
@@ -350,8 +352,8 @@ export default function WorkspaceHome() {
     )
   }
 
-  const cover = homeConfig?.cover || (workspace as any).cover
-  const headline = homeConfig?.headline || (workspace as any).headline
+  const cover = homeConfig?.cover || workspace.cover
+  const headline = homeConfig?.headline || workspace.headline
   const tabs = homeConfig?.tabs || []
 
   return (
@@ -367,8 +369,8 @@ export default function WorkspaceHome() {
       {/* Header */}
       <div className="px-4 -mt-6 relative z-10 mb-4">
         <div className="flex items-end gap-3">
-          {(workspace as any).icon ? (
-            <img src={(workspace as any).icon} alt="" className="w-14 h-14 rounded-2xl border-3 border-[var(--olu-bg)] object-cover shadow-lg" />
+          {workspace.icon ? (
+            <img src={workspace.icon} alt="" className="w-14 h-14 rounded-2xl border-3 border-[var(--olu-bg)] object-cover shadow-lg" />
           ) : (
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 border-3 border-[var(--olu-bg)] flex items-center justify-center text-white font-bold text-xl shadow-lg">
               {workspace.name[0]}

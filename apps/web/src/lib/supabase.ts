@@ -306,6 +306,9 @@ export type Workspace = {
   owner_user_id: string
   name: string
   slug: string
+  icon: string | null
+  cover: string | null
+  headline: string | null
   status: 'active' | 'paused' | 'archived'
   created_at?: string
   updated_at?: string

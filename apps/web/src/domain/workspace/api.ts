@@ -118,7 +118,7 @@ export async function ensureWorkspaceForUser(user: Pick<User, 'id' | 'username' 
   return membership as WorkspaceMembership
 }
 
-async function getWorkspaceById(workspaceId: string) {
+export async function getWorkspaceById(workspaceId: string) {
   const { data, error } = await supabase
     .from('workspaces')
     .select('*')

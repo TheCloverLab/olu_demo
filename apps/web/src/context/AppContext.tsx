@@ -4,11 +4,11 @@ import { WorkspaceProvider, useWorkspace } from './WorkspaceContext'
 import { ConsumerProvider, useConsumer } from './ConsumerContext'
 import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
 import type { ConsumerExperience } from '../domain/consumer/api'
-import type { BusinessModuleKey, ConsumerApp, ConsumerAppType, WorkspaceConsumerConfig } from '../lib/supabase'
+import type { BusinessModuleKey, ConsumerApp, ConsumerAppType, Workspace, WorkspaceConsumerConfig } from '../lib/supabase'
 
 export interface AppContextType {
   currentUser: any
-  workspace: { id: string } | null
+  workspace: Workspace | null
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean
   hasModule: (moduleKey: BusinessModuleKey) => boolean

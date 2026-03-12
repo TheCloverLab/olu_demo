@@ -1,13 +1,24 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
-import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser } from '../domain/workspace/api'
+import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser, getWorkspaceById } from '../domain/workspace/api'
 import type { BusinessModuleKey, Workspace } from '../lib/supabase'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 const ALL_MODULES: BusinessModuleKey[] = ['creator_ops', 'marketing', 'supply_chain']
 
+const DEMO_WORKSPACE: Workspace = {
+  id: 'ws-demo',
+  owner_user_id: 'demo-user-001',
+  name: 'Demo Workspace',
+  slug: 'demo',
+  icon: null,
+  cover: null,
+  headline: null,
+  status: 'active',
+}
+
 interface WorkspaceContextType {
-  workspace: { id: string } | null
+  workspace: Workspace | null
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean
   hasModule: (moduleKey: BusinessModuleKey) => boolean
@@ -18,7 +29,7 @@ const WorkspaceContext = createContext<WorkspaceContextType | null>(null)
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user: authUser } = useAuth()
-  const [workspace, setWorkspace] = useState<{ id: string } | null>(null)
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModuleKey[]>([])
   const [workspaceLoading, setWorkspaceLoading] = useState(true)
 
@@ -32,7 +43,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     try {
       const membership = await ensureWorkspaceForUser(authUser)
-      if (membership) setWorkspace({ id: membership.workspace_id })
+      if (membership) {
+        const ws = await getWorkspaceById(membership.workspace_id)
+        setWorkspace(ws)
+      }
       const modules = await getEnabledBusinessModulesForUser(authUser)
       setEnabledBusinessModules(modules)
     } catch (error) {
@@ -45,7 +59,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (IS_DEMO) {
-      setWorkspace({ id: 'ws-demo' })
+      setWorkspace(DEMO_WORKSPACE)
       setEnabledBusinessModules(ALL_MODULES)
       setWorkspaceLoading(false)
       return
@@ -64,7 +78,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       try {
         const membership = await ensureWorkspaceForUser(authUser)
-        if (!cancelled && membership) setWorkspace({ id: membership.workspace_id })
+        if (!cancelled && membership) {
+          const ws = await getWorkspaceById(membership.workspace_id)
+          if (!cancelled) setWorkspace(ws)
+        }
         const modules = await getEnabledBusinessModulesForUser(authUser)
         if (!cancelled) setEnabledBusinessModules(modules)
       } catch (error) {

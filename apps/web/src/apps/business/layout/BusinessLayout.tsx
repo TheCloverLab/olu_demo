@@ -35,9 +35,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { getWorkspaceWalletForUser } from '../../../domain/workspace/api'
 import { APP_VERSION } from '../../../lib/version'
-import type { WorkspaceWallet } from '../../../lib/supabase'
-
-import type { BusinessModuleKey } from '../../../lib/supabase'
+import type { BusinessModuleKey, WorkspaceWallet } from '../../../lib/supabase'
 
 type NavItem = { to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }
 type NavGroup = { groupLabel: string; items: NavItem[] }
@@ -153,6 +151,26 @@ function LanguageToggle() {
   )
 }
 
+function WorkspaceSwitcher() {
+  const { workspace } = useApp()
+
+  return (
+    <div className="px-5 py-5 flex items-center gap-3">
+      {workspace?.icon ? (
+        <img src={workspace.icon} alt={workspace.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0" />
+      ) : (
+        <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">
+          <Briefcase size={16} />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="font-black text-lg leading-none truncate">{workspace?.name || 'OLU Business'}</p>
+        <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1 truncate">{workspace?.headline || 'Merchant operations cockpit'}</p>
+      </div>
+    </div>
+  )
+}
+
 function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () => void; wallet: WorkspaceWallet | null }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -182,7 +200,7 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
             className="fixed top-0 left-0 bottom-0 w-72 bg-[var(--olu-sidebar-bg)] z-50 flex flex-col border-r border-[var(--olu-border)]"
           >
             <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--olu-border)]">
-              <span className="font-black text-xl tracking-tight">OLU Business</span>
+              <WorkspaceSwitcher />
               <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--olu-sidebar-hover)] transition-colors">
                 <X size={18} className="text-[var(--olu-sidebar-muted)]" />
               </button>
@@ -263,15 +281,7 @@ export default function BusinessLayout() {
   return (
     <div className="business-shell flex h-[100dvh] overflow-hidden">
       <aside className="hidden md:flex flex-col w-64 border-r border-[var(--olu-border)] bg-[var(--olu-sidebar-bg)] flex-shrink-0">
-        <div className="px-5 py-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center shadow-[0_0_24px_rgba(103,232,249,0.25)]">
-            <Briefcase size={16} />
-          </div>
-          <div>
-            <p className="font-black text-lg leading-none">OLU Business</p>
-            <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1">Merchant operations cockpit</p>
-          </div>
-        </div>
+        <WorkspaceSwitcher />
 
         <div className="px-3 pb-3 space-y-2">
           <button onClick={() => navigate('/business/account')} className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left border border-[var(--olu-input-border)] bg-[var(--olu-input-bg)]">

@@ -21,6 +21,8 @@ import Gallery from './pages/Gallery'
 import Feed from './pages/Feed'
 import WorkspaceHome from './pages/WorkspaceHome'
 import ForumView from './pages/ForumView'
+import CourseView from './pages/CourseView'
+import GroupChatView from './pages/GroupChatView'
 import Settings from '../../pages/Settings'
 import RoleProtected from '../../components/auth/RoleProtected'
 
@@ -33,6 +35,8 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'discover', element: <Discover /> },
       { path: 'w/:workspaceSlug', element: <WorkspaceHome /> },
       { path: 'forum/:experienceId', element: <ForumView /> },
+      { path: 'course/:experienceId', element: <CourseView /> },
+      { path: 'group-chat/:experienceId', element: <GroupChatView /> },
       { path: 'communities/:id', element: <AppLanding /> },
       { path: 'creator/:id', element: <PublicProfile /> },
       { path: 'people/:id', element: <PublicProfile /> },

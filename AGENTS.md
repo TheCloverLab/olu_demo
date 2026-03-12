@@ -130,6 +130,7 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `linkExperienceToProduct(productId, experienceId)` / `unlinkExperienceFromProduct(...)` — Product↔Experience linking
 - `purchaseProduct(productId, userId, planId?)` / `cancelPurchase(purchaseId)` — Purchase management
 - `getUserPurchases(userId, workspaceId?)` — User's purchases
+- `getWorkspacePurchases(workspaceId)` — All purchases for business-side members view (PurchaseWithDetails)
 - `getHomeConfig(workspaceId)` / `upsertHomeConfig(workspaceId, config)` — Workspace homepage config
 - `getProductsWithPlans(workspaceId)` — Products with plans & linked experience IDs
 
@@ -207,7 +208,7 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 | Wallet | Stablecoin wallet |
 | UserCenter | User profile settings |
 | PublicProfile | Creator profile view |
-| WorkspaceHome | Workspace homepage (cover, tabs, experiences grid) |
+| WorkspaceHome | Workspace homepage (cover, tabs, experiences grid, product join buttons) |
 | ForumView | Forum experience with posts, comments, likes |
 
 ### Business Pages (`apps/business/pages/`)
@@ -230,6 +231,7 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 | ExperienceManager | Experience CRUD (forum/course/group_chat/support_chat) |
 | ProductManager | Product & plan management, experience linking |
 | HomeEditor | Workspace homepage editor (cover, headline, tabs, preview) |
+| MembersPage | Purchase records with buyer info, stats grid, status badges |
 | AppManagement | Consumer template management |
 | BusinessSettings | Workspace settings (modules, integrations, billing) |
 | BusinessAccount | Business account settings |
@@ -271,3 +273,4 @@ npx playwright test  # Run E2E screenshot tests (port 5199)
   - GameVerse Studios (`gameverse.demo@olu.app`) — Marketing
   - ArtisanCraft Co. (`artisancraft.demo@olu.app`) — Supply chain
 - **Demo mode**: When `VITE_SUPABASE_URL` contains `demo-placeholder`, all auth/API calls are bypassed with mock data
+- **Onboarding**: Two-step flow — (1) profile setup (name, handle, avatar), (2) workspace preset selection (Community/Academy/Hybrid/Blank) which seeds starter experiences

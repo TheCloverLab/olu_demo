@@ -103,7 +103,7 @@ function ProductCard({
   allExperiences: WorkspaceExperience[]
   onUpdated: () => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [linking, setLinking] = useState(false)
 
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))

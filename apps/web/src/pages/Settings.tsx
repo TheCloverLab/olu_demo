@@ -3,15 +3,19 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
-import { Briefcase, ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
+import { Briefcase, ChevronLeft, ChevronRight, LogOut, Sun, Moon, Monitor, Globe } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
+import clsx from 'clsx'
 
 export default function Settings() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { enabledBusinessModules } = useApp()
+  const { theme, setTheme } = useTheme()
+  const { i18n } = useTranslation()
   const [savingHandle, setSavingHandle] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
@@ -205,6 +209,59 @@ export default function Settings() {
               </button>
             </div>
           ) : null}
+
+          <div className="bg-olu-surface rounded-2xl p-6">
+            <h2 className="font-semibold mb-4">{t('settings.appearance', 'Appearance')}</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-olu-muted text-xs mb-2">{t('settings.theme', 'Theme')}</p>
+                <div className="flex gap-2">
+                  {([
+                    { value: 'light' as const, icon: Sun, label: t('settings.light', 'Light') },
+                    { value: 'dark' as const, icon: Moon, label: t('settings.dark', 'Dark') },
+                    { value: 'system' as const, icon: Monitor, label: t('settings.system', 'System') },
+                  ]).map(({ value, icon: Icon, label }) => (
+                    <button
+                      key={value}
+                      onClick={() => setTheme(value)}
+                      className={clsx(
+                        'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                        theme === value
+                          ? 'bg-olu-primary text-white'
+                          : 'bg-olu-card text-olu-muted hover:text-olu-text'
+                      )}
+                    >
+                      <Icon size={14} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-olu-muted text-xs mb-2">{t('settings.language', 'Language')}</p>
+                <div className="flex gap-2">
+                  {([
+                    { value: 'en', label: 'English' },
+                    { value: 'zh', label: '中文' },
+                  ]).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      onClick={() => i18n.changeLanguage(value)}
+                      className={clsx(
+                        'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                        i18n.language?.startsWith(value)
+                          ? 'bg-olu-primary text-white'
+                          : 'bg-olu-card text-olu-muted hover:text-olu-text'
+                      )}
+                    >
+                      <Globe size={14} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="bg-olu-surface rounded-2xl p-6">
             <h2 className="font-semibold mb-3">Session</h2>

@@ -369,10 +369,6 @@ export default function BusinessLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="md:hidden flex items-center gap-1.5">
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
             <button onClick={() => navigate('/business/account')} className="flex-shrink-0">
               <Avatar user={currentUser} size="sm" />
             </button>

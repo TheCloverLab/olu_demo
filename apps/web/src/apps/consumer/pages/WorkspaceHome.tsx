@@ -107,7 +107,7 @@ function TabContent({
     if (exp.type === 'forum') navigate(`/forum/${exp.id}`)
     else if (exp.type === 'course') navigate(`/course/${exp.id}`)
     else if (exp.type === 'group_chat') navigate(`/group-chat/${exp.id}`)
-    else if (exp.type === 'support_chat') navigate(`/chat`)
+    else if (exp.type === 'support_chat') navigate(`/support/${exp.id}`)
   }
 
   if (tabExps.length === 0) {
@@ -260,11 +260,12 @@ function JoinButton({ hasJoined, joining, onJoin, t, size = 'md' }: { hasJoined:
 }
 
 function WorkspaceIcon({ workspace, size = 'md' }: { workspace: Workspace; size?: 'sm' | 'md' | 'lg' }) {
+  const [imgError, setImgError] = useState(false)
   const sz = size === 'lg' ? 'w-20 h-20 text-3xl' : size === 'md' ? 'w-14 h-14 text-xl' : 'w-10 h-10 text-base'
   const rounded = size === 'lg' ? 'rounded-[20px]' : 'rounded-2xl'
   const border = 'ring-4 ring-[var(--olu-bg)]'
-  if (workspace.icon) {
-    return <img src={workspace.icon} alt="" className={clsx(sz, rounded, border, 'object-cover')} />
+  if (workspace.icon && !imgError) {
+    return <img src={workspace.icon} alt="" className={clsx(sz, rounded, border, 'object-cover')} onError={() => setImgError(true)} />
   }
   return (
     <div className={clsx(sz, rounded, border, 'bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold')}>

@@ -174,6 +174,7 @@ function WorkspaceIconBadge({ workspace }: { workspace: any }) {
 
 function WorkspaceSwitcher() {
   const { workspace } = useApp()
+  const { t } = useTranslation()
 
   return (
     <div className="px-5 py-5 flex items-center gap-3">

@@ -10,6 +10,7 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
+import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
 import { getWorkspaceAgentsForUser, toggleAgentSupport } from '../../../domain/team/api'
 import type { WorkspaceAgent } from '../../../lib/supabase'
 
@@ -219,6 +220,7 @@ export default function SupportCenter() {
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
   const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
+  const [masterToggle, setMasterToggle] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
@@ -234,20 +236,23 @@ export default function SupportCenter() {
       .finally(() => setLoading(false))
   }, [user?.id])
 
-  const aiEnabled = allAgents.some((a) => a.support_enabled)
-
-  async function toggleAllSupport() {
+  useEffect(() => {
     if (!workspace?.id) return
-    // If any are enabled, disable all. Otherwise do nothing (need to pick agents).
-    if (aiEnabled) {
-      const enabledIds = allAgents.filter((a) => a.support_enabled).map((a) => a.id)
-      setAllAgents((prev) => prev.map((a) => ({ ...a, support_enabled: false })))
-      try {
-        await Promise.all(enabledIds.map((id) => toggleAgentSupport(id, false)))
-      } catch {
-        // Revert on error
-        setAllAgents((prev) => prev.map((a) => enabledIds.includes(a.id) ? { ...a, support_enabled: true } : a))
-      }
+    getAiSupportEnabled(workspace.id).then(setMasterToggle).catch(() => {})
+  }, [workspace?.id])
+
+  const anyAgentEnabled = allAgents.some((a) => a.support_enabled)
+  // Visual state: if no agents enabled, always show off regardless of DB
+  const aiEnabled = anyAgentEnabled && masterToggle
+
+  async function toggleMaster() {
+    if (!workspace?.id || !anyAgentEnabled) return
+    const next = !masterToggle
+    setMasterToggle(next)
+    try {
+      await setAiSupportEnabled(workspace.id, next)
+    } catch {
+      setMasterToggle(!next)
     }
   }
 
@@ -287,9 +292,10 @@ export default function SupportCenter() {
               {chats.length} conversation{chats.length !== 1 ? 's' : ''}
             </span>
           </div>
-          {/* AI master toggle — reflects whether any agent is assigned */}
+          {/* AI master toggle — orthogonal to agent toggles in DB, but visually off when no agents enabled */}
           <button
-            onClick={toggleAllSupport}
+            onClick={toggleMaster}
+            disabled={!anyAgentEnabled}
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled

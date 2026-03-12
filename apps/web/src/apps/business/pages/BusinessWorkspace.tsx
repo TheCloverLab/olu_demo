@@ -72,12 +72,6 @@ export default function BusinessWorkspace() {
           <Briefcase size={14} />
           {t('workspace.overview')}
         </div>
-        <h2 className="font-black text-3xl leading-tight">
-          {t('workspace.title', { name: currentUser.name })}
-        </h2>
-        <p className="text-[var(--olu-text-secondary)] text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
-          {t('workspace.snapshot')}
-        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
           <Link to="/business/tasks" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{inProgressTasks}</p>

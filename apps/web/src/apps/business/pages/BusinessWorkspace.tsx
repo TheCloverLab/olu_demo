@@ -64,10 +64,7 @@ export default function BusinessWorkspace() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 overflow-x-hidden">
       {/* Hero + live stats */}
-      <section
-        className="rounded-3xl p-6 md:p-7 border border-[var(--olu-section-border)]"
-        style={{ background: `radial-gradient(circle at top left, var(--olu-hero-accent), transparent 34%), var(--olu-hero-bg)` }}
-      >
+      <section>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--olu-sidebar-active-bg)]/10 text-xs text-[var(--olu-text-secondary)] mb-4">
           <Briefcase size={14} />
           {t('workspace.overview')}
@@ -79,19 +76,19 @@ export default function BusinessWorkspace() {
           {t('workspace.snapshot')}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-          <Link to="/business/tasks" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
+          <Link to="/business/tasks" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{inProgressTasks}</p>
             <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.tasksInProgress')}</p>
           </Link>
-          <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
+          <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{highPriorityApprovals}</p>
             <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.pendingApprovals')}</p>
           </Link>
-          <Link to="/business/team" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
+          <Link to="/business/team" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{employees.length}</p>
             <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.teamMembers')}</p>
           </Link>
-          <Link to="/business/apps" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
+          <Link to="/business/apps" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
             <p className="text-2xl font-black">{publishedApps}</p>
             <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.publishedApps')}</p>
           </Link>

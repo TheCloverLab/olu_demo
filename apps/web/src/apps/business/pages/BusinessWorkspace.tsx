@@ -65,28 +65,24 @@ export default function BusinessWorkspace() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 overflow-x-hidden">
       {/* Hero + live stats */}
       <section>
-        <h2 className="font-black text-3xl leading-tight">
-          {t('workspace.title', { name: currentUser.name })}
-        </h2>
-        <p className="text-[var(--olu-text-secondary)] text-sm md:text-base max-w-2xl mt-3 leading-relaxed">
-          {t('workspace.snapshot')}
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-          <Link to="/business/tasks" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
-            <p className="text-2xl font-black">{inProgressTasks}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.tasksInProgress')}</p>
+        <h1 className="font-black text-xl">{t('workspace.title', { name: currentUser.name })}</h1>
+        <p className="text-sm text-[var(--olu-muted)]">{t('workspace.snapshot')}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          <Link to="/business/tasks" className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-3 hover:bg-[var(--olu-card-hover)] transition-colors">
+            <p className="text-xs text-[var(--olu-muted)]">{t('workspace.tasksInProgress')}</p>
+            <p className="text-2xl font-black mt-1 text-cyan-500">{inProgressTasks}</p>
           </Link>
-          <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
-            <p className="text-2xl font-black">{highPriorityApprovals}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.pendingApprovals')}</p>
+          <Link to="/business/approvals" className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-3 hover:bg-[var(--olu-card-hover)] transition-colors">
+            <p className="text-xs text-[var(--olu-muted)]">{t('workspace.pendingApprovals')}</p>
+            <p className="text-2xl font-black mt-1 text-amber-500">{highPriorityApprovals}</p>
           </Link>
-          <Link to="/business/team" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
-            <p className="text-2xl font-black">{employees.length}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.teamMembers')}</p>
+          <Link to="/business/team" className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-3 hover:bg-[var(--olu-card-hover)] transition-colors">
+            <p className="text-xs text-[var(--olu-muted)]">{t('workspace.teamMembers')}</p>
+            <p className="text-2xl font-black mt-1 text-emerald-500">{employees.length}</p>
           </Link>
-          <Link to="/business/apps" className="rounded-2xl bg-[var(--olu-section-bg)] p-4 border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors">
-            <p className="text-2xl font-black">{publishedApps}</p>
-            <p className="text-xs text-[var(--olu-text-secondary)] mt-1">{t('workspace.publishedApps')}</p>
+          <Link to="/business/apps" className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-3 hover:bg-[var(--olu-card-hover)] transition-colors">
+            <p className="text-xs text-[var(--olu-muted)]">{t('workspace.publishedApps')}</p>
+            <p className="text-2xl font-black mt-1 text-purple-500">{publishedApps}</p>
           </Link>
         </div>
       </section>

@@ -710,6 +710,25 @@ export default function TeamChat() {
       }
     }
 
+    // Show message immediately with local preview URLs
+    const localPreviews = images.map((img) => img.preview)
+    const userMsg = {
+      from: 'user',
+      text: userText || (images.length ? `[${images.length} image(s)]` : ''),
+      rawText: userText,
+      images: localPreviews,
+      attachments: [] as ChatAttachment[],
+      time: 'Just now',
+    }
+
+    setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    setAttachedImages([])
+
+    const next = [...messages, userMsg]
+    setMessages(next)
+
+    // Upload images in background, then update message with real URLs
     let attachments: ChatAttachment[] = []
     if (imageFiles.length > 0) {
       try {
@@ -722,6 +741,10 @@ export default function TeamChat() {
           if (attachment) attachments.push(attachment)
           setUploadProgress((prev) => prev ? { ...prev, completed: prev.completed + 1 } : prev)
         }
+        // Update message with real URLs
+        setMessages((prev) => prev.map((m) =>
+          m === userMsg ? { ...m, images: attachments.map((a) => a.url), attachments } : m,
+        ))
       } catch (err) {
         console.error('Failed uploading chat images', err)
         setUploadProgress(null)
@@ -731,22 +754,7 @@ export default function TeamChat() {
       }
     }
     setUploadProgress(null)
-
-    setInput('')
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
     images.forEach((img) => URL.revokeObjectURL(img.preview))
-    setAttachedImages([])
-
-    const userMsg = {
-      from: 'user',
-      text: userText || (attachments.length ? `[${attachments.length} image(s)]` : ''),
-      rawText: userText,
-      images: attachments.map((attachment) => attachment.url),
-      attachments,
-      time: 'Just now',
-    }
-    const next = [...messages, userMsg]
-    setMessages(next)
 
     if (isGroup) {
       if (selectedGroupDbId) {

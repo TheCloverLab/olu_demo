@@ -72,6 +72,11 @@ const SIDEBAR_GROUPS: NavGroup[] = [
       { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
       { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
       { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
+    ],
+  },
+  {
+    groupLabel: 'System',
+    items: [
       { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
     ],
   },

@@ -46,6 +46,7 @@ type ChatMessage = {
   notice?: string
   toolCalls?: ToolCallSummary[]
   time: string
+  _realtimeId?: string
 }
 
 type PendingAgentRequest = {
@@ -652,10 +653,12 @@ export default function TeamChat() {
   useEffect(() => {
     if (isGroup && selectedGroupDbId) {
       return subscribeGroupChatMessages(selectedGroupDbId, (raw: any) => {
+        // Skip own messages (already added optimistically)
+        if (raw.from_name === 'You') return
         setMessages((prev) => {
           if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
           return [...prev, {
-            from: raw.from_name === 'You' ? 'user' : raw.from_name,
+            from: raw.from_name,
             text: raw.text,
             rawText: raw.text,
             images: (raw.attachments || []).map((a: any) => a.url),
@@ -668,10 +671,12 @@ export default function TeamChat() {
     }
     if (!isGroup && selectedAgentDbId) {
       return subscribeConversations(selectedAgentDbId, (raw: any) => {
+        // Skip own messages (already added optimistically)
+        if (raw.from_type === 'user') return
         setMessages((prev) => {
           if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
           return [...prev, {
-            from: raw.from_type === 'user' ? 'user' : 'agent',
+            from: 'agent',
             text: raw.text,
             rawText: raw.text,
             images: [],
@@ -858,7 +863,19 @@ export default function TeamChat() {
               }),
             })
           }
-          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
+          const saved = await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
+          if (saved?.id) {
+            setMessages((prev) => {
+              const last = [...prev]
+              for (let i = last.length - 1; i >= 0; i--) {
+                if (last[i].from === 'agent' && !last[i]._realtimeId) {
+                  last[i] = { ...last[i], _realtimeId: saved.id }
+                  break
+                }
+              }
+              return last
+            })
+          }
         } catch (err) {
           console.error('Failed saving assistant message', err)
         }

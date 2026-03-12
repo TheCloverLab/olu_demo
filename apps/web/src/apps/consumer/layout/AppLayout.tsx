@@ -164,10 +164,6 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces
               )}
             </div>
 
-            <div className="p-3 border-t border-olu-border flex items-center justify-center gap-2">
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
           </motion.div>
         </>
       )}

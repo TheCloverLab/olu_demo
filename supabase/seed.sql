@@ -12,6 +12,15 @@ TRUNCATE TABLE
   consumer_lesson_progress,
   consumer_course_purchases,
   consumer_memberships,
+  consumer_purchases,
+  workspace_product_experiences,
+  workspace_product_plans,
+  workspace_products,
+  forum_post_likes,
+  forum_post_comments,
+  forum_posts,
+  workspace_home_configs,
+  workspace_experiences,
   workspace_billing,
   workspace_consumer_configs,
   workspace_policies,
@@ -50,37 +59,37 @@ RESTART IDENTITY CASCADE;
 -- ── Users ──────────────────────────────────────────────────────────
 
 -- Consumers (10)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'alexpark', '@alexpark', 'alex.demo@olu.app', 'Alex Park', '', 'from-pink-500 to-rose-600', 'AP', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000002', 'jordanlee', '@jordanlee', 'jordan.demo@olu.app', 'Jordan Lee', '', 'from-blue-500 to-blue-700', 'JL', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000003', 'miazhang', '@miazhang', 'mia.demo@olu.app', 'Mia Zhang', '', 'from-violet-500 to-purple-600', 'MZ', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000004', 'ryankim', '@ryankim', 'ryan.demo@olu.app', 'Ryan Kim', '', 'from-amber-500 to-orange-600', 'RK', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000005', 'sofiamartinez', '@sofiamartinez', 'sofia.demo@olu.app', 'Sofia Martinez', '', 'from-rose-500 to-pink-600', 'SM', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000006', 'davidchen', '@davidchen', 'david.demo@olu.app', 'David Chen', '', 'from-emerald-500 to-green-600', 'DC', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000007', 'emmawilson', '@emmawilson', 'emma.demo@olu.app', 'Emma Wilson', '', 'from-sky-500 to-blue-600', 'EW', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000008', 'lucasbrown', '@lucasbrown', 'lucas.demo@olu.app', 'Lucas Brown', '', 'from-orange-500 to-red-600', 'LB', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000009', 'ninapatel', '@ninapatel', 'nina.demo@olu.app', 'Nina Patel', '', 'from-yellow-500 to-amber-600', 'NP', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000010', 'tylerwang', '@tylerwang', 'tyler.demo@olu.app', 'Tyler Wang', '', 'from-teal-500 to-cyan-600', 'TW', 0, 0, 0, false);
+  ('00000000-0000-0000-0000-000000000001', 'alexpark', '@alexpark', 'alex.demo@olu.app', 'fan', 'Alex Park', '', 'from-pink-500 to-rose-600', 'AP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000002', 'jordanlee', '@jordanlee', 'jordan.demo@olu.app', 'fan', 'Jordan Lee', '', 'from-blue-500 to-blue-700', 'JL', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000003', 'miazhang', '@miazhang', 'mia.demo@olu.app', 'fan', 'Mia Zhang', '', 'from-violet-500 to-purple-600', 'MZ', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000004', 'ryankim', '@ryankim', 'ryan.demo@olu.app', 'fan', 'Ryan Kim', '', 'from-amber-500 to-orange-600', 'RK', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000005', 'sofiamartinez', '@sofiamartinez', 'sofia.demo@olu.app', 'fan', 'Sofia Martinez', '', 'from-rose-500 to-pink-600', 'SM', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000006', 'davidchen', '@davidchen', 'david.demo@olu.app', 'fan', 'David Chen', '', 'from-emerald-500 to-green-600', 'DC', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000007', 'emmawilson', '@emmawilson', 'emma.demo@olu.app', 'fan', 'Emma Wilson', '', 'from-sky-500 to-blue-600', 'EW', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000008', 'lucasbrown', '@lucasbrown', 'lucas.demo@olu.app', 'fan', 'Lucas Brown', '', 'from-orange-500 to-red-600', 'LB', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000009', 'ninapatel', '@ninapatel', 'nina.demo@olu.app', 'fan', 'Nina Patel', '', 'from-yellow-500 to-amber-600', 'NP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000010', 'tylerwang', '@tylerwang', 'tyler.demo@olu.app', 'fan', 'Tyler Wang', '', 'from-teal-500 to-cyan-600', 'TW', 0, 0, 0, false);
 
 -- Creator Ops (3)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000011', 'lunachen', '@lunachen', 'luna.demo@olu.app', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true),
-  ('00000000-0000-0000-0000-000000000012', 'kaivibe', '@kaivibe', 'kai.demo@olu.app', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true),
-  ('00000000-0000-0000-0000-000000000013', 'zaranova', '@zaranova', 'zara.demo@olu.app', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true);
+  ('00000000-0000-0000-0000-000000000011', 'lunachen', '@lunachen', 'luna.demo@olu.app', 'creator', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true),
+  ('00000000-0000-0000-0000-000000000012', 'kaivibe', '@kaivibe', 'kai.demo@olu.app', 'creator', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true),
+  ('00000000-0000-0000-0000-000000000013', 'zaranova', '@zaranova', 'zara.demo@olu.app', 'creator', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true);
 
 -- Marketing (2)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000014', 'gameverse', '@gameverse', 'gameverse.demo@olu.app', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true),
-  ('00000000-0000-0000-0000-000000000015', 'techmarkus', '@techmarkus', 'marcus.demo@olu.app', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true);
+  ('00000000-0000-0000-0000-000000000014', 'gameverse', '@gameverse', 'gameverse.demo@olu.app', 'advertiser', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true),
+  ('00000000-0000-0000-0000-000000000015', 'techmarkus', '@techmarkus', 'marcus.demo@olu.app', 'advertiser', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true);
 
 -- Supply Chain (2)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000016', 'artisancraft', '@artisancraft', 'artisan.demo@olu.app', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true),
-  ('00000000-0000-0000-0000-000000000017', 'yukidraws', '@yukidraws', 'yuki.demo@olu.app', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false);
+  ('00000000-0000-0000-0000-000000000016', 'artisancraft', '@artisancraft', 'artisan.demo@olu.app', 'supplier', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true),
+  ('00000000-0000-0000-0000-000000000017', 'yukidraws', '@yukidraws', 'yuki.demo@olu.app', 'supplier', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false);
 
 -- ── Workspaces (only for business users) ──────────────────────────
 
@@ -177,6 +186,159 @@ VALUES
   ('05000000-0000-0000-0000-000000000004', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"GameVerse Arena","cover_img":"/images/covers/gameverse.jpg"}'::jsonb),
   ('05000000-0000-0000-0000-000000000005', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Tech & Gaming Hub","cover_img":"/images/covers/marcuschen.jpg"}'::jsonb),
   ('05000000-0000-0000-0000-000000000006', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Artisan Workshop","cover_img":"/images/covers/artisancraft.jpg"}'::jsonb);
+
+-- ── Workspace Experiences (Luna = Community preset, Kai = Academy preset) ──
+
+-- Luna's experiences (Community + Course)
+INSERT INTO workspace_experiences (id, workspace_id, type, name, icon, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'forum', 'General Discussion', NULL, '/images/covers/dragonart.jpg', 0, 'public', 'active'),
+  ('06000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'forum', 'Art Critique Room', NULL, NULL, 1, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'course', 'Digital Art Academy', NULL, '/images/covers/gamingsetup.jpg', 2, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000001', 'group_chat', 'Pixel Realm Lounge', NULL, NULL, 3, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000001', 'support_chat', 'Support', NULL, NULL, 99, 'public', 'active');
+
+-- Kai's experiences (Academy preset)
+INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000002', 'course', 'Lo-fi Production Academy', '/images/covers/galaxyquest.jpg', 0, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000002', 'forum', 'Producer Talk', NULL, 1, 'public', 'active'),
+  ('06000000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000002', 'group_chat', 'The Listening Room', NULL, 2, 'members_only', 'active');
+
+-- Zara's experiences
+INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000009', '05000000-0000-0000-0000-000000000003', 'course', 'Sustainable Fashion Lab', '/images/covers/alexpark.jpg', 0, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000010', '05000000-0000-0000-0000-000000000003', 'forum', 'Style Community', NULL, 1, 'public', 'active');
+
+-- Link existing courses to experiences
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000003' WHERE id = '20500000-0000-0000-0000-000000000001';
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000006' WHERE id = '20500000-0000-0000-0000-000000000002';
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000009' WHERE id = '20500000-0000-0000-0000-000000000003';
+
+-- ── Workspace Products ──────────────────────────────────────────
+
+-- Luna's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'Free Community', 'Access public forums and community features', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'Pro Membership', 'Full access to all forums, courses, and group chat', 'paid', 1, 'active');
+
+-- Kai's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', 'Free Access', 'Access the community forum', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'Producer Pass', 'Full access to courses and listening room', 'paid', 1, 'active');
+
+-- Zara's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000003', 'Fashion Starter', 'Community access', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'Design Lab Access', 'Full access to courses and community', 'paid', 1, 'active');
+
+-- ── Product Plans ───────────────────────────────────────────────
+
+-- Luna Pro Membership plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000001', '07000000-0000-0000-0000-000000000002', 'recurring', 9.99, 'USD', 'month', 'active'),
+  ('08000000-0000-0000-0000-000000000002', '07000000-0000-0000-0000-000000000002', 'recurring', 89.99, 'USD', 'year', 'active');
+
+-- Kai Producer Pass plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000003', '07000000-0000-0000-0000-000000000004', 'recurring', 14.99, 'USD', 'month', 'active'),
+  ('08000000-0000-0000-0000-000000000004', '07000000-0000-0000-0000-000000000004', 'one_time', 149.00, 'USD', NULL, 'active');
+
+-- Zara Design Lab plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000005', '07000000-0000-0000-0000-000000000006', 'recurring', 19.99, 'USD', 'month', 'active');
+
+-- ── Product ↔ Experience Linking ────────────────────────────────
+
+-- Luna: Free Community → public forum only
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000001', '06000000-0000-0000-0000-000000000001');
+
+-- Luna: Pro Membership → all experiences
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000001'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000002'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000003'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000004');
+
+-- Kai: Free → forum only
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000003', '06000000-0000-0000-0000-000000000007');
+
+-- Kai: Producer Pass → courses + listening room + forum
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000006'),
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000007'),
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000008');
+
+-- Zara: Free → community forum
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000005', '06000000-0000-0000-0000-000000000010');
+
+-- Zara: Design Lab → course + community
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000006', '06000000-0000-0000-0000-000000000009'),
+  ('07000000-0000-0000-0000-000000000006', '06000000-0000-0000-0000-000000000010');
+
+-- ── Consumer Purchases (Alex has Luna Pro) ──────────────────────
+
+INSERT INTO consumer_purchases (id, user_id, product_id, plan_id, status, started_at)
+VALUES
+  ('09000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '07000000-0000-0000-0000-000000000002', '08000000-0000-0000-0000-000000000001', 'active', NOW() - INTERVAL '45 days');
+
+-- ── Forum Posts (Luna's General Discussion) ─────────────────────
+
+INSERT INTO forum_posts (id, experience_id, author_id, content, like_count, comment_count)
+VALUES
+  ('0a000000-0000-0000-0000-000000000001', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Welcome to Pixel Realm! Share your latest pixel art here. 🎨', 42, 3),
+  ('0a000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Just finished my first pixel portrait! What do you all think?', 18, 2),
+  ('0a000000-0000-0000-0000-000000000003', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'Anyone doing the weekly challenge? I am in for this week!', 8, 1);
+
+INSERT INTO forum_post_comments (id, post_id, author_id, content)
+VALUES
+  ('0a100000-0000-0000-0000-000000000001', '0a000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'So excited to be here! Love the community vibes.'),
+  ('0a100000-0000-0000-0000-000000000002', '0a000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'This is amazing, Luna! Can not wait for the next drop.'),
+  ('0a100000-0000-0000-0000-000000000003', '0a000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'Looks great Alex! Love the color palette.');
+
+-- ── Workspace Home Configs ──────────────────────────────────────
+
+-- Luna's home page (Community preset: About + Discussion + Courses + Chat)
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000001', '/images/covers/dragonart.jpg', 'Digital artist & gamer. Creating worlds one pixel at a time.', '[
+    {"key": "discussion", "label": "Discussion", "experience_ids": ["06000000-0000-0000-0000-000000000001", "06000000-0000-0000-0000-000000000002"], "display_mode": "list", "position": 1},
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000003"], "display_mode": "featured", "position": 2},
+    {"key": "chat", "label": "Chat", "experience_ids": ["06000000-0000-0000-0000-000000000004"], "display_mode": "list", "position": 3}
+  ]'::jsonb);
+
+-- Kai's home page (Academy preset: About + Courses + Community)
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000002', '/images/covers/midnightdrift.jpg', 'Lo-fi producer and creator. Craft chill beats with me.', '[
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000006"], "display_mode": "featured", "position": 1},
+    {"key": "community", "label": "Community", "experience_ids": ["06000000-0000-0000-0000-000000000007"], "display_mode": "list", "position": 2},
+    {"key": "chat", "label": "Chat", "experience_ids": ["06000000-0000-0000-0000-000000000008"], "display_mode": "list", "position": 3}
+  ]'::jsonb);
+
+-- Zara's home page
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000003', '/images/covers/neoncity.jpg', 'Fashion and lifestyle creator. Sustainability meets style.', '[
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000009"], "display_mode": "featured", "position": 1},
+    {"key": "community", "label": "Community", "experience_ids": ["06000000-0000-0000-0000-000000000010"], "display_mode": "list", "position": 2}
+  ]'::jsonb);
+
+-- Add icon/cover/headline to workspaces
+UPDATE workspaces SET icon = '/images/avatars/luna.jpg', cover = '/images/covers/dragonart.jpg', headline = 'Digital artist & gamer' WHERE id = '05000000-0000-0000-0000-000000000001';
+UPDATE workspaces SET icon = '/images/avatars/kai.jpg', cover = '/images/covers/midnightdrift.jpg', headline = 'Lo-fi producer' WHERE id = '05000000-0000-0000-0000-000000000002';
+UPDATE workspaces SET icon = '/images/avatars/zara.jpg', cover = '/images/covers/neoncity.jpg', headline = 'Sustainable fashion' WHERE id = '05000000-0000-0000-0000-000000000003';
 
 -- ── Agent Templates ───────────────────────────────────────────────
 

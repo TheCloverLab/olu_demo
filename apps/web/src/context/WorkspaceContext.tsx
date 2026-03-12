@@ -3,6 +3,9 @@ import { useAuth } from './AuthContext'
 import { getEnabledBusinessModulesForUser } from '../domain/workspace/api'
 import type { BusinessModuleKey } from '../lib/supabase'
 
+const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
+const ALL_MODULES: BusinessModuleKey[] = ['creator_ops', 'marketing', 'supply_chain']
+
 interface WorkspaceContextType {
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean
@@ -36,6 +39,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    if (IS_DEMO) {
+      setEnabledBusinessModules(ALL_MODULES)
+      setWorkspaceLoading(false)
+      return
+    }
+
     let cancelled = false
     setWorkspaceLoading(true)
 
@@ -51,7 +60,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setEnabledBusinessModules(modules)
       } catch (error) {
         console.error('Failed to load workspace modules', error)
-        if (!cancelled) setEnabledBusinessModules(['creator_ops', 'marketing', 'supply_chain'])
+        if (!cancelled) setEnabledBusinessModules(ALL_MODULES)
       } finally {
         if (!cancelled) setWorkspaceLoading(false)
       }

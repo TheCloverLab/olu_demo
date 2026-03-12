@@ -4,6 +4,25 @@ import type { User } from '../lib/supabase'
 import { Session } from '@supabase/supabase-js'
 import { ensureWorkspaceForUser } from '../domain/workspace/api'
 
+const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
+
+const DEMO_USER: User = {
+  id: 'demo-user-001',
+  auth_id: 'demo-auth-001',
+  username: 'demo_creator',
+  handle: '@demo_creator',
+  email: 'demo@olu.app',
+  name: 'Demo Creator',
+  bio: 'Welcome to the OLU demo experience',
+  avatar_color: 'from-violet-500 to-fuchsia-500',
+  initials: 'DC',
+  followers: 12400,
+  following: 328,
+  posts: 86,
+  verified: true,
+  onboarding_completed: true,
+}
+
 interface AuthContextType {
   session: Session | null
   user: User | null
@@ -21,10 +40,12 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(IS_DEMO ? DEMO_USER : null)
+  const [loading, setLoading] = useState(!IS_DEMO)
 
   useEffect(() => {
+    if (IS_DEMO) return // Skip Supabase auth in demo mode
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)

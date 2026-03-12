@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE consumer_courses (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE consumer_courses (
 );
 
 CREATE TABLE consumer_course_sections (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id UUID NOT NULL REFERENCES consumer_courses(id) ON DELETE CASCADE,
   section_key TEXT NOT NULL,
   title TEXT NOT NULL,

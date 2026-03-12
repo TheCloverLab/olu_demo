@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE business_campaigns (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   advertiser_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   agent_id UUID REFERENCES ai_agents(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE business_campaigns (
 );
 
 CREATE TABLE business_campaign_targets (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   campaign_id UUID NOT NULL REFERENCES business_campaigns(id) ON DELETE CASCADE,
   creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   creator_agent_id UUID REFERENCES ai_agents(id) ON DELETE SET NULL,
@@ -36,7 +36,7 @@ CREATE TABLE business_campaign_targets (
 );
 
 CREATE TABLE business_campaign_events (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   campaign_id UUID NOT NULL REFERENCES business_campaigns(id) ON DELETE CASCADE,
   target_id UUID REFERENCES business_campaign_targets(id) ON DELETE CASCADE,
   actor_type TEXT NOT NULL CHECK (actor_type IN ('advertiser', 'creator', 'agent', 'system')),

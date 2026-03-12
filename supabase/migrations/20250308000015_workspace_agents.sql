@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE agent_templates (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   template_key TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   role TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE agent_templates (
 );
 
 CREATE TABLE workspace_agents (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   template_id UUID REFERENCES agent_templates(id) ON DELETE SET NULL,
   hired_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -42,7 +42,7 @@ CREATE TABLE workspace_agents (
 );
 
 CREATE TABLE workspace_agent_tasks (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_agent_id UUID NOT NULL REFERENCES workspace_agents(id) ON DELETE CASCADE,
   task_key TEXT NOT NULL,
   title TEXT NOT NULL,

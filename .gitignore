@@ -7,3 +7,5 @@ dist/
 .vercel
 .env*.local
 .DS_Store
+test-results/
+apps/web/e2e/

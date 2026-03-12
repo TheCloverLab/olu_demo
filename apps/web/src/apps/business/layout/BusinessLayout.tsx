@@ -24,6 +24,10 @@ import {
   Moon,
   Monitor,
   Globe,
+  Layers,
+  Tag,
+  Headphones,
+  Home,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -35,20 +39,45 @@ import type { WorkspaceWallet } from '../../../lib/supabase'
 
 import type { BusinessModuleKey } from '../../../lib/supabase'
 
-const CORE_NAV: ReadonlyArray<{ to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }> = [
-  { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
-  { to: '/business/apps', icon: AppWindow, labelKey: 'nav.apps', moduleKey: 'creator_ops' },
-  { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
-  { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
-  { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },
-  { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
+type NavItem = { to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }
+type NavGroup = { groupLabel: string; items: NavItem[] }
+
+const SIDEBAR_GROUPS: NavGroup[] = [
+  {
+    groupLabel: 'Dashboard',
+    items: [
+      { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
+    ],
+  },
+  {
+    groupLabel: 'Experiences',
+    items: [
+      { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
+      { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
+      { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
+    ],
+  },
+  {
+    groupLabel: 'Operations',
+    items: [
+      { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
+      { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
+      { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },
+    ],
+  },
+  {
+    groupLabel: 'Modules',
+    items: [
+      { to: '/business/modules/creator', icon: LayoutDashboard, labelKey: 'nav.creatorOps', moduleKey: 'creator_ops' },
+      { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
+      { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
+      { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
+    ],
+  },
 ]
 
-const MODULE_NAV: Array<{ to: string; icon: typeof LayoutDashboard; labelKey: string; moduleKey: BusinessModuleKey }> = [
-  { to: '/business/modules/creator', icon: LayoutDashboard, labelKey: 'nav.creatorOps', moduleKey: 'creator_ops' },
-  { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
-  { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
-]
+// Flat list for breadcrumb/label resolution
+const ALL_NAV_ITEMS: NavItem[] = SIDEBAR_GROUPS.flatMap((g) => g.items)
 
 function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -178,19 +207,21 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
             </button>
 
             <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-              <MenuItem icon={PanelsTopLeft} label={t('nav.overview')} onClick={() => go('/business')} />
-              {hasModule('creator_ops') && <MenuItem icon={AppWindow} label={t('nav.apps')} onClick={() => go('/business/apps')} />}
-              <MenuItem icon={Users} label={t('nav.team')} onClick={() => go('/business/team')} />
-              <MenuItem icon={ListTodo} label={t('nav.tasks')} onClick={() => go('/business/tasks')} />
-              <MenuItem icon={ShieldCheck} label={t('nav.approvals')} onClick={() => go('/business/approvals')} />
-              <MenuItem icon={Cable} label={t('nav.connectors')} onClick={() => go('/business/connectors')} />
-              {MODULE_NAV.filter((m) => hasModule(m.moduleKey)).map((m) => (
-                <MenuItem key={m.to} icon={m.icon} label={t(m.labelKey)} onClick={() => go(m.to)} />
-              ))}
+              {SIDEBAR_GROUPS.map((group) => {
+                const visibleItems = group.items.filter((item) => !item.moduleKey || hasModule(item.moduleKey))
+                if (visibleItems.length === 0) return null
+                return (
+                  <div key={group.groupLabel}>
+                    <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-4 pt-3 pb-1">{group.groupLabel}</p>
+                    {visibleItems.map((item) => (
+                      <MenuItem key={item.to} icon={item.icon} label={t(item.labelKey)} onClick={() => go(item.to)} />
+                    ))}
+                  </div>
+                )
+              })}
+              <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
               <MenuItem icon={Settings} label={t('common.settings')} onClick={() => go('/business/settings')} />
-              <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
               <MenuItem icon={Bot} label={t('nav.aiAgentMarketplace')} onClick={() => go('/business/agents')} />
-              <div className="border-t border-[var(--olu-border)] my-2 mx-2" />
               <MenuItem icon={ExternalLink} label={t('nav.openOlu')} onClick={() => window.open('/', '_blank', 'noopener,noreferrer')} />
             </div>
 
@@ -217,10 +248,9 @@ export default function BusinessLayout() {
   }, [user?.id])
 
   const allNav = [
-    ...CORE_NAV,
+    ...ALL_NAV_ITEMS,
     { to: '/business/wallet', icon: Wallet, labelKey: 'common.wallet' },
     { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
-    ...MODULE_NAV,
   ]
   const activeModuleLabel = (() => {
     const item = allNav.find((item) =>
@@ -269,33 +299,29 @@ export default function BusinessLayout() {
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {CORE_NAV.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey)).map(({ to, icon: Icon, labelKey, exact }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={exact}
-              className={({ isActive }) => clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
-              )}
-            >
-              <Icon size={18} />
-              {t(labelKey)}
-            </NavLink>
-          ))}
-          {MODULE_NAV.filter((m) => enabledBusinessModules.includes(m.moduleKey)).map(({ to, icon: Icon, labelKey }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) => clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
-                isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
-              )}
-            >
-              <Icon size={18} />
-              {t(labelKey)}
-            </NavLink>
-          ))}
+          {SIDEBAR_GROUPS.map((group) => {
+            const visibleItems = group.items.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey))
+            if (visibleItems.length === 0) return null
+            return (
+              <div key={group.groupLabel}>
+                <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-3 pt-4 pb-1">{group.groupLabel}</p>
+                {visibleItems.map(({ to, icon: Icon, labelKey, exact }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={exact}
+                    className={({ isActive }) => clsx(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                      isActive ? 'bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)]' : 'text-[var(--olu-sidebar-text)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-sidebar-hover)]'
+                    )}
+                  >
+                    <Icon size={18} />
+                    {t(labelKey)}
+                  </NavLink>
+                ))}
+              </div>
+            )
+          })}
 
           <div className="border-t border-[var(--olu-border)] my-2" />
           <NavLink

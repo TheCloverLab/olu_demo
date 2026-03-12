@@ -15,7 +15,12 @@ import ApprovalCenter from './pages/ApprovalCenter'
 import { Navigate } from 'react-router-dom'
 import EmployeeProfile from './pages/EmployeeProfile'
 import AppManagement from './pages/AppManagement'
+import ExperienceManager from './pages/ExperienceManager'
+import ProductManager from './pages/ProductManager'
+import HomeEditor from './pages/HomeEditor'
 import Connectors from './pages/Connectors'
+import CreatorStudio from './pages/CreatorStudio'
+import CourseEditor from './pages/CourseEditor'
 import RoleProtected from '../../components/auth/RoleProtected'
 
 export const businessRoutes: RouteObject[] = [
@@ -30,12 +35,17 @@ export const businessRoutes: RouteObject[] = [
       { path: 'team/person/:employeeId', element: <EmployeeProfile /> },
       { path: 'agents', element: <AIAgentConfig /> },
       { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
+      { path: 'experiences', element: <ExperienceManager /> },
+      { path: 'products', element: <ProductManager /> },
+      { path: 'home-editor', element: <HomeEditor /> },
       { path: 'connectors', element: <Connectors /> },
       { path: 'tasks', element: <TaskCenter /> },
       { path: 'approvals', element: <ApprovalCenter /> },
       { path: 'account', element: <BusinessAccount /> },
       { path: 'settings', element: <BusinessSettings /> },
       { path: 'wallet', element: <WalletPage /> },
+      { path: 'creator-studio', element: <RoleProtected requiredModule="creator_ops"><CreatorStudio /></RoleProtected> },
+      { path: 'course-editor', element: <RoleProtected requiredModule="creator_ops"><CourseEditor /></RoleProtected> },
       { path: 'modules/creator', element: <RoleProtected requiredModule="creator_ops"><CreatorConsole /></RoleProtected> },
       { path: 'modules/marketing', element: <RoleProtected requiredModule="marketing"><AdvertiserConsole /></RoleProtected> },
       { path: 'modules/supply', element: <RoleProtected requiredModule="supply_chain"><SupplierConsole /></RoleProtected> },

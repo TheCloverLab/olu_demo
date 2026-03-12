@@ -142,6 +142,8 @@ graph TD
   subgraph BusinessApp["Business App (/business)"]
     D_TEAM["team/<br/>Agents + Humans (HR model)"]
     D_WORKSPACE["workspace/<br/>Multi-tenant workspaces"]
+    D_EXPERIENCE["experience/<br/>Modular content (forum, course, chat)"]
+    D_PRODUCT["product/<br/>Products, plans, purchases, home config"]
     D_CONNECTORS["connectors/<br/>Task targets (Twitter, Shopify...)"]
     D_INTEGRATIONS["integrations/<br/>Communication bridges"]
     D_CAMPAIGN["campaign/<br/>Marketing campaigns"]
@@ -261,14 +263,23 @@ graph TD
 erDiagram
   workspaces ||--o{ workspace_agents : has
   workspaces ||--o{ workspace_integrations : has
+  workspaces ||--o{ workspace_experiences : has
+  workspaces ||--o{ workspace_products : has
   workspace_agents ||--o{ workspace_agent_tasks : assigned
   workspace_agents ||--o{ agent_conversations : chats
+  workspace_experiences ||--o{ workspace_product_experiences : linked
+  workspace_products ||--o{ workspace_product_plans : has
+  workspace_products ||--o{ workspace_product_experiences : linked
+  workspace_experiences ||--o{ forum_posts : contains
 
   workspaces {
     uuid id PK
     text name
     uuid owner_id FK
     text plan
+    text icon
+    text cover
+    text headline
   }
 
   workspace_agents {
@@ -296,6 +307,22 @@ erDiagram
     text provider
     jsonb config_json
     text status
+  }
+
+  workspace_experiences {
+    uuid id PK
+    uuid workspace_id FK
+    text type
+    text name
+    text visibility
+    text cover
+  }
+
+  workspace_products {
+    uuid id PK
+    uuid workspace_id FK
+    text name
+    text access_type
   }
 
   agent_conversations {

@@ -121,7 +121,7 @@ export default function SupplierConsole() {
         <div className="space-y-6">
           <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 flex items-center gap-3">
             <ShieldCheck size={16} className="text-cyan-700 dark:text-cyan-200" />
-            <p className="text-sm text-cyan-700/68 dark:text-cyan-100/68">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
+            <p className="text-sm text-[var(--olu-text-secondary)]">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

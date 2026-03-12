@@ -333,8 +333,8 @@ export default function Team() {
       {lastRunResult && (
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-4">
           <p className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
-          <p className="text-sm text-cyan-700/80 dark:text-cyan-100/80 whitespace-pre-line">{lastRunResult}</p>
-          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-700/40 dark:text-cyan-100/40 mt-2 hover:text-[var(--olu-text-secondary)]">{t('common.dismiss')}</button>
+          <p className="text-sm text-[var(--olu-text-secondary)] whitespace-pre-line">{lastRunResult}</p>
+          <button onClick={() => setLastRunResult(null)} className="text-xs text-[var(--olu-muted)] mt-2 hover:text-[var(--olu-text)]">{t('common.dismiss')}</button>
         </div>
       )}
 
@@ -416,11 +416,11 @@ export default function Team() {
               <div className="grid sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
                 </div>
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
                 </div>
                 <div className="flex items-end">
                   <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">

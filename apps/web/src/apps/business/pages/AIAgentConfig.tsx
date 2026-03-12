@@ -264,7 +264,7 @@ export default function AIAgentConfig() {
             </div>
             <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 mb-4 flex items-center gap-3">
               <Sparkles size={16} className="text-cyan-700 dark:text-cyan-200" />
-              <p className="text-sm text-cyan-700/68 dark:text-cyan-100/68">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
+              <p className="text-sm text-[var(--olu-text-secondary)]">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredMarket.map((agent) => (

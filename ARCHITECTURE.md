@@ -177,6 +177,7 @@ graph LR
   subgraph Pages["Business Pages"]
     TEAM["Team.tsx<br/>Hybrid workforce grid"]
     CHAT["TeamChat.tsx<br/>Agent chat interface"]
+    MEMBERS["MembersPage.tsx<br/>Purchase records & stats"]
     CONN["Connectors.tsx<br/>OAuth connectors + integrations"]
     SETTINGS["BusinessSettings.tsx<br/>Workspace settings"]
   end

@@ -312,7 +312,7 @@ export default function ContentDetail() {
               <input
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && submitComment()}
+                onKeyDown={e => e.key === 'Enter' && !e.nativeEvent.isComposing && submitComment()}
                 placeholder={t('consumer.addComment')}
                 className="flex-1 px-4 py-2.5 glass rounded-xl text-sm placeholder:text-olu-muted focus:outline-none border border-transparent focus:border-white/20 transition-colors"
               />

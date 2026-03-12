@@ -51,7 +51,7 @@ export default function PasswordGate({ children }: PasswordGateProps) {
           type="password"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && submit()}
+          onKeyDown={e => e.key === 'Enter' && !e.nativeEvent.isComposing && submit()}
           placeholder="Password"
           autoFocus
           className={`w-full px-4 py-3 rounded-xl bg-olu-card border text-sm placeholder:text-olu-muted focus:outline-none transition-colors ${error ? 'border-red-500' : 'border-olu-border focus:border-[var(--olu-input-focus)]'}`}

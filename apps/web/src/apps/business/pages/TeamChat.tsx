@@ -1100,7 +1100,7 @@ export default function TeamChat() {
                   }}
                   onKeyDown={e => {
                     if (isGroup && mention.handleKey(e, input, setInput)) return
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+                    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); sendMessage() }
                   }}
                   onPaste={e => {
                     const files = Array.from(e.clipboardData.files)

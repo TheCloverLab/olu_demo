@@ -73,15 +73,26 @@ async function callLLMWithTools(
     body.max_tokens = 2048
   }
 
-  const res = await fetch(`${provider.baseURL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${provider.apiKey}`,
-      ...(provider.headers || {}),
-    },
-    body: JSON.stringify(body),
-  })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 60_000)
+  let res: Response
+  try {
+    res = await fetch(`${provider.baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${provider.apiKey}`,
+        ...(provider.headers || {}),
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (err: any) {
+    clearTimeout(timeout)
+    if (err.name === 'AbortError') throw new Error('LLM request timed out after 60s')
+    throw err
+  }
+  clearTimeout(timeout)
 
   if (!res.ok) {
     const text = await res.text()

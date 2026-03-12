@@ -6,7 +6,7 @@ import {
   ChevronDown, Save, X,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { getExperience } from '../../../domain/experience/api'
+import { getExperience, deleteExperience } from '../../../domain/experience/api'
 import {
   listCourses, createCourse, updateCourse, deleteCourse,
   createChapter, updateChapter, deleteChapter,
@@ -26,11 +26,13 @@ function CourseListView({
   courses,
   onSelect,
   onCreated,
+  onDeleteExperience,
 }: {
   experience: WorkspaceExperience
   courses: ExperienceCourse[]
   onSelect: (id: string) => void
   onCreated: () => void
+  onDeleteExperience: () => void
 }) {
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
@@ -50,17 +52,25 @@ function CourseListView({
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate('/business/experiences')}
-          className="p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          <p className="text-[var(--olu-muted)] text-xs">Courses</p>
-          <h1 className="font-bold text-lg">{experience.name}</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/business/experiences')}
+            className="p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <p className="text-[var(--olu-muted)] text-xs">Courses</p>
+            <h1 className="font-bold text-lg">{experience.name}</h1>
+          </div>
         </div>
+        <button
+          onClick={onDeleteExperience}
+          className="p-2 rounded-xl hover:bg-red-500/10 transition-colors text-[var(--olu-muted)] hover:text-red-500"
+        >
+          <Trash2 size={16} />
+        </button>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -532,6 +542,7 @@ function CourseDetailView({
 
 export default function CourseExperienceEditor() {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const experienceId = params.get('id')
 
   const [exp, setExp] = useState<WorkspaceExperience | null>(null)
@@ -548,6 +559,17 @@ export default function CourseExperienceEditor() {
       setExp(e)
       setCourses(c)
     }).finally(() => setLoading(false))
+  }
+
+  async function handleDeleteExperience() {
+    if (!exp) return
+    if (!confirm(`Delete "${exp.name}"? This cannot be undone.`)) return
+    try {
+      await deleteExperience(exp.id)
+      navigate('/business/experiences')
+    } catch (err) {
+      console.error('Failed to delete experience', err)
+    }
   }
 
   useEffect(() => { reload() }, [experienceId])
@@ -583,6 +605,7 @@ export default function CourseExperienceEditor() {
       courses={courses}
       onSelect={setSelectedCourseId}
       onCreated={reload}
+      onDeleteExperience={handleDeleteExperience}
     />
   )
 }

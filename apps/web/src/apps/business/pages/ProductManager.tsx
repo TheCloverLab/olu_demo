@@ -343,9 +343,9 @@ export default function ProductManager() {
 
   const workspaceId = workspace?.id
 
-  function reload() {
+  function reload(showSpinner = false) {
     if (!workspaceId) return
-    setLoading(true)
+    if (showSpinner) setLoading(true)
     Promise.all([
       getProductsWithPlans(workspaceId),
       listExperiences(workspaceId),
@@ -356,7 +356,7 @@ export default function ProductManager() {
   }
 
   useEffect(() => {
-    reload()
+    reload(true)
   }, [workspaceId])
 
   if (loading) {

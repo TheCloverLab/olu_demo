@@ -5,6 +5,7 @@ import { Loader2, Heart, MessageCircle, Send, ArrowLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import type { WorkspaceExperience } from '../../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { getExperience, getForumPosts, createForumPost, getForumPostComments, createForumPostComment, toggleForumPostLike, type ForumPostWithAuthor } from '../../../domain/experience/api'
 
 function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
@@ -22,10 +23,12 @@ function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
 function PostCard({
   post,
   currentUserId,
+  isLiked,
   onLikeToggle,
 }: {
   post: ForumPostWithAuthor
   currentUserId?: string
+  isLiked?: boolean
   onLikeToggle: () => void
 }) {
   const [showComments, setShowComments] = useState(false)
@@ -88,9 +91,12 @@ function PostCard({
         <div className="flex items-center gap-4 pt-1">
           <button
             onClick={onLikeToggle}
-            className="flex items-center gap-1.5 text-xs text-[var(--olu-text-secondary)] hover:text-red-400 transition-colors"
+            className={clsx(
+              'flex items-center gap-1.5 text-xs transition-colors',
+              isLiked ? 'text-red-500' : 'text-[var(--olu-text-secondary)] hover:text-red-400'
+            )}
           >
-            <Heart size={14} />
+            <Heart size={14} fill={isLiked ? 'currentColor' : 'none'} />
             {post.like_count}
           </button>
           <button
@@ -157,6 +163,7 @@ export default function ForumView() {
   const [loading, setLoading] = useState(true)
   const [newPostText, setNewPostText] = useState('')
   const [posting, setPosting] = useState(false)
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set())
 
   function reload() {
     if (!experienceId) return
@@ -172,6 +179,18 @@ export default function ForumView() {
   useEffect(() => {
     reload()
   }, [experienceId])
+
+  // Load which posts the current user has liked
+  useEffect(() => {
+    if (!user?.id || !experienceId) return
+    supabase
+      .from('forum_post_likes')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        if (data) setLikedPostIds(new Set(data.map((d: any) => d.post_id)))
+      })
+  }, [user?.id, experienceId])
 
   async function handlePost() {
     if (!newPostText.trim() || !user || !experienceId) return
@@ -189,11 +208,29 @@ export default function ForumView() {
 
   async function handleLike(postId: string) {
     if (!user) return
+    const wasLiked = likedPostIds.has(postId)
+    // Optimistic update
+    setLikedPostIds((prev) => {
+      const next = new Set(prev)
+      if (wasLiked) next.delete(postId); else next.add(postId)
+      return next
+    })
+    setPosts((prev) => prev.map((p) =>
+      p.id === postId ? { ...p, like_count: p.like_count + (wasLiked ? -1 : 1) } : p
+    ))
     try {
       await toggleForumPostLike(postId, user.id)
-      reload()
     } catch (err) {
       console.error(err)
+      // Revert on error
+      setLikedPostIds((prev) => {
+        const next = new Set(prev)
+        if (wasLiked) next.add(postId); else next.delete(postId)
+        return next
+      })
+      setPosts((prev) => prev.map((p) =>
+        p.id === postId ? { ...p, like_count: p.like_count + (wasLiked ? 1 : -1) } : p
+      ))
     }
   }
 
@@ -261,6 +298,7 @@ export default function ForumView() {
               key={post.id}
               post={post}
               currentUserId={user?.id}
+              isLiked={likedPostIds.has(post.id)}
               onLikeToggle={() => handleLike(post.id)}
             />
           ))}

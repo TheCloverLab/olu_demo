@@ -63,8 +63,8 @@ function MessageBubble({ msg, showAvatar }: { msg: ChatMessage; showAvatar: bool
         <div className={clsx(
           'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
           msg.isCurrentUser
-            ? 'bg-white text-black rounded-tr-sm'
-            : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-tl-sm'
+            ? 'bg-cyan-500 text-white rounded-tr-sm'
+            : 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
         )}>
           {msg.text}
         </div>
@@ -174,7 +174,7 @@ export default function GroupChatView() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && sendMessage()}
           placeholder={`Message ${experience?.name || 'group'}...`}
-          className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-white/20 transition-colors"
+          className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
         />
         <button
           onClick={sendMessage}

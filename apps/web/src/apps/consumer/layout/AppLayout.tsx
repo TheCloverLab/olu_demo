@@ -130,7 +130,6 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces
 const NAV_ITEMS: ConsumerNavItem[] = [
   { to: '/discover', icon: Compass, label: 'nav.discover', exact: true },
   { to: '/wallet', icon: Wallet, label: 'common.wallet' },
-  { to: '/settings', icon: Settings, label: 'common.settings' },
 ]
 
 export default function AppLayout() {

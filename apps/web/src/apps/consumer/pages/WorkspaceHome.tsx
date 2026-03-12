@@ -293,14 +293,39 @@ function MemberCount({ count, t }: { count: number; t: any }) {
   )
 }
 
+function SupportButton({ workspace, navigate }: { workspace: Workspace; navigate: ReturnType<typeof useNavigate> }) {
+  return (
+    <button
+      onClick={() => navigate(`/w/${workspace.slug}/support`)}
+      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
+      title="Contact Support"
+    >
+      <Headphones size={16} className="text-white/80" />
+    </button>
+  )
+}
+
+function SupportButtonLight({ workspace, navigate }: { workspace: Workspace; navigate: ReturnType<typeof useNavigate> }) {
+  return (
+    <button
+      onClick={() => navigate(`/w/${workspace.slug}/support`)}
+      className="p-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors flex-shrink-0"
+      title="Contact Support"
+    >
+      <Headphones size={16} className="text-amber-600 dark:text-amber-400" />
+    </button>
+  )
+}
+
 function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <>
       <div className="h-52 relative bg-gradient-to-br from-slate-900 to-slate-800">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
-        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
           <BackButton navigate={navigate} />
+          <SupportButton workspace={workspace} navigate={navigate} />
         </div>
       </div>
       <div className="px-4 -mt-8 relative z-10 mb-4">
@@ -328,8 +353,9 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
         {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-50" />}
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
-      <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+      <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
         <BackButton navigate={navigate} />
+        <SupportButton workspace={workspace} navigate={navigate} />
       </div>
       <div className="relative z-10 px-4 pb-6 space-y-3">
         <WorkspaceIcon workspace={workspace} size="lg" />
@@ -355,13 +381,16 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
 function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <div className="px-4 pt-4 pb-2 space-y-4">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
-      >
-        <ArrowLeft size={16} />
-        <span>Back</span>
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-sm text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <SupportButtonLight workspace={workspace} navigate={navigate} />
+      </div>
       <div className="flex items-center gap-4">
         <WorkspaceIcon workspace={workspace} size="lg" />
         <div className="flex-1 min-w-0">
@@ -387,8 +416,9 @@ function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining,
     <div className="relative overflow-hidden">
       <div className="h-36 bg-gradient-to-r from-cyan-600 to-blue-700">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-40" />}
-        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
           <BackButton navigate={navigate} />
+          <SupportButton workspace={workspace} navigate={navigate} />
         </div>
       </div>
       <div className="px-4 -mt-10 relative z-10 mb-4">
@@ -437,21 +467,6 @@ function AboutTab({
           {workspace.headline || 'Welcome to this workspace.'}
         </p>
       </div>
-
-      {/* Support */}
-      <button
-        onClick={() => navigate(`/w/${workspace.slug}/support`)}
-        className="w-full rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors text-left"
-      >
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 flex items-center justify-center flex-shrink-0">
-          <Headphones size={18} className="text-amber-600 dark:text-amber-400" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-sm">{t('consumer.contactSupport', 'Contact Support')}</h3>
-          <p className="text-xs text-[var(--olu-muted)]">{t('consumer.contactSupportDesc', 'Get help from the team')}</p>
-        </div>
-        <ChevronRight size={16} className="text-[var(--olu-muted)]" />
-      </button>
 
       {productCards.length > 0 && (
         <div className="space-y-2">

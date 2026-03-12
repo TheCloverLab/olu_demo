@@ -10,7 +10,6 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
-import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
 import { getWorkspaceAgentsForUser, toggleAgentSupport } from '../../../domain/team/api'
 import type { WorkspaceAgent } from '../../../lib/supabase'
 
@@ -219,7 +218,6 @@ export default function SupportCenter() {
   const [chats, setChats] = useState<SupportChat[]>([])
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
-  const [aiEnabled, setAiEnabled] = useState(false)
   const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
 
   useEffect(() => {
@@ -236,19 +234,20 @@ export default function SupportCenter() {
       .finally(() => setLoading(false))
   }, [user?.id])
 
-  useEffect(() => {
-    if (!workspace?.id) return
-    getAiSupportEnabled(workspace.id).then(setAiEnabled).catch(() => {})
-  }, [workspace?.id])
+  const aiEnabled = allAgents.some((a) => a.support_enabled)
 
-  async function toggleAi() {
+  async function toggleAllSupport() {
     if (!workspace?.id) return
-    const next = !aiEnabled
-    setAiEnabled(next)
-    try {
-      await setAiSupportEnabled(workspace.id, next)
-    } catch {
-      setAiEnabled(!next)
+    // If any are enabled, disable all. Otherwise do nothing (need to pick agents).
+    if (aiEnabled) {
+      const enabledIds = allAgents.filter((a) => a.support_enabled).map((a) => a.id)
+      setAllAgents((prev) => prev.map((a) => ({ ...a, support_enabled: false })))
+      try {
+        await Promise.all(enabledIds.map((id) => toggleAgentSupport(id, false)))
+      } catch {
+        // Revert on error
+        setAllAgents((prev) => prev.map((a) => enabledIds.includes(a.id) ? { ...a, support_enabled: true } : a))
+      }
     }
   }
 
@@ -288,9 +287,9 @@ export default function SupportCenter() {
               {chats.length} conversation{chats.length !== 1 ? 's' : ''}
             </span>
           </div>
-          {/* AI master toggle */}
+          {/* AI master toggle — reflects whether any agent is assigned */}
           <button
-            onClick={toggleAi}
+            onClick={toggleAllSupport}
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled
@@ -315,8 +314,8 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
-          {/* Per-agent support assignment (only when AI is enabled) */}
-          {aiEnabled && allAgents.length > 0 && (
+          {/* Per-agent support assignment */}
+          {allAgents.length > 0 && (
             <div className="space-y-1">
               <p className="text-[10px] text-[var(--olu-muted)] font-medium px-1">Assign agents</p>
               {allAgents.map((a) => (

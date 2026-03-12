@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
@@ -427,6 +427,7 @@ function AboutTab({
   onJoin: (productId: string, planId?: string) => void
 }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   return (
     <div className="space-y-4">
@@ -436,6 +437,21 @@ function AboutTab({
           {workspace.headline || 'Welcome to this workspace.'}
         </p>
       </div>
+
+      {/* Support */}
+      <button
+        onClick={() => navigate(`/w/${workspace.slug}/support`)}
+        className="w-full rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors text-left"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 flex items-center justify-center flex-shrink-0">
+          <Headphones size={18} className="text-amber-600 dark:text-amber-400" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-sm">{t('consumer.contactSupport', 'Contact Support')}</h3>
+          <p className="text-xs text-[var(--olu-muted)]">{t('consumer.contactSupportDesc', 'Get help from the team')}</p>
+        </div>
+        <ChevronRight size={16} className="text-[var(--olu-muted)]" />
+      </button>
 
       {productCards.length > 0 && (
         <div className="space-y-2">

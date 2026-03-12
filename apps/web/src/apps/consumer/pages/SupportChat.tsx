@@ -5,8 +5,6 @@ import { Loader2, ArrowLeft, Send, Headphones } from 'lucide-react'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
-import type { WorkspaceExperience } from '../../../lib/supabase'
-import { getExperience } from '../../../domain/experience/api'
 import { supabase } from '../../../lib/supabase'
 import {
   ensureSocialChat,
@@ -62,10 +60,10 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 }
 
 export default function SupportChat() {
-  const { experienceId } = useParams()
+  const { workspaceSlug } = useParams()
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [experience, setExperience] = useState<WorkspaceExperience | null>(null)
+  const [workspaceName, setWorkspaceName] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
@@ -75,29 +73,28 @@ export default function SupportChat() {
 
   useEffect(() => {
     async function load() {
-      if (!experienceId) return
+      if (!workspaceSlug) return
       try {
-        const exp = await getExperience(experienceId)
-        setExperience(exp)
-
         if (IS_DEMO) {
+          setWorkspaceName('Pixel Realm')
           setMessages(DEMO_MESSAGES)
           setStaffName('Support Team')
           setLoading(false)
           return
         }
 
-        // Find workspace owner as default support staff
         const userId = user?.id
-        if (!userId || !exp) { setLoading(false); return }
+        if (!userId) { setLoading(false); return }
 
+        // Find workspace by slug
         const { data: ws } = await supabase
           .from('workspaces')
-          .select('owner_user_id, name')
-          .eq('id', exp.workspace_id)
+          .select('id, name, owner_user_id')
+          .eq('slug', workspaceSlug)
           .single()
 
         if (!ws) { setLoading(false); return }
+        setWorkspaceName(ws.name)
 
         const staffUserId = ws.owner_user_id
         const { data: staffUser } = await supabase
@@ -127,7 +124,7 @@ export default function SupportChat() {
       }
     }
     load()
-  }, [experienceId, user?.id])
+  }, [workspaceSlug, user?.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -174,7 +171,7 @@ export default function SupportChat() {
           <Headphones size={16} className="text-amber-600 dark:text-amber-400" />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="font-semibold text-sm truncate">{experience?.name || t('consumer.support', 'Support')}</h1>
+          <h1 className="font-semibold text-sm truncate">{workspaceName || t('consumer.support', 'Support')}</h1>
           <p className="text-[var(--olu-muted)] text-xs">{staffName}</p>
         </div>
       </div>

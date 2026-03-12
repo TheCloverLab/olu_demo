@@ -15,7 +15,6 @@ const TYPE_META: Record<ExperienceType, { label: string; icon: typeof MessageSqu
 
 const VISIBILITY_META: Record<ExperienceVisibility, { label: string; icon: typeof Eye }> = {
   public: { label: 'Public', icon: Eye },
-  members_only: { label: 'Members only', icon: Lock },
   product_gated: { label: 'Product gated', icon: EyeOff },
 }
 

@@ -23,7 +23,7 @@ const DEMO_AUTHORS = {
 const DEMO_EXPERIENCES: WorkspaceExperience[] = [
   { id: 'exp-1', workspace_id: 'ws-demo', type: 'forum', name: 'General Discussion', icon: null, cover: '/images/covers/neoncity.jpg', config_json: {}, position: 0, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-2', workspace_id: 'ws-demo', type: 'course', name: 'Digital Art Masterclass', icon: null, cover: '/images/covers/dragonart.jpg', config_json: {}, position: 1, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
-  { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: '/images/covers/midnightdrift.jpg', config_json: {}, position: 2, visibility: 'members_only', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: '/images/covers/midnightdrift.jpg', config_json: {}, position: 2, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-4', workspace_id: 'ws-demo', type: 'forum', name: 'Fan Art Showcase', icon: null, cover: '/images/covers/lunachen.jpg', config_json: {}, position: 3, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-5', workspace_id: 'ws-demo', type: 'support_chat', name: 'Help Center', icon: null, cover: '/images/covers/kaivibe.jpg', config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-6', workspace_id: 'ws-demo', type: 'course', name: 'Animation Fundamentals', icon: null, cover: '/images/covers/gamingsetup.jpg', config_json: {}, position: 5, visibility: 'product_gated', status: 'active', created_at: '', updated_at: '' },
@@ -147,7 +147,19 @@ export async function getAccessibleExperiences(
 ): Promise<WorkspaceExperience[]> {
   const all = await listExperiences(workspaceId)
 
-  // Get user's active purchases for this workspace
+  // Get all product-experience mappings for this workspace
+  const { data: allMappings } = await supabase
+    .from('workspace_product_experiences')
+    .select('experience_id, product_id')
+
+  const expProductMap = new Map<string, string[]>()
+  for (const m of allMappings || []) {
+    const arr = expProductMap.get(m.experience_id) || []
+    arr.push(m.product_id)
+    expProductMap.set(m.experience_id, arr)
+  }
+
+  // Get user's active purchases
   const { data: purchases } = await supabase
     .from('consumer_purchases')
     .select('product_id')
@@ -156,21 +168,10 @@ export async function getAccessibleExperiences(
 
   const purchasedProductIds = new Set((purchases || []).map((p) => p.product_id))
 
-  // Get product-experience mappings for purchased products
-  let gatedExperienceIds = new Set<string>()
-  if (purchasedProductIds.size > 0) {
-    const { data: mappings } = await supabase
-      .from('workspace_product_experiences')
-      .select('experience_id')
-      .in('product_id', Array.from(purchasedProductIds))
-    gatedExperienceIds = new Set((mappings || []).map((m) => m.experience_id))
-  }
-
   return all.filter((exp) => {
-    if (exp.visibility === 'public') return true
-    if (exp.visibility === 'members_only') return purchasedProductIds.size > 0
-    if (exp.visibility === 'product_gated') return gatedExperienceIds.has(exp.id)
-    return false
+    const linkedProducts = expProductMap.get(exp.id)
+    if (!linkedProducts || linkedProducts.length === 0) return true // no linked products = free
+    return linkedProducts.some((pid) => purchasedProductIds.has(pid)) // bought any linked product
   })
 }
 
@@ -180,25 +181,25 @@ export async function canAccessExperience(
 ): Promise<boolean> {
   const exp = await getExperience(experienceId)
   if (!exp) return false
-  if (exp.visibility === 'public') return true
 
+  // Check if this experience is linked to any products
+  const { data: mappings } = await supabase
+    .from('workspace_product_experiences')
+    .select('product_id')
+    .eq('experience_id', experienceId)
+
+  // No linked products = free for all joined members
+  if (!mappings?.length) return true
+
+  // Has linked products = check if user purchased any of them
   const { data: purchases } = await supabase
     .from('consumer_purchases')
     .select('product_id')
     .eq('user_id', userId)
     .eq('status', 'active')
+    .in('product_id', mappings.map((m) => m.product_id))
 
-  if (!purchases?.length) return false
-  if (exp.visibility === 'members_only') return true
-
-  // product_gated: check if any purchased product includes this experience
-  const { data: mappings } = await supabase
-    .from('workspace_product_experiences')
-    .select('product_id')
-    .eq('experience_id', experienceId)
-    .in('product_id', purchases.map((p) => p.product_id))
-
-  return (mappings?.length ?? 0) > 0
+  return (purchases?.length ?? 0) > 0
 }
 
 // ── Forum ───────────────────────────────────────────────────────

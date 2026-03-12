@@ -46,9 +46,9 @@ function ExperienceCard({ exp, onClick }: { exp: WorkspaceExperience; onClick: (
         </div>
         <div className="flex items-center gap-2 text-xs text-[var(--olu-muted)]">
           <span className="capitalize">{exp.type.replace('_', ' ')}</span>
-          {exp.visibility !== 'public' && (
+          {exp.visibility === 'product_gated' && (
             <span className="flex items-center gap-0.5">
-              <Lock size={10} /> {exp.visibility === 'members_only' ? 'Members' : 'Gated'}
+              <Lock size={10} /> Gated
             </span>
           )}
         </div>

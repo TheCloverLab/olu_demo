@@ -118,7 +118,7 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `listExperiences(workspaceId)` / `getExperience(id)` — Experience CRUD
 - `createExperience(...)` / `updateExperience(id, updates)` / `deleteExperience(id)` — Manage experiences
 - `getAccessibleExperiences(workspaceId, userId)` — Filter by user's purchase access
-- `canAccessExperience(experienceId, userId)` — Check access (public/members_only/product_gated)
+- `canAccessExperience(experienceId, userId)` — Check access (Whop-style: no linked products = free, has linked products = need purchase)
 - `getForumPosts(experienceId)` / `createForumPost(...)` — Forum posts with author joins
 - `getForumPostComments(postId)` / `createForumPostComment(...)` — Post comments
 - `toggleForumPostLike(postId, userId)` — Like/unlike toggle

@@ -586,7 +586,7 @@ export type ConsumerLessonProgress = {
 
 export type ExperienceType = 'forum' | 'course' | 'group_chat' | 'support_chat'
 
-export type ExperienceVisibility = 'public' | 'members_only' | 'product_gated'
+export type ExperienceVisibility = 'public' | 'product_gated'
 
 export type WorkspaceExperience = {
   id: string

@@ -193,9 +193,9 @@ VALUES
 INSERT INTO workspace_experiences (id, workspace_id, type, name, icon, cover, position, visibility, status)
 VALUES
   ('06000000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'forum', 'General Discussion', NULL, '/images/covers/dragonart.jpg', 0, 'public', 'active'),
-  ('06000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'forum', 'Art Critique Room', NULL, NULL, 1, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'forum', 'Art Critique Room', NULL, NULL, 1, 'public', 'active'),
   ('06000000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'course', 'Digital Art Academy', NULL, '/images/covers/gamingsetup.jpg', 2, 'product_gated', 'active'),
-  ('06000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000001', 'group_chat', 'Pixel Realm Lounge', NULL, NULL, 3, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000001', 'group_chat', 'Pixel Realm Lounge', NULL, NULL, 3, 'public', 'active'),
   ('06000000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000001', 'support_chat', 'Support', NULL, NULL, 99, 'public', 'active');
 
 -- Kai's experiences (Academy preset)
@@ -203,7 +203,7 @@ INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position
 VALUES
   ('06000000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000002', 'course', 'Lo-fi Production Academy', '/images/covers/galaxyquest.jpg', 0, 'product_gated', 'active'),
   ('06000000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000002', 'forum', 'Producer Talk', NULL, 1, 'public', 'active'),
-  ('06000000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000002', 'group_chat', 'The Listening Room', NULL, 2, 'members_only', 'active');
+  ('06000000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000002', 'group_chat', 'The Listening Room', NULL, 2, 'public', 'active');
 
 -- Zara's experiences
 INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position, visibility, status)

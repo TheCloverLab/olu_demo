@@ -39,18 +39,18 @@ import { APP_VERSION } from '../../../lib/version'
 import type { BusinessModuleKey, WorkspaceWallet } from '../../../lib/supabase'
 
 type NavItem = { to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }
-type NavGroup = { groupLabel: string; items: NavItem[] }
+type NavGroup = { groupLabelKey: string; items: NavItem[] }
 
 const SIDEBAR_GROUPS: NavGroup[] = [
   {
-    groupLabel: 'Dashboard',
+    groupLabelKey: 'nav.groupDashboard',
     items: [
       { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
       { to: '/business/analytics', icon: BarChart3, labelKey: 'nav.analytics' },
     ],
   },
   {
-    groupLabel: 'App',
+    groupLabelKey: 'nav.groupApp',
     items: [
       { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
       { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
@@ -60,7 +60,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabel: 'Operations',
+    groupLabelKey: 'nav.groupOperations',
     items: [
       { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
       { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
@@ -68,7 +68,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabel: 'Modules',
+    groupLabelKey: 'nav.groupModules',
     items: [
       { to: '/business/modules/creator', icon: LayoutDashboard, labelKey: 'nav.creatorOps', moduleKey: 'creator_ops' },
       { to: '/business/modules/marketing', icon: Megaphone, labelKey: 'nav.marketing', moduleKey: 'marketing' },
@@ -77,7 +77,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabel: 'System',
+    groupLabelKey: 'nav.groupSystem',
     items: [
       { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
     ],
@@ -180,7 +180,7 @@ function WorkspaceSwitcher() {
       <WorkspaceIconBadge workspace={workspace} />
       <div className="min-w-0 flex-1">
         <p className="font-black text-lg leading-none truncate">{workspace?.name || 'OLU Business'}</p>
-        <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1 truncate">{workspace?.headline || 'Merchant operations cockpit'}</p>
+        <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1 truncate">{workspace?.headline || t('nav.defaultHeadline', 'Merchant operations cockpit')}</p>
       </div>
       {workspace?.slug && (
         <a
@@ -248,8 +248,8 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
                 const visibleItems = group.items.filter((item) => !item.moduleKey || hasModule(item.moduleKey))
                 if (visibleItems.length === 0) return null
                 return (
-                  <div key={group.groupLabel}>
-                    <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-4 pt-3 pb-1">{group.groupLabel}</p>
+                  <div key={group.groupLabelKey}>
+                    <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-4 pt-3 pb-1">{t(group.groupLabelKey)}</p>
                     {visibleItems.map((item) => (
                       <MenuItem key={item.to} icon={item.icon} label={t(item.labelKey)} onClick={() => go(item.to)} />
                     ))}
@@ -324,8 +324,8 @@ export default function BusinessLayout() {
             const visibleItems = group.items.filter((item) => !item.moduleKey || enabledBusinessModules.includes(item.moduleKey))
             if (visibleItems.length === 0) return null
             return (
-              <div key={group.groupLabel}>
-                <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-3 pt-4 pb-1">{group.groupLabel}</p>
+              <div key={group.groupLabelKey}>
+                <p className="text-[10px] text-[var(--olu-muted)] uppercase tracking-wider px-3 pt-4 pb-1">{t(group.groupLabelKey)}</p>
                 {visibleItems.map(({ to, icon: Icon, labelKey, exact }) => (
                   <NavLink
                     key={to}

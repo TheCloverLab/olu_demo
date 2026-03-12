@@ -212,8 +212,8 @@ export default function Team() {
       }
 
       try {
-        // Ensure default "All Members" group chat exists
-        await ensureDefaultGroupChat(user)
+        // Ensure default "All Members" group chat exists (non-blocking)
+        ensureDefaultGroupChat(user).catch(() => {})
         const [team, membership] = await Promise.all([
           getWorkspaceTeamSnapshotForUser(user),
           ensureWorkspaceForUser(user),

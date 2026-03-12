@@ -427,7 +427,7 @@
     "tipProcessed": "Transaction processed instantly via OLU Pay",
     "done": "Done",
     "sendTip": "Send a Tip",
-    "support": "Support {{name}} directly",
+    "support": "Support",
     "customAmount": "Custom amount...",
     "sendTipAmount": "Send ${{amount}} Tip",
     "createFanWork": "Create Fan Work",

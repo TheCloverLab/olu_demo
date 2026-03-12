@@ -78,6 +78,31 @@ export async function addConversationMessage(
   return data as Conversation
 }
 
+export async function createGroupChat(
+  userId: string,
+  chatKey: string,
+  name: string,
+  participants: string[],
+  icons: string[],
+) {
+  const { data, error } = await supabase
+    .from('group_chats')
+    .insert({
+      user_id: userId,
+      chat_key: chatKey,
+      name,
+      participants,
+      icons,
+      last_message: null,
+      last_time: null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function getGroupChatsByUser(userId: string) {
   const { data, error } = await supabase
     .from('group_chats')
@@ -98,6 +123,48 @@ export async function getGroupChatMessages(groupChatId: string) {
 
   if (error) throw error
   return data
+}
+
+export function subscribeGroupChatMessages(
+  groupChatId: string,
+  onMessage: (msg: any) => void,
+) {
+  const channel = supabase
+    .channel(`group-chat-${groupChatId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'group_chat_messages',
+        filter: `group_chat_id=eq.${groupChatId}`,
+      },
+      (payload) => onMessage(payload.new),
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
+}
+
+export function subscribeConversations(
+  agentId: string,
+  onMessage: (msg: any) => void,
+) {
+  const channel = supabase
+    .channel(`conv-${agentId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        filter: `agent_id=eq.${agentId}`,
+      },
+      (payload) => onMessage(payload.new),
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
 }
 
 export async function addGroupChatMessage(

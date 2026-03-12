@@ -31,10 +31,7 @@ function AgentCard({
         <span className="text-[var(--olu-text-secondary)] text-xs">({agent.reviews.toLocaleString()})</span>
       </div>
       <p className="text-[var(--olu-text-secondary)] text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
-      <div className="flex items-center gap-2 mb-3 text-xs">
-        <span className="px-2 py-0.5 rounded-md bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-200 font-medium">{agent.model}</span>
-        <span className="text-[var(--olu-text-secondary)]">${agent.cost_per_1k}/1K tokens</span>
-      </div>
+      <div className="mb-3" />
       <button
         onClick={() => onHire(agent)}
         disabled={hired}

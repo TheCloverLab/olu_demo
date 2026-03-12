@@ -219,8 +219,8 @@ export default function SupportCenter() {
   const [chats, setChats] = useState<SupportChat[]>([])
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
-  const [aiEnabled, setAiEnabled] = useState(false)
   const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
+  const [masterToggle, setMasterToggle] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
@@ -238,17 +238,21 @@ export default function SupportCenter() {
 
   useEffect(() => {
     if (!workspace?.id) return
-    getAiSupportEnabled(workspace.id).then(setAiEnabled).catch(() => {})
+    getAiSupportEnabled(workspace.id).then(setMasterToggle).catch(() => {})
   }, [workspace?.id])
 
-  async function toggleAi() {
-    if (!workspace?.id) return
-    const next = !aiEnabled
-    setAiEnabled(next)
+  const anyAgentEnabled = allAgents.some((a) => a.support_enabled)
+  // Visual state: if no agents enabled, always show off regardless of DB
+  const aiEnabled = anyAgentEnabled && masterToggle
+
+  async function toggleMaster() {
+    if (!workspace?.id || !anyAgentEnabled) return
+    const next = !masterToggle
+    setMasterToggle(next)
     try {
       await setAiSupportEnabled(workspace.id, next)
     } catch {
-      setAiEnabled(!next)
+      setMasterToggle(!next)
     }
   }
 
@@ -288,9 +292,10 @@ export default function SupportCenter() {
               {chats.length} conversation{chats.length !== 1 ? 's' : ''}
             </span>
           </div>
-          {/* AI master toggle */}
+          {/* AI master toggle — orthogonal to agent toggles in DB, but visually off when no agents enabled */}
           <button
-            onClick={toggleAi}
+            onClick={toggleMaster}
+            disabled={!anyAgentEnabled}
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled
@@ -315,8 +320,8 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
-          {/* Per-agent support assignment (only when AI is enabled) */}
-          {aiEnabled && allAgents.length > 0 && (
+          {/* Per-agent support assignment */}
+          {allAgents.length > 0 && (
             <div className="space-y-1">
               <p className="text-[10px] text-[var(--olu-muted)] font-medium px-1">Assign agents</p>
               {allAgents.map((a) => (

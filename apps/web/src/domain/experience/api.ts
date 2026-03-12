@@ -288,3 +288,78 @@ export async function toggleForumPostLike(
     return true
   }
 }
+
+// ---------- Experience group chat ----------
+
+export type ExperienceChatMessage = {
+  id: string
+  experience_id: string
+  user_id: string
+  author_name: string
+  author_avatar: string | null
+  author_color: string | null
+  text: string
+  created_at: string
+}
+
+export async function getExperienceChatMessages(experienceId: string): Promise<ExperienceChatMessage[]> {
+  const { data, error } = await supabase
+    .from('experience_chat_messages')
+    .select('*')
+    .eq('experience_id', experienceId)
+    .order('created_at', { ascending: true })
+    .limit(200)
+
+  if (error) throw error
+  return (data || []) as ExperienceChatMessage[]
+}
+
+export async function sendExperienceChatMessage(
+  experienceId: string,
+  userId: string,
+  authorName: string,
+  text: string,
+  authorAvatar?: string | null,
+  authorColor?: string | null,
+) {
+  const { data, error } = await supabase
+    .from('experience_chat_messages')
+    .insert({
+      experience_id: experienceId,
+      user_id: userId,
+      author_name: authorName,
+      text,
+      author_avatar: authorAvatar ?? null,
+      author_color: authorColor ?? null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as ExperienceChatMessage
+}
+
+export function subscribeExperienceChat(
+  experienceId: string,
+  onMessage: (msg: ExperienceChatMessage) => void,
+) {
+  const channel = supabase
+    .channel(`exp-chat-${experienceId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'experience_chat_messages',
+        filter: `experience_id=eq.${experienceId}`,
+      },
+      (payload) => {
+        onMessage(payload.new as ExperienceChatMessage)
+      },
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}

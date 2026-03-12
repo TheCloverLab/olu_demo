@@ -120,3 +120,24 @@ export async function addSocialChatMessage(socialChatId: string, fromType: 'user
   if (updateError) throw updateError
   return data
 }
+
+export function subscribeSocialChatMessages(
+  socialChatId: string,
+  onMessage: (msg: any) => void,
+) {
+  const channel = supabase
+    .channel(`social-chat-${socialChatId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'social_chat_messages',
+        filter: `social_chat_id=eq.${socialChatId}`,
+      },
+      (payload) => onMessage(payload.new),
+    )
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
+}

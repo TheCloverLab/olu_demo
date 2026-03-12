@@ -5,6 +5,7 @@ import { ensureWorkspaceForUser } from '../workspace/api'
 import {
   addConversationMessage,
   addGroupChatMessage,
+  createGroupChat,
   getConversations,
   getGroupChatMessages,
   getGroupChatsByUser,
@@ -233,6 +234,33 @@ export async function getWorkspaceTeamSnapshotForUser(user: Pick<User, 'id' | 'u
 }
 
 // ---------- Group chat ----------
+
+export async function ensureDefaultGroupChat(
+  user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
+) {
+  const groups = await getGroupChatsByUser(user.id)
+  if (groups.some((g: any) => g.chat_key === 'all-members')) return
+  const agents = await getWorkspaceAgentsForUser(user)
+  const icons = agents.slice(0, 3).map((a) => a.avatar_img ? '👤' : '🤖')
+  if (icons.length === 0) icons.push('👥')
+  await createGroupChat(
+    user.id,
+    'all-members',
+    'All Members',
+    agents.map((a) => a.name),
+    icons,
+  )
+}
+
+export async function createNewGroupChat(
+  userId: string,
+  name: string,
+  participants: string[],
+  icons: string[],
+) {
+  const chatKey = `group-${Date.now()}`
+  return await createGroupChat(userId, chatKey, name, participants, icons)
+}
 
 export async function getWorkspaceGroupChatsForUser(userId: string) {
   return await getGroupChatsByUser(userId)

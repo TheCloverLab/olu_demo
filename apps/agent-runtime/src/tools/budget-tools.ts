@@ -8,16 +8,36 @@
 
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod'
+import { supabase } from '../lib/supabase.js'
 
 /**
  * Request budget approval from the workspace owner.
- * The frontend renders a budget card with amount buttons.
- * The agent should wait for the user's response before proceeding.
+ * Creates a pending record in agent_budgets so the frontend can approve it.
  */
 export const requestBudget = tool(
-  async ({ task_description, suggested_amounts, currency }) => {
+  async ({ workspaceId, agentId, task_description, suggested_amounts, currency }) => {
+    const requestedAmount = suggested_amounts[Math.floor(suggested_amounts.length / 2)] || suggested_amounts[0] || 100
+
+    const { data, error } = await supabase
+      .from('agent_budgets')
+      .insert({
+        workspace_id: workspaceId,
+        agent_id: agentId,
+        requested_amount: requestedAmount,
+        currency,
+        status: 'pending',
+        description: task_description,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      return JSON.stringify({ type: 'budget_error', error: error.message })
+    }
+
     return JSON.stringify({
       type: 'budget_approval_required',
+      budget_id: data.id,
       task: task_description,
       options: suggested_amounts,
       currency,
@@ -28,6 +48,8 @@ export const requestBudget = tool(
     description:
       'Request budget approval from the store owner before performing any task that involves spending money (ads, influencer outreach, paid promotions, purchasing services, etc.). Call this tool and then wait for the owner to approve a budget amount before proceeding.',
     schema: z.object({
+      workspaceId: z.string().describe('The workspace ID'),
+      agentId: z.string().describe('The agent ID requesting the budget'),
       task_description: z
         .string()
         .describe('Brief description of what the money will be spent on'),

@@ -177,6 +177,14 @@ export async function updatePlan(
   return data
 }
 
+export async function deletePlan(planId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workspace_product_plans')
+    .delete()
+    .eq('id', planId)
+  if (error) throw error
+}
+
 // ── Product ↔ Experience Linking ────────────────────────────────
 
 export async function linkExperienceToProduct(

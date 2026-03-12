@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Loader2, Tag, DollarSign, Link2, Unlink, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Loader2, Tag, DollarSign, Link2, Unlink, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience } from '../../../lib/supabase'
@@ -11,19 +11,26 @@ import {
   createProduct,
   updateProduct,
   createPlan,
+  deletePlan,
   linkExperienceToProduct,
   unlinkExperienceFromProduct,
   deleteProduct,
 } from '../../../domain/product/api'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 
-function PlanBadge({ plan }: { plan: ProductWithPlans['plans'][number] }) {
+function PlanBadge({ plan, onDelete }: { plan: ProductWithPlans['plans'][number]; onDelete: () => void }) {
   const label = plan.billing_type === 'recurring'
     ? `$${plan.price}/${plan.interval}`
     : `$${plan.price} one-time`
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-600 dark:text-emerald-400">
+    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group/plan">
       {label}
+      <button
+        onClick={onDelete}
+        className="opacity-0 group-hover/plan:opacity-100 hover:text-red-400 transition-opacity"
+      >
+        <X size={10} />
+      </button>
     </span>
   )
 }
@@ -195,7 +202,7 @@ function ProductCard({
         {/* Plans */}
         <div className="flex flex-wrap gap-1.5">
           {product.plans.map((plan) => (
-            <PlanBadge key={plan.id} plan={plan} />
+            <PlanBadge key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
           ))}
           {product.plans.length === 0 && product.access_type === 'free' && (
             <span className="text-xs text-[var(--olu-muted)]">Free access</span>

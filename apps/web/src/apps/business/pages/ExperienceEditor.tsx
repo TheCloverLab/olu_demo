@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Trash2, ImagePlus, X } from 'lucide-react'
 import { getExperience, updateExperience, deleteExperience } from '../../../domain/experience/api'
+import { supabase } from '../../../lib/supabase'
 import type { WorkspaceExperience } from '../../../lib/supabase'
 
 export default function ExperienceEditor() {
@@ -11,6 +12,8 @@ export default function ExperienceEditor() {
 
   const [exp, setExp] = useState<WorkspaceExperience | null>(null)
   const [name, setName] = useState('')
+  const [cover, setCover] = useState<string | null>(null)
+  const [coverFile, setCoverFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +21,7 @@ export default function ExperienceEditor() {
     if (!experienceId) return
     getExperience(experienceId)
       .then((e) => {
-        if (e) { setExp(e); setName(e.name) }
+        if (e) { setExp(e); setName(e.name); setCover(e.cover || null) }
       })
       .finally(() => setLoading(false))
   }, [experienceId])
@@ -27,7 +30,15 @@ export default function ExperienceEditor() {
     if (!exp) return
     setSaving(true)
     try {
-      await updateExperience(exp.id, { name })
+      let coverUrl = cover
+      if (coverFile) {
+        const ext = coverFile.name.split('.').pop() || 'jpg'
+        const path = `experiences/${exp.id}/cover-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('covers').upload(path, coverFile, { upsert: true, contentType: coverFile.type })
+        if (error) throw error
+        coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      }
+      await updateExperience(exp.id, { name, cover: coverUrl })
       navigate('/business/experiences')
     } catch (err) {
       console.error('Failed to save', err)
@@ -103,6 +114,39 @@ export default function ExperienceEditor() {
           onChange={(e) => setName(e.target.value)}
           className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs text-[var(--olu-text-secondary)]">Cover Image</label>
+        {(cover || coverFile) ? (
+          <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
+            <img
+              src={coverFile ? URL.createObjectURL(coverFile) : cover!}
+              alt="Cover"
+              className="w-full h-40 object-cover"
+            />
+            <button
+              onClick={() => { setCover(null); setCoverFile(null) }}
+              className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+            <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
+            <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) setCoverFile(file)
+              }}
+            />
+          </label>
+        )}
       </div>
     </div>
   )

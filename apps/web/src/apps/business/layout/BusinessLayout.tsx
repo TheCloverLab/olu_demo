@@ -151,22 +151,39 @@ function LanguageToggle() {
   )
 }
 
+function WorkspaceIconBadge({ workspace }: { workspace: any }) {
+  const [imgError, setImgError] = useState(false)
+  if (workspace?.icon && !imgError) {
+    return <img src={workspace.icon} alt={workspace.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0" onError={() => setImgError(true)} />
+  }
+  return (
+    <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center font-bold text-sm shadow-[0_0_24px_rgba(103,232,249,0.25)]">
+      {(workspace?.name || 'O')[0]}
+    </div>
+  )
+}
+
 function WorkspaceSwitcher() {
   const { workspace } = useApp()
 
   return (
     <div className="px-5 py-5 flex items-center gap-3">
-      {workspace?.icon ? (
-        <img src={workspace.icon} alt={workspace.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0" />
-      ) : (
-        <div className="w-8 h-8 rounded-xl bg-[var(--olu-sidebar-active-bg)] text-[var(--olu-sidebar-active-text)] flex items-center justify-center font-bold text-sm shadow-[0_0_24px_rgba(103,232,249,0.25)]">
-          {(workspace?.name || 'O')[0]}
-        </div>
-      )}
-      <div className="min-w-0">
+      <WorkspaceIconBadge workspace={workspace} />
+      <div className="min-w-0 flex-1">
         <p className="font-black text-lg leading-none truncate">{workspace?.name || 'OLU Business'}</p>
         <p className="text-[var(--olu-sidebar-muted)] text-xs mt-1 truncate">{workspace?.headline || 'Merchant operations cockpit'}</p>
       </div>
+      {workspace?.slug && (
+        <a
+          href={`/w/${workspace.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 rounded-lg hover:bg-[var(--olu-sidebar-hover)] transition-colors text-[var(--olu-sidebar-muted)] hover:text-[var(--olu-sidebar-active-bg)] flex-shrink-0"
+          title="View as consumer"
+        >
+          <ExternalLink size={14} />
+        </a>
+      )}
     </div>
   )
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star } from 'lucide-react'
+import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star, Image, Minimize2, ShoppingBag, Layers, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
-import type { WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig } from '../../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
+import type { WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig, WorkspaceHomeLayout } from '../../../lib/supabase'
 import { listExperiences } from '../../../domain/experience/api'
 import { getHomeConfig, upsertHomeConfig } from '../../../domain/product/api'
 
@@ -216,7 +217,10 @@ export default function HomeEditor() {
   const { workspace } = useApp()
   const [experiences, setExperiences] = useState<WorkspaceExperience[]>([])
   const [cover, setCover] = useState('')
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [iconFile, setIconFile] = useState<File | null>(null)
   const [headline, setHeadline] = useState('')
+  const [layout, setLayout] = useState<WorkspaceHomeLayout>('classic')
   const [tabs, setTabs] = useState<WorkspaceHomeTab[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -236,6 +240,7 @@ export default function HomeEditor() {
         if (config) {
           setCover(config.cover || '')
           setHeadline(config.headline || '')
+          setLayout((config.layout as WorkspaceHomeLayout) || 'classic')
           setTabs(config.tabs || [])
         }
       })
@@ -269,15 +274,40 @@ export default function HomeEditor() {
     setSaving(true)
     setMessage('')
     try {
+      let coverUrl = cover || null
+
+      // Upload cover image if a file was selected
+      if (coverFile) {
+        const ext = coverFile.name.split('.').pop() || 'jpg'
+        const path = `${workspaceId}/cover-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('covers').upload(path, coverFile, { upsert: true, contentType: coverFile.type })
+        if (error) throw error
+        coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+        setCover(coverUrl)
+        setCoverFile(null)
+      }
+
+      // Upload workspace icon if a file was selected
+      if (iconFile) {
+        const ext = iconFile.name.split('.').pop() || 'jpg'
+        const path = `${workspaceId}/icon-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('avatars').upload(path, iconFile, { upsert: true, contentType: iconFile.type })
+        if (error) throw error
+        const iconUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+        await supabase.from('workspaces').update({ icon: iconUrl }).eq('id', workspaceId)
+        setIconFile(null)
+      }
+
       await upsertHomeConfig(workspaceId, {
-        cover: cover || null,
+        cover: coverUrl,
         headline: headline || null,
+        layout,
         tabs: tabs.map((tab, i) => ({ ...tab, position: i + 1 })),
       })
       setMessage('Saved!')
       setTimeout(() => setMessage(''), 2000)
-    } catch (err) {
-      setMessage('Failed to save')
+    } catch (err: any) {
+      setMessage(err.message || 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -319,18 +349,63 @@ export default function HomeEditor() {
         {/* Editor */}
         <div className="space-y-4">
           {/* Cover & Headline */}
-          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-4">
             <h3 className="font-semibold text-sm">Branding</h3>
+
+            {/* Workspace icon */}
             <div>
-              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Cover image URL</label>
-              <input
-                type="text"
-                value={cover}
-                onChange={(e) => setCover(e.target.value)}
-                placeholder="/images/covers/..."
-                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
-              />
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">Workspace Icon</label>
+              <div className="flex items-center gap-3">
+                {iconFile ? (
+                  <div className="relative">
+                    <img src={URL.createObjectURL(iconFile)} alt="" className="w-14 h-14 rounded-2xl object-cover" />
+                    <button onClick={() => setIconFile(null)} className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white"><X size={10} /></button>
+                  </div>
+                ) : workspace?.icon ? (
+                  <img src={workspace.icon} alt="" className="w-14 h-14 rounded-2xl object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                    {workspace?.name?.[0] || 'W'}
+                  </div>
+                )}
+                <label className="text-xs text-cyan-700 dark:text-cyan-300 cursor-pointer hover:underline">
+                  Upload icon
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setIconFile(e.target.files?.[0] || null)} />
+                </label>
+              </div>
             </div>
+
+            {/* Cover image */}
+            <div>
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">Cover Image</label>
+              {(cover || coverFile) ? (
+                <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
+                  <img
+                    src={coverFile ? URL.createObjectURL(coverFile) : cover}
+                    alt="Cover"
+                    className="w-full h-32 object-cover"
+                  />
+                  <button
+                    onClick={() => { setCover(''); setCoverFile(null) }}
+                    className="absolute top-2 right-2 p-1 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                  <label className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-black/50 hover:bg-black/70 text-white text-xs cursor-pointer transition-colors">
+                    Replace
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+                  <ImagePlus size={20} className="text-[var(--olu-muted)] mb-1" />
+                  <span className="text-xs text-[var(--olu-muted)]">Click to upload cover</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />
+                </label>
+              )}
+            </div>
+
+            {/* Headline */}
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Headline</label>
               <input
@@ -343,9 +418,40 @@ export default function HomeEditor() {
             </div>
           </div>
 
-          {/* Layout Templates */}
+          {/* Page Layout */}
           <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
-            <h3 className="font-semibold text-sm">Layout Template</h3>
+            <h3 className="font-semibold text-sm">Page Layout</h3>
+            <p className="text-xs text-[var(--olu-text-secondary)]">Choose how the workspace header appears to consumers.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { key: 'classic', label: 'Classic', description: 'Cover image with overlaid icon and name', icon: Layers },
+                { key: 'hero', label: 'Hero', description: 'Full-height hero banner with large branding', icon: Image },
+                { key: 'compact', label: 'Compact', description: 'No cover, clean icon + name header', icon: Minimize2 },
+                { key: 'catalog', label: 'Catalog', description: 'Banner with floating card overlay', icon: ShoppingBag },
+              ] as const).map(({ key, label, description, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setLayout(key)}
+                  className={clsx(
+                    'p-3 rounded-xl border transition-colors text-left',
+                    layout === key
+                      ? 'border-cyan-300/50 bg-cyan-300/10'
+                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-cyan-300/30'
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon size={14} className={layout === key ? 'text-cyan-600 dark:text-cyan-300' : 'text-[var(--olu-muted)]'} />
+                    <span className="font-semibold text-sm">{label}</span>
+                  </div>
+                  <p className="text-[10px] text-[var(--olu-text-secondary)] leading-tight">{description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content Templates */}
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Content Template</h3>
             <p className="text-xs text-[var(--olu-text-secondary)]">Choose a starting template. You can customize tabs after selecting.</p>
             <div className="grid grid-cols-2 gap-2">
               {TEMPLATES.map((tmpl) => (

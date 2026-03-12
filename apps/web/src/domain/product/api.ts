@@ -34,6 +34,7 @@ const DEMO_HOME_CONFIG: WorkspaceHomeConfig = {
   workspace_id: 'ws-demo',
   cover: '/images/covers/lunachen.jpg',
   headline: 'Welcome to the Pixel Realm — where art meets community',
+  layout: 'classic',
   tabs: [
     { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4', 'exp-7'] },
     { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2', 'exp-6'] },
@@ -369,7 +370,7 @@ export async function getHomeConfig(workspaceId: string): Promise<WorkspaceHomeC
 
 export async function upsertHomeConfig(
   workspaceId: string,
-  updates: { cover?: string | null; headline?: string | null; tabs?: WorkspaceHomeTab[] }
+  updates: { cover?: string | null; headline?: string | null; layout?: string | null; tabs?: WorkspaceHomeTab[] }
 ): Promise<WorkspaceHomeConfig> {
   const { data, error } = await supabase
     .from('workspace_home_configs')

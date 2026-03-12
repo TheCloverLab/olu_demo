@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Loader2, MessageSquare, BookOpen, Users, Headphones, ChevronRight } from 'lucide-react'
+import { Plus, Loader2, MessageSquare, BookOpen, Users, Headphones, ChevronRight, ExternalLink } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience, ExperienceType } from '../../../lib/supabase'
@@ -105,28 +105,60 @@ function ExperienceCard({ exp }: { exp: WorkspaceExperience }) {
     : exp.type === 'course' ? `/business/experiences/courses?id=${exp.id}`
     : `/business/experiences/edit?id=${exp.id}`
 
+  const consumerPath = exp.type === 'forum' ? `/forum/${exp.id}`
+    : exp.type === 'course' ? `/course/${exp.id}`
+    : exp.type === 'group_chat' ? `/group-chat/${exp.id}`
+    : null
+
   return (
-    <div
-      className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden cursor-pointer hover:border-cyan-300/30 transition-colors"
-      onClick={() => navigate(editorPath)}
-    >
-      {exp.cover && (
-        <div className="h-20 bg-cover bg-center" style={{ backgroundImage: `url(${exp.cover})` }} />
-      )}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', meta.bg)}>
-              <Icon size={16} className={meta.color} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-sm truncate">{exp.name}</h3>
-              <p className="text-[var(--olu-muted)] text-xs">{meta.label}</p>
-            </div>
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden hover:border-cyan-300/30 transition-colors">
+      <div
+        className="cursor-pointer"
+        onClick={() => navigate(editorPath)}
+      >
+        {exp.cover ? (
+          <div className="h-20 bg-cover bg-center" style={{ backgroundImage: `url(${exp.cover})` }} />
+        ) : (
+          <div className={clsx('h-20 bg-gradient-to-br flex items-center justify-center', TYPE_META[exp.type]?.bg || 'bg-gray-100 dark:bg-gray-800')}>
+            <Icon size={24} className={meta.color} />
           </div>
-          <ChevronRight size={14} className="text-[var(--olu-muted)] flex-shrink-0 mt-2" />
+        )}
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', meta.bg)}>
+                <Icon size={16} className={meta.color} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-sm truncate">{exp.name}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[var(--olu-muted)] text-xs">{meta.label}</span>
+                  <span className={clsx(
+                    'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                    exp.status === 'active'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400'
+                      : 'bg-gray-100 text-gray-500 dark:bg-gray-400/10 dark:text-gray-400'
+                  )}>
+                    {exp.status === 'active' ? 'published' : exp.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <ChevronRight size={14} className="text-[var(--olu-muted)] flex-shrink-0 mt-2" />
+          </div>
         </div>
       </div>
+      {consumerPath && (
+        <div className="px-4 pb-3 -mt-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); window.open(consumerPath, '_blank') }}
+            className="flex items-center gap-1.5 text-xs text-[var(--olu-muted)] hover:text-cyan-500 transition-colors"
+          >
+            <ExternalLink size={12} />
+            View as consumer
+          </button>
+        </div>
+      )}
     </div>
   )
 }

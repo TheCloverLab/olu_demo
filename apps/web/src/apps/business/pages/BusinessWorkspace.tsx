@@ -198,7 +198,10 @@ export default function BusinessWorkspace() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-bold text-lg">{title}</h3>
-                <span className={enabled ? 'text-emerald-500 text-xs' : 'text-amber-500 text-xs'}>
+                <span className={enabled
+                  ? 'text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400 font-medium'
+                  : 'text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-400/10 dark:text-gray-400 font-medium'
+                }>
                   {enabled ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
@@ -237,7 +240,12 @@ export default function BusinessWorkspace() {
                   {app.app_type}
                 </span>
                 <p className="text-sm truncate flex-1">{app.title}</p>
-                <span className={clsx('text-xs', app.status === 'published' ? 'text-emerald-500' : 'text-amber-500')}>
+                <span className={clsx(
+                  'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                  app.status === 'published'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-400'
+                )}>
                   {app.status}
                 </span>
               </div>

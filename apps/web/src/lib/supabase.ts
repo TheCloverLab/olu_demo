@@ -729,10 +729,13 @@ export type WorkspaceJoin = {
   joined_at: string
 }
 
+export type WorkspaceHomeLayout = 'classic' | 'hero' | 'compact' | 'catalog'
+
 export type WorkspaceHomeConfig = {
   workspace_id: string
   cover?: string | null
   headline?: string | null
+  layout?: WorkspaceHomeLayout | null
   tabs: WorkspaceHomeTab[]
   created_at?: string
   updated_at?: string

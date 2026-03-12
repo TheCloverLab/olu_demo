@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Compass, Search } from 'lucide-react'
+import { Compass, Search, Users } from 'lucide-react'
 import { getDiscoverWorkspaces } from '../../../domain/workspace/api'
 import type { Workspace } from '../../../lib/supabase'
 
 const CARD_GRADIENTS = [
-  'from-cyan-700 via-teal-600 to-emerald-500',
-  'from-blue-700 via-sky-600 to-cyan-500',
-  'from-amber-600 via-orange-500 to-rose-500',
-  'from-emerald-700 via-green-600 to-lime-500',
-  'from-sky-700 via-blue-600 to-indigo-500',
-  'from-teal-600 via-cyan-500 to-sky-500',
+  'from-cyan-600 to-blue-700',
+  'from-emerald-600 to-teal-700',
+  'from-sky-600 to-indigo-700',
+  'from-teal-600 to-cyan-700',
+  'from-blue-600 to-sky-700',
+  'from-green-600 to-emerald-700',
 ]
 
 function pickGradient(seed: string) {
@@ -27,24 +27,29 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
   return (
     <button
       onClick={() => navigate(`/w/${workspace.slug}`)}
-      className="relative w-full overflow-hidden rounded-[24px] text-left hover:-translate-y-0.5 transition-all min-h-[200px] flex flex-col justify-end"
+      className="group relative w-full overflow-hidden rounded-2xl text-left transition-all hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-0.5"
     >
-      {workspace.icon && !imgBroken ? (
-        <img
-          src={workspace.icon}
-          alt={workspace.name}
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={() => setImgBroken(true)}
-        />
-      ) : (
-        <div className={`absolute inset-0 bg-gradient-to-br ${pickGradient(workspace.id)}`} />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
-
-      <div className="relative p-4 space-y-2">
-        <h3 className="text-lg font-black text-white">{workspace.name}</h3>
+      <div className="aspect-[16/9] relative">
+        {workspace.icon && !imgBroken ? (
+          <img
+            src={workspace.icon}
+            alt={workspace.name}
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={() => setImgBroken(true)}
+          />
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-br ${pickGradient(workspace.id)}`}>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl font-black text-white/30">{workspace.name[0]}</span>
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <h3 className="text-base font-bold text-white group-hover:text-cyan-100 transition-colors">{workspace.name}</h3>
         {workspace.headline && (
-          <p className="text-xs text-white/70 line-clamp-2">{workspace.headline}</p>
+          <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{workspace.headline}</p>
         )}
       </div>
     </button>
@@ -60,9 +65,7 @@ export default function Discover() {
 
   useEffect(() => {
     if (query.trim() === debouncedQuery) return
-    const timer = window.setTimeout(() => {
-      setDebouncedQuery(query.trim())
-    }, 250)
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 250)
     return () => window.clearTimeout(timer)
   }, [query])
 
@@ -79,57 +82,75 @@ export default function Discover() {
   }, [debouncedQuery])
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
+      {/* Hero */}
       <section className="space-y-4">
-        <div>
-          <div className="flex items-center gap-2 text-olu-muted text-xs uppercase tracking-[0.18em] mb-2">
-            <Compass size={14} />
-            {t('discover.title')}
-          </div>
-          <h1 className="font-black text-xl md:text-2xl leading-tight">{t('discover.heading')}</h1>
-          <p className="text-olu-muted text-sm mt-2">{t('discover.subtitle')}</p>
+        <div className="flex items-center gap-2 text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.2em]">
+          <Compass size={14} />
+          {t('discover.title')}
         </div>
-        <div className="rounded-2xl border border-olu-border bg-olu-surface px-4 py-3 flex items-center gap-3">
-          <Search size={16} className="text-olu-muted" />
+        <h1 className="font-black text-2xl md:text-3xl leading-tight">
+          {t('discover.heading')}
+        </h1>
+        <p className="text-[var(--olu-text-secondary)] text-sm max-w-lg">
+          {t('discover.subtitle')}
+        </p>
+
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--olu-muted)]" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('discover.searchPlaceholder')}
-            className="w-full bg-transparent outline-none text-sm text-[var(--olu-input-text)] placeholder:text-[var(--olu-input-placeholder)]"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--olu-border)] bg-[var(--olu-surface)] text-sm text-[var(--olu-input-text)] placeholder:text-[var(--olu-input-placeholder)] focus:outline-none focus:border-[var(--olu-input-focus)] transition-colors"
           />
         </div>
       </section>
 
+      {/* Grid */}
       <section className="space-y-4">
-        <p className="font-bold text-lg">{debouncedQuery ? t('discover.results') : t('discover.recommended')}</p>
+        <div className="flex items-center justify-between">
+          <p className="font-bold text-lg">
+            {debouncedQuery ? t('discover.results') : t('discover.recommended')}
+          </p>
+          {!loading && (
+            <span className="text-xs text-[var(--olu-muted)]">
+              {workspaces.length} app{workspaces.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
 
-        {workspaces.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-4">
+        {workspaces.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {workspaces.map((ws) => (
               <WorkspaceCard key={ws.id} workspace={ws} />
             ))}
           </div>
-        ) : null}
+        )}
 
-        {!loading && workspaces.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-8 text-sm text-olu-muted">
-            {debouncedQuery ? t('discover.noResults') : t('discover.nothingNew')}
+        {!loading && workspaces.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-[var(--olu-border)] px-6 py-12 text-center space-y-3">
+            <Users size={28} className="text-[var(--olu-muted)] mx-auto" />
+            <p className="text-sm text-[var(--olu-muted)]">
+              {debouncedQuery ? t('discover.noResults') : t('discover.nothingNew')}
+            </p>
           </div>
-        ) : null}
+        )}
 
-        {loading ? (
-          <div className="grid md:grid-cols-2 gap-4">
-            {[0, 1].map((i) => (
-              <div key={i} className="rounded-[24px] bg-olu-surface overflow-hidden animate-pulse min-h-[200px] flex flex-col justify-end">
-                <div className="h-full bg-olu-border/40" />
-                <div className="p-4 space-y-3">
-                  <div className="h-5 w-3/4 bg-olu-border rounded-full" />
-                  <div className="h-3 w-1/2 bg-olu-border rounded-full" />
+        {loading && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-2xl bg-[var(--olu-surface)] overflow-hidden animate-pulse">
+                <div className="aspect-[16/9] bg-[var(--olu-border)]/40" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 w-2/3 bg-[var(--olu-border)] rounded-full" />
+                  <div className="h-3 w-1/3 bg-[var(--olu-border)] rounded-full" />
                 </div>
               </div>
             ))}
           </div>
-        ) : null}
+        )}
       </section>
     </div>
   )

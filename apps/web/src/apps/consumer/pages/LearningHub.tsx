@@ -47,7 +47,7 @@ export default function LearningHub() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 text-cyan-300 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 flex items-center justify-center">
           <BookOpen size={18} />
         </div>
         <div>
@@ -81,15 +81,15 @@ export default function LearningHub() {
               <div>
                 <p className="text-sm text-olu-muted">{course.subtitle}</p>
               </div>
-              <span className="text-sm font-semibold text-emerald-300">{computed.percent}%</span>
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">{computed.percent}%</span>
             </div>
-            <div className="rounded-full h-2 bg-[var(--olu-card-bg)] overflow-hidden">
+            <div className="rounded-full h-2 bg-olu-border/40 overflow-hidden">
               <div className="h-full bg-white rounded-full" style={{ width: `${computed.percent}%` }} />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
               <div className="rounded-2xl bg-[var(--olu-card-bg)] border border-olu-border p-4">
                 <div className="flex items-center gap-2">
-                  <Clock3 size={14} className="text-amber-300" />
+                  <Clock3 size={14} className="text-amber-600 dark:text-amber-300" />
                   <p className="text-xs text-olu-muted">{t('consumer.nextLesson')}</p>
                 </div>
                 <p className="font-semibold text-sm mt-2">{computed.nextSection?.title || course.sections[0]?.title}</p>

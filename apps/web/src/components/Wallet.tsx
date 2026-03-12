@@ -75,7 +75,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="glass rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign size={16} className="text-emerald-400" />
+                      <DollarSign size={16} className="text-emerald-600 dark:text-emerald-400" />
                       <p className="text-xs font-semibold">Fiat</p>
                     </div>
                     <p className="font-bold text-lg">${balances.fiat.toFixed(2)}</p>
@@ -83,7 +83,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
 
                   <div className="glass rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Coins size={16} className="text-cyan-400" />
+                      <Coins size={16} className="text-cyan-600 dark:text-cyan-400" />
                       <p className="text-xs font-semibold">Stablecoin</p>
                     </div>
                     <p className="font-bold text-lg">{balances.usdc.toFixed(2)} USDC</p>
@@ -109,7 +109,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                      <DollarSign size={18} className="text-emerald-400" />
+                      <DollarSign size={18} className="text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-sm">Fiat Currency</p>
@@ -125,7 +125,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
-                      <Coins size={18} className="text-cyan-400" />
+                      <Coins size={18} className="text-cyan-600 dark:text-cyan-400" />
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-sm">Stablecoin (USDC)</p>

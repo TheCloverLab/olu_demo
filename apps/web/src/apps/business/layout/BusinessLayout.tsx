@@ -169,11 +169,11 @@ function BusinessMenu({ open, onClose, wallet }: { open: boolean; onClose: () =>
             <button onClick={() => go('/business/wallet')} className="mx-4 mb-2 block rounded-2xl bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] hover:bg-[var(--olu-sidebar-hover)] transition-colors text-left">
               <div className="px-3 py-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <Wallet size={14} className="text-emerald-400" />
+                  <Wallet size={14} className="text-emerald-600 dark:text-emerald-400" />
                   <span className="text-xs text-[var(--olu-sidebar-muted)] font-medium">{t('common.wallet')}</span>
                 </div>
                 <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-                <p className="text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
+                <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
               </div>
             </button>
 
@@ -259,11 +259,11 @@ export default function BusinessLayout() {
           >
             <div className="px-3 py-3">
               <div className="flex items-center gap-2 mb-2">
-                <Wallet size={14} className="text-emerald-400" />
+                <Wallet size={14} className="text-emerald-600 dark:text-emerald-400" />
                 <span className="text-xs text-[var(--olu-sidebar-muted)] font-medium">{t('common.wallet')}</span>
               </div>
               <p className="font-black text-lg leading-none">${wallet ? Number(wallet.usdc_balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—'}</p>
-              <p className="text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
+              <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">{t('common.balance')}</p>
             </div>
           </NavLink>
         </div>

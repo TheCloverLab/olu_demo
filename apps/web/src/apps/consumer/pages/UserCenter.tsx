@@ -55,7 +55,7 @@ export default function UserCenter() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h1 className="font-black text-xl">{user.name}</h1>
-                  {user.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
+                  {user.verified && <BadgeCheck size={18} className="text-sky-600 dark:text-sky-400" fill="currentColor" />}
                 </div>
                 <p className="text-olu-muted text-sm mt-1">{user.handle}</p>
                 {user.bio && <p className="text-sm text-olu-muted mt-2 line-clamp-2">{user.bio}</p>}

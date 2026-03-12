@@ -79,7 +79,7 @@ export default function SupplierConsole() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-              <Package size={18} className="text-cyan-200" />
+              <Package size={18} className="text-cyan-700 dark:text-cyan-200" />
             </div>
             <div>
               <h1 className="font-black text-2xl">Supply Chain</h1>
@@ -120,8 +120,8 @@ export default function SupplierConsole() {
       {tab === 'dashboard' && (
         <div className="space-y-6">
           <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 flex items-center gap-3">
-            <ShieldCheck size={16} className="text-cyan-200" />
-            <p className="text-sm text-cyan-100/68">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
+            <ShieldCheck size={16} className="text-cyan-700 dark:text-cyan-200" />
+            <p className="text-sm text-cyan-700/68 dark:text-cyan-100/68">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -176,14 +176,14 @@ export default function SupplierConsole() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-                    <Link2 size={16} className="text-cyan-200" />
+                    <Link2 size={16} className="text-cyan-700 dark:text-cyan-200" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">{partnership.creator?.name || 'Creator'}</p>
                     <p className="text-[var(--olu-text-secondary)] text-xs">{partnership.creator?.handle || ''}</p>
                   </div>
                 </div>
-                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', partnership.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', partnership.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                   {partnership.status}
                 </span>
               </div>

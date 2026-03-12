@@ -87,7 +87,7 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
           <p className="text-olu-muted text-xs mb-1">{t('consumer.coverOptional')}</p>
           <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="w-full rounded-xl bg-olu-card border border-olu-border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-2 file:py-1 file:text-xs file:font-semibold file:text-black" />
         </div>
-        {message && <p className={`text-sm ${message.includes('Saved') ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
+        {message && <p className={`text-sm ${message.includes('Saved') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-400'}`}>{message}</p>}
         <button onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-white text-black py-2.5 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
           <Save size={14} />
           {saving ? t('common.saving') : t('consumer.saveProfile')}
@@ -170,7 +170,7 @@ export default function PublicProfile() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <h1 className="font-black text-2xl">{creator.name}</h1>
-                  {creator.verified && <BadgeCheck size={18} className="text-sky-400" fill="currentColor" />}
+                  {creator.verified && <BadgeCheck size={18} className="text-sky-600 dark:text-sky-400" fill="currentColor" />}
                 </div>
                 {isOwn && (
                   <button
@@ -262,7 +262,7 @@ export default function PublicProfile() {
                       <p className="font-semibold text-sm">{app.title}</p>
                       <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
                     </div>
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-300">{app.price_label}</span>
+                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-600 dark:text-emerald-300">{app.price_label}</span>
                   </div>
                 </button>
               ))}

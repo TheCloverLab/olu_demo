@@ -102,7 +102,7 @@ export default function Topics() {
               <ChevronRight size={16} className="text-olu-muted" />
             </div>
             <p className="text-sm text-olu-muted mt-3 leading-relaxed">{topic.description}</p>
-            <div className="inline-flex items-center gap-2 mt-4 text-sm text-sky-300">
+            <div className="inline-flex items-center gap-2 mt-4 text-sm text-sky-600 dark:text-sky-300">
               <MessageCircle size={14} />
               {t('consumer.openDiscussion')}
             </div>

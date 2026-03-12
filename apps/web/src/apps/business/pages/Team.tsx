@@ -23,10 +23,10 @@ type AgentWithTasks = WorkspaceAgentWithTasks
 
 const ROLE_COLORS: Record<string, string> = {
   'IP Manager': 'bg-violet-500/15 text-violet-400',
-  'Legal Officer': 'bg-amber-500/15 text-amber-400',
-  'Community Manager': 'bg-cyan-500/15 text-cyan-400',
-  'Growth Officer': 'bg-emerald-500/15 text-emerald-400',
-  'Data Analyst': 'bg-blue-500/15 text-blue-400',
+  'Legal Officer': 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  'Community Manager': 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
+  'Growth Officer': 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  'Data Analyst': 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
   'Creativity Officer': 'bg-pink-500/15 text-pink-400',
 }
 
@@ -69,7 +69,7 @@ function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-semibold text-sm">{agent.name}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold uppercase tracking-wide">AI</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-600 dark:text-sky-300 font-semibold uppercase tracking-wide">AI</span>
             <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-[var(--olu-text-secondary)] bg-cyan-500/10')}>
               {agent.role}
             </span>
@@ -88,7 +88,7 @@ function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: 
           <button
             onClick={(e) => { e.stopPropagation(); onRun(agent) }}
             disabled={isRunning}
-            className="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40"
+            className="p-2 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40"
             title="Run agent"
           >
             {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
@@ -154,7 +154,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap mb-0.5">
           <span className="font-semibold text-sm">{emp.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold uppercase tracking-wide">Human</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-300 font-semibold uppercase tracking-wide">Human</span>
           <span className="text-xs text-[var(--olu-text-secondary)] capitalize flex items-center gap-1">
             <Circle size={6} className={STATUS_DOT_COLOR[emp.status]} fill="currentColor" />
             {emp.status}
@@ -177,7 +177,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
             </span>
           ))}
           {emp.salary_label && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
               {emp.salary_label}
             </span>
           )}
@@ -332,9 +332,9 @@ export default function Team() {
 
       {lastRunResult && (
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-4">
-          <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
-          <p className="text-sm text-cyan-100/80 whitespace-pre-line">{lastRunResult}</p>
-          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-100/40 mt-2 hover:text-[var(--olu-text-secondary)]">{t('common.dismiss')}</button>
+          <p className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
+          <p className="text-sm text-cyan-700/80 dark:text-cyan-100/80 whitespace-pre-line">{lastRunResult}</p>
+          <button onClick={() => setLastRunResult(null)} className="text-xs text-cyan-700/40 dark:text-cyan-100/40 mt-2 hover:text-[var(--olu-text-secondary)]">{t('common.dismiss')}</button>
         </div>
       )}
 
@@ -352,9 +352,9 @@ export default function Team() {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: t('team.agents'), value: agents.length, icon: Bot, iconClass: 'text-sky-300', iconBg: 'bg-sky-500/15', fillIcon: false },
-          { label: t('chat.activeTasks'), value: totalTasks, icon: Zap, iconClass: 'text-amber-300', iconBg: 'bg-amber-500/15', fillIcon: false },
-          { label: t('common.online'), value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-300', iconBg: 'bg-emerald-500/15', fillIcon: true },
+          { label: t('team.agents'), value: agents.length, icon: Bot, iconClass: 'text-sky-600 dark:text-sky-300', iconBg: 'bg-sky-500/15', fillIcon: false },
+          { label: t('chat.activeTasks'), value: totalTasks, icon: Zap, iconClass: 'text-amber-600 dark:text-amber-300', iconBg: 'bg-amber-500/15', fillIcon: false },
+          { label: t('common.online'), value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-600 dark:text-emerald-300', iconBg: 'bg-emerald-500/15', fillIcon: true },
         ].map((card) => (
           <div key={card.label} className="rounded-[24px] p-4 text-center border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_8px_rgba(2,8,23,0.12)]">
             <div className="flex justify-center mb-2">
@@ -416,11 +416,11 @@ export default function Team() {
               <div className="grid sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
                 </div>
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
                 </div>
                 <div className="flex items-end">
                   <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">

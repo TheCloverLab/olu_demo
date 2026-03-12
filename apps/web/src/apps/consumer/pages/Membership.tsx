@@ -82,7 +82,7 @@ export default function Membership() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center">
           <Crown size={18} />
         </div>
         <div>
@@ -109,14 +109,14 @@ export default function Membership() {
           >
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-lg">{tier.name}</p>
-              {index === 1 ? <Star size={16} className="text-black" fill="currentColor" /> : <Sparkles size={16} className={index === 2 ? 'text-amber-300' : 'text-olu-muted'} />}
+              {index === 1 ? <Star size={16} className="text-black" fill="currentColor" /> : <Sparkles size={16} className={index === 2 ? 'text-amber-600 dark:text-amber-300' : 'text-olu-muted'} />}
             </div>
             <p className={`font-black text-3xl ${index === 1 ? 'text-black' : 'text-white'}`}>{tier.price}</p>
             <p className={`text-sm mt-2 ${index === 1 ? 'text-black/72' : 'text-olu-muted'}`}>{tier.note}</p>
             <div className="space-y-2 mt-5">
               {tier.perks.map((perk) => (
                 <div key={perk} className="flex items-center gap-2">
-                  <ShieldCheck size={14} className={index === 1 ? 'text-black/70' : 'text-emerald-300'} />
+                  <ShieldCheck size={14} className={index === 1 ? 'text-black/70' : 'text-emerald-600 dark:text-emerald-300'} />
                   <p className={`text-sm ${index === 1 ? 'text-black/72' : 'text-olu-muted'}`}>{perk}</p>
                 </div>
               ))}

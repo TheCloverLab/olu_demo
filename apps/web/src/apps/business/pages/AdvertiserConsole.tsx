@@ -16,14 +16,14 @@ const TABS = [
 
 const STAGE_META = {
   draft: { label: 'Draft', tone: 'bg-cyan-500/10 text-[var(--olu-text-secondary)]' },
-  sourcing: { label: 'Sourcing', tone: 'bg-cyan-500/20 text-cyan-300' },
-  offer_sent: { label: 'Offer Sent', tone: 'bg-amber-500/20 text-amber-300' },
-  creator_review: { label: 'Creator Review', tone: 'bg-amber-500/20 text-amber-300' },
-  approved: { label: 'Approved', tone: 'bg-emerald-500/20 text-emerald-300' },
-  scheduled: { label: 'Scheduled', tone: 'bg-emerald-500/20 text-emerald-300' },
-  published: { label: 'Published', tone: 'bg-emerald-500/20 text-emerald-300' },
-  reporting: { label: 'Reporting', tone: 'bg-cyan-500/20 text-cyan-300' },
-  completed: { label: 'Completed', tone: 'bg-emerald-500/20 text-emerald-300' },
+  sourcing: { label: 'Sourcing', tone: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300' },
+  offer_sent: { label: 'Offer Sent', tone: 'bg-amber-500/20 text-amber-600 dark:text-amber-300' },
+  creator_review: { label: 'Creator Review', tone: 'bg-amber-500/20 text-amber-600 dark:text-amber-300' },
+  approved: { label: 'Approved', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
+  scheduled: { label: 'Scheduled', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
+  published: { label: 'Published', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
+  reporting: { label: 'Reporting', tone: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300' },
+  completed: { label: 'Completed', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
   cancelled: { label: 'Cancelled', tone: 'bg-red-500/20 text-red-300' },
 } as const
 
@@ -152,7 +152,7 @@ export default function AdvertiserConsole() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-              <Megaphone size={18} className="text-cyan-200" />
+              <Megaphone size={18} className="text-cyan-700 dark:text-cyan-200" />
             </div>
             <div>
               <h1 className="font-black text-2xl">Marketing Workspace</h1>
@@ -291,7 +291,7 @@ export default function AdvertiserConsole() {
                   { title: '5. Metrics return', desc: 'First-day reach, clicks, and conversions come back into marketing workspace.', active: ['completed'].includes(workflow?.campaign.status || 'draft') },
                 ].map((step) => (
                   <div key={step.title} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
-                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                       {step.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                     </div>
                     <div>
@@ -393,7 +393,7 @@ export default function AdvertiserConsole() {
                     <p className="font-semibold">{campaign.name}</p>
                     <p className="text-[var(--olu-text-secondary)] text-xs">{campaign.start_date} - {campaign.end_date}</p>
                   </div>
-                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
                     {campaign.status}
                   </span>
                 </div>

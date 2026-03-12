@@ -62,7 +62,7 @@ function DiscoverCard({
           </p>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-300 backdrop-blur-sm">
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] text-amber-600 dark:text-amber-300 backdrop-blur-sm">
             {app.price_label}
           </span>
           <span className="text-xs text-olu-muted">{app.owner_name}</span>
@@ -234,7 +234,7 @@ export default function Discover() {
           <div className="grid md:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
               <div key={i} className="rounded-[24px] bg-olu-surface overflow-hidden animate-pulse min-h-[260px] flex flex-col justify-end">
-                <div className="h-full bg-[var(--olu-card-bg)]" />
+                <div className="h-full bg-olu-border/40" />
                 <div className="p-4 space-y-3">
                   <div className="h-3 w-20 bg-olu-border rounded-full" />
                   <div className="h-5 w-3/4 bg-olu-border rounded-full" />

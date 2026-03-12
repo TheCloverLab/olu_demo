@@ -31,7 +31,7 @@ function TipModal({ post, onClose }) {
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-olu-surface rounded-2xl p-8 text-center max-w-sm w-full border border-olu-border">
           <div className="text-5xl mb-4">🎉</div>
           <h3 className="font-bold text-xl mb-2">{t('consumer.tipSent')}</h3>
-          <p className="text-olu-muted text-sm mb-1">You tipped <span className="text-amber-400 font-bold">${amount}</span> to {post.creator?.name || 'Creator'}</p>
+          <p className="text-olu-muted text-sm mb-1">You tipped <span className="text-amber-600 dark:text-amber-400 font-bold">${amount}</span> to {post.creator?.name || 'Creator'}</p>
           <p className="text-olu-muted text-xs mt-2">Transaction processed instantly via OLU Pay</p>
           <button onClick={onClose} className="mt-6 px-8 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-sm">{t('consumer.done')}</button>
         </motion.div>
@@ -54,7 +54,7 @@ function TipModal({ post, onClose }) {
             <div className="grid grid-cols-5 gap-2 mb-4">
               {TIP_AMOUNTS.map((a) => (
                 <button key={a} onClick={() => { setAmount(a); setCustom('') }}
-                  className={clsx('py-2 rounded-xl text-sm font-bold transition-all', amount === a && !custom ? 'bg-amber-500 text-white' : 'glass hover:bg-amber-500/10 text-olu-muted hover:text-amber-400')}>
+                  className={clsx('py-2 rounded-xl text-sm font-bold transition-all', amount === a && !custom ? 'bg-amber-500 text-white' : 'glass hover:bg-amber-500/10 text-olu-muted hover:text-amber-600 dark:text-amber-400')}>
                   ${a}
                 </button>
               ))}
@@ -129,8 +129,8 @@ function FanCreateModal({ post, onClose }) {
           {step === 2 && (
             <div className="p-5">
               <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl mb-4">
-                <Check size={16} className="text-emerald-400" />
-                <p className="text-sm text-emerald-300 font-medium">License granted by Lisa ✅</p>
+                <Check size={16} className="text-emerald-600 dark:text-emerald-400" />
+                <p className="text-sm text-emerald-600 dark:text-emerald-300 font-medium">License granted by Lisa ✅</p>
               </div>
               <p className="text-sm text-olu-muted mb-4">Your fan creation license is active. Create and publish your work below.</p>
               <div className="space-y-3">
@@ -254,7 +254,7 @@ export default function ContentDetail() {
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
               <button onClick={() => navigate(`/communities/${post.creator_id}`)} className="font-semibold text-sm hover:text-olu-muted transition-colors">{post.creator?.name || 'Creator'}</button>
-              {post.creator?.verified && <BadgeCheck size={14} className="text-sky-400" fill="currentColor" />}
+              {post.creator?.verified && <BadgeCheck size={14} className="text-sky-600 dark:text-sky-400" fill="currentColor" />}
             </div>
             <p className="text-olu-muted text-xs">{post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'}</p>
           </div>
@@ -279,7 +279,7 @@ export default function ContentDetail() {
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-[var(--olu-card-hover)] text-olu-muted transition-all flex-1 justify-center">
             <MessageCircle size={16} /> {formatNumber(post.comments)}
           </button>
-          <button onClick={() => setShowTip(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-500/10 text-olu-muted hover:text-amber-400 transition-all flex-1 justify-center">
+          <button onClick={() => setShowTip(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-amber-500/10 text-olu-muted hover:text-amber-600 dark:text-amber-400 transition-all flex-1 justify-center">
             <Gift size={16} /> {t('consumer.tip')}
           </button>
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-[var(--olu-card-hover)] text-olu-muted transition-all flex-1 justify-center">
@@ -298,7 +298,7 @@ export default function ContentDetail() {
                 <p className="font-semibold text-sm">Create Fan Work from this post</p>
                 <p className="text-xs text-olu-muted">Get a {Math.round((post.fan_creation_fee || 0) * 100)}% revenue-share license · Handled by Lisa (IP Manager)</p>
               </div>
-              <div className="text-sky-400 text-xs font-semibold">License IP →</div>
+              <div className="text-sky-600 dark:text-sky-400 text-xs font-semibold">License IP →</div>
             </div>
           </motion.div>
         )}

@@ -124,7 +124,7 @@ export default function Courses() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-sky-500/15 text-sky-300 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-2xl bg-sky-500/15 text-sky-600 dark:text-sky-300 flex items-center justify-center">
           <GraduationCap size={18} />
         </div>
         <div>

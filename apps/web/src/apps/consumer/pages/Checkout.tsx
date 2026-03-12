@@ -64,7 +64,7 @@ export default function Checkout() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-300 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 flex items-center justify-center">
           <CreditCard size={18} />
         </div>
         <div>
@@ -84,7 +84,7 @@ export default function Checkout() {
         </div>
         <div className="rounded-[24px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-center gap-2 mb-4">
-            <ShieldCheck size={16} className="text-sky-300" />
+            <ShieldCheck size={16} className="text-sky-600 dark:text-sky-300" />
             <p className="font-semibold">{t('consumer.paymentCta')}</p>
           </div>
           <p className="text-sm text-olu-muted leading-relaxed">

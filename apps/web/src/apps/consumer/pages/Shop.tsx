@@ -81,21 +81,21 @@ function CreatorShopView({ products }: { products: Product[] }) {
       <div className="grid grid-cols-3 gap-3">
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign size={16} className="text-emerald-400" />
+            <DollarSign size={16} className="text-emerald-600 dark:text-emerald-400" />
             <p className="text-xs font-semibold text-olu-muted">{t('consumer.revenue')}</p>
           </div>
           <p className="font-bold text-xl">${totalRevenue.toFixed(2)}</p>
         </div>
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp size={16} className="text-blue-400" />
+            <TrendingUp size={16} className="text-blue-600 dark:text-blue-400" />
             <p className="text-xs font-semibold text-olu-muted">{t('consumer.sold')}</p>
           </div>
           <p className="font-bold text-xl">{totalSold}</p>
         </div>
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Package size={16} className="text-purple-400" />
+            <Package size={16} className="text-purple-600 dark:text-purple-400" />
             <p className="text-xs font-semibold text-olu-muted">{t('consumer.products')}</p>
           </div>
           <p className="font-bold text-xl">{products.length}</p>

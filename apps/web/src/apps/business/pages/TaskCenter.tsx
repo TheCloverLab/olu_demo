@@ -9,14 +9,14 @@ import type { EmployeeWithTasks, TeamTaskStatus } from '../../../domain/team/typ
 
 const STATUS_CONFIG: Record<TeamTaskStatus, { icon: typeof Circle; color: string; bg: string; label: string }> = {
   pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Pending' },
-  in_progress: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
-  done: { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
+  in_progress: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
+  done: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
   cancelled: { icon: Circle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Cancelled' },
 }
 
 const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
-  medium: 'text-amber-400 bg-amber-400/10',
+  medium: 'text-amber-600 dark:text-amber-400 bg-amber-400/10',
   low: 'text-[var(--olu-text-secondary)] bg-cyan-500/10',
 }
 
@@ -159,7 +159,7 @@ export default function TaskCenter() {
           </p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
-          <Zap size={18} className="text-amber-300" />
+          <Zap size={18} className="text-amber-600 dark:text-amber-300" />
         </div>
       </div>
 
@@ -214,7 +214,7 @@ export default function TaskCenter() {
                     const exec = executions.get(task.id)
                     if (exec?.state === 'running') {
                       return (
-                        <div className="mt-3 flex items-center gap-2 text-xs text-amber-400">
+                        <div className="mt-3 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
                           <Loader2 size={14} className="animate-spin" />
                           <span>Agent is working...</span>
                         </div>
@@ -223,11 +223,11 @@ export default function TaskCenter() {
                     if (exec?.state === 'approval') {
                       return (
                         <div className="mt-3 p-3 rounded-xl bg-amber-400/5 border border-amber-400/20">
-                          <p className="text-xs text-amber-300 mb-2">Agent needs approval to complete this task</p>
+                          <p className="text-xs text-amber-600 dark:text-amber-300 mb-2">Agent needs approval to complete this task</p>
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleApproval(task.id, 'approve')}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors"
                             >
                               <ThumbsUp size={12} /> Approve
                             </button>
@@ -243,7 +243,7 @@ export default function TaskCenter() {
                     }
                     if (exec?.state === 'done') {
                       return (
-                        <div className="mt-3 text-xs text-emerald-400 flex items-center gap-1.5">
+                        <div className="mt-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                           <CheckCircle2 size={14} />
                           <span>{exec.response ? String(exec.response).slice(0, 100) : 'Task completed by agent'}</span>
                         </div>
@@ -263,7 +263,7 @@ export default function TaskCenter() {
                 {task.isAiAgent && task.status === 'pending' && !executions.has(task.id) && (
                   <button
                     onClick={() => handleRunAgent(task)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors border border-cyan-500/20"
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors border border-cyan-500/20"
                   >
                     <Play size={14} /> Run
                   </button>

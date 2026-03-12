@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
-import { getEnabledBusinessModulesForUser } from '../domain/workspace/api'
-import type { BusinessModuleKey } from '../lib/supabase'
+import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser } from '../domain/workspace/api'
+import type { BusinessModuleKey, Workspace } from '../lib/supabase'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 const ALL_MODULES: BusinessModuleKey[] = ['creator_ops', 'marketing', 'supply_chain']
 
 interface WorkspaceContextType {
+  workspace: { id: string } | null
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean
   hasModule: (moduleKey: BusinessModuleKey) => boolean
@@ -17,17 +18,21 @@ const WorkspaceContext = createContext<WorkspaceContextType | null>(null)
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user: authUser } = useAuth()
+  const [workspace, setWorkspace] = useState<{ id: string } | null>(null)
   const [enabledBusinessModules, setEnabledBusinessModules] = useState<BusinessModuleKey[]>([])
   const [workspaceLoading, setWorkspaceLoading] = useState(true)
 
   async function loadWorkspaceModules() {
     if (!authUser) {
+      setWorkspace(null)
       setEnabledBusinessModules([])
       setWorkspaceLoading(false)
       return
     }
 
     try {
+      const membership = await ensureWorkspaceForUser(authUser)
+      if (membership) setWorkspace({ id: membership.workspace_id })
       const modules = await getEnabledBusinessModulesForUser(authUser)
       setEnabledBusinessModules(modules)
     } catch (error) {
@@ -40,6 +45,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (IS_DEMO) {
+      setWorkspace({ id: 'ws-demo' })
       setEnabledBusinessModules(ALL_MODULES)
       setWorkspaceLoading(false)
       return
@@ -50,12 +56,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     async function sync() {
       if (!authUser) {
+        setWorkspace(null)
         setEnabledBusinessModules([])
         if (!cancelled) setWorkspaceLoading(false)
         return
       }
 
       try {
+        const membership = await ensureWorkspaceForUser(authUser)
+        if (!cancelled && membership) setWorkspace({ id: membership.workspace_id })
         const modules = await getEnabledBusinessModulesForUser(authUser)
         if (!cancelled) setEnabledBusinessModules(modules)
       } catch (error) {
@@ -74,6 +83,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   return (
     <WorkspaceContext.Provider value={{
+      workspace,
       enabledBusinessModules,
       workspaceLoading,
       hasModule,

@@ -8,6 +8,7 @@ import type { BusinessModuleKey, ConsumerApp, ConsumerAppType, WorkspaceConsumer
 
 export interface AppContextType {
   currentUser: any
+  workspace: { id: string } | null
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean
   hasModule: (moduleKey: BusinessModuleKey) => boolean
@@ -40,11 +41,12 @@ export function AppProvider({ children }: AppProviderProps) {
 
 export function useApp(): AppContextType {
   const { currentUser } = useSession()
-  const { enabledBusinessModules, workspaceLoading, hasModule, reloadBusinessModules } = useWorkspace()
+  const { workspace, enabledBusinessModules, workspaceLoading, hasModule, reloadBusinessModules } = useWorkspace()
   const { consumerTemplate, appType, consumerApps, primaryConsumerApp, consumerConfig, consumerExperience, setConsumerTemplate, setConsumerConfig } = useConsumer()
 
   return {
     currentUser,
+    workspace,
     enabledBusinessModules,
     workspaceLoading,
     hasModule,

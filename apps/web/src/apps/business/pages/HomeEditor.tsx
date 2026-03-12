@@ -14,6 +14,67 @@ const DISPLAY_MODES: { value: WorkspaceHomeTab['display_mode']; icon: typeof Lis
   { value: 'featured', icon: Star, label: 'Featured' },
 ]
 
+type TemplateKey = 'magazine' | 'storefront' | 'minimal' | 'community'
+
+const TEMPLATES: { key: TemplateKey; label: string; description: string; icon: string; defaultTabs: (exps: WorkspaceExperience[]) => Omit<WorkspaceHomeTab, 'position'>[] }[] = [
+  {
+    key: 'magazine',
+    label: 'Magazine',
+    description: 'Featured hero + content grid. Great for courses & content-heavy workspaces.',
+    icon: '📰',
+    defaultTabs: (exps) => {
+      const courses = exps.filter((e) => e.type === 'course').map((e) => e.id)
+      const forums = exps.filter((e) => e.type === 'forum').map((e) => e.id)
+      return [
+        { key: 'featured', label: 'Featured', display_mode: 'featured' as const, experience_ids: courses.slice(0, 2) },
+        { key: 'community', label: 'Community', display_mode: 'list' as const, experience_ids: forums },
+      ]
+    },
+  },
+  {
+    key: 'storefront',
+    label: 'Storefront',
+    description: 'Product tiles front and center. Best for selling courses & memberships.',
+    icon: '🏪',
+    defaultTabs: (exps) => {
+      const paid = exps.filter((e) => e.visibility === 'product_gated').map((e) => e.id)
+      const free = exps.filter((e) => e.visibility === 'public' && e.type !== 'support_chat').map((e) => e.id)
+      return [
+        { key: 'premium', label: 'Premium', display_mode: 'tile' as const, experience_ids: paid },
+        { key: 'free', label: 'Free', display_mode: 'grid' as const, experience_ids: free },
+      ]
+    },
+  },
+  {
+    key: 'minimal',
+    label: 'Minimal',
+    description: 'Clean single-column list. Lets content speak for itself.',
+    icon: '✨',
+    defaultTabs: (exps) => {
+      const all = exps.filter((e) => e.type !== 'support_chat').map((e) => e.id)
+      return [
+        { key: 'all', label: 'All', display_mode: 'list' as const, experience_ids: all },
+      ]
+    },
+  },
+  {
+    key: 'community',
+    label: 'Community Hub',
+    description: 'Forums & chats highlighted. Perfect for community-driven workspaces.',
+    icon: '💬',
+    defaultTabs: (exps) => {
+      const forums = exps.filter((e) => e.type === 'forum').map((e) => e.id)
+      const chats = exps.filter((e) => e.type === 'group_chat').map((e) => e.id)
+      const courses = exps.filter((e) => e.type === 'course').map((e) => e.id)
+      return [
+        { key: 'discussions', label: 'Discussions', display_mode: 'list' as const, experience_ids: forums },
+        { key: 'rooms', label: 'Chat Rooms', display_mode: 'tile' as const, experience_ids: chats },
+        ...(courses.length > 0 ? [{ key: 'learn', label: 'Learn', display_mode: 'grid' as const, experience_ids: courses }] : []),
+      ]
+    },
+  },
+]
+
 function TabEditor({
   tab,
   allExperiences,
@@ -279,6 +340,30 @@ export default function HomeEditor() {
                 placeholder="Short tagline for your workspace"
                 className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
               />
+            </div>
+          </div>
+
+          {/* Layout Templates */}
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Layout Template</h3>
+            <p className="text-xs text-[var(--olu-text-secondary)]">Choose a starting template. You can customize tabs after selecting.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {TEMPLATES.map((tmpl) => (
+                <button
+                  key={tmpl.key}
+                  onClick={() => {
+                    const newTabs = tmpl.defaultTabs(experiences).map((t, i) => ({ ...t, position: i + 1 }))
+                    setTabs(newTabs)
+                  }}
+                  className="p-3 rounded-xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-cyan-300/30 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{tmpl.icon}</span>
+                    <span className="font-semibold text-sm">{tmpl.label}</span>
+                  </div>
+                  <p className="text-[10px] text-[var(--olu-text-secondary)] leading-tight">{tmpl.description}</p>
+                </button>
+              ))}
             </div>
           </div>
 

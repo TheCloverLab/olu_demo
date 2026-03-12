@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, Eye, ChevronRight, Check, Sparkles } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, Eye, ChevronRight, Check, Sparkles, UserPlus } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
+import { useAuth } from '../../../context/AuthContext'
+import { joinWorkspace, hasJoinedWorkspace } from '../../../domain/workspace/api'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences } from '../../../domain/experience/api'
@@ -266,6 +268,7 @@ function AboutTab({
 export default function WorkspaceHome() {
   const { workspaceSlug } = useParams()
   const { t } = useTranslation()
+  const { user: authUser } = useAuth()
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [homeConfig, setHomeConfig] = useState<WorkspaceHomeConfig | null>(null)
   const [experiences, setExperiences] = useState<WorkspaceExperience[]>([])
@@ -274,8 +277,23 @@ export default function WorkspaceHome() {
   const [activeTab, setActiveTab] = useState<string>('about')
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set())
   const [joiningId, setJoiningId] = useState<string | null>(null)
+  const [hasJoined, setHasJoined] = useState(false)
+  const [joiningWorkspace, setJoiningWorkspace] = useState(false)
 
-  const userId = IS_DEMO ? 'demo-consumer' : undefined
+  const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
+
+  async function handleJoinWorkspace() {
+    if (!userId || !workspace) return
+    setJoiningWorkspace(true)
+    try {
+      await joinWorkspace(userId, workspace.id)
+      setHasJoined(true)
+    } catch (err) {
+      console.error('Failed to join workspace', err)
+    } finally {
+      setJoiningWorkspace(false)
+    }
+  }
 
   async function handleJoin(productId: string, planId?: string) {
     if (!userId) return
@@ -322,10 +340,14 @@ export default function WorkspaceHome() {
         )
         setProductCards(cards)
 
-        // Load existing purchases
+        // Load existing purchases + workspace join status
         if (userId) {
-          const purchases = await getUserPurchases(userId, ws.id)
+          const [purchases, joined] = await Promise.all([
+            getUserPurchases(userId, ws.id),
+            hasJoinedWorkspace(userId, ws.id),
+          ])
           setJoinedIds(new Set(purchases.map((p) => p.product_id)))
+          setHasJoined(joined)
         }
       } catch (err) {
         console.error('Failed to load workspace', err)
@@ -376,10 +398,27 @@ export default function WorkspaceHome() {
               {workspace.name[0]}
             </div>
           )}
-          <div className="pb-1">
+          <div className="pb-1 flex-1 min-w-0">
             <h1 className="font-black text-xl">{workspace.name}</h1>
             {headline && <p className="text-sm text-[var(--olu-text-secondary)]">{headline}</p>}
           </div>
+          {userId && (
+            hasJoined ? (
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0 mb-1">
+                <Check size={14} />
+                {t('consumer.joined', 'Joined')}
+              </span>
+            ) : (
+              <button
+                onClick={handleJoinWorkspace}
+                disabled={joiningWorkspace}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-olu-primary text-white hover:opacity-90 transition-colors disabled:opacity-50 flex-shrink-0 mb-1"
+              >
+                {joiningWorkspace ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+                {t('consumer.join', 'Join')}
+              </button>
+            )
+          )}
         </div>
       </div>
 

@@ -19,6 +19,8 @@ import Subscriptions from './pages/Subscriptions'
 import Wallet from './pages/Wallet'
 import Gallery from './pages/Gallery'
 import Feed from './pages/Feed'
+import WorkspaceHome from './pages/WorkspaceHome'
+import ForumView from './pages/ForumView'
 import Settings from '../../pages/Settings'
 import RoleProtected from '../../components/auth/RoleProtected'
 
@@ -29,6 +31,8 @@ export const consumerRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Home /> },
       { path: 'discover', element: <Discover /> },
+      { path: 'w/:workspaceSlug', element: <WorkspaceHome /> },
+      { path: 'forum/:experienceId', element: <ForumView /> },
       { path: 'communities/:id', element: <AppLanding /> },
       { path: 'creator/:id', element: <PublicProfile /> },
       { path: 'people/:id', element: <PublicProfile /> },
@@ -42,6 +46,7 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'courses/:courseSlug/catalog', element: <CourseCatalog /> },
       { path: 'learn/:courseSlug/:sectionId', element: <Learn /> },
       { path: 'checkout/:courseSlug', element: <Checkout /> },
+      { path: 'checkout/:productSlug', element: <Checkout /> },
       { path: 'learning', element: <LearningHub /> },
       { path: 'profile', element: <UserCenter /> },
       { path: 'subscriptions', element: <Subscriptions /> },

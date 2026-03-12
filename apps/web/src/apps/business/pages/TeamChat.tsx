@@ -292,7 +292,7 @@ function CodeBlock({ className, children }: { className?: string; children?: any
     <div className="my-3 overflow-hidden rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-input-bg)]">
       <div className="flex items-center justify-between border-b border-[var(--olu-card-border)] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-[var(--olu-input-placeholder)]">
         <span>{language}</span>
-        <button onClick={onCopy} className="flex items-center gap-1 rounded-md px-2 py-1 text-[var(--olu-text-secondary)] hover:bg-cyan-500/10 hover:text-olu-text transition-colors">
+        <button onClick={onCopy} className="flex items-center gap-1 rounded-md px-2 py-1 text-[var(--olu-text-secondary)] hover:bg-[var(--olu-card-hover)] hover:text-olu-text transition-colors">
           {copied ? <Check size={12} /> : <Copy size={12} />}
           <span>{copied ? 'Copied' : 'Copy'}</span>
         </button>
@@ -478,7 +478,7 @@ function ToolCallCards({ toolCalls }: { toolCalls: ToolCallSummary[] }) {
             <p className="text-sm font-medium text-olu-text">{toolCall.name}</p>
             <button
               onClick={() => onCopy(index, JSON.stringify(toolCall.args, null, 2))}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--olu-text-secondary)] hover:bg-cyan-500/10 hover:text-olu-text transition-colors"
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--olu-text-secondary)] hover:bg-[var(--olu-card-hover)] hover:text-olu-text transition-colors"
             >
               {copiedIndex === index ? <Check size={12} /> : <Copy size={12} />}
               <span>{copiedIndex === index ? 'Copied args' : 'Copy args'}</span>
@@ -831,11 +831,12 @@ export default function TeamChat() {
     })
   }, [messages, selectedAgentDbId, sendAgentRequest])
 
-  const sendMessage = async () => {
-    if ((!input.trim() && attachedImages.length === 0) || loading) return
+  const sendMessage = async (overrideText?: string) => {
+    const text = overrideText ?? input
+    if ((!text.trim() && attachedImages.length === 0) || loading) return
     if (!user?.id) return
 
-    const userText = input.trim()
+    const userText = text.trim()
     setRuntimeError(null)
     setRetryMode(null)
     const images = [...attachedImages]
@@ -949,7 +950,7 @@ export default function TeamChat() {
     <div className="flex flex-col h-full max-w-3xl mx-auto px-4 md:px-0">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--olu-card-border)] flex-shrink-0 rounded-t-[28px] bg-[image:var(--olu-chat-header-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
-        <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-cyan-400/10 transition-colors mr-1">
+        <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors mr-1">
           <ArrowLeft size={18} className="text-[var(--olu-text-secondary)]" />
         </button>
         <div className="relative flex-shrink-0">
@@ -1307,7 +1308,7 @@ export default function TeamChat() {
                         <button
                           onMouseDown={e => e.preventDefault()}
                           onClick={() => fileInputRef.current?.click()}
-                          className="p-2 rounded-lg text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all"
+                          className="p-2 rounded-lg text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-[var(--olu-card-hover)] transition-all"
                           title="Attach image"
                         >
                           <ImageIcon size={16} />
@@ -1337,7 +1338,7 @@ export default function TeamChat() {
                         <button
                           onMouseDown={e => e.preventDefault()}
                           onClick={() => setShowModelMenu(!showModelMenu)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-medium text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-cyan-500/10 transition-all whitespace-nowrap"
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium text-[var(--olu-input-placeholder)] hover:text-[var(--olu-sidebar-text)] hover:bg-[var(--olu-card-hover)] transition-all whitespace-nowrap"
                         >
                           {selectedModelOption ? `${selectedModelOption.providerLabel} · ${selectedModelOption.model}` : 'Model'}
                         </button>
@@ -1366,7 +1367,7 @@ export default function TeamChat() {
                                         }}
                                         className={clsx(
                                           'w-full px-4 py-2.5 text-left text-sm transition-colors',
-                                          selectedModel === m.id ? 'text-cyan-700 dark:text-cyan-300 bg-[var(--olu-accent-bg)]' : 'text-[var(--olu-text-secondary)] hover:text-white hover:bg-cyan-500/5'
+                                          selectedModel === m.id ? 'text-cyan-700 dark:text-cyan-300 bg-[var(--olu-accent-bg-strong)]' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-card-hover)]'
                                         )}
                                       >
                                         <div className="flex items-center justify-between gap-3">

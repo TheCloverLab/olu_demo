@@ -17,7 +17,7 @@ function AgentCard({
   onHire: (agent: AgentTemplate) => void
 }) {
   return (
-    <motion.div whileHover={{ y: -3 }} className="rounded-[28px] p-4 flex flex-col border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(3,8,19,0.28)] hover:bg-[var(--olu-card-hover)] transition-colors">
+    <motion.div whileHover={{ y: -3 }} className="rounded-[28px] p-4 flex flex-col border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)] hover:bg-[var(--olu-card-hover)] transition-colors">
       <img src={agent.avatar_img || ''} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
@@ -223,7 +223,7 @@ export default function AIAgentConfig() {
                         navigate(`/business/team/${agent.agent_key || agent.id}`)
                       }
                     }}
-                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-hover)] transition-colors shadow-[0_16px_40px_rgba(2,8,23,0.22)] text-left"
+                    className="w-full flex items-center gap-3 p-4 rounded-[24px] group border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-hover)] transition-colors shadow-[0_2px_12px_rgba(2,8,23,0.08)] text-left"
                   >
                     <div className="relative flex-shrink-0">
                       {agent.avatar_img

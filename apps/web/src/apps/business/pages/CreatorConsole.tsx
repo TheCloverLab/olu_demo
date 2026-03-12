@@ -30,7 +30,7 @@ type TabKey = (typeof TABS)[number]['key']
 
 function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+    <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[var(--olu-text-secondary)] text-xs">{label}</p>
         <Icon size={14} className="text-[var(--olu-text-secondary)]" />
@@ -184,7 +184,7 @@ export default function CreatorConsole() {
 
       {tab === 'campaigns' && (
         <div className="grid lg:grid-cols-[1.2fr,0.95fr] gap-4">
-          <div className="rounded-[32px] p-6 space-y-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+          <div className="rounded-[32px] p-6 space-y-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-wider mb-2">KOL-side workspace</p>
@@ -251,7 +251,7 @@ export default function CreatorConsole() {
             </div>
           </div>
 
-          <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_50px_rgba(2,8,23,0.22)]">
+          <div className="rounded-[32px] p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <p className="font-bold mb-4">Approval story</p>
             <div className="space-y-3">
               {[
@@ -313,7 +313,7 @@ export default function CreatorConsole() {
             <MetricCard label="IP Licenses" value={licenses.length.toString()} icon={CheckSquare} />
           </div>
 
-          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <p className="font-bold mb-4">Revenue Breakdown</p>
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={revenue}>
@@ -329,7 +329,7 @@ export default function CreatorConsole() {
             </ResponsiveContainer>
           </div>
 
-          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[28px] p-5 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <p className="font-bold mb-4">Platform Views</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={views}>
@@ -347,7 +347,7 @@ export default function CreatorConsole() {
       )}
 
       {tab === 'fans' && (
-        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
           {fans.map((fan) => (
             <div key={fan.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <div>
@@ -363,7 +363,7 @@ export default function CreatorConsole() {
 
       {tab === 'ip' && (
         <div className="grid lg:grid-cols-2 gap-4">
-          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <p className="font-bold">Licenses</p>
             {licenses.map((item) => (
               <div key={item.id} className="p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
@@ -374,7 +374,7 @@ export default function CreatorConsole() {
             {licenses.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No license requests.</p>}
           </div>
 
-          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+          <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
             <p className="font-bold">Infringements</p>
             {infringements.map((item) => (
               <div key={item.id} className="p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
@@ -388,7 +388,7 @@ export default function CreatorConsole() {
       )}
 
       {tab === 'shop' && (
-        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.16)]">
+        <div className="rounded-[32px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
           {products.map((product) => (
             <div key={product.id} className="flex items-center justify-between p-4 rounded-[24px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
               <div>

@@ -122,7 +122,7 @@ function TaskItem({ task }) {
   const cfg = STATUS_CONFIG[status]
   const Icon = cfg.icon
   return (
-    <div className="flex items-start gap-3 p-4 rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+    <div className="flex items-start gap-3 p-4 rounded-[24px] border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
       <button onClick={() => setStatus(status === 'done' ? 'pending' : 'done')} className={clsx('mt-0.5 flex-shrink-0 transition-colors', status === 'done' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]')}>
         <Icon size={16} />
       </button>
@@ -205,7 +205,7 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 4 }}
           transition={{ duration: 0.12 }}
-          className="absolute bottom-full left-0 mb-2 w-56 rounded-2xl overflow-hidden shadow-[0_18px_40px_rgba(2,8,23,0.35)] z-50 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]"
+          className="absolute bottom-full left-0 mb-2 w-56 rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(2,8,23,0.12)] z-50 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]"
         >
           <div className="px-3 py-2 border-b border-[var(--olu-card-border)]">
             <p className="text-[var(--olu-text-secondary)] text-xs font-medium flex items-center gap-1"><AtSign size={12} /> Mention someone</p>
@@ -801,7 +801,7 @@ export default function TeamChat() {
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto px-4 md:px-0">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--olu-card-border)] flex-shrink-0 rounded-t-[28px] bg-[image:var(--olu-chat-header-bg)] shadow-[0_18px_60px_rgba(2,8,23,0.18)]">
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--olu-card-border)] flex-shrink-0 rounded-t-[28px] bg-[image:var(--olu-chat-header-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
         <button onClick={() => navigate('/business/team')} className="p-1.5 rounded-lg hover:bg-cyan-400/10 transition-colors mr-1">
           <ArrowLeft size={18} className="text-[var(--olu-text-secondary)]" />
         </button>
@@ -836,7 +836,7 @@ export default function TeamChat() {
       </div>
 
       {tab === 'tasks' ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-b-[28px] bg-[image:var(--olu-chat-area-bg)] border-x border-b border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-b-[28px] bg-[image:var(--olu-chat-area-bg)] border-x border-b border-[var(--olu-card-border)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
           <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider mb-3">Active Tasks</p>
           {tasks.map(task => <TaskItem key={task.id} task={task} />)}
         </div>
@@ -883,7 +883,7 @@ export default function TeamChat() {
             onScroll={(e) => {
               chatScrollTopRef.current = e.currentTarget.scrollTop
             }}
-            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[image:var(--olu-chat-area-bg)] border-x border-[var(--olu-card-border)] shadow-[0_24px_60px_rgba(2,8,23,0.24)]"
+            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-[image:var(--olu-chat-area-bg)] border-x border-[var(--olu-card-border)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]"
           >
             {messages.map((msg, i) => (
               <motion.div
@@ -909,7 +909,7 @@ export default function TeamChat() {
                     )
                   })()}
                   <div className={clsx(
-                    'px-5 py-3.5 rounded-[24px] text-[15px] leading-7 border shadow-[0_16px_40px_rgba(2,8,23,0.18)]',
+                    'px-5 py-3.5 rounded-[24px] text-[15px] leading-7 border shadow-[0_2px_12px_rgba(2,8,23,0.08)]',
                     msg.from === 'user'
                       ? 'bg-[var(--olu-chat-user-bg)] text-[var(--olu-chat-user-text)] border-[var(--olu-chat-user-border)] rounded-tr-[10px]'
                       : 'bg-[var(--olu-chat-agent-bg)] text-[var(--olu-chat-agent-text)] border-[var(--olu-chat-agent-border)] rounded-tl-[10px]'
@@ -1023,7 +1023,7 @@ export default function TeamChat() {
                   ? <img src={agent.avatarImg} alt={agent.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
                   : <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5`}>{agent.name[0]}</div>
                 }
-                <div className="px-4 py-3 rounded-[24px] rounded-tl-[10px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1.5 shadow-[0_16px_40px_rgba(2,8,23,0.18)]">
+                <div className="px-4 py-3 rounded-[24px] rounded-tl-[10px] bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-1.5 shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
                   <Loader2 size={14} className="text-[var(--olu-text-secondary)] animate-spin" />
                   <span className="text-[var(--olu-text-secondary)] text-sm">Thinking...</span>
                 </div>

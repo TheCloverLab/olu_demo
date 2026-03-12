@@ -28,6 +28,7 @@ import {
   Tag,
   Headphones,
   Home,
+  BarChart3,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -45,6 +46,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     groupLabel: 'Dashboard',
     items: [
       { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
+      { to: '/business/analytics', icon: BarChart3, labelKey: 'nav.analytics' },
     ],
   },
   {

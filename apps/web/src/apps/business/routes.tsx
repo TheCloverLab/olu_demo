@@ -24,6 +24,7 @@ import SupportCenter from './pages/SupportCenter'
 import HomeEditor from './pages/HomeEditor'
 import MembersPage from './pages/MembersPage'
 import Connectors from './pages/Connectors'
+import Analytics from './pages/Analytics'
 import CreatorStudio from './pages/CreatorStudio'
 import CourseEditor from './pages/CourseEditor'
 import RoleProtected from '../../components/auth/RoleProtected'
@@ -34,6 +35,7 @@ export const businessRoutes: RouteObject[] = [
     element: <RoleProtected><BusinessLayout /></RoleProtected>,
     children: [
       { index: true, element: <BusinessWorkspace /> },
+      { path: 'analytics', element: <Analytics /> },
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },

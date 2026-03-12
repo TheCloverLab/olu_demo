@@ -18,15 +18,22 @@ import {
 } from '../../../domain/product/api'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 
+const PLAN_ROW = 'flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]'
+const PLAN_CELL = 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs'
+
 function PlanRow({ plan, onDelete }: { plan: ProductWithPlans['plans'][number]; onDelete: () => void }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
-      <span className="text-xs px-2 py-0.5 rounded-lg bg-[var(--olu-section-bg)] text-[var(--olu-text-secondary)] font-medium">
+    <div className={PLAN_ROW}>
+      <span className={clsx(PLAN_CELL, 'w-[88px] text-center')}>
         {plan.billing_type === 'recurring' ? 'Recurring' : 'One-time'}
       </span>
-      <span className="text-xs font-semibold">${plan.price}</span>
-      {plan.billing_type === 'recurring' && plan.interval && (
-        <span className="text-xs text-[var(--olu-muted)]">/ {plan.interval}</span>
+      <span className={clsx(PLAN_CELL, 'w-16 text-center font-semibold')}>
+        ${plan.price}
+      </span>
+      {plan.billing_type === 'recurring' && plan.interval ? (
+        <span className={clsx(PLAN_CELL, 'w-[76px] text-center')}>/ {plan.interval}</span>
+      ) : (
+        <span className="w-[76px]" />
       )}
       <button
         onClick={onDelete}
@@ -60,40 +67,39 @@ function AddPlanRow({ productId, onCreated }: { productId: string; onCreated: ()
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className={clsx(PLAN_ROW, 'border-dashed')}>
       <select
         value={billingType}
         onChange={(e) => setBillingType(e.target.value as any)}
-        className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
+        className={clsx(PLAN_CELL, 'w-[88px]')}
       >
         <option value="recurring">Recurring</option>
         <option value="one_time">One-time</option>
       </select>
-      <div className="flex items-center gap-1">
-        <span className="text-xs text-[var(--olu-muted)]">$</span>
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="9.99"
-          className="w-16 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
-        />
-      </div>
-      {billingType === 'recurring' && (
+      <input
+        type="number"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        placeholder="$"
+        className={clsx(PLAN_CELL, 'w-16')}
+      />
+      {billingType === 'recurring' ? (
         <select
           value={interval}
           onChange={(e) => setInterval(e.target.value as any)}
-          className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
+          className={clsx(PLAN_CELL, 'w-[76px]')}
         >
           <option value="week">/ week</option>
           <option value="month">/ month</option>
           <option value="year">/ year</option>
         </select>
+      ) : (
+        <span className="w-[76px]" />
       )}
       <button
         onClick={handleAdd}
         disabled={saving || !price}
-        className="px-3 py-1.5 rounded-lg bg-cyan-300 text-[#04111f] text-xs font-semibold hover:bg-cyan-200 disabled:opacity-50"
+        className="ml-auto px-3 py-1.5 rounded-lg bg-cyan-300 text-[#04111f] text-xs font-semibold hover:bg-cyan-200 disabled:opacity-50"
       >
         {saving ? '...' : 'Add'}
       </button>

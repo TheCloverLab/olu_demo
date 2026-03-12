@@ -163,51 +163,115 @@ function TabEditor({
   )
 }
 
-function HomePreview({ config, experiences }: { config: { cover?: string | null; headline?: string | null; tabs: WorkspaceHomeTab[] }; experiences: WorkspaceExperience[] }) {
+function WorkspaceIcon({ workspace, size = 'md' }: { workspace: any; size?: 'sm' | 'md' | 'lg' }) {
+  const sz = size === 'sm' ? 'w-10 h-10 text-sm' : size === 'lg' ? 'w-16 h-16 text-2xl' : 'w-12 h-12 text-lg'
+  if (workspace?.icon) {
+    return <img src={workspace.icon} alt="" className={clsx(sz, 'rounded-xl border-2 border-[var(--olu-section-bg)] object-cover')} />
+  }
+  return (
+    <div className={clsx(sz, 'rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-[var(--olu-section-bg)] flex items-center justify-center text-white font-bold')}>
+      {workspace?.name?.[0] || 'W'}
+    </div>
+  )
+}
+
+function PreviewTabs({ tabs }: { tabs: WorkspaceHomeTab[] }) {
+  return (
+    <div className="px-4 pt-3 pb-2 flex gap-1 overflow-x-auto">
+      <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 font-medium flex-shrink-0">About</span>
+      {tabs.map((tab) => (
+        <span key={tab.key} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)] font-medium flex-shrink-0">
+          {tab.label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function PreviewContentHint({ tabs }: { tabs: WorkspaceHomeTab[] }) {
+  if (!tabs[0]) return null
+  return (
+    <div className="px-4 pb-4 space-y-1.5">
+      <div className="text-xs text-[var(--olu-muted)]">
+        {tabs[0].experience_ids.length} experience{tabs[0].experience_ids.length !== 1 ? 's' : ''} in "{tabs[0].label}" · {tabs[0].display_mode} view
+      </div>
+    </div>
+  )
+}
+
+function HomePreview({ config, experiences }: { config: { cover?: string | null; headline?: string | null; layout?: WorkspaceHomeLayout; tabs: WorkspaceHomeTab[] }; experiences: WorkspaceExperience[] }) {
   const { workspace } = useApp()
+  const currentLayout = config.layout || 'classic'
+  const name = workspace?.name || 'Workspace'
+  const headlineText = config.headline || 'No headline'
 
   return (
     <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
-      <p className="text-[10px] text-[var(--olu-muted)] px-4 pt-3 mb-2">Preview</p>
-      {/* Cover */}
-      <div className="h-32 bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)] relative">
-        {config.cover && (
-          <img src={config.cover} alt="Cover" className="w-full h-full object-cover" />
-        )}
-      </div>
-      {/* Header */}
-      <div className="px-4 -mt-4 relative z-10">
-        <div className="flex items-end gap-3">
-          {workspace?.icon ? (
-            <img src={workspace.icon} alt="" className="w-12 h-12 rounded-xl border-2 border-[var(--olu-section-bg)] object-cover" />
-          ) : (
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-[var(--olu-section-bg)] flex items-center justify-center text-white font-bold text-lg">
-              {workspace?.name?.[0] || 'W'}
+      <p className="text-[10px] text-[var(--olu-muted)] px-4 pt-3 mb-2">Preview · {currentLayout}</p>
+
+      {currentLayout === 'classic' && (
+        <>
+          <div className="h-32 bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)] relative">
+            {config.cover && <img src={config.cover} alt="Cover" className="w-full h-full object-cover" />}
+          </div>
+          <div className="px-4 -mt-4 relative z-10">
+            <div className="flex items-end gap-3">
+              <WorkspaceIcon workspace={workspace} />
+              <div className="pb-1">
+                <p className="font-bold text-sm">{name}</p>
+                <p className="text-xs text-[var(--olu-muted)]">{headlineText}</p>
+              </div>
             </div>
-          )}
-          <div className="pb-1">
-            <p className="font-bold text-sm">{workspace?.name || 'Workspace'}</p>
-            <p className="text-xs text-[var(--olu-muted)]">{config.headline || 'No headline'}</p>
+          </div>
+        </>
+      )}
+
+      {currentLayout === 'hero' && (
+        <div className="h-48 bg-gradient-to-br from-cyan-900/60 to-[var(--olu-card-bg)] relative flex items-end">
+          {config.cover && <img src={config.cover} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />}
+          <div className="relative z-10 px-5 pb-4 w-full" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.5))' }}>
+            <div className="flex items-center gap-3">
+              <WorkspaceIcon workspace={workspace} size="lg" />
+              <div>
+                <p className="font-black text-lg text-white">{name}</p>
+                <p className="text-xs text-white/70">{headlineText}</p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Tabs */}
-      <div className="px-4 pt-3 pb-2 flex gap-1 overflow-x-auto">
-        <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 font-medium flex-shrink-0">About</span>
-        {config.tabs.map((tab) => (
-          <span key={tab.key} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)] font-medium flex-shrink-0">
-            {tab.label}
-          </span>
-        ))}
-      </div>
-      {/* Content hint */}
-      <div className="px-4 pb-4 space-y-1.5">
-        {config.tabs[0] && (
-          <div className="text-xs text-[var(--olu-muted)]">
-            {config.tabs[0].experience_ids.length} experience{config.tabs[0].experience_ids.length !== 1 ? 's' : ''} in "{config.tabs[0].label}" · {config.tabs[0].display_mode} view
+      )}
+
+      {currentLayout === 'compact' && (
+        <div className="px-4 py-4">
+          <div className="flex items-center gap-3">
+            <WorkspaceIcon workspace={workspace} size="sm" />
+            <div>
+              <p className="font-bold text-sm">{name}</p>
+              <p className="text-xs text-[var(--olu-muted)]">{headlineText}</p>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {currentLayout === 'catalog' && (
+        <>
+          <div className="h-24 bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)] relative">
+            {config.cover && <img src={config.cover} alt="Cover" className="w-full h-full object-cover" />}
+          </div>
+          <div className="px-4 -mt-6 relative z-10">
+            <div className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl p-3 flex items-center gap-3 shadow-sm">
+              <WorkspaceIcon workspace={workspace} size="sm" />
+              <div>
+                <p className="font-bold text-sm">{name}</p>
+                <p className="text-xs text-[var(--olu-muted)]">{headlineText}</p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      <PreviewTabs tabs={config.tabs} />
+      <PreviewContentHint tabs={config.tabs} />
     </div>
   )
 }
@@ -504,7 +568,7 @@ export default function HomeEditor() {
         {/* Preview */}
         <div>
           <HomePreview
-            config={{ cover, headline, tabs }}
+            config={{ cover, headline, layout, tabs }}
             experiences={experiences}
           />
         </div>

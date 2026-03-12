@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star } from 'lucide-react'
+import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star, Image, Minimize2, ShoppingBag, Layers } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
-import type { WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig } from '../../../lib/supabase'
+import type { WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig, WorkspaceHomeLayout } from '../../../lib/supabase'
 import { listExperiences } from '../../../domain/experience/api'
 import { getHomeConfig, upsertHomeConfig } from '../../../domain/product/api'
 
@@ -217,6 +217,7 @@ export default function HomeEditor() {
   const [experiences, setExperiences] = useState<WorkspaceExperience[]>([])
   const [cover, setCover] = useState('')
   const [headline, setHeadline] = useState('')
+  const [layout, setLayout] = useState<WorkspaceHomeLayout>('classic')
   const [tabs, setTabs] = useState<WorkspaceHomeTab[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -236,6 +237,7 @@ export default function HomeEditor() {
         if (config) {
           setCover(config.cover || '')
           setHeadline(config.headline || '')
+          setLayout((config.layout as WorkspaceHomeLayout) || 'classic')
           setTabs(config.tabs || [])
         }
       })
@@ -272,6 +274,7 @@ export default function HomeEditor() {
       await upsertHomeConfig(workspaceId, {
         cover: cover || null,
         headline: headline || null,
+        layout,
         tabs: tabs.map((tab, i) => ({ ...tab, position: i + 1 })),
       })
       setMessage('Saved!')
@@ -343,9 +346,40 @@ export default function HomeEditor() {
             </div>
           </div>
 
-          {/* Layout Templates */}
+          {/* Page Layout */}
           <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
-            <h3 className="font-semibold text-sm">Layout Template</h3>
+            <h3 className="font-semibold text-sm">Page Layout</h3>
+            <p className="text-xs text-[var(--olu-text-secondary)]">Choose how the workspace header appears to consumers.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { key: 'classic', label: 'Classic', description: 'Cover image with overlaid icon and name', icon: Layers },
+                { key: 'hero', label: 'Hero', description: 'Full-height hero banner with large branding', icon: Image },
+                { key: 'compact', label: 'Compact', description: 'No cover, clean icon + name header', icon: Minimize2 },
+                { key: 'catalog', label: 'Catalog', description: 'Banner with floating card overlay', icon: ShoppingBag },
+              ] as const).map(({ key, label, description, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setLayout(key)}
+                  className={clsx(
+                    'p-3 rounded-xl border transition-colors text-left',
+                    layout === key
+                      ? 'border-cyan-300/50 bg-cyan-300/10'
+                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-cyan-300/30'
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon size={14} className={layout === key ? 'text-cyan-600 dark:text-cyan-300' : 'text-[var(--olu-muted)]'} />
+                    <span className="font-semibold text-sm">{label}</span>
+                  </div>
+                  <p className="text-[10px] text-[var(--olu-text-secondary)] leading-tight">{description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content Templates */}
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Content Template</h3>
             <p className="text-xs text-[var(--olu-text-secondary)]">Choose a starting template. You can customize tabs after selecting.</p>
             <div className="grid grid-cols-2 gap-2">
               {TEMPLATES.map((tmpl) => (

@@ -427,7 +427,7 @@
     "tipProcessed": "通过 OLU Pay 即时处理",
     "done": "完成",
     "sendTip": "发送打赏",
-    "support": "直接支持 {{name}}",
+    "support": "客服",
     "customAmount": "自定义金额...",
     "sendTipAmount": "打赏 ${{amount}}",
     "createFanWork": "创建粉丝作品",

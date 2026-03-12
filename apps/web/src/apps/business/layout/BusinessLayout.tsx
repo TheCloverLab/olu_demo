@@ -351,10 +351,6 @@ export default function BusinessLayout() {
         </nav>
 
         <div className="p-3 border-t border-[var(--olu-border)] space-y-2">
-          <div className="flex items-center justify-center gap-2 py-1">
-            <ThemeToggle />
-            <LanguageToggle />
-          </div>
           <button
             onClick={() => navigate('/business/settings')}
             className="w-full py-2.5 px-3 rounded-2xl bg-[var(--olu-sidebar-hover)] hover:opacity-80 text-[var(--olu-sidebar-text)] text-sm font-medium transition-colors"
@@ -387,6 +383,8 @@ export default function BusinessLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
             <button onClick={() => navigate('/business/account')} className="flex-shrink-0">
               <Avatar user={currentUser} size="sm" />
             </button>

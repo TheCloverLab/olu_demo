@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Loader2, Tag, DollarSign, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
@@ -121,8 +121,20 @@ function ProductCard({
   const [linking, setLinking] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
 
+  const [expDropdownOpen, setExpDropdownOpen] = useState(false)
+  const expDropdownRef = useRef<HTMLDivElement>(null)
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))
   const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id))
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (expDropdownRef.current && !expDropdownRef.current.contains(e.target as Node)) {
+        setExpDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   async function handleLink(experienceId: string) {
     setLinking(true)
@@ -239,19 +251,28 @@ function ProductCard({
             </div>
           ))}
           {unlinkedExps.length > 0 && (
-            <div className="relative">
-              <select
-                value=""
-                onChange={(e) => { if (e.target.value) handleLink(e.target.value) }}
+            <div className="relative" ref={expDropdownRef}>
+              <button
+                onClick={() => setExpDropdownOpen(!expDropdownOpen)}
                 disabled={linking}
-                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-xs appearance-none cursor-pointer hover:border-[var(--olu-card-border)] transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+                className="w-full flex items-center justify-between bg-[var(--olu-card-bg)] border border-dashed border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-xs cursor-pointer hover:bg-[var(--olu-card-hover)] transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
               >
-                <option value="">+ Add experience...</option>
-                {unlinkedExps.map((exp) => (
-                  <option key={exp.id} value={exp.id}>{exp.name}</option>
-                ))}
-              </select>
-              <Plus size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--olu-muted)] pointer-events-none" />
+                <span>+ Add experience...</span>
+                <ChevronDown size={12} className={clsx('transition-transform', expDropdownOpen && 'rotate-180')} />
+              </button>
+              {expDropdownOpen && (
+                <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl shadow-lg overflow-hidden">
+                  {unlinkedExps.map((exp) => (
+                    <button
+                      key={exp.id}
+                      onClick={() => { handleLink(exp.id); setExpDropdownOpen(false) }}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--olu-card-hover)] transition-colors"
+                    >
+                      {exp.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           {linkedExps.length === 0 && unlinkedExps.length === 0 && (

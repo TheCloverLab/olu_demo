@@ -81,7 +81,7 @@ export default function EmployeeProfile() {
                   <Circle size={6} className={sc.dot} fill="currentColor" />
                   {employee.status}
                 </span>
-                <span className="text-cyan-700/30 dark:text-cyan-100/30">·</span>
+                <span className="text-[var(--olu-muted)]">·</span>
                 <span className="text-xs text-[var(--olu-text-secondary)] capitalize">{employee.employment_status}</span>
               </div>
             </div>

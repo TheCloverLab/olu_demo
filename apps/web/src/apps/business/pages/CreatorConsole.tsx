@@ -206,7 +206,7 @@ export default function CreatorConsole() {
                 </div>
                 <span className="text-sm font-semibold">${myTarget?.offer_amount ?? 0}</span>
               </div>
-              <p className="text-sm text-cyan-700/65 dark:text-cyan-100/65 leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
+              <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">{myTarget?.creator_message || 'No incoming request yet.'}</p>
               <div className="grid md:grid-cols-3 gap-3 mt-4">
                 <div className="rounded-2xl bg-[var(--olu-header-bg)] p-4 border border-[var(--olu-card-border)]">
                   <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Deliverable</p>
@@ -235,7 +235,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleReject}
                 disabled={!hasIncomingCampaign || actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-700/65 dark:text-cyan-100/65 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-2"
               >
                 <XCircle size={16} />
                 Reject
@@ -243,7 +243,7 @@ export default function CreatorConsole() {
               <button
                 onClick={handleRefresh}
                 disabled={actionLoading}
-                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-cyan-700/65 dark:text-cyan-100/65 text-sm font-semibold hover:text-[var(--olu-text)] transition-colors inline-flex items-center gap-2 disabled:opacity-40"
+                className="px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-sm font-semibold hover:text-[var(--olu-text)] transition-colors inline-flex items-center gap-2 disabled:opacity-40"
               >
                 <RefreshCcw size={14} />
                 Refresh

@@ -99,7 +99,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
             {coverPreview ? (
               <img src={coverPreview} alt="Cover" className="w-full h-28 object-cover" />
             ) : (
-              <div className="w-full h-28 flex items-center justify-center text-cyan-700/25 dark:text-cyan-100/25">
+              <div className="w-full h-28 flex items-center justify-center text-[var(--olu-muted)]">
                 <ImagePlus size={24} />
               </div>
             )}
@@ -217,7 +217,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={`My ${selected} app`}
-              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30"
+              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30"
             />
           </div>
           <button className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -291,7 +291,7 @@ export default function AppManagement() {
 
       {!primaryApp ? (
         <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-12 text-center space-y-3">
-          <AppWindow size={32} className="text-cyan-700/30 dark:text-cyan-100/30 mx-auto" />
+          <AppWindow size={32} className="text-[var(--olu-muted)] mx-auto" />
           <p className="text-[var(--olu-text-secondary)] text-sm">No consumer app yet.</p>
           <p className="text-[var(--olu-muted)] text-xs">Tap "New app" above to create the one app this UI currently supports.</p>
         </div>

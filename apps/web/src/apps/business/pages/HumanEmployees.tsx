@@ -95,15 +95,15 @@ export default function HumanEmployees() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Position</label>
-              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-cyan-700/30 dark:text-cyan-100/30 focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
             </div>
             <div className="flex items-end">
               <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">

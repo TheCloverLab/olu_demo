@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, Users, CreditCard, Check, X } from 'lucide-react'
+import { Loader2, Users, CreditCard, Check, X, UserPlus } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { getWorkspacePurchases, type PurchaseWithDetails } from '../../../domain/product/api'
+import { getWorkspaceMembers, type WorkspaceMember } from '../../../domain/workspace/api'
 
 function Avatar({ initials, color, img }: { initials: string; color: string; img?: string }) {
   if (img) {
@@ -38,12 +39,16 @@ export default function MembersPage() {
   const { t } = useTranslation()
   const { workspace } = useApp()
   const [purchases, setPurchases] = useState<PurchaseWithDetails[]>([])
+  const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!workspace?.id) return
-    getWorkspacePurchases(workspace.id)
-      .then(setPurchases)
+    Promise.all([
+      getWorkspacePurchases(workspace.id),
+      getWorkspaceMembers(workspace.id),
+    ])
+      .then(([p, m]) => { setPurchases(p); setMembers(m) })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [workspace?.id])
@@ -65,12 +70,12 @@ export default function MembersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-black text-xl">{t('nav.members', 'Members')}</h1>
-          <p className="text-sm text-[var(--olu-muted)]">{t('members.totalPurchases', { count: purchases.length })}</p>
+          <p className="text-sm text-[var(--olu-muted)]">{members.length} members, {purchases.length} purchases</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
             <Users size={14} />
-            {t('members.activeCount', { count: active.length })}
+            {members.length} joined
           </div>
         </div>
       </div>
@@ -78,8 +83,8 @@ export default function MembersPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
+          { label: t('members.totalMembers', 'Total Members'), value: members.length, color: 'text-cyan-500' },
           { label: t('members.activeMembers'), value: active.length, color: 'text-emerald-500' },
-          { label: t('members.free'), value: active.filter((p) => p.plan_label === 'Free').length, color: 'text-blue-500' },
           { label: t('members.paid'), value: active.filter((p) => p.plan_label !== 'Free').length, color: 'text-amber-500' },
           { label: t('members.churned'), value: other.length, color: 'text-red-500' },
         ].map((stat) => (
@@ -90,7 +95,45 @@ export default function MembersPage() {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Members list */}
+      <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
+        <div className="px-4 py-3 border-b border-[var(--olu-card-border)]">
+          <h2 className="font-semibold text-sm">{t('members.joinedMembers', 'Joined Members')}</h2>
+        </div>
+        {members.length === 0 ? (
+          <div className="p-8 text-center">
+            <UserPlus size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--olu-muted)]">No members yet</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--olu-card-border)]">
+            {members.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--olu-card-hover)] transition-colors">
+                <Avatar
+                  initials={m.user?.initials || '??'}
+                  color={m.user?.avatar_color || 'from-gray-400 to-gray-500'}
+                  img={m.user?.avatar_url || undefined}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm truncate">{m.user?.name || 'Unknown'}</p>
+                  <p className="text-xs text-[var(--olu-muted)]">{m.user?.handle || ''}</p>
+                </div>
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs text-[var(--olu-muted)]">
+                    {new Date(m.joined_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                  <Check size={10} />
+                  member
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Purchase records */}
       <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
         <div className="px-4 py-3 border-b border-[var(--olu-card-border)]">
           <h2 className="font-semibold text-sm">{t('members.purchaseRecords')}</h2>

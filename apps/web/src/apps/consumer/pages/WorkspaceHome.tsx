@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
@@ -16,14 +16,12 @@ const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
   course: BookOpen,
   group_chat: Users,
-  support_chat: Headphones,
 }
 
 const TYPE_GRADIENT: Record<string, string> = {
   forum: 'from-purple-500/20 to-purple-600/5',
   course: 'from-blue-500/20 to-blue-600/5',
   group_chat: 'from-emerald-500/20 to-emerald-600/5',
-  support_chat: 'from-amber-500/20 to-amber-600/5',
 }
 
 function ExperienceCard({ exp, onClick }: { exp: WorkspaceExperience; onClick: () => void }) {
@@ -107,7 +105,6 @@ function TabContent({
     if (exp.type === 'forum') navigate(`/forum/${exp.id}`)
     else if (exp.type === 'course') navigate(`/course/${exp.id}`)
     else if (exp.type === 'group_chat') navigate(`/group-chat/${exp.id}`)
-    else if (exp.type === 'support_chat') navigate(`/chat`)
   }
 
   if (tabExps.length === 0) {

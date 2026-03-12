@@ -20,6 +20,82 @@ import type {
   ExperienceCourseChapter, ExperienceCourseLesson,
 } from '../../../lib/supabase'
 
+// ── Course Card ─────────────────────────────────────────────────
+
+function CourseCard({
+  course: c,
+  onSelect,
+  onCoverUpdated,
+}: {
+  course: ExperienceCourse
+  onSelect: () => void
+  onCoverUpdated: () => void
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    e.stopPropagation()
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setPreview(URL.createObjectURL(file))
+    try {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `courses/${c.id}/cover-${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('covers').upload(path, file, { upsert: true, contentType: file.type })
+      if (error) throw error
+      const coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      await updateCourse(c.id, { cover: coverUrl })
+      onCoverUpdated()
+    } catch (err) {
+      console.error('Failed to upload course cover', err)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const coverSrc = preview || c.cover
+
+  return (
+    <div
+      className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden text-left hover:border-cyan-300/30 transition-colors group"
+    >
+      <div className="relative h-28 cursor-pointer" onClick={onSelect}>
+        {coverSrc ? (
+          <img src={coverSrc} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+            <BookOpen size={32} className="text-[var(--olu-muted)]" />
+          </div>
+        )}
+        <label
+          className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ImagePlus size={12} />
+          <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+        </label>
+        {uploading && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
+      </div>
+      <button onClick={onSelect} className="w-full p-4 space-y-1 text-left">
+        <h3 className="font-semibold text-sm group-hover:text-cyan-400 transition-colors">{c.name}</h3>
+        {c.description && (
+          <p className="text-xs text-[var(--olu-text-secondary)] line-clamp-2">{c.description}</p>
+        )}
+        <div className="flex items-center gap-2 pt-1">
+          <span className={clsx(
+            'text-[10px] px-2 py-0.5 rounded-full font-medium',
+            c.status === 'published' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-yellow-400/10 text-yellow-400'
+          )}>
+            {c.status}
+          </span>
+        </div>
+      </button>
+    </div>
+  )
+}
+
 // ── Course List View ─────────────────────────────────────────────
 
 function CourseListView({
@@ -120,33 +196,7 @@ function CourseListView({
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => onSelect(c.id)}
-            className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden text-left hover:border-cyan-300/30 transition-colors group"
-          >
-            {c.cover ? (
-              <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url(${c.cover})` }} />
-            ) : (
-              <div className="h-28 bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                <BookOpen size={32} className="text-[var(--olu-muted)]" />
-              </div>
-            )}
-            <div className="p-4 space-y-1">
-              <h3 className="font-semibold text-sm group-hover:text-cyan-400 transition-colors">{c.name}</h3>
-              {c.description && (
-                <p className="text-xs text-[var(--olu-text-secondary)] line-clamp-2">{c.description}</p>
-              )}
-              <div className="flex items-center gap-2 pt-1">
-                <span className={clsx(
-                  'text-[10px] px-2 py-0.5 rounded-full font-medium',
-                  c.status === 'published' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-yellow-400/10 text-yellow-400'
-                )}>
-                  {c.status}
-                </span>
-              </div>
-            </div>
-          </button>
+          <CourseCard key={c.id} course={c} onSelect={() => onSelect(c.id)} onCoverUpdated={onCoverUpdated} />
         ))}
 
         {/* Add course card */}
@@ -430,6 +480,26 @@ function CourseDetailView({
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
   const [courseName, setCourseName] = useState('')
   const [editingName, setEditingName] = useState(false)
+  const [savingCover, setSavingCover] = useState(false)
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)
+
+  async function handleCourseCoverUpload(file: File) {
+    setSavingCover(true)
+    setCoverPreview(URL.createObjectURL(file))
+    try {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `courses/${courseId}/cover-${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('covers').upload(path, file, { upsert: true, contentType: file.type })
+      if (error) throw error
+      const coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
+      await updateCourse(courseId, { cover: coverUrl })
+      reload()
+    } catch (err) {
+      console.error('Failed to upload course cover', err)
+    } finally {
+      setSavingCover(false)
+    }
+  }
 
   function reload() {
     getCourseTree(courseId)
@@ -493,6 +563,27 @@ function CourseDetailView({
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
+      {/* Cover */}
+      {(() => {
+        const src = coverPreview || tree.cover
+        return src ? (
+          <div className="relative h-36 border-b border-[var(--olu-card-border)]">
+            <img src={src} alt="" className="w-full h-full object-cover" />
+            <label className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-colors cursor-pointer">
+              <ImagePlus size={14} />
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCourseCoverUpload(f) }} />
+            </label>
+            {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 h-20 border-b border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors text-[var(--olu-muted)] text-xs">
+            <ImagePlus size={16} />
+            Add course cover
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCourseCoverUpload(f) }} />
+          </label>
+        )
+      })()}
+
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--olu-card-border)]">
         <div className="flex items-center gap-3">

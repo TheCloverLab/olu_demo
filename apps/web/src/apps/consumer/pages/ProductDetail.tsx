@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, ArrowLeft, Check, Sparkles, ShieldCheck, BookOpen, MessageSquare, Users, Headphones } from 'lucide-react'
+import { Loader2, ArrowLeft, Check, Sparkles, ShieldCheck, BookOpen, MessageSquare, Users } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
@@ -15,7 +15,6 @@ const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
   course: BookOpen,
   group_chat: Users,
-  support_chat: Headphones,
 }
 
 export default function ProductDetail() {

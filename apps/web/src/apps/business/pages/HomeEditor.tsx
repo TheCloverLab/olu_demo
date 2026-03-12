@@ -39,7 +39,7 @@ const TEMPLATES: { key: TemplateKey; label: string; description: string; icon: s
     icon: '🏪',
     defaultTabs: (exps) => {
       const paid = exps.filter((e) => e.visibility === 'product_gated').map((e) => e.id)
-      const free = exps.filter((e) => e.visibility === 'public' && e.type !== 'support_chat').map((e) => e.id)
+      const free = exps.filter((e) => e.visibility === 'public').map((e) => e.id)
       return [
         { key: 'premium', label: 'Premium', display_mode: 'tile' as const, experience_ids: paid },
         { key: 'free', label: 'Free', display_mode: 'grid' as const, experience_ids: free },
@@ -52,7 +52,7 @@ const TEMPLATES: { key: TemplateKey; label: string; description: string; icon: s
     description: 'Clean single-column list. Lets content speak for itself.',
     icon: '✨',
     defaultTabs: (exps) => {
-      const all = exps.filter((e) => e.type !== 'support_chat').map((e) => e.id)
+      const all = exps.map((e) => e.id)
       return [
         { key: 'all', label: 'All', display_mode: 'list' as const, experience_ids: all },
       ]
@@ -88,7 +88,7 @@ function TabEditor({
   onDelete: () => void
 }) {
   const linkedExps = allExperiences.filter((e) => tab.experience_ids.includes(e.id))
-  const unlinkedExps = allExperiences.filter((e) => !tab.experience_ids.includes(e.id) && e.type !== 'support_chat')
+  const unlinkedExps = allExperiences.filter((e) => !tab.experience_ids.includes(e.id))
 
   return (
     <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-4 space-y-3">

@@ -107,7 +107,7 @@ function ProductCard({
   const [linking, setLinking] = useState(false)
 
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))
-  const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id) && e.type !== 'support_chat')
+  const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id))
 
   async function handleLink(experienceId: string) {
     setLinking(true)

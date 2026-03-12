@@ -25,7 +25,7 @@ const DEMO_EXPERIENCES: WorkspaceExperience[] = [
   { id: 'exp-2', workspace_id: 'ws-demo', type: 'course', name: 'Digital Art Masterclass', icon: null, cover: '/images/covers/dragonart.jpg', config_json: {}, position: 1, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: '/images/covers/midnightdrift.jpg', config_json: {}, position: 2, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-4', workspace_id: 'ws-demo', type: 'forum', name: 'Fan Art Showcase', icon: null, cover: '/images/covers/lunachen.jpg', config_json: {}, position: 3, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
-  { id: 'exp-5', workspace_id: 'ws-demo', type: 'support_chat', name: 'Help Center', icon: null, cover: '/images/covers/kaivibe.jpg', config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-5', workspace_id: 'ws-demo', type: 'group_chat', name: 'Help Center', icon: null, cover: '/images/covers/kaivibe.jpg', config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-6', workspace_id: 'ws-demo', type: 'course', name: 'Animation Fundamentals', icon: null, cover: '/images/covers/gamingsetup.jpg', config_json: {}, position: 5, visibility: 'product_gated', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-7', workspace_id: 'ws-demo', type: 'forum', name: 'Feedback & Ideas', icon: null, cover: '/images/covers/yukidraws.jpg', config_json: {}, position: 6, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
 ]

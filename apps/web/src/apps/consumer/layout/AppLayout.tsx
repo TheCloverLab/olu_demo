@@ -144,13 +144,24 @@ export default function AppLayout() {
   const navItems = NAV_ITEMS
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
+  function refreshJoined() {
+    if (authUser?.id) {
+      getJoinedWorkspaces(authUser.id).then(setJoinedWorkspaces).catch(() => {})
+    }
+  }
+
   useEffect(() => {
     if (authUser?.id) {
       getUserWallet(authUser.id).then((w) => {
         if (w) setWalletBalance(Number(w.usdc_balance))
       }).catch(() => {})
-      getJoinedWorkspaces(authUser.id).then(setJoinedWorkspaces).catch(() => {})
+      refreshJoined()
     }
+  }, [authUser?.id])
+
+  useEffect(() => {
+    window.addEventListener('workspace-joined', refreshJoined)
+    return () => window.removeEventListener('workspace-joined', refreshJoined)
   }, [authUser?.id])
 
   return (

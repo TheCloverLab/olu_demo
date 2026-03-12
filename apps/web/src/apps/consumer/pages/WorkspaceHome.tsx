@@ -303,6 +303,7 @@ export default function WorkspaceHome() {
     try {
       await joinWorkspace(userId, workspace.id)
       setHasJoined(true)
+      window.dispatchEvent(new Event('workspace-joined'))
     } catch (err) {
       console.error('Failed to join workspace', err)
     } finally {

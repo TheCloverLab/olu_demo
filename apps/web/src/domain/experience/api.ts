@@ -11,23 +11,23 @@ import type {
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 
 const DEMO_AUTHORS = {
-  creator: { id: 'demo-user-001', name: 'Demo Creator', handle: '@demo_creator', avatar_img: undefined as string | undefined, avatar_color: 'from-violet-500 to-fuchsia-500', initials: 'DC' },
-  alex: { id: 'u2', name: 'Alex Park', handle: '@alexpark', avatar_img: undefined as string | undefined, avatar_color: 'from-pink-500 to-rose-600', initials: 'AP' },
-  jordan: { id: 'u3', name: 'Jordan Lee', handle: '@jordanlee', avatar_img: undefined as string | undefined, avatar_color: 'from-blue-500 to-blue-700', initials: 'JL' },
-  mia: { id: 'u4', name: 'Mia Zhang', handle: '@miazhang', avatar_img: undefined as string | undefined, avatar_color: 'from-violet-500 to-purple-600', initials: 'MZ' },
-  sofia: { id: 'u5', name: 'Sofia Martinez', handle: '@sofiamartinez', avatar_img: undefined as string | undefined, avatar_color: 'from-rose-500 to-pink-600', initials: 'SM' },
-  emma: { id: 'u6', name: 'Emma Wilson', handle: '@emmawilson', avatar_img: undefined as string | undefined, avatar_color: 'from-sky-500 to-blue-600', initials: 'EW' },
-  nina: { id: 'u7', name: 'Nina Patel', handle: '@ninapatel', avatar_img: undefined as string | undefined, avatar_color: 'from-yellow-500 to-amber-600', initials: 'NP' },
+  creator: { id: 'demo-user-001', name: 'Demo Creator', handle: '@demo_creator', avatar_img: '/images/avatars/luna.jpg', avatar_color: 'from-violet-500 to-fuchsia-500', initials: 'DC' },
+  alex: { id: 'u2', name: 'Alex Park', handle: '@alexpark', avatar_img: '/images/fans/AlexPark.png', avatar_color: 'from-pink-500 to-rose-600', initials: 'AP' },
+  jordan: { id: 'u3', name: 'Jordan Lee', handle: '@jordanlee', avatar_img: '/images/fans/JordanLee.png', avatar_color: 'from-blue-500 to-blue-700', initials: 'JL' },
+  mia: { id: 'u4', name: 'Mia Zhang', handle: '@miazhang', avatar_img: '/images/fans/MeiSuzuki.png', avatar_color: 'from-violet-500 to-purple-600', initials: 'MZ' },
+  sofia: { id: 'u5', name: 'Sofia Martinez', handle: '@sofiamartinez', avatar_img: '/images/fans/DanaReyes.png', avatar_color: 'from-rose-500 to-pink-600', initials: 'SM' },
+  emma: { id: 'u6', name: 'Emma Wilson', handle: '@emmawilson', avatar_img: '/images/fans/AriaPatel.png', avatar_color: 'from-sky-500 to-blue-600', initials: 'EW' },
+  nina: { id: 'u7', name: 'Nina Patel', handle: '@ninapatel', avatar_img: '/images/fans/PriyaNair.png', avatar_color: 'from-yellow-500 to-amber-600', initials: 'NP' },
 }
 
 const DEMO_EXPERIENCES: WorkspaceExperience[] = [
-  { id: 'exp-1', workspace_id: 'ws-demo', type: 'forum', name: 'General Discussion', icon: null, cover: null, config_json: {}, position: 0, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-1', workspace_id: 'ws-demo', type: 'forum', name: 'General Discussion', icon: null, cover: '/images/covers/neoncity.jpg', config_json: {}, position: 0, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-2', workspace_id: 'ws-demo', type: 'course', name: 'Digital Art Masterclass', icon: null, cover: '/images/covers/dragonart.jpg', config_json: {}, position: 1, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
-  { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: null, config_json: {}, position: 2, visibility: 'members_only', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: '/images/covers/midnightdrift.jpg', config_json: {}, position: 2, visibility: 'members_only', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-4', workspace_id: 'ws-demo', type: 'forum', name: 'Fan Art Showcase', icon: null, cover: '/images/covers/lunachen.jpg', config_json: {}, position: 3, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
-  { id: 'exp-5', workspace_id: 'ws-demo', type: 'support_chat', name: 'Help Center', icon: null, cover: null, config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-5', workspace_id: 'ws-demo', type: 'support_chat', name: 'Help Center', icon: null, cover: '/images/covers/kaivibe.jpg', config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
   { id: 'exp-6', workspace_id: 'ws-demo', type: 'course', name: 'Animation Fundamentals', icon: null, cover: '/images/covers/gamingsetup.jpg', config_json: {}, position: 5, visibility: 'product_gated', status: 'active', created_at: '', updated_at: '' },
-  { id: 'exp-7', workspace_id: 'ws-demo', type: 'forum', name: 'Feedback & Ideas', icon: null, cover: null, config_json: {}, position: 6, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-7', workspace_id: 'ws-demo', type: 'forum', name: 'Feedback & Ideas', icon: null, cover: '/images/covers/yukidraws.jpg', config_json: {}, position: 6, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
 ]
 
 const DEMO_FORUM_POSTS: ForumPostWithAuthor[] = [

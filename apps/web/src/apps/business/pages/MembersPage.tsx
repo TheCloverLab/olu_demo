@@ -5,7 +5,10 @@ import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { getWorkspacePurchases, type PurchaseWithDetails } from '../../../domain/product/api'
 
-function Avatar({ initials, color }: { initials: string; color: string }) {
+function Avatar({ initials, color, img }: { initials: string; color: string; img?: string }) {
+  if (img) {
+    return <img src={img} alt={initials} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" />
+  }
   return (
     <div className={clsx('w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center font-bold text-white text-xs flex-shrink-0', color)}>
       {initials}
@@ -101,7 +104,7 @@ export default function MembersPage() {
           <div className="divide-y divide-[var(--olu-card-border)]">
             {purchases.map((p) => (
               <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--olu-card-hover)] transition-colors">
-                <Avatar initials={p.buyer_initials} color={p.buyer_avatar_color} />
+                <Avatar initials={p.buyer_initials} color={p.buyer_avatar_color} img={p.buyer_avatar_img} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm truncate">{p.buyer_name}</p>
                   <p className="text-xs text-[var(--olu-muted)]">{p.buyer_handle}</p>

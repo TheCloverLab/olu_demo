@@ -279,23 +279,24 @@ export type PurchaseWithDetails = ConsumerPurchase & {
   buyer_name: string
   buyer_handle: string
   buyer_avatar_color: string
+  buyer_avatar_img?: string
   buyer_initials: string
 }
 
 export async function getWorkspacePurchases(workspaceId: string): Promise<PurchaseWithDetails[]> {
   if (IS_DEMO) {
-    const names: Record<string, { name: string; handle: string; color: string; initials: string }> = {
-      u2: { name: 'Alex Park', handle: '@alexpark', color: 'from-pink-500 to-rose-600', initials: 'AP' },
-      u3: { name: 'Jordan Lee', handle: '@jordanlee', color: 'from-blue-500 to-blue-700', initials: 'JL' },
-      u4: { name: 'Mia Zhang', handle: '@miazhang', color: 'from-violet-500 to-purple-600', initials: 'MZ' },
-      u5: { name: 'Sofia Martinez', handle: '@sofiamartinez', color: 'from-rose-500 to-pink-600', initials: 'SM' },
-      u6: { name: 'Emma Wilson', handle: '@emmawilson', color: 'from-sky-500 to-blue-600', initials: 'EW' },
-      u7: { name: 'Nina Patel', handle: '@ninapatel', color: 'from-yellow-500 to-amber-600', initials: 'NP' },
+    const names: Record<string, { name: string; handle: string; color: string; img: string; initials: string }> = {
+      u2: { name: 'Alex Park', handle: '@alexpark', color: 'from-pink-500 to-rose-600', img: '/images/fans/AlexPark.png', initials: 'AP' },
+      u3: { name: 'Jordan Lee', handle: '@jordanlee', color: 'from-blue-500 to-blue-700', img: '/images/fans/JordanLee.png', initials: 'JL' },
+      u4: { name: 'Mia Zhang', handle: '@miazhang', color: 'from-violet-500 to-purple-600', img: '/images/fans/MeiSuzuki.png', initials: 'MZ' },
+      u5: { name: 'Sofia Martinez', handle: '@sofiamartinez', color: 'from-rose-500 to-pink-600', img: '/images/fans/DanaReyes.png', initials: 'SM' },
+      u6: { name: 'Emma Wilson', handle: '@emmawilson', color: 'from-sky-500 to-blue-600', img: '/images/fans/AriaPatel.png', initials: 'EW' },
+      u7: { name: 'Nina Patel', handle: '@ninapatel', color: 'from-yellow-500 to-amber-600', img: '/images/fans/PriyaNair.png', initials: 'NP' },
     }
     return DEMO_PURCHASES.map((p) => {
       const product = DEMO_PRODUCTS.find((pr) => pr.id === p.product_id)
       const plan = DEMO_PLANS.find((pl) => pl.id === p.plan_id)
-      const buyer = names[p.user_id] || { name: 'Unknown', handle: '@unknown', color: 'from-gray-400 to-gray-500', initials: '??' }
+      const buyer = names[p.user_id] || { name: 'Unknown', handle: '@unknown', color: 'from-gray-400 to-gray-500', img: '', initials: '??' }
       return {
         ...p,
         product_name: product?.name || 'Unknown',
@@ -303,6 +304,7 @@ export async function getWorkspacePurchases(workspaceId: string): Promise<Purcha
         buyer_name: buyer.name,
         buyer_handle: buyer.handle,
         buyer_avatar_color: buyer.color,
+        buyer_avatar_img: buyer.img,
         buyer_initials: buyer.initials,
       }
     })

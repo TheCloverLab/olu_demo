@@ -108,7 +108,7 @@ export default function SupplierConsole() {
             onClick={() => setTab(key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors',
-              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
+              tab === key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
             )}
           >
             <Icon size={14} />

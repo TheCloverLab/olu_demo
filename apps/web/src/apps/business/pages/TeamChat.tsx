@@ -974,7 +974,7 @@ export default function TeamChat() {
                 }
                 setTab(t)
               }}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-white bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)]')}>
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize', tab === t ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)]')}>
                 {t === 'tasks' ? `Tasks (${tasks.filter(t => t.status !== 'done').length})` : t}
               </button>
             ))}

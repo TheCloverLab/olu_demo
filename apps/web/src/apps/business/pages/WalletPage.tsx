@@ -98,7 +98,7 @@ export default function WalletPage() {
             onClick={() => setTab(item.key)}
             className={clsx(
               'px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap',
-              tab === item.key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-white'
+              tab === item.key ? 'bg-cyan-300 text-[#04111f]' : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
             )}
           >
             {item.label}

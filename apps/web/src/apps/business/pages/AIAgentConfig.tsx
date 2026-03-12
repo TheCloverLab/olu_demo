@@ -84,7 +84,7 @@ function HireModal({
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
             </p>
             <div className="flex gap-3">
-              <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-[var(--olu-card-border)] text-sm font-medium text-[var(--olu-text-secondary)] hover:text-white transition-colors">Cancel</button>
+              <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-[var(--olu-card-border)] text-sm font-medium text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] transition-colors">Cancel</button>
               <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
                 {loading ? 'Hiring...' : 'Confirm Hire'}
               </button>
@@ -255,7 +255,7 @@ export default function AIAgentConfig() {
                   <button
                     key={category}
                     onClick={() => setFilter(category)}
-                    className={clsx('px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all', filter === category ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-white')}
+                    className={clsx('px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all', filter === category ? 'bg-cyan-300 text-[#04111f]' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]')}
                   >
                     {category}
                   </button>

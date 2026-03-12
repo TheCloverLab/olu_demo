@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, Eye, ChevronRight } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, Eye, ChevronRight, Check, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
-import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceExperience, WorkspaceProduct } from '../../../lib/supabase'
+import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences } from '../../../domain/experience/api'
-import { getHomeConfig, listProducts } from '../../../domain/product/api'
+import { getHomeConfig, listProducts, listPlans, purchaseProduct, getUserPurchases } from '../../../domain/product/api'
 
 const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
@@ -139,7 +139,99 @@ function TabContent({
   )
 }
 
-function AboutTab({ workspace, products }: { workspace: Workspace; products: WorkspaceProduct[] }) {
+type ProductCardData = WorkspaceProduct & { plans: WorkspaceProductPlan[] }
+
+function ProductCard({
+  product,
+  joined,
+  joining,
+  onJoin,
+}: {
+  product: ProductCardData
+  joined: boolean
+  joining: boolean
+  onJoin: (productId: string, planId?: string) => void
+}) {
+  const cheapest = product.plans.length > 0
+    ? product.plans.reduce((a, b) => (a.price < b.price ? a : b))
+    : null
+
+  return (
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h4 className="font-semibold text-sm">{product.name}</h4>
+          {product.description && (
+            <p className="text-xs text-[var(--olu-muted)] mt-0.5">{product.description}</p>
+          )}
+        </div>
+        {product.access_type === 'free' ? (
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+            Free
+          </span>
+        ) : cheapest ? (
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-400/10 text-amber-600 dark:text-amber-400 flex-shrink-0">
+            ${cheapest.price}/{cheapest.interval || 'once'}
+          </span>
+        ) : null}
+      </div>
+
+      {/* Plan options for paid products */}
+      {product.plans.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          {product.plans.map((plan) => (
+            <span key={plan.id} className="text-xs px-2 py-0.5 rounded-lg bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)]">
+              ${plan.price}/{plan.interval || 'once'}
+              {plan.trial_days > 0 && ` · ${plan.trial_days}d trial`}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Join button */}
+      {joined ? (
+        <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+          <Check size={14} />
+          Joined
+        </div>
+      ) : (
+        <button
+          onClick={() => onJoin(product.id, cheapest?.id)}
+          disabled={joining}
+          className={clsx(
+            'w-full rounded-xl py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5',
+            product.access_type === 'free'
+              ? 'bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50'
+              : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 disabled:opacity-50'
+          )}
+        >
+          {joining ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <>
+              <Sparkles size={14} />
+              {product.access_type === 'free' ? 'Join Free' : 'Get Access'}
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function AboutTab({
+  workspace,
+  productCards,
+  joinedIds,
+  joiningId,
+  onJoin,
+}: {
+  workspace: Workspace
+  productCards: ProductCardData[]
+  joinedIds: Set<string>
+  joiningId: string | null
+  onJoin: (productId: string, planId?: string) => void
+}) {
   const { t } = useTranslation()
 
   return (
@@ -151,26 +243,17 @@ function AboutTab({ workspace, products }: { workspace: Workspace; products: Wor
         </p>
       </div>
 
-      {products.length > 0 && (
+      {productCards.length > 0 && (
         <div className="space-y-2">
           <h3 className="font-semibold text-sm px-1">{t('nav.products', 'Products')}</h3>
-          {products.map((product) => (
-            <div key={product.id} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-sm">{product.name}</h4>
-                  {product.description && <p className="text-xs text-[var(--olu-muted)] mt-0.5">{product.description}</p>}
-                </div>
-                <span className={clsx(
-                  'text-xs px-2.5 py-1 rounded-full font-medium',
-                  product.access_type === 'free'
-                    ? 'bg-emerald-400/10 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-amber-400/10 text-amber-600 dark:text-amber-400'
-                )}>
-                  {product.access_type === 'free' ? 'Free' : 'Paid'}
-                </span>
-              </div>
-            </div>
+          {productCards.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              joined={joinedIds.has(product.id)}
+              joining={joiningId === product.id}
+              onJoin={onJoin}
+            />
           ))}
         </div>
       )}
@@ -184,9 +267,26 @@ export default function WorkspaceHome() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [homeConfig, setHomeConfig] = useState<WorkspaceHomeConfig | null>(null)
   const [experiences, setExperiences] = useState<WorkspaceExperience[]>([])
-  const [products, setProducts] = useState<WorkspaceProduct[]>([])
+  const [productCards, setProductCards] = useState<ProductCardData[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>('about')
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set())
+  const [joiningId, setJoiningId] = useState<string | null>(null)
+
+  const userId = IS_DEMO ? 'demo-consumer' : undefined
+
+  async function handleJoin(productId: string, planId?: string) {
+    if (!userId) return
+    setJoiningId(productId)
+    try {
+      await purchaseProduct(userId, productId, planId)
+      setJoinedIds((prev) => new Set(prev).add(productId))
+    } catch (err) {
+      console.error('Purchase failed', err)
+    } finally {
+      setJoiningId(null)
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -213,7 +313,18 @@ export default function WorkspaceHome() {
         ])
         setHomeConfig(config)
         setExperiences(exps)
-        setProducts(prods)
+
+        // Load plans for each product
+        const cards: ProductCardData[] = await Promise.all(
+          prods.map(async (p) => ({ ...p, plans: await listPlans(p.id) }))
+        )
+        setProductCards(cards)
+
+        // Load existing purchases
+        if (userId) {
+          const purchases = await getUserPurchases(userId, ws.id)
+          setJoinedIds(new Set(purchases.map((p) => p.product_id)))
+        }
       } catch (err) {
         console.error('Failed to load workspace', err)
       } finally {
@@ -302,7 +413,7 @@ export default function WorkspaceHome() {
       {/* Tab content */}
       <div className="px-4">
         {activeTab === 'about' ? (
-          <AboutTab workspace={workspace} products={products} />
+          <AboutTab workspace={workspace} productCards={productCards} joinedIds={joinedIds} joiningId={joiningId} onJoin={handleJoin} />
         ) : (
           (() => {
             const tab = tabs.find((t) => t.key === activeTab)

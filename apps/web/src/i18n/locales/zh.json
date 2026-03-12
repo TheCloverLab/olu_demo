@@ -267,7 +267,9 @@
     "namePlaceholder": "显示名称",
     "handlePlaceholder": "选择一个用户名",
     "continueButton": "继续",
-    "uploadAvatar": "上传头像"
+    "uploadAvatar": "上传头像",
+    "presetTitle": "选择你的模板",
+    "presetSubtitle": "这将为你的工作区配置初始内容，之后可以随时修改。"
   },
   "consumer": {
     "topics": "话题",

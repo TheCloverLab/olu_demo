@@ -209,6 +209,22 @@ export async function purchaseProduct(
   productId: string,
   planId?: string
 ): Promise<ConsumerPurchase> {
+  if (IS_DEMO) {
+    const now = new Date().toISOString()
+    const purchase: ConsumerPurchase = {
+      id: `purch-demo-${Date.now()}`,
+      user_id: userId,
+      product_id: productId,
+      plan_id: planId || null,
+      status: 'active',
+      started_at: now,
+      expires_at: null,
+      created_at: now,
+      updated_at: now,
+    }
+    DEMO_PURCHASES.push(purchase)
+    return purchase
+  }
   const { data, error } = await supabase
     .from('consumer_purchases')
     .insert({

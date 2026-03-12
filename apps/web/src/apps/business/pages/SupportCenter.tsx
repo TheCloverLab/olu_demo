@@ -56,7 +56,7 @@ function ChatListItem({ chat, active, onClick }: { chat: SupportChat; active: bo
       className={clsx(
         'w-full flex items-center gap-3 p-3 rounded-2xl transition-colors text-left',
         active
-          ? 'bg-cyan-300/10 border border-cyan-300/30'
+          ? 'bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)]'
           : 'hover:bg-[var(--olu-card-hover)] border border-transparent'
       )}
     >
@@ -196,7 +196,7 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && sendReply()}
           placeholder={t('business.supportReplyPlaceholder', 'Type a reply...')}
-          className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+          className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)] focus:ring-1 focus:ring-cyan-400/20 transition-colors"
         />
         <button
           onClick={sendReply}
@@ -276,7 +276,7 @@ export default function SupportCenter() {
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled
-                ? 'border-cyan-300/40 bg-cyan-300/10'
+                ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
                 : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
             )}
           >

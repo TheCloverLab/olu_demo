@@ -55,13 +55,13 @@ type PendingAgentRequest = {
 const STATUS_CONFIG = {
   done: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
   in_progress: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
-  pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Pending' },
+  pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]', label: 'Pending' },
 }
 
 const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
   medium: 'text-amber-600 dark:text-amber-400 bg-amber-400/10',
-  low: 'text-[var(--olu-text-secondary)] bg-cyan-500/10',
+  low: 'text-[var(--olu-text-secondary)] bg-[var(--olu-accent-bg)]',
 }
 
 function preprocessMarkdown(text) {
@@ -1097,7 +1097,7 @@ export default function TeamChat() {
                                   </div>
                                 ),
                                 thead: ({ children }) => (
-                                  <thead className="border-b border-cyan-500/20 text-[var(--olu-sidebar-text)]">
+                                  <thead className="border-b border-[var(--olu-card-border)] text-[var(--olu-sidebar-text)]">
                                     {children}
                                   </thead>
                                 ),
@@ -1239,7 +1239,7 @@ export default function TeamChat() {
             {attachedImages.length > 0 && (
               <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
                 {attachedImages.map((img, i) => (
-                  <div key={i} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-cyan-500/20">
+                  <div key={i} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-[var(--olu-card-border)]">
                     <img src={img.preview} alt="" className="w-full h-full object-cover" />
                     <button
                       onClick={() => removeImage(i)}
@@ -1260,7 +1260,7 @@ export default function TeamChat() {
                   onSelect={p => mention.accept(input, setInput, p)}
                 />
               )}
-              <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-input-bg)] focus-within:border-cyan-300/40 transition-colors">
+              <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-input-bg)] focus-within:border-[var(--olu-card-border)] transition-colors">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -1349,7 +1349,7 @@ export default function TeamChat() {
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 8 }}
-                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[260px] max-h-80 overflow-y-auto py-1 rounded-xl bg-[var(--olu-input-bg)] border border-cyan-500/20 shadow-2xl"
+                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[260px] max-h-80 overflow-y-auto py-1 rounded-xl bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)] shadow-2xl"
                               >
                                 {Object.entries(groupedModels).map(([providerLabel, models]) => (
                                   <div key={providerLabel} className="py-1">
@@ -1366,7 +1366,7 @@ export default function TeamChat() {
                                         }}
                                         className={clsx(
                                           'w-full px-4 py-2.5 text-left text-sm transition-colors',
-                                          selectedModel === m.id ? 'text-cyan-700 dark:text-cyan-300 bg-cyan-500/10' : 'text-[var(--olu-text-secondary)] hover:text-white hover:bg-cyan-500/5'
+                                          selectedModel === m.id ? 'text-cyan-700 dark:text-cyan-300 bg-[var(--olu-accent-bg)]' : 'text-[var(--olu-text-secondary)] hover:text-white hover:bg-cyan-500/5'
                                         )}
                                       >
                                         <div className="flex items-center justify-between gap-3">

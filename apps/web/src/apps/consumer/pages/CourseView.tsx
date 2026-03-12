@@ -24,7 +24,7 @@ function LessonRow({ lesson, active, onClick }: { lesson: ExperienceCourseLesson
       className={clsx(
         'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors rounded-xl',
         active
-          ? 'bg-cyan-300/10 border border-cyan-300/30'
+          ? 'bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)]'
           : 'hover:bg-[var(--olu-card-hover)]'
       )}
     >
@@ -67,7 +67,7 @@ function LessonContent({ lesson }: { lesson: ExperienceCourseLesson }) {
       ) : (
         <div className="aspect-video rounded-2xl bg-gradient-to-br from-[var(--olu-card-bg)] to-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-full bg-cyan-300/20 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-[var(--olu-accent-bg-strong)] flex items-center justify-center mx-auto">
               <Play size={24} className="text-cyan-700 dark:text-cyan-300 ml-1" />
             </div>
             <p className="text-sm text-[var(--olu-text-secondary)]">{lesson.title}</p>

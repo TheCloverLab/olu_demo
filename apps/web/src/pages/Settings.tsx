@@ -191,7 +191,7 @@ export default function Settings() {
           </div>
 
           {enabledBusinessModules.length > 0 ? (
-            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-600/20 via-sky-600/15 to-blue-600/10 border border-cyan-500/20">
+            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-600/20 via-sky-600/15 to-blue-600/10 border border-[var(--olu-card-border)]">
               <button
                 onClick={() => navigate('/business')}
                 className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/5 transition-colors"

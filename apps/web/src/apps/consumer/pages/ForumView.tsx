@@ -136,7 +136,7 @@ function PostCard({
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleComment()}
                   placeholder="Add a comment..."
-                  className="flex-1 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-500/30"
+                  className="flex-1 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-[var(--olu-card-border)]"
                 />
                 <button
                   onClick={handleComment}
@@ -270,7 +270,7 @@ export default function ForumView() {
             onChange={(e) => setNewPostText(e.target.value)}
             placeholder={t('consumer.writePost', "What's on your mind?")}
             rows={3}
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-[var(--olu-card-border)]"
           />
           <div className="flex justify-end">
             <button

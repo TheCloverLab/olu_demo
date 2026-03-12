@@ -55,7 +55,7 @@ function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => voi
               className={clsx(
                 'p-3 rounded-xl text-left transition-colors border',
                 selectedType === type
-                  ? 'border-cyan-300/40 bg-cyan-300/10'
+                  ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
                   : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
               )}
             >
@@ -78,7 +78,7 @@ function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => voi
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={`My ${TYPE_META[selectedType].label}`}
-              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
             />
           </div>
           <button
@@ -110,7 +110,7 @@ function ExperienceCard({ exp }: { exp: WorkspaceExperience }) {
     : null
 
   return (
-    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden hover:border-cyan-300/30 transition-colors">
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden hover:border-[var(--olu-card-border)] transition-colors">
       <div
         className="cursor-pointer"
         onClick={() => navigate(editorPath)}

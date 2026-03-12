@@ -146,7 +146,7 @@ export default function ProductDetail() {
                 const Icon = TYPE_ICON[exp.type] || MessageSquare
                 return (
                   <div key={exp.id} className="flex items-center gap-3 p-2 rounded-xl bg-[var(--olu-card-bg)]">
-                    <div className="w-8 h-8 rounded-lg bg-cyan-300/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--olu-accent-bg)] flex items-center justify-center flex-shrink-0">
                       <Icon size={14} className="text-cyan-700 dark:text-cyan-300" />
                     </div>
                     <div className="min-w-0 flex-1">

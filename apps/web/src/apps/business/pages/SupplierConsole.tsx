@@ -87,12 +87,12 @@ export default function SupplierConsole() {
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Active Links</p>
               <p className="font-black text-2xl">{activePartnerships.length}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Live creator-supplier relationships</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Monthly GMV</p>
               <p className="font-black text-2xl">${Math.round(totals.revenue).toLocaleString()}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Current merchandise throughput</p>
@@ -119,7 +119,7 @@ export default function SupplierConsole() {
 
       {tab === 'dashboard' && (
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 flex items-center gap-3">
+          <div className="rounded-[28px] border border-[var(--olu-card-border)] bg-[var(--olu-header-bg)] p-4 flex items-center gap-3">
             <ShieldCheck size={16} className="text-cyan-700 dark:text-cyan-200" />
             <p className="text-sm text-[var(--olu-text-secondary)]">Supply Chain uses the same business cockpit tokens and will later move to workspace-backed supplier partnerships and catalogs.</p>
           </div>
@@ -183,7 +183,7 @@ export default function SupplierConsole() {
                     <p className="text-[var(--olu-text-secondary)] text-xs">{partnership.creator?.handle || ''}</p>
                   </div>
                 </div>
-                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', partnership.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', partnership.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]')}>
                   {partnership.status}
                 </span>
               </div>

@@ -124,7 +124,7 @@ export default function WalletModal({ open, onClose }: WalletModalProps) {
                   className="w-full p-4 glass glass-hover rounded-xl flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--olu-accent-bg-strong)] flex items-center justify-center">
                       <Coins size={18} className="text-cyan-600 dark:text-cyan-400" />
                     </div>
                     <div className="text-left">

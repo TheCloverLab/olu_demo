@@ -15,14 +15,14 @@ const TABS = [
 ] as const
 
 const STAGE_META = {
-  draft: { label: 'Draft', tone: 'bg-cyan-500/10 text-[var(--olu-text-secondary)]' },
-  sourcing: { label: 'Sourcing', tone: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300' },
+  draft: { label: 'Draft', tone: 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]' },
+  sourcing: { label: 'Sourcing', tone: 'bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300' },
   offer_sent: { label: 'Offer Sent', tone: 'bg-amber-500/20 text-amber-600 dark:text-amber-300' },
   creator_review: { label: 'Creator Review', tone: 'bg-amber-500/20 text-amber-600 dark:text-amber-300' },
   approved: { label: 'Approved', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
   scheduled: { label: 'Scheduled', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
   published: { label: 'Published', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
-  reporting: { label: 'Reporting', tone: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300' },
+  reporting: { label: 'Reporting', tone: 'bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300' },
   completed: { label: 'Completed', tone: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' },
   cancelled: { label: 'Cancelled', tone: 'bg-red-500/20 text-red-300' },
 } as const
@@ -160,12 +160,12 @@ export default function AdvertiserConsole() {
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Live Stage</p>
               <p className="font-black text-2xl">{stageMeta.label}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Current workflow progression</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Reach Returned</p>
               <p className="font-black text-2xl">{compactNumber(workflow?.campaign.reported_reach || 0)}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Synced from backend workflow data</p>
@@ -241,7 +241,7 @@ export default function AdvertiserConsole() {
                   value={selectedCreatorId}
                   onChange={(e) => setSelectedCreatorId(e.target.value)}
                   disabled={actionLoading}
-                  className="w-full rounded-xl bg-[var(--olu-header-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm focus:outline-none focus:border-cyan-300/30"
+                  className="w-full rounded-xl bg-[var(--olu-header-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
                 >
                   {creators.map((creator) => (
                     <option key={creator.id} value={creator.id}>
@@ -291,7 +291,7 @@ export default function AdvertiserConsole() {
                   { title: '5. Metrics return', desc: 'First-day reach, clicks, and conversions come back into marketing workspace.', active: ['completed'].includes(workflow?.campaign.status || 'draft') },
                 ].map((step) => (
                   <div key={step.title} className="rounded-[24px] bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
-                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                    <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', step.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]')}>
                       {step.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                     </div>
                     <div>
@@ -393,7 +393,7 @@ export default function AdvertiserConsole() {
                     <p className="font-semibold">{campaign.name}</p>
                     <p className="text-[var(--olu-text-secondary)] text-xs">{campaign.start_date} - {campaign.end_date}</p>
                   </div>
-                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                  <span className={clsx('text-xs px-2 py-1 rounded-full capitalize', campaign.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]')}>
                     {campaign.status}
                   </span>
                 </div>

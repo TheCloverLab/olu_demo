@@ -21,7 +21,7 @@ const MODULE_METADATA: Array<{
     labelKey: 'businessSettings.creatorOps',
     descKey: 'businessSettings.creatorOpsDesc',
     icon: Sparkles,
-    accentClass: 'bg-cyan-400/12 text-cyan-600 dark:text-cyan-300 border-cyan-400/20',
+    accentClass: 'bg-[var(--olu-accent-bg)] text-cyan-600 dark:text-cyan-300 border-[var(--olu-card-border)]',
   },
   {
     key: 'marketing',
@@ -123,7 +123,7 @@ export default function BusinessSettings() {
       {/* Modules */}
       <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
         <div className="flex items-center gap-3 mb-5">
-          <span className="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-600 dark:text-cyan-300 flex items-center justify-center">
+          <span className="w-10 h-10 rounded-2xl bg-[var(--olu-accent-bg)] text-cyan-600 dark:text-cyan-300 flex items-center justify-center">
             <Sparkles size={18} />
           </span>
           <div>

@@ -43,7 +43,7 @@ function RadioOption({
       className={clsx(
         'w-full p-4 rounded-xl text-left transition-colors border',
         selected
-          ? 'border-cyan-300/40 bg-cyan-300/10'
+          ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
           : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
       )}
     >
@@ -179,7 +179,7 @@ export default function ForumEditor() {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/30"
+          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
         />
       </div>
 

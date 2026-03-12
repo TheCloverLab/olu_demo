@@ -114,7 +114,7 @@ export default function ExperienceEditor() {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
         />
       </div>
 
@@ -135,7 +135,7 @@ export default function ExperienceEditor() {
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
             <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
             <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
             <input

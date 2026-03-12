@@ -87,7 +87,7 @@ export default function HumanEmployees() {
       </div>
 
       {showAdd && (
-        <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
+        <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 space-y-4">
           <h3 className="font-semibold text-sm flex items-center gap-2">
             <Users2 size={16} className="text-cyan-700 dark:text-cyan-300" />
             Invite a team member
@@ -95,15 +95,15 @@ export default function HumanEmployees() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
+              <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
             </div>
             <div>
               <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Position</label>
-              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
+              <input type="text" placeholder="Marketing Manager" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
             </div>
             <div className="flex items-end">
               <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -143,7 +143,7 @@ export default function HumanEmployees() {
               )}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {emp.skills.map((skill) => (
-                  <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-[var(--olu-text-secondary)] font-medium">
+                  <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)] font-medium">
                     {skill}
                   </span>
                 ))}

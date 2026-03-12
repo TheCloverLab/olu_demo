@@ -15,7 +15,7 @@ const TYPE_BADGE: Record<string, { label: string; color: string; bg: string }> =
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   published: { label: 'Published', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
   draft: { label: 'Draft', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10' },
-  archived: { label: 'Archived', color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
+  archived: { label: 'Archived', color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]' },
 }
 
 const NEW_APP_TYPES = [
@@ -82,7 +82,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
   }
 
   return (
-    <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm flex items-center gap-2">
           <Pencil size={14} className="text-cyan-700 dark:text-cyan-300" />
@@ -115,7 +115,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
         <div>
@@ -124,7 +124,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={2}
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
         <div>
@@ -174,7 +174,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
 
   return (
-    <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 space-y-4">
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm flex items-center gap-2">
           <Plus size={14} className="text-cyan-700 dark:text-cyan-300" />
@@ -195,7 +195,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
               item.coming
                 ? 'border-cyan-500/5 bg-[var(--olu-card-bg)] opacity-50 cursor-not-allowed'
                 : selected === item.type
-                  ? 'border-cyan-300/40 bg-cyan-300/10'
+                  ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
                   : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
             )}
           >
@@ -217,7 +217,7 @@ function NewAppPanel({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={`My ${selected} app`}
-              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30"
+              className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]"
             />
           </div>
           <button className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
@@ -299,7 +299,7 @@ export default function AppManagement() {
         <div className="space-y-4">
           {(() => {
             const app = primaryApp
-            const typeBadge = TYPE_BADGE[app.app_type] || { label: app.app_type, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' }
+            const typeBadge = TYPE_BADGE[app.app_type] || { label: app.app_type, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]' }
             const statusBadge = STATUS_BADGE[app.status] || STATUS_BADGE.draft
             const isConfiguring = configAppId === app.id
 
@@ -336,7 +336,7 @@ export default function AppManagement() {
                         className={clsx(
                           'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors',
                           isConfiguring
-                            ? 'bg-cyan-300/20 text-cyan-700 dark:text-cyan-300'
+                            ? 'bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300'
                             : 'bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)] text-[var(--olu-text-secondary)]'
                         )}
                       >

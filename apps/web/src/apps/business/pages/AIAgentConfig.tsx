@@ -21,7 +21,7 @@ function AgentCard({
       <img src={agent.avatar_img || ''} alt={agent.name} className="w-12 h-12 rounded-xl object-cover mb-3" />
       <div className="flex items-start justify-between mb-1">
         <h3 className="font-bold text-sm">{agent.name}</h3>
-        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-sidebar-text)]')}>
+        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', agent.price_label === 'Free' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-sidebar-text)]')}>
           {agent.price_label}
         </span>
       </div>
@@ -32,7 +32,7 @@ function AgentCard({
       </div>
       <p className="text-[var(--olu-text-secondary)] text-xs leading-relaxed flex-1 mb-2">{agent.description}</p>
       <div className="flex items-center gap-2 mb-3 text-xs">
-        <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-200 font-medium">{agent.model}</span>
+        <span className="px-2 py-0.5 rounded-md bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-200 font-medium">{agent.model}</span>
         <span className="text-[var(--olu-text-secondary)]">${agent.cost_per_1k}/1K tokens</span>
       </div>
       <button
@@ -78,7 +78,7 @@ function HireModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Give your agent a name, like Ashley, Ada, or Luca."
-              className="w-full p-3 bg-[var(--olu-card-bg)] rounded-xl text-sm focus:outline-none border border-[var(--olu-card-border)] focus:border-cyan-300/30 transition-colors mb-4 placeholder:text-[var(--olu-muted)]"
+              className="w-full p-3 bg-[var(--olu-card-bg)] rounded-xl text-sm focus:outline-none border border-[var(--olu-card-border)] focus:border-[var(--olu-card-border)] transition-colors mb-4 placeholder:text-[var(--olu-muted)]"
             />
             <p className="text-xs text-[var(--olu-text-secondary)] mb-4">
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
@@ -175,12 +175,12 @@ export default function AIAgentConfig() {
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[260px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Coverage</p>
               <p className="font-black text-2xl">{activeAgents.length}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Active workspace operators</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Templates</p>
               <p className="font-black text-2xl">{templates.length}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Marketplace agents ready</p>
@@ -262,7 +262,7 @@ export default function AIAgentConfig() {
                 ))}
               </div>
             </div>
-            <div className="rounded-[28px] border border-cyan-400/10 bg-[var(--olu-header-bg)] p-4 mb-4 flex items-center gap-3">
+            <div className="rounded-[28px] border border-[var(--olu-card-border)] bg-[var(--olu-header-bg)] p-4 mb-4 flex items-center gap-3">
               <Sparkles size={16} className="text-cyan-700 dark:text-cyan-200" />
               <p className="text-sm text-[var(--olu-text-secondary)]">Templates are now sourced from Supabase so hiring a new agent updates your workspace state, not just local UI.</p>
             </div>

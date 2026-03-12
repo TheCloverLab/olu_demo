@@ -1,6 +1,6 @@
 import type { RouteObject } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import AppLayout from './layout/AppLayout'
-import Home from './pages/Home'
 import AppLanding from './pages/AppLanding'
 import PublicProfile from './pages/PublicProfile'
 import ContentDetail from './pages/ContentDetail'
@@ -32,7 +32,7 @@ export const consumerRoutes: RouteObject[] = [
     path: '/',
     element: <RoleProtected><AppLayout /></RoleProtected>,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <Navigate to="/discover" replace /> },
       { path: 'discover', element: <Discover /> },
       { path: 'w/:workspaceSlug', element: <WorkspaceHome /> },
       { path: 'forum/:experienceId', element: <ForumView /> },

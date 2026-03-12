@@ -364,6 +364,24 @@ export async function hasJoinedWorkspace(userId: string, workspaceId: string): P
   return !!data
 }
 
+// ---------- Discover (public workspaces) ----------
+
+export async function getDiscoverWorkspaces(options?: { query?: string }): Promise<Workspace[]> {
+  let q = supabase
+    .from('workspaces')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+
+  if (options?.query) {
+    q = q.ilike('name', `%${options.query}%`)
+  }
+
+  const { data, error } = await q
+  if (error) throw error
+  return (data || []) as Workspace[]
+}
+
 // ---------- Wallet ----------
 
 export async function getUserWallet(userId: string): Promise<UserWallet | null> {

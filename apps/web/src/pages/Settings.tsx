@@ -191,13 +191,13 @@ export default function Settings() {
           </div>
 
           {enabledBusinessModules.length > 0 ? (
-            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-600/30 via-purple-600/20 to-fuchsia-600/10 border border-indigo-500/20">
+            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-600/20 via-sky-600/15 to-blue-600/10 border border-cyan-500/20">
               <button
                 onClick={() => navigate('/business')}
                 className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20">
+                  <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/20">
                     <Briefcase size={20} className="text-white" />
                   </span>
                   <div>

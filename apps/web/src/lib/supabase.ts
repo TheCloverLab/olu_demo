@@ -682,6 +682,41 @@ export type WorkspaceHomeTab = {
   position: number
 }
 
+// ── Experience Course Hierarchy (Whop-style) ─────────────────────
+
+export type ExperienceCourse = {
+  id: string
+  experience_id: string
+  name: string
+  description?: string | null
+  cover?: string | null
+  position: number
+  status: 'draft' | 'published' | 'archived'
+  created_at?: string
+  updated_at?: string
+}
+
+export type ExperienceCourseChapter = {
+  id: string
+  course_id: string
+  title: string
+  position: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type ExperienceCourseLesson = {
+  id: string
+  chapter_id: string
+  title: string
+  content?: string | null
+  video_url?: string | null
+  attachments?: { name: string; url: string; size?: number }[]
+  position: number
+  created_at?: string
+  updated_at?: string
+}
+
 export type WorkspaceJoin = {
   id: string
   user_id: string

@@ -16,6 +16,8 @@ import { Navigate } from 'react-router-dom'
 import EmployeeProfile from './pages/EmployeeProfile'
 import AppManagement from './pages/AppManagement'
 import ExperienceManager from './pages/ExperienceManager'
+import ForumEditor from './pages/ForumEditor'
+import CourseExperienceEditor from './pages/CourseExperienceEditor'
 import ProductManager from './pages/ProductManager'
 import HomeEditor from './pages/HomeEditor'
 import MembersPage from './pages/MembersPage'
@@ -37,6 +39,8 @@ export const businessRoutes: RouteObject[] = [
       { path: 'agents', element: <AIAgentConfig /> },
       { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
       { path: 'experiences', element: <ExperienceManager /> },
+      { path: 'experiences/forum', element: <ForumEditor /> },
+      { path: 'experiences/courses', element: <CourseExperienceEditor /> },
       { path: 'products', element: <ProductManager /> },
       { path: 'home-editor', element: <HomeEditor /> },
       { path: 'members', element: <MembersPage /> },

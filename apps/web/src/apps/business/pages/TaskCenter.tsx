@@ -263,7 +263,7 @@ export default function TaskCenter() {
                 {task.isAiAgent && task.status === 'pending' && !executions.has(task.id) && (
                   <button
                     onClick={() => handleRunAgent(task)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors border border-[var(--olu-card-border)]"
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-[var(--olu-accent-bg-strong)] transition-colors border border-[var(--olu-card-border)]"
                   >
                     <Play size={14} /> Run
                   </button>

@@ -378,7 +378,7 @@ export default function CourseEditor() {
 
           <button
             onClick={addModule}
-            className="w-full py-4 rounded-2xl border-2 border-dashed border-olu-border text-olu-muted hover:text-olu-text hover:border-white/20 transition-all flex items-center justify-center gap-2 text-sm"
+            className="w-full py-4 rounded-2xl border-2 border-dashed border-gray-400 dark:border-olu-border text-olu-muted hover:text-olu-text hover:border-white/20 transition-all flex items-center justify-center gap-2 text-sm"
           >
             <Plus size={16} />
             {t('consumer.addModule')}

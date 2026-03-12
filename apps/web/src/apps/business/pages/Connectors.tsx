@@ -339,7 +339,7 @@ function PlatformCard({ platform, t, onConnect, connecting }: {
           <button
             onClick={() => onConnect(platform.provider)}
             disabled={connecting === platform.provider}
-            className="mt-3 px-3 py-1.5 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-300/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            className="mt-3 px-3 py-1.5 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-[var(--olu-accent-bg-strong)] transition-colors flex items-center gap-1.5 disabled:opacity-50"
           >
             {connecting === platform.provider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
             {t('common.connect')}
@@ -506,7 +506,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-[var(--olu-accent-bg-strong)] transition-colors disabled:opacity-50 flex items-center gap-1.5"
               >
                 {saving && <Loader2 size={14} className="animate-spin" />}
                 {t('connectors.saveAndConnect')}
@@ -514,7 +514,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
             )}
             {method === 'browser_session' && (
               <button
-                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-[var(--olu-accent-bg-strong)] transition-colors flex items-center gap-1.5"
               >
                 <Monitor size={14} />
                 {t('connectors.launchBrowser')}

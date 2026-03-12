@@ -237,7 +237,7 @@ export default function AIAgentConfig() {
                       <p className="text-[var(--olu-text-secondary)] text-xs">{agent.role}</p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-cyan-500/10 transition-colors"><Settings size={14} className="text-[var(--olu-text-secondary)]" /></button>
+                      <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors"><Settings size={14} className="text-[var(--olu-text-secondary)]" /></button>
                       <button type="button" onClick={(event) => event.stopPropagation()} className="p-1.5 rounded-lg hover:bg-red-500/15 transition-colors"><Trash2 size={14} className="text-red-400" /></button>
                     </div>
                   </div>

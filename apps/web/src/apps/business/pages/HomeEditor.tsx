@@ -149,7 +149,7 @@ function TabEditor({
                   onChange({ ...tab, experience_ids: [...tab.experience_ids, e.target.value] })
                 }
               }}
-              className="text-xs bg-[var(--olu-section-bg)] border border-dashed border-[var(--olu-card-border)] rounded-full px-2 py-0.5"
+              className="text-xs bg-[var(--olu-section-bg)] border border-dashed border-gray-400 dark:border-[var(--olu-card-border)] rounded-full px-2 py-0.5"
             >
               <option value="">+ Add...</option>
               {unlinkedExps.map((exp) => (
@@ -397,7 +397,7 @@ export default function HomeEditor() {
                   </label>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
+                <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
                   <ImagePlus size={20} className="text-[var(--olu-muted)] mb-1" />
                   <span className="text-xs text-[var(--olu-muted)]">Click to upload cover</span>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />

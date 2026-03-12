@@ -187,7 +187,7 @@ function CourseListView({
             {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
+          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
             <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
             <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f) }} />
@@ -201,7 +201,7 @@ function CourseListView({
         ))}
 
         {/* Add course card */}
-        <div className="rounded-2xl border border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-6 flex flex-col items-center justify-center gap-3 min-h-[200px]">
+        <div className="rounded-2xl border border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-6 flex flex-col items-center justify-center gap-3 min-h-[200px]">
           {newName !== '' ? (
             <div className="space-y-3 w-full">
               <input
@@ -446,7 +446,7 @@ function LessonDetailPanel({
       {/* File Attachments (placeholder) */}
       <div className="space-y-2">
         <label className="text-xs text-[var(--olu-text-secondary)]">File attachments</label>
-        <div className="rounded-xl border border-dashed border-[var(--olu-card-border)] p-4 flex items-center justify-center">
+        <div className="rounded-xl border border-dashed border-gray-400 dark:border-[var(--olu-card-border)] p-4 flex items-center justify-center">
           <label className="flex items-center gap-2 text-sm text-[var(--olu-muted)] cursor-pointer hover:text-[var(--olu-text)]">
             <Upload size={14} /> Upload attachment
             <input type="file" className="hidden" />
@@ -577,7 +577,7 @@ function CourseDetailView({
             {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
           </div>
         ) : (
-          <label className="flex items-center justify-center gap-2 h-20 border-b border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors text-[var(--olu-muted)] text-xs">
+          <label className="flex items-center justify-center gap-2 h-20 border-b border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors text-[var(--olu-muted)] text-xs">
             <ImagePlus size={16} />
             Add course cover
             <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCourseCoverUpload(f) }} />

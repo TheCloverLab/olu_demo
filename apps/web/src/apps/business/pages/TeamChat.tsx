@@ -1126,14 +1126,12 @@ export default function TeamChat() {
                             if (!budgetData) return null
                             if (budgetData.type === 'budget_approval_required') {
                               return <BudgetApprovalCard data={budgetData} onApprove={(amount) => {
-                                setInput(`Budget approved: $${amount}. Proceed with the task.`)
-                                setTimeout(() => sendMessage(), 100)
+                                sendMessage(`Budget approved: $${amount}. Proceed with the task.`)
                               }} />
                             }
                             if (budgetData.type === 'budget_progress') {
                               return <BudgetProgressCard data={budgetData} onStop={() => {
-                                setInput('Stop the task immediately. Pause all spending.')
-                                setTimeout(() => sendMessage(), 100)
+                                sendMessage('Stop the task immediately. Pause all spending.')
                               }} />
                             }
                             return null

@@ -169,7 +169,7 @@ export default function WalletPage() {
                     <span className="text-[var(--olu-text-secondary)]">{item.source}</span>
                     <span className="font-semibold">${item.amount.toFixed(2)} · {item.value}%</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[var(--olu-card-bg)] overflow-hidden">
+                  <div className="h-2 rounded-full bg-olu-border/40 overflow-hidden">
                     <div className={clsx('h-full rounded-full', item.color)} style={{ width: `${item.value}%` }} />
                   </div>
                 </div>

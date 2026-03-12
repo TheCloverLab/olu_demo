@@ -83,7 +83,7 @@ export default function LearningHub() {
               </div>
               <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">{computed.percent}%</span>
             </div>
-            <div className="rounded-full h-2 bg-[var(--olu-card-bg)] overflow-hidden">
+            <div className="rounded-full h-2 bg-olu-border/40 overflow-hidden">
               <div className="h-full bg-white rounded-full" style={{ width: `${computed.percent}%` }} />
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">

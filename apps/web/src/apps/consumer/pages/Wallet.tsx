@@ -198,11 +198,11 @@ export default function Wallet() {
               className="flex items-center gap-3 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3.5"
             >
               <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                txn.direction === 'in' ? 'bg-emerald-500/15' : 'bg-[var(--olu-card-bg)]'
+                txn.direction === 'in' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-gray-100 dark:bg-white/10'
               }`}>
                 {txn.direction === 'in'
-                  ? <ArrowDownLeft size={14} className="text-emerald-600 dark:text-emerald-400" />
-                  : <ArrowUpRight size={14} className="text-olu-muted" />
+                  ? <ArrowDownLeft size={14} className="text-emerald-700 dark:text-emerald-400" />
+                  : <ArrowUpRight size={14} className="text-gray-600 dark:text-gray-400" />
                 }
               </div>
               <div className="flex-1 min-w-0">
@@ -305,15 +305,15 @@ export default function Wallet() {
 
         <div className="space-y-2">
           <div className="flex items-center gap-3 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3.5">
-            <div className="w-8 h-8 rounded-full bg-[var(--olu-card-bg)] flex items-center justify-center text-xs font-bold">AP</div>
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-xs font-bold">AP</div>
             <div className="flex-1">
               <p className="text-sm font-medium">Apple Pay</p>
               <p className="text-xs text-olu-muted">Default</p>
             </div>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">Connected</span>
+            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Connected</span>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3.5">
-            <div className="w-8 h-8 rounded-full bg-[var(--olu-card-bg)] flex items-center justify-center text-xs font-bold">V</div>
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-400">V</div>
             <div className="flex-1">
               <p className="text-sm font-medium">Visa ····4829</p>
               <p className="text-xs text-olu-muted">Expires 09/27</p>

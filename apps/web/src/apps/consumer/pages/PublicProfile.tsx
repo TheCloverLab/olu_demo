@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, BookOpen, Pencil, Save, Users, X } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Pencil, Save, X } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import type { ConsumerAppCard } from '../../../domain/consumer/apps'
-import { getPublicProfileConsumerApps } from '../../../domain/consumer/apps'
 import { getProfileById } from '../../../domain/profile/api'
 import { supabase } from '../../../lib/supabase'
-import type { User } from '../../../lib/supabase'
+import type { User, Workspace } from '../../../lib/supabase'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value || 0)
@@ -97,13 +95,26 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
   )
 }
 
+const CARD_GRADIENTS = [
+  'from-cyan-600 to-blue-700',
+  'from-emerald-600 to-teal-700',
+  'from-sky-600 to-indigo-700',
+  'from-teal-600 to-cyan-700',
+]
+
+function pickGradient(seed: string) {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0
+  return CARD_GRADIENTS[Math.abs(hash) % CARD_GRADIENTS.length]
+}
+
 export default function PublicProfile() {
   const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const { user: authUser } = useAuth()
   const [creator, setCreator] = useState<User | null>(null)
-  const [publicApps, setPublicApps] = useState<ConsumerAppCard[]>([])
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const isOwn = !!(authUser && creator && authUser.id === creator.id)
@@ -112,33 +123,33 @@ export default function PublicProfile() {
     let cancelled = false
 
     async function loadProfile() {
-      if (!id) return
+      const profileId = id || authUser?.id
+      if (!profileId) return
 
       try {
-        const creatorData = await getProfileById(id)
+        const creatorData = await getProfileById(profileId)
         if (cancelled) return
         setCreator(creatorData)
 
-        // Load apps separately — workspace queries may fail due to RLS for non-owners
-        const apps = await getPublicProfileConsumerApps(id).catch(() => [])
+        // Load workspaces owned by this user
+        const { data: ws } = await supabase
+          .from('workspaces')
+          .select('*')
+          .eq('owner_user_id', profileId)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
         if (cancelled) return
-        setPublicApps(apps)
+        setWorkspaces(ws || [])
       } catch (error) {
         console.error('Failed to load public profile', error)
       } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+        if (!cancelled) setLoading(false)
       }
     }
 
     loadProfile()
-    return () => {
-      cancelled = true
-    }
-  }, [id])
-
-  const creatorApps = useMemo(() => publicApps, [publicApps])
+    return () => { cancelled = true }
+  }, [id, authUser?.id])
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 py-8 text-olu-muted">{t('consumer.loadingProfile')}</div>
@@ -191,10 +202,12 @@ export default function PublicProfile() {
               <span className="font-semibold">{formatNumber(creator.followers || 0)}</span>
               <span className="ml-2 text-olu-muted">{t('consumer.followers')}</span>
             </div>
-            <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
-              <span className="font-semibold">{formatNumber(creatorApps.length)}</span>
-              <span className="ml-2 text-olu-muted">{t('consumer.openApps')}</span>
-            </div>
+            {workspaces.length > 0 && (
+              <div className="rounded-full border border-olu-border bg-[var(--olu-card-bg)] px-3 py-2 text-sm">
+                <span className="font-semibold">{workspaces.length}</span>
+                <span className="ml-2 text-olu-muted">{workspaces.length === 1 ? 'App' : 'Apps'}</span>
+              </div>
+            )}
           </div>
         </section>
 
@@ -202,73 +215,41 @@ export default function PublicProfile() {
           <ProfileEditor user={creator} onClose={() => setEditing(false)} onSaved={() => setEditing(false)} />
         )}
 
-        {creatorApps.length > 0 ? (
-          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('nav.apps')}</p>
-                <p className="font-semibold text-base mt-1">{t('consumer.openWith', { name: creator.name })}</p>
-              </div>
-              <Users size={18} className="text-olu-muted" />
-            </div>
-
-            <div className="space-y-3">
-              {creatorApps.map((app) => (
+        {workspaces.length > 0 && (
+          <section className="mt-5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted px-1">
+              {t('nav.apps', 'Apps')}
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {workspaces.map((ws) => (
                 <button
-                  key={app.id}
-                  onClick={() => navigate(app.href)}
-                  className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
+                  key={ws.id}
+                  onClick={() => navigate(`/w/${ws.slug}`)}
+                  className="group relative w-full overflow-hidden rounded-2xl text-left transition-all hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-olu-muted">{app.app_type === 'community' ? t('consumer.community') : t('consumer.academy')}</p>
-                      <p className="font-semibold text-sm mt-1">{app.title}</p>
-                      <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
-                    </div>
-                    <span className="text-xs text-olu-muted">{app.price_label}</span>
+                  <div className="aspect-[16/9] relative">
+                    {ws.icon ? (
+                      <img src={ws.icon} alt={ws.name} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${pickGradient(ws.id)}`}>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-4xl font-black text-white/30">{ws.name[0]}</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-base font-bold text-white group-hover:text-cyan-100 transition-colors">{ws.name}</h3>
+                    {ws.headline && (
+                      <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{ws.headline}</p>
+                    )}
                   </div>
                 </button>
               ))}
             </div>
-          </section>
-        ) : (
-          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('userCenter.profile')}</p>
-            <p className="font-semibold text-base mt-1">{t('consumer.noPublicApps')}</p>
-            <p className="text-sm text-olu-muted mt-2">
-              {t('consumer.noPublicAppsDesc', { name: creator.name })}
-            </p>
           </section>
         )}
-
-        {creatorApps.some((app) => app.app_type === 'academy') ? (
-          <section className="rounded-[24px] border border-olu-border bg-olu-surface p-5 mt-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-olu-muted">{t('consumer.academy')}</p>
-                <p className="font-semibold text-base mt-1">{t('consumer.coursesBy', { name: creator.name })}</p>
-              </div>
-              <BookOpen size={18} className="text-olu-muted" />
-            </div>
-            <div className="space-y-3">
-              {creatorApps.filter((app) => app.app_type === 'academy').map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => navigate(app.href)}
-                  className="w-full rounded-2xl border border-olu-border bg-white/[0.03] p-4 text-left hover:bg-white/[0.05] transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-sm">{app.title}</p>
-                      <p className="text-xs text-olu-muted mt-1">{app.summary}</p>
-                    </div>
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-600 dark:text-emerald-300">{app.price_label}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : null}
       </div>
     </div>
   )

@@ -232,17 +232,17 @@ export default function Home() {
       <div className="pb-24 md:pb-6">
         <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
           <div className="rounded-[28px] border border-olu-border bg-olu-surface p-5 animate-pulse">
-            <div className="h-4 w-24 bg-[var(--olu-card-bg)] rounded-full mb-4" />
-            <div className="h-7 w-64 bg-[var(--olu-card-bg)] rounded-full mb-3" />
-            <div className="h-4 w-48 bg-[var(--olu-card-bg)] rounded-full" />
+            <div className="h-4 w-24 bg-olu-border/40 rounded-full mb-4" />
+            <div className="h-7 w-64 bg-olu-border/40 rounded-full mb-3" />
+            <div className="h-4 w-48 bg-olu-border/40 rounded-full" />
           </div>
           <div className="grid lg:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
               <div key={i} className="rounded-[24px] border border-olu-border bg-olu-surface overflow-hidden animate-pulse">
-                <div className="h-36 bg-[var(--olu-card-bg)]" />
+                <div className="h-36 bg-olu-border/40" />
                 <div className="p-5 space-y-3">
-                  <div className="h-4 w-3/4 bg-[var(--olu-card-bg)] rounded-full" />
-                  <div className="h-3 w-1/2 bg-[var(--olu-card-bg)] rounded-full" />
+                  <div className="h-4 w-3/4 bg-olu-border/40 rounded-full" />
+                  <div className="h-3 w-1/2 bg-olu-border/40 rounded-full" />
                 </div>
               </div>
             ))}

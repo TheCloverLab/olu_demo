@@ -234,7 +234,7 @@ export default function Discover() {
           <div className="grid md:grid-cols-2 gap-4">
             {[0, 1].map((i) => (
               <div key={i} className="rounded-[24px] bg-olu-surface overflow-hidden animate-pulse min-h-[260px] flex flex-col justify-end">
-                <div className="h-full bg-[var(--olu-card-bg)]" />
+                <div className="h-full bg-olu-border/40" />
                 <div className="p-4 space-y-3">
                   <div className="h-3 w-20 bg-olu-border rounded-full" />
                   <div className="h-5 w-3/4 bg-olu-border rounded-full" />

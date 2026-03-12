@@ -18,24 +18,27 @@ import {
 } from '../../../domain/product/api'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 
-function PlanBadge({ plan, onDelete }: { plan: ProductWithPlans['plans'][number]; onDelete: () => void }) {
-  const label = plan.billing_type === 'recurring'
-    ? `$${plan.price}/${plan.interval}`
-    : `$${plan.price} one-time`
+function PlanRow({ plan, onDelete }: { plan: ProductWithPlans['plans'][number]; onDelete: () => void }) {
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group/plan">
-      {label}
+    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+      <span className="text-xs px-2 py-0.5 rounded-lg bg-[var(--olu-section-bg)] text-[var(--olu-text-secondary)] font-medium">
+        {plan.billing_type === 'recurring' ? 'Recurring' : 'One-time'}
+      </span>
+      <span className="text-xs font-semibold">${plan.price}</span>
+      {plan.billing_type === 'recurring' && plan.interval && (
+        <span className="text-xs text-[var(--olu-muted)]">/ {plan.interval}</span>
+      )}
       <button
         onClick={onDelete}
-        className="opacity-0 group-hover/plan:opacity-100 hover:text-red-400 transition-opacity"
+        className="ml-auto text-xs px-2 py-0.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors font-medium"
       >
-        <X size={10} />
+        Remove
       </button>
-    </span>
+    </div>
   )
 }
 
-function AddPlanForm({ productId, onCreated }: { productId: string; onCreated: () => void }) {
+function AddPlanRow({ productId, onCreated }: { productId: string; onCreated: () => void }) {
   const [billingType, setBillingType] = useState<'one_time' | 'recurring'>('recurring')
   const [price, setPrice] = useState('')
   const [interval, setInterval] = useState<'month' | 'year' | 'week'>('month')
@@ -47,6 +50,7 @@ function AddPlanForm({ productId, onCreated }: { productId: string; onCreated: (
     setSaving(true)
     try {
       await createPlan(productId, billingType, p, billingType === 'recurring' ? interval : null)
+      setPrice('')
       onCreated()
     } catch (err) {
       console.error('Failed to create plan', err)
@@ -56,41 +60,35 @@ function AddPlanForm({ productId, onCreated }: { productId: string; onCreated: (
   }
 
   return (
-    <div className="flex items-end gap-2 flex-wrap">
-      <div>
-        <label className="text-[10px] text-[var(--olu-muted)] block mb-0.5">Type</label>
-        <select
-          value={billingType}
-          onChange={(e) => setBillingType(e.target.value as any)}
-          className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
-        >
-          <option value="recurring">Recurring</option>
-          <option value="one_time">One-time</option>
-        </select>
-      </div>
-      <div>
-        <label className="text-[10px] text-[var(--olu-muted)] block mb-0.5">Price (USD)</label>
+    <div className="flex items-center gap-2 flex-wrap">
+      <select
+        value={billingType}
+        onChange={(e) => setBillingType(e.target.value as any)}
+        className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
+      >
+        <option value="recurring">Recurring</option>
+        <option value="one_time">One-time</option>
+      </select>
+      <div className="flex items-center gap-1">
+        <span className="text-xs text-[var(--olu-muted)]">$</span>
         <input
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           placeholder="9.99"
-          className="w-20 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
+          className="w-16 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
         />
       </div>
       {billingType === 'recurring' && (
-        <div>
-          <label className="text-[10px] text-[var(--olu-muted)] block mb-0.5">Interval</label>
-          <select
-            value={interval}
-            onChange={(e) => setInterval(e.target.value as any)}
-            className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
-          >
-            <option value="week">Weekly</option>
-            <option value="month">Monthly</option>
-            <option value="year">Yearly</option>
-          </select>
-        </div>
+        <select
+          value={interval}
+          onChange={(e) => setInterval(e.target.value as any)}
+          className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1.5 text-xs"
+        >
+          <option value="week">/ week</option>
+          <option value="month">/ month</option>
+          <option value="year">/ year</option>
+        </select>
       )}
       <button
         onClick={handleAdd}
@@ -116,7 +114,6 @@ function ProductCard({
   const [expanded, setExpanded] = useState(true)
   const [linking, setLinking] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
-  const [showAddExp, setShowAddExp] = useState(false)
 
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))
   const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id))
@@ -209,41 +206,18 @@ function ProductCard({
         {product.access_type === 'paid' && (
           <div className="space-y-2">
             <label className="text-xs font-medium text-[var(--olu-text-secondary)]">Pricing Plans</label>
-            <div className="flex flex-wrap gap-1.5">
-              {product.plans.map((plan) => (
-                <PlanBadge key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
-              ))}
-              {product.plans.length === 0 && (
-                <span className="text-xs text-[var(--olu-muted)] italic">No plans yet</span>
-              )}
-            </div>
-            {expanded && (
-              <div className="pt-2">
-                <AddPlanForm productId={product.id} onCreated={onUpdated} />
-              </div>
-            )}
+            {product.plans.map((plan) => (
+              <PlanRow key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
+            ))}
+            <AddPlanRow productId={product.id} onCreated={onUpdated} />
           </div>
         )}
 
         {/* Experiences section */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-[var(--olu-text-secondary)]">
-              Experiences ({linkedExps.length})
-            </label>
-            {unlinkedExps.length > 0 && (
-              <button
-                onClick={() => setShowAddExp(!showAddExp)}
-                className="text-xs px-2.5 py-1 rounded-lg bg-cyan-300/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-300/20 transition-colors flex items-center gap-1 font-medium"
-              >
-                <Plus size={12} />
-                Add
-              </button>
-            )}
-          </div>
-          {linkedExps.length === 0 && !showAddExp && (
-            <p className="text-xs text-[var(--olu-muted)] italic">No experiences linked</p>
-          )}
+          <label className="text-xs font-medium text-[var(--olu-text-secondary)]">
+            Experiences ({linkedExps.length})
+          </label>
           {linkedExps.map((exp) => (
             <div
               key={exp.id}
@@ -258,20 +232,24 @@ function ProductCard({
               </button>
             </div>
           ))}
-          {showAddExp && unlinkedExps.length > 0 && (
-            <div className="rounded-xl border border-dashed border-cyan-300/40 bg-cyan-300/5 p-2 space-y-1">
-              {unlinkedExps.map((exp) => (
-                <button
-                  key={exp.id}
-                  onClick={() => { handleLink(exp.id); setShowAddExp(false) }}
-                  disabled={linking}
-                  className="w-full text-left text-xs px-3 py-2 rounded-lg hover:bg-cyan-300/10 transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Plus size={12} className="text-cyan-500" />
-                  {exp.name}
-                </button>
-              ))}
+          {unlinkedExps.length > 0 && (
+            <div className="relative">
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value) handleLink(e.target.value) }}
+                disabled={linking}
+                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-xs appearance-none cursor-pointer hover:border-cyan-300/40 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+              >
+                <option value="">+ Add experience...</option>
+                {unlinkedExps.map((exp) => (
+                  <option key={exp.id} value={exp.id}>{exp.name}</option>
+                ))}
+              </select>
+              <Plus size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--olu-muted)] pointer-events-none" />
             </div>
+          )}
+          {linkedExps.length === 0 && unlinkedExps.length === 0 && (
+            <p className="text-xs text-[var(--olu-muted)] italic">No experiences available</p>
           )}
         </div>
       </div>

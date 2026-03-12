@@ -2,11 +2,12 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Sun, Moon, Monitor, Globe } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Sun, Moon, Monitor, Globe, Hash } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
-import { getUserWallet } from '../../../domain/workspace/api'
+import { getUserWallet, getJoinedWorkspaces } from '../../../domain/workspace/api'
+import type { Workspace, WorkspaceJoin } from '../../../lib/supabase'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
 import { CONSUMER_NAV, getTemplateKeyForAppType } from '../templateConfig'
@@ -83,7 +84,7 @@ function LanguageToggle() {
   )
 }
 
-function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolean; onClose: () => void; showBusiness?: boolean; walletBalance: number | null }) {
+function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces }: { open: boolean; onClose: () => void; showBusiness?: boolean; walletBalance: number | null; joinedWorkspaces: (WorkspaceJoin & { workspace: Workspace })[] }) {
   const { currentUser } = useApp()
   const { user: authUser } = useAuth()
   const { t } = useTranslation()
@@ -138,6 +139,29 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance }: { open: boolea
                 <MenuItem icon={Briefcase} label={t('nav.businessOS')} onClick={() => { onClose(); window.open('/business', '_blank') }} />
               )}
               <MenuItem icon={Settings} label={t('common.settings')} onClick={() => go('/settings')} />
+
+              {joinedWorkspaces.length > 0 && (
+                <div className="pt-3 mt-2 border-t border-olu-border">
+                  <p className="px-4 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.workspaces', 'Workspaces')}</p>
+                  {joinedWorkspaces.map((jw) => (
+                    <button
+                      key={jw.workspace_id}
+                      onClick={() => go(`/w/${jw.workspace.slug}`)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-olu-card transition-colors text-left rounded-xl"
+                    >
+                      {jw.workspace.icon ? (
+                        <img src={jw.workspace.icon} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[9px] font-bold text-white">{jw.workspace.name[0]}</span>
+                        </div>
+                      )}
+                      <span className="text-sm font-medium truncate">{jw.workspace.name}</span>
+                      <ChevronRight size={14} className="text-olu-muted ml-auto" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="p-3 border-t border-olu-border flex items-center justify-center gap-2">
@@ -157,6 +181,7 @@ export default function AppLayout() {
   const { t } = useTranslation()
   const [moreOpen, setMoreOpen] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const [joinedWorkspaces, setJoinedWorkspaces] = useState<(WorkspaceJoin & { workspace: Workspace })[]>([])
   const navigate = useNavigate()
   const navItems = CONSUMER_NAV[getTemplateKeyForAppType(appType)]
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
@@ -166,6 +191,7 @@ export default function AppLayout() {
       getUserWallet(authUser.id).then((w) => {
         if (w) setWalletBalance(Number(w.usdc_balance))
       }).catch(() => {})
+      getJoinedWorkspaces(authUser.id).then(setJoinedWorkspaces).catch(() => {})
     }
   }, [authUser?.id])
 
@@ -224,6 +250,31 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
+          {/* Joined Workspaces */}
+          {joinedWorkspaces.length > 0 && (
+            <div className="pt-3 mt-2 border-t border-olu-border">
+              <p className="px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.workspaces', 'Workspaces')}</p>
+              {joinedWorkspaces.map((jw) => (
+                <NavLink
+                  key={jw.workspace_id}
+                  to={`/w/${jw.workspace.slug}`}
+                  className={({ isActive }) => clsx(
+                    'flex items-center gap-3 px-3 py-2 rounded-2xl transition-colors text-sm font-medium cursor-pointer',
+                    isActive ? 'bg-olu-card text-olu-text' : 'text-olu-muted hover:text-olu-text hover:bg-olu-card'
+                  )}
+                >
+                  {jw.workspace.icon ? (
+                    <img src={jw.workspace.icon} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[9px] font-bold text-white">{jw.workspace.name[0]}</span>
+                    </div>
+                  )}
+                  <span className="truncate">{jw.workspace.name}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
         </nav>
 
         <div className="p-3 border-t border-olu-border space-y-2">
@@ -297,7 +348,7 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} walletBalance={walletBalance} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} showBusiness={enabledBusinessModules.length > 0} walletBalance={walletBalance} joinedWorkspaces={joinedWorkspaces} />
     </div>
   )
 }

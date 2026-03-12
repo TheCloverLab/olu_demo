@@ -142,7 +142,7 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces
 
               {joinedWorkspaces.length > 0 && (
                 <div className="pt-3 mt-2 border-t border-olu-border">
-                  <p className="px-4 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.workspaces', 'Workspaces')}</p>
+                  <p className="px-4 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.apps', 'Apps')}</p>
                   {joinedWorkspaces.map((jw) => (
                     <button
                       key={jw.workspace_id}
@@ -250,10 +250,10 @@ export default function AppLayout() {
             </NavLink>
           ))}
 
-          {/* Joined Workspaces */}
+          {/* Joined Apps */}
           {joinedWorkspaces.length > 0 && (
             <div className="pt-3 mt-2 border-t border-olu-border">
-              <p className="px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.workspaces', 'Workspaces')}</p>
+              <p className="px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-olu-muted">{t('nav.apps', 'Apps')}</p>
               {joinedWorkspaces.map((jw) => (
                 <NavLink
                   key={jw.workspace_id}

@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, ArrowLeft, Send, Users, Image as ImageIcon } from 'lucide-react'
+import { Loader2, ArrowLeft, Send, Users } from 'lucide-react'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
 import type { WorkspaceExperience } from '../../../lib/supabase'
-import { getExperience } from '../../../domain/experience/api'
+import {
+  getExperience,
+  getExperienceChatMessages,
+  sendExperienceChatMessage,
+  subscribeExperienceChat,
+  type ExperienceChatMessage,
+} from '../../../domain/experience/api'
 
 type ChatMessage = {
   id: string
@@ -34,6 +40,34 @@ const DEMO_MESSAGES: ChatMessage[] = [
   { id: 'm-9', authorId: 'u5', authorName: 'Sofia Martinez', authorAvatar: '/images/fans/DanaReyes.png', authorColor: 'from-rose-500 to-pink-600', authorInitials: 'SM', text: '3 PM EST on Saturday. She posted it in the announcements!', time: '10:39 AM', isCurrentUser: false },
 ]
 
+const COLORS = [
+  'from-pink-500 to-rose-600',
+  'from-violet-500 to-purple-600',
+  'from-blue-500 to-blue-700',
+  'from-emerald-500 to-green-600',
+  'from-amber-500 to-orange-600',
+  'from-rose-500 to-pink-600',
+]
+
+function getInitials(name: string): string {
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+}
+
+function toViewMessage(msg: ExperienceChatMessage, currentUserId: string): ChatMessage {
+  const hash = msg.user_id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return {
+    id: msg.id,
+    authorId: msg.user_id,
+    authorName: msg.author_name,
+    authorAvatar: msg.author_avatar,
+    authorColor: msg.author_color || COLORS[hash % COLORS.length],
+    authorInitials: getInitials(msg.author_name),
+    text: msg.text,
+    time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    isCurrentUser: msg.user_id === currentUserId,
+  }
+}
+
 function MessageBubble({ msg, showAvatar }: { msg: ChatMessage; showAvatar: boolean }) {
   return (
     <motion.div
@@ -41,7 +75,6 @@ function MessageBubble({ msg, showAvatar }: { msg: ChatMessage; showAvatar: bool
       animate={{ opacity: 1, y: 0 }}
       className={clsx('flex gap-2.5', msg.isCurrentUser ? 'flex-row-reverse' : '')}
     >
-      {/* Avatar */}
       {!msg.isCurrentUser && (
         showAvatar ? (
           msg.authorAvatar ? (
@@ -82,7 +115,9 @@ export default function GroupChatView() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
+  const [memberCount, setMemberCount] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const seenIds = useRef(new Set<string>())
 
   useEffect(() => {
     async function load() {
@@ -90,8 +125,24 @@ export default function GroupChatView() {
       try {
         const exp = await getExperience(experienceId)
         setExperience(exp)
-        // TODO: load real group chat messages
-        if (IS_DEMO) setMessages(DEMO_MESSAGES)
+
+        if (IS_DEMO) {
+          setMessages(DEMO_MESSAGES)
+          setMemberCount(24)
+          return
+        }
+
+        const userId = user?.id
+        if (!userId) return
+
+        const msgs = await getExperienceChatMessages(experienceId)
+        const viewMsgs = msgs.map((m) => toViewMessage(m, userId))
+        viewMsgs.forEach((m) => seenIds.current.add(m.id))
+        setMessages(viewMsgs)
+
+        // Count unique authors
+        const uniqueAuthors = new Set(msgs.map((m) => m.user_id))
+        setMemberCount(uniqueAuthors.size)
       } catch (err) {
         console.error(err)
       } finally {
@@ -99,28 +150,58 @@ export default function GroupChatView() {
       }
     }
     load()
-  }, [experienceId])
+  }, [experienceId, user?.id])
+
+  // Subscribe to Realtime
+  useEffect(() => {
+    if (!experienceId || IS_DEMO || !user?.id) return
+    const unsub = subscribeExperienceChat(experienceId, (msg) => {
+      if (seenIds.current.has(msg.id)) return
+      seenIds.current.add(msg.id)
+      setMessages((prev) => [...prev, toViewMessage(msg, user.id)])
+    })
+    return unsub
+  }, [experienceId, user?.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  function sendMessage() {
-    if (!input.trim()) return
-    const msg: ChatMessage = {
-      id: `m-${Date.now()}`,
-      authorId: user?.id || 'demo-consumer',
-      authorName: 'You',
+  async function sendMessage() {
+    if (!input.trim() || !user?.id || !experienceId) return
+    const text = input.trim()
+    setInput('')
+
+    const optimistic: ChatMessage = {
+      id: `opt-${Date.now()}`,
+      authorId: user.id,
+      authorName: user.name || 'You',
       authorAvatar: null,
       authorColor: 'from-cyan-500 to-blue-600',
-      authorInitials: 'ME',
-      text: input.trim(),
+      authorInitials: getInitials(user.name || 'You'),
+      text,
       time: 'Just now',
       isCurrentUser: true,
     }
-    setMessages((prev) => [...prev, msg])
-    setInput('')
-    // TODO: post message to DB
+    setMessages((prev) => [...prev, optimistic])
+
+    if (!IS_DEMO) {
+      try {
+        const saved = await sendExperienceChatMessage(
+          experienceId,
+          user.id,
+          user.name || 'Anonymous',
+          text,
+        )
+        // Replace optimistic with real message
+        seenIds.current.add(saved.id)
+        setMessages((prev) =>
+          prev.map((m) => m.id === optimistic.id ? toViewMessage(saved, user.id) : m)
+        )
+      } catch (err) {
+        console.error('Failed to send message', err)
+      }
+    }
   }
 
   if (loading) {
@@ -130,8 +211,6 @@ export default function GroupChatView() {
       </div>
     )
   }
-
-  const memberCount = IS_DEMO ? 24 : 0
 
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
@@ -157,6 +236,12 @@ export default function GroupChatView() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 scrollbar-hide">
+        {messages.length === 0 && (
+          <div className="text-center py-12 space-y-2">
+            <Users size={32} className="mx-auto text-[var(--olu-muted)]" />
+            <p className="text-sm text-[var(--olu-muted)]">{t('consumer.chatEmpty', 'Be the first to say something!')}</p>
+          </div>
+        )}
         {messages.map((msg, i) => {
           const prevMsg = messages[i - 1]
           const showAvatar = !prevMsg || prevMsg.authorId !== msg.authorId

@@ -422,6 +422,27 @@ export async function getAiSupportEnabled(workspaceId: string): Promise<boolean>
   return data?.ai_support_enabled ?? false
 }
 
+export async function setAiSupportModel(workspaceId: string, model: string | null) {
+  const { error } = await supabase
+    .from('workspace_home_configs')
+    .upsert({
+      workspace_id: workspaceId,
+      ai_support_model: model,
+      updated_at: new Date().toISOString(),
+    })
+  if (error) throw error
+}
+
+export async function getAiSupportModel(workspaceId: string): Promise<string | null> {
+  if (IS_DEMO) return null
+  const { data } = await supabase
+    .from('workspace_home_configs')
+    .select('ai_support_model')
+    .eq('workspace_id', workspaceId)
+    .single()
+  return data?.ai_support_model ?? null
+}
+
 // ── Product with Plans (convenience) ────────────────────────────
 
 export type ProductWithPlans = WorkspaceProduct & {

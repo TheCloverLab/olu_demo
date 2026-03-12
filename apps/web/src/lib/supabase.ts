@@ -460,6 +460,7 @@ export type WorkspaceAgent = {
   runtime_type?: AgentRuntimeType | null
   enabled_skills?: string[] | null
   enabled_mcp_servers?: string[] | null
+  model?: string | null
   last_message?: string | null
   last_time?: string | null
   hired_at?: string

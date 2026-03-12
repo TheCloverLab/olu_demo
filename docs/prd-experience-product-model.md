@@ -359,11 +359,43 @@ getCourseLibrarySnapshot → replaced by listExperiences(type='course')
 
 ---
 
-## Open Questions
+## Decisions
 
-1. **Multiple workspaces per user** — Allow from day 1 or defer?
-2. **Discovery/Marketplace** — How do consumers find new workspaces to join? Discover page? Invite links?
-3. **Support Chat** — Is this really 1-on-1, or can multiple staff members respond?
-4. **Drip feeding** — Implement for v1 or defer?
-5. **Payment integration** — Real Stripe integration or mock for demo?
-6. **Existing data** — What to do with existing demo accounts' data during migration?
+1. **Multiple workspaces per user** — Yes, supported from day 1.
+2. **Discovery/Marketplace** — Discover page for consumers to find workspaces.
+3. **Support Chat** — Multi-person: multiple staff members (or AI agents) can respond to the same user.
+4. **Drip feeding** — Deferred, not in v1.
+5. **Payment integration** — Stripe integration.
+6. **Existing data** — Delete all, recreate seed demo data from scratch.
+
+## Business Dashboard Sidebar
+
+Grouped layout:
+
+```
+── Dashboard ──
+  Analytics (sub-tabs: Users, Payments/Invoices, Balances)
+
+── Experiences ──
+  Experiences (manage forum/course/chat instances + home editor)
+  Products (products, plans, checkout links)
+  Support chats
+
+── Operations ──
+  Team (agents + humans + AI marketplace tab)
+  Tasks
+  Approvals
+
+── Modules ──
+  Creator Operations
+  Marketing
+  Supply Chain
+  Connectors
+```
+
+## Non-functional Requirements
+
+- **Dark / Light** theme support (CSS variables `--olu-*`)
+- **i18n** — All text via `useTranslation()` (EN/ZH)
+- **Mobile responsive** — Consumer home page must work on mobile (tabs scrollable, single-column layout)
+- **Checkout links** — Single route `/checkout/:product-slug`

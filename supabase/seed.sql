@@ -59,37 +59,37 @@ RESTART IDENTITY CASCADE;
 -- ── Users ──────────────────────────────────────────────────────────
 
 -- Consumers (10)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'alexpark', '@alexpark', 'alex.demo@olu.app', 'Alex Park', '', 'from-pink-500 to-rose-600', 'AP', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000002', 'jordanlee', '@jordanlee', 'jordan.demo@olu.app', 'Jordan Lee', '', 'from-blue-500 to-blue-700', 'JL', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000003', 'miazhang', '@miazhang', 'mia.demo@olu.app', 'Mia Zhang', '', 'from-violet-500 to-purple-600', 'MZ', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000004', 'ryankim', '@ryankim', 'ryan.demo@olu.app', 'Ryan Kim', '', 'from-amber-500 to-orange-600', 'RK', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000005', 'sofiamartinez', '@sofiamartinez', 'sofia.demo@olu.app', 'Sofia Martinez', '', 'from-rose-500 to-pink-600', 'SM', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000006', 'davidchen', '@davidchen', 'david.demo@olu.app', 'David Chen', '', 'from-emerald-500 to-green-600', 'DC', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000007', 'emmawilson', '@emmawilson', 'emma.demo@olu.app', 'Emma Wilson', '', 'from-sky-500 to-blue-600', 'EW', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000008', 'lucasbrown', '@lucasbrown', 'lucas.demo@olu.app', 'Lucas Brown', '', 'from-orange-500 to-red-600', 'LB', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000009', 'ninapatel', '@ninapatel', 'nina.demo@olu.app', 'Nina Patel', '', 'from-yellow-500 to-amber-600', 'NP', 0, 0, 0, false),
-  ('00000000-0000-0000-0000-000000000010', 'tylerwang', '@tylerwang', 'tyler.demo@olu.app', 'Tyler Wang', '', 'from-teal-500 to-cyan-600', 'TW', 0, 0, 0, false);
+  ('00000000-0000-0000-0000-000000000001', 'alexpark', '@alexpark', 'alex.demo@olu.app', 'fan', 'Alex Park', '', 'from-pink-500 to-rose-600', 'AP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000002', 'jordanlee', '@jordanlee', 'jordan.demo@olu.app', 'fan', 'Jordan Lee', '', 'from-blue-500 to-blue-700', 'JL', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000003', 'miazhang', '@miazhang', 'mia.demo@olu.app', 'fan', 'Mia Zhang', '', 'from-violet-500 to-purple-600', 'MZ', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000004', 'ryankim', '@ryankim', 'ryan.demo@olu.app', 'fan', 'Ryan Kim', '', 'from-amber-500 to-orange-600', 'RK', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000005', 'sofiamartinez', '@sofiamartinez', 'sofia.demo@olu.app', 'fan', 'Sofia Martinez', '', 'from-rose-500 to-pink-600', 'SM', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000006', 'davidchen', '@davidchen', 'david.demo@olu.app', 'fan', 'David Chen', '', 'from-emerald-500 to-green-600', 'DC', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000007', 'emmawilson', '@emmawilson', 'emma.demo@olu.app', 'fan', 'Emma Wilson', '', 'from-sky-500 to-blue-600', 'EW', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000008', 'lucasbrown', '@lucasbrown', 'lucas.demo@olu.app', 'fan', 'Lucas Brown', '', 'from-orange-500 to-red-600', 'LB', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000009', 'ninapatel', '@ninapatel', 'nina.demo@olu.app', 'fan', 'Nina Patel', '', 'from-yellow-500 to-amber-600', 'NP', 0, 0, 0, false),
+  ('00000000-0000-0000-0000-000000000010', 'tylerwang', '@tylerwang', 'tyler.demo@olu.app', 'fan', 'Tyler Wang', '', 'from-teal-500 to-cyan-600', 'TW', 0, 0, 0, false);
 
 -- Creator Ops (3)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000011', 'lunachen', '@lunachen', 'luna.demo@olu.app', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true),
-  ('00000000-0000-0000-0000-000000000012', 'kaivibe', '@kaivibe', 'kai.demo@olu.app', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true),
-  ('00000000-0000-0000-0000-000000000013', 'zaranova', '@zaranova', 'zara.demo@olu.app', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true);
+  ('00000000-0000-0000-0000-000000000011', 'lunachen', '@lunachen', 'luna.demo@olu.app', 'creator', 'Luna Chen', 'Digital artist & gamer | Creating worlds one pixel at a time', '/images/avatars/luna.jpg', 'from-zinc-600 to-zinc-500', 'LC', 234000, 312, 847, true),
+  ('00000000-0000-0000-0000-000000000012', 'kaivibe', '@kaivibe', 'kai.demo@olu.app', 'creator', 'Kai Vibe', 'Lo-fi producer and creator', '/images/avatars/kai.jpg', 'from-amber-500 to-orange-600', 'KV', 167000, 201, 512, true),
+  ('00000000-0000-0000-0000-000000000013', 'zaranova', '@zaranova', 'zara.demo@olu.app', 'creator', 'Zara Nova', 'Fashion and lifestyle creator', '/images/avatars/zara.jpg', 'from-purple-400 to-pink-600', 'ZN', 201000, 411, 601, true);
 
 -- Marketing (2)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000014', 'gameverse', '@gameverse', 'gameverse.demo@olu.app', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true),
-  ('00000000-0000-0000-0000-000000000015', 'techmarkus', '@techmarkus', 'marcus.demo@olu.app', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true);
+  ('00000000-0000-0000-0000-000000000014', 'gameverse', '@gameverse', 'gameverse.demo@olu.app', 'advertiser', 'GameVerse Studios', 'Leading indie game studio', '/images/avatars/gameverse.jpg', 'from-blue-500 to-cyan-600', 'GV', 89000, 234, 156, true),
+  ('00000000-0000-0000-0000-000000000015', 'techmarkus', '@techmarkus', 'marcus.demo@olu.app', 'advertiser', 'Marcus Chen', 'Tech and gaming reviews', '/images/avatars/marcus.jpg', 'from-blue-400 to-blue-600', 'MC', 412000, 290, 903, true);
 
 -- Supply Chain (2)
-INSERT INTO users (id, username, handle, email, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
+INSERT INTO users (id, username, handle, email, role, name, bio, avatar_img, avatar_color, initials, followers, following, posts, verified)
 VALUES
-  ('00000000-0000-0000-0000-000000000016', 'artisancraft', '@artisancraft', 'artisan.demo@olu.app', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true),
-  ('00000000-0000-0000-0000-000000000017', 'yukidraws', '@yukidraws', 'yuki.demo@olu.app', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false);
+  ('00000000-0000-0000-0000-000000000016', 'artisancraft', '@artisancraft', 'artisan.demo@olu.app', 'supplier', 'ArtisanCraft Co.', 'Premium creator merch manufacturing', '/images/avatars/artisancraft.jpg', 'from-emerald-500 to-teal-600', 'AC', 12000, 567, 89, true),
+  ('00000000-0000-0000-0000-000000000017', 'yukidraws', '@yukidraws', 'yuki.demo@olu.app', 'supplier', 'Yuki Draws', 'Character illustrator', '/images/avatars/yuki.jpg', 'from-pink-400 to-rose-600', 'YD', 89000, 140, 377, false);
 
 -- ── Workspaces (only for business users) ──────────────────────────
 

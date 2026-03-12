@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE workspace_consumer_configs (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID NOT NULL UNIQUE REFERENCES workspaces(id) ON DELETE CASCADE,
   template_key TEXT NOT NULL CHECK (template_key IN ('fan_community', 'sell_courses')),
   config_json JSONB NOT NULL DEFAULT '{}'::jsonb,

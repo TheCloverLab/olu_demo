@@ -1,11 +1,10 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- gen_random_uuid() is built-in to Postgres 13+, no extension needed
 
 -- ============================================================================
 -- USERS TABLE
 -- ============================================================================
 CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE NOT NULL,
   handle TEXT UNIQUE NOT NULL,
@@ -32,7 +31,7 @@ ALTER TABLE users ADD COLUMN social_links JSONB DEFAULT '{}'::jsonb;
 -- POSTS TABLE
 -- ============================================================================
 CREATE TABLE posts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('image', 'video', 'music', 'text')),
   title TEXT NOT NULL,
@@ -58,7 +57,7 @@ CREATE TABLE posts (
 -- PRODUCTS TABLE (Shop items)
 -- ============================================================================
 CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
@@ -76,7 +75,7 @@ CREATE TABLE products (
 -- AI AGENTS TABLE
 -- ============================================================================
 CREATE TABLE ai_agents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   agent_key TEXT NOT NULL, -- lisa, michael, aria, etc.
   name TEXT NOT NULL,
@@ -97,7 +96,7 @@ CREATE TABLE ai_agents (
 -- AGENT TASKS TABLE
 -- ============================================================================
 CREATE TABLE agent_tasks (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   agent_id UUID REFERENCES ai_agents(id) ON DELETE CASCADE,
   task_key TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -113,7 +112,7 @@ CREATE TABLE agent_tasks (
 -- CONVERSATIONS TABLE (Agent chats)
 -- ============================================================================
 CREATE TABLE conversations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   agent_id UUID REFERENCES ai_agents(id) ON DELETE CASCADE,
   from_type TEXT NOT NULL CHECK (from_type IN ('agent', 'user')),
   text TEXT NOT NULL,
@@ -125,7 +124,7 @@ CREATE TABLE conversations (
 -- GROUP CHATS TABLE
 -- ============================================================================
 CREATE TABLE group_chats (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   chat_key TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -141,7 +140,7 @@ CREATE TABLE group_chats (
 -- GROUP CHAT MESSAGES TABLE
 -- ============================================================================
 CREATE TABLE group_chat_messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_chat_id UUID REFERENCES group_chats(id) ON DELETE CASCADE,
   from_name TEXT NOT NULL,
   avatar TEXT,
@@ -154,7 +153,7 @@ CREATE TABLE group_chat_messages (
 -- SOCIAL CHATS TABLE (User-to-user)
 -- ============================================================================
 CREATE TABLE social_chats (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   with_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   last_message TEXT,
@@ -168,7 +167,7 @@ CREATE TABLE social_chats (
 -- SOCIAL CHAT MESSAGES TABLE
 -- ============================================================================
 CREATE TABLE social_chat_messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   social_chat_id UUID REFERENCES social_chats(id) ON DELETE CASCADE,
   from_type TEXT NOT NULL CHECK (from_type IN ('user', 'other')),
   text TEXT NOT NULL,
@@ -180,7 +179,7 @@ CREATE TABLE social_chat_messages (
 -- MEMBERSHIP TIERS TABLE
 -- ============================================================================
 CREATE TABLE membership_tiers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   tier_key TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -197,7 +196,7 @@ CREATE TABLE membership_tiers (
 -- FANS/CUSTOMERS TABLE
 -- ============================================================================
 CREATE TABLE fans (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- if they're also a platform user
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -218,7 +217,7 @@ CREATE TABLE fans (
 -- IP LICENSES TABLE
 -- ============================================================================
 CREATE TABLE ip_licenses (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   requester TEXT NOT NULL,
   type TEXT NOT NULL,
@@ -235,7 +234,7 @@ CREATE TABLE ip_licenses (
 -- IP INFRINGEMENTS TABLE
 -- ============================================================================
 CREATE TABLE ip_infringements (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   platform TEXT NOT NULL,
   offender TEXT NOT NULL,
@@ -252,7 +251,7 @@ CREATE TABLE ip_infringements (
 -- ANALYTICS DATA TABLE (Revenue & Views)
 -- ============================================================================
 CREATE TABLE analytics_revenue (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   month TEXT NOT NULL,
   subscriptions DECIMAL(10,2) DEFAULT 0,
@@ -263,7 +262,7 @@ CREATE TABLE analytics_revenue (
 );
 
 CREATE TABLE analytics_views (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   month TEXT NOT NULL,
   tiktok INTEGER DEFAULT 0,
@@ -276,7 +275,7 @@ CREATE TABLE analytics_views (
 -- CAMPAIGNS TABLE (Advertiser)
 -- ============================================================================
 CREATE TABLE campaigns (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   advertiser_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'paused', 'completed')),
@@ -297,7 +296,7 @@ CREATE TABLE campaigns (
 -- CAMPAIGN CREATORS TABLE (Many-to-many)
 -- ============================================================================
 CREATE TABLE campaign_creators (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   status TEXT DEFAULT 'outreach' CHECK (status IN ('outreach', 'negotiating', 'production', 'live', 'completed')),
@@ -313,7 +312,7 @@ CREATE TABLE campaign_creators (
 -- SUPPLIER PRODUCTS TABLE
 -- ============================================================================
 CREATE TABLE supplier_products (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   supplier_id UUID REFERENCES users(id) ON DELETE CASCADE,
   creator_id UUID REFERENCES users(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
@@ -332,7 +331,7 @@ CREATE TABLE supplier_products (
 -- SUPPLIER CREATOR PARTNERSHIPS TABLE
 -- ============================================================================
 CREATE TABLE supplier_creator_partnerships (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   supplier_id UUID REFERENCES users(id) ON DELETE CASCADE,
   creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
   status TEXT DEFAULT 'outreach' CHECK (status IN ('outreach', 'negotiating', 'active', 'past')),

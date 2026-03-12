@@ -23,7 +23,7 @@ CREATE POLICY "Workspace members can view task logs"
   USING (
     agent_id IN (
       SELECT wa.id FROM workspace_agents wa
-      JOIN workspace_members wm ON wm.workspace_id = wa.workspace_id
+      JOIN workspace_memberships wm ON wm.workspace_id = wa.workspace_id
       WHERE wm.user_id = auth.uid()
     )
   );

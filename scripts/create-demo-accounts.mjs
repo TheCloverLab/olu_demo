@@ -130,6 +130,10 @@ async function truncateAllTables() {
   const tables = [
     'workspace_agent_tasks', 'workspace_agents', 'agent_templates',
     'consumer_lesson_progress', 'consumer_course_purchases', 'consumer_memberships',
+    'consumer_purchases',
+    'workspace_product_experiences', 'workspace_product_plans', 'workspace_products',
+    'forum_post_likes', 'forum_post_comments', 'forum_posts',
+    'workspace_home_configs', 'workspace_experiences',
     'workspace_billing', 'workspace_consumer_configs', 'workspace_policies',
     'workspace_integrations', 'workspace_permissions', 'workspace_modules',
     'workspace_memberships', 'workspaces',

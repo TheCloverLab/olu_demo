@@ -3,7 +3,7 @@
 -- ============================================================================
 
 CREATE TABLE consumer_memberships (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   tier_key TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE consumer_memberships (
 );
 
 CREATE TABLE consumer_course_purchases (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   course_id UUID NOT NULL REFERENCES consumer_courses(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'purchased' CHECK (status IN ('purchased', 'refunded')),
@@ -27,7 +27,7 @@ CREATE TABLE consumer_course_purchases (
 );
 
 CREATE TABLE consumer_lesson_progress (
-  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   course_id UUID NOT NULL REFERENCES consumer_courses(id) ON DELETE CASCADE,
   section_key TEXT NOT NULL,

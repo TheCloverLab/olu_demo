@@ -50,10 +50,23 @@ When `VITE_SUPABASE_URL` contains `demo-placeholder`, all Supabase calls are byp
 | `workspace_integrations` | Connected platforms (Shopify, Slack, TG, WhatsApp, X, IG, Zendesk, Mixpanel) |
 | `workspace_consumer_configs` | Consumer template config (fan_community/sell_courses) with JSONB overrides |
 
+### Experience & Product
+| Table | Purpose |
+|-------|---------|
+| `workspace_experiences` | Modular content instances (forum/course/group_chat/support_chat) per workspace |
+| `workspace_products` | Free/paid products per workspace |
+| `workspace_product_plans` | Pricing plans (one_time/recurring) per product |
+| `workspace_product_experiences` | Many-to-many linking products ↔ experiences |
+| `consumer_purchases` | User purchases of products (active/cancelled/expired) |
+| `forum_posts` | Forum posts with content, images, like/comment counts |
+| `forum_post_comments` | Comments on forum posts |
+| `forum_post_likes` | Like records (user ↔ post, unique) |
+| `workspace_home_configs` | Customizable workspace homepage (cover, headline, tabs JSONB) |
+
 ### Consumer
 | Table | Purpose |
 |-------|---------|
-| `consumer_courses` | Courses (hero, instructor, level, outcomes, slug) |
+| `consumer_courses` | Courses (hero, instructor, level, outcomes, slug, experience_id FK) |
 | `consumer_course_sections` | Course chapters (duration, summary, preview flag, position) |
 | `consumer_memberships` | User membership in creator communities by tier |
 | `consumer_course_purchases` | Enrollment records |
@@ -100,6 +113,25 @@ When `VITE_SUPABASE_URL` contains `demo-placeholder`, all Supabase calls are byp
 ## Domain API Layer
 
 Each domain has `api.ts` (public functions) + optional `data.ts` (low-level queries).
+
+### experience/api.ts
+- `listExperiences(workspaceId)` / `getExperience(id)` — Experience CRUD
+- `createExperience(...)` / `updateExperience(id, updates)` / `deleteExperience(id)` — Manage experiences
+- `getAccessibleExperiences(workspaceId, userId)` — Filter by user's purchase access
+- `canAccessExperience(experienceId, userId)` — Check access (public/members_only/product_gated)
+- `getForumPosts(experienceId)` / `createForumPost(...)` — Forum posts with author joins
+- `getForumPostComments(postId)` / `createForumPostComment(...)` — Post comments
+- `toggleForumPostLike(postId, userId)` — Like/unlike toggle
+
+### product/api.ts
+- `listProducts(workspaceId)` / `getProduct(id)` — Product CRUD
+- `createProduct(...)` / `updateProduct(id, updates)` — Manage products
+- `listPlans(productId)` / `createPlan(...)` / `updatePlan(id, updates)` — Pricing plans
+- `linkExperienceToProduct(productId, experienceId)` / `unlinkExperienceFromProduct(...)` — Product↔Experience linking
+- `purchaseProduct(productId, userId, planId?)` / `cancelPurchase(purchaseId)` — Purchase management
+- `getUserPurchases(userId, workspaceId?)` — User's purchases
+- `getHomeConfig(workspaceId)` / `upsertHomeConfig(workspaceId, config)` — Workspace homepage config
+- `getProductsWithPlans(workspaceId)` — Products with plans & linked experience IDs
 
 ### consumer/api.ts
 - `getConsumerExperience(templateKey, viewerName?, config?)` — UI copy/structure per template
@@ -175,6 +207,8 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 | Wallet | Stablecoin wallet |
 | UserCenter | User profile settings |
 | PublicProfile | Creator profile view |
+| WorkspaceHome | Workspace homepage (cover, tabs, experiences grid) |
+| ForumView | Forum experience with posts, comments, likes |
 
 ### Business Pages (`apps/business/pages/`)
 | Page | Description |
@@ -193,6 +227,9 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 | CreatorStudio | Theme/layout/tabs editor with live preview |
 | CourseEditor | Course builder (3-level: Course→Module→Lesson) |
 | Connectors | Task target connectors config |
+| ExperienceManager | Experience CRUD (forum/course/group_chat/support_chat) |
+| ProductManager | Product & plan management, experience linking |
+| HomeEditor | Workspace homepage editor (cover, headline, tabs, preview) |
 | AppManagement | Consumer template management |
 | BusinessSettings | Workspace settings (modules, integrations, billing) |
 | BusinessAccount | Business account settings |

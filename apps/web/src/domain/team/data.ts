@@ -78,6 +78,31 @@ export async function addConversationMessage(
   return data as Conversation
 }
 
+export async function createGroupChat(
+  userId: string,
+  chatKey: string,
+  name: string,
+  participants: string[],
+  icons: string[],
+) {
+  const { data, error } = await supabase
+    .from('group_chats')
+    .insert({
+      user_id: userId,
+      chat_key: chatKey,
+      name,
+      participants,
+      icons,
+      last_message: null,
+      last_time: null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function getGroupChatsByUser(userId: string) {
   const { data, error } = await supabase
     .from('group_chats')

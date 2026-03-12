@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Play, Loader2 } from 'lucide-react'
+import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Play, Loader2, Plus } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getWorkspaceTeamSnapshotForUser } from '../../../domain/team/api'
+import { getWorkspaceTeamSnapshotForUser, ensureDefaultGroupChat, createNewGroupChat } from '../../../domain/team/api'
 import { ensureWorkspaceForUser } from '../../../domain/workspace/api'
 import { batchRunAgents, invokeAgent } from '../../../domain/agent/runtime-api'
 import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
@@ -212,6 +212,8 @@ export default function Team() {
       }
 
       try {
+        // Ensure default "All Members" group chat exists
+        await ensureDefaultGroupChat(user)
         const [team, membership] = await Promise.all([
           getWorkspaceTeamSnapshotForUser(user),
           ensureWorkspaceForUser(user),
@@ -237,6 +239,23 @@ export default function Team() {
     if (!user?.id) return
     const team = await getWorkspaceTeamSnapshotForUser(user)
     setAgents(team.agents)
+    setGroups((team.groups || []) as GroupChat[])
+  }
+
+  async function handleCreateGroup() {
+    if (!user?.id) return
+    const name = prompt('Group name:')
+    if (!name?.trim()) return
+    const participants = agents.map((a) => a.name)
+    const icons = agents.slice(0, 3).map(() => '🤖')
+    if (icons.length === 0) icons.push('👥')
+    try {
+      await createNewGroupChat(user.id, name.trim(), participants, icons)
+      const team = await getWorkspaceTeamSnapshotForUser(user)
+      setGroups((team.groups || []) as GroupChat[])
+    } catch (err) {
+      console.error('Failed to create group', err)
+    }
   }
 
   async function handleRunAll() {
@@ -380,19 +399,29 @@ export default function Team() {
         </div>
       </div>
 
-      {groups.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
             <CheckSquare size={14} className="text-[var(--olu-text-secondary)]" />
             <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">Group Chats</p>
           </div>
-          <div className="space-y-2">
-            {groups.map((group) => (
-              <GroupRow key={group.id} group={group} />
-            ))}
-          </div>
+          <button
+            onClick={handleCreateGroup}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors"
+          >
+            <Plus size={12} />
+            {t('team.newGroup', 'New Group')}
+          </button>
         </div>
-      )}
+        <div className="space-y-2">
+          {groups.length === 0 && (
+            <p className="text-[var(--olu-muted)] text-xs text-center py-4">No group chats yet</p>
+          )}
+          {groups.map((group) => (
+            <GroupRow key={group.id} group={group} />
+          ))}
+        </div>
+      </div>
 
       {humans.length > 0 && (
         <div className="mt-6">

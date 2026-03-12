@@ -112,7 +112,7 @@ export default function MembersPage() {
                 <Avatar
                   initials={m.user?.initials || '??'}
                   color={m.user?.avatar_color || 'from-gray-400 to-gray-500'}
-                  img={m.user?.avatar_url || undefined}
+                  img={m.user?.avatar_img || undefined}
                 />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm truncate">{m.user?.name || 'Unknown'}</p>

@@ -229,30 +229,43 @@ function ProductCard({
 // Layout-specific headers
 // ────────────────────────────────────────────────────────────────
 
-function JoinButton({ hasJoined, joining, onJoin, t, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; t: any; size?: 'sm' | 'md' }) {
-  if (hasJoined) {
-    return (
-      <span className={clsx(
-        'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0',
-        size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-xs'
-      )}>
-        <Check size={14} />
-        {t('consumer.joined', 'Joined')}
-      </span>
-    )
-  }
+function JoinAndSupportButtons({ hasJoined, joining, onJoin, workspace, t, navigate, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; workspace: Workspace; t: any; navigate: ReturnType<typeof useNavigate>; size?: 'sm' | 'md' }) {
   return (
-    <button
-      onClick={onJoin}
-      disabled={joining}
-      className={clsx(
-        'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0',
-        size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
+    <div className="flex items-center gap-2">
+      {hasJoined ? (
+        <>
+          <span className={clsx(
+            'flex items-center gap-1.5 rounded-xl font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-400/10 flex-shrink-0',
+            size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+          )}>
+            <Check size={14} />
+            {t('consumer.joined', 'Joined')}
+          </span>
+          <button
+            onClick={() => navigate(`/w/${workspace.slug}/support`)}
+            className={clsx(
+              'flex items-center gap-1.5 rounded-xl font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors flex-shrink-0',
+              size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+            )}
+          >
+            <Headphones size={14} />
+            {t('consumer.support', 'Support')}
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={onJoin}
+          disabled={joining}
+          className={clsx(
+            'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0',
+            size === 'sm' ? 'px-4 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
+          )}
+        >
+          {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+          {t('consumer.join', 'Join')}
+        </button>
       )}
-    >
-      {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
-      {t('consumer.join', 'Join')}
-    </button>
+    </div>
   )
 }
 
@@ -293,39 +306,14 @@ function MemberCount({ count, t }: { count: number; t: any }) {
   )
 }
 
-function SupportButton({ workspace, navigate }: { workspace: Workspace; navigate: ReturnType<typeof useNavigate> }) {
-  return (
-    <button
-      onClick={() => navigate(`/w/${workspace.slug}/support`)}
-      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
-      title="Contact Support"
-    >
-      <Headphones size={16} className="text-white/80" />
-    </button>
-  )
-}
-
-function SupportButtonLight({ workspace, navigate }: { workspace: Workspace; navigate: ReturnType<typeof useNavigate> }) {
-  return (
-    <button
-      onClick={() => navigate(`/w/${workspace.slug}/support`)}
-      className="p-2 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:bg-[var(--olu-card-hover)] transition-colors flex-shrink-0"
-      title="Contact Support"
-    >
-      <Headphones size={16} className="text-amber-600 dark:text-amber-400" />
-    </button>
-  )
-}
-
 function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <>
       <div className="h-52 relative bg-gradient-to-br from-slate-900 to-slate-800">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
-        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
           <BackButton navigate={navigate} />
-          <SupportButton workspace={workspace} navigate={navigate} />
         </div>
       </div>
       <div className="px-4 -mt-8 relative z-10 mb-4">
@@ -338,7 +326,7 @@ function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining,
           {headline && <p className="text-sm text-[var(--olu-text-secondary)] leading-relaxed">{headline}</p>}
           <div className="flex items-center gap-3 pt-1">
             <MemberCount count={memberCount} t={t} />
-            {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
+            {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
           </div>
         </div>
       </div>
@@ -353,9 +341,8 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
         {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-50" />}
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
-      <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
         <BackButton navigate={navigate} />
-        <SupportButton workspace={workspace} navigate={navigate} />
       </div>
       <div className="relative z-10 px-4 pb-6 space-y-3">
         <WorkspaceIcon workspace={workspace} size="lg" />
@@ -371,7 +358,7 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
               {memberCount.toLocaleString()} joined
             </span>
           )}
-          {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
+          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
         </div>
       </div>
     </div>
@@ -381,16 +368,13 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
 function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
   return (
     <div className="px-4 pt-4 pb-2 space-y-4">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
-        >
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </button>
-        <SupportButtonLight workspace={workspace} navigate={navigate} />
-      </div>
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1.5 text-sm text-[var(--olu-muted)] hover:text-[var(--olu-text)] transition-colors"
+      >
+        <ArrowLeft size={16} />
+        <span>Back</span>
+      </button>
       <div className="flex items-center gap-4">
         <WorkspaceIcon workspace={workspace} size="lg" />
         <div className="flex-1 min-w-0">
@@ -405,7 +389,7 @@ function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin
         </div>
       </div>
       {userId && (
-        <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} />
+        <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} />
       )}
     </div>
   )
@@ -416,13 +400,12 @@ function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining,
     <div className="relative overflow-hidden">
       <div className="h-36 bg-gradient-to-r from-cyan-600 to-blue-700">
         {cover && <img src={cover} alt="" className="w-full h-full object-cover opacity-40" />}
-        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 px-4 pt-4 z-10">
           <BackButton navigate={navigate} />
-          <SupportButton workspace={workspace} navigate={navigate} />
         </div>
       </div>
       <div className="px-4 -mt-10 relative z-10 mb-4">
-        <div className="rounded-2xl bg-[var(--olu-surface)] border border-[var(--olu-card-border)] p-4 shadow-lg">
+        <div className="rounded-2xl bg-[var(--olu-surface)] border border-[var(--olu-card-border)] p-4 shadow-lg space-y-3">
           <div className="flex items-center gap-4">
             <WorkspaceIcon workspace={workspace} />
             <div className="flex-1 min-w-0">
@@ -433,8 +416,8 @@ function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining,
               {headline && <p className="text-xs text-[var(--olu-text-secondary)] mt-0.5">{headline}</p>}
               <MemberCount count={memberCount} t={t} />
             </div>
-            {userId && <JoinButton hasJoined={hasJoined} joining={joining} onJoin={onJoin} t={t} size="sm" />}
           </div>
+          {userId && <JoinAndSupportButtons hasJoined={hasJoined} joining={joining} onJoin={onJoin} workspace={workspace} t={t} navigate={navigate} size="sm" />}
         </div>
       </div>
     </div>

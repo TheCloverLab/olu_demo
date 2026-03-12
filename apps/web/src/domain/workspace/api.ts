@@ -353,6 +353,21 @@ export async function getJoinedWorkspaces(userId: string): Promise<(WorkspaceJoi
   return (data || []) as (WorkspaceJoin & { workspace: Workspace })[]
 }
 
+export type WorkspaceMember = WorkspaceJoin & {
+  user: Pick<User, 'id' | 'name' | 'handle' | 'avatar_url'> & { initials?: string; avatar_color?: string }
+}
+
+export async function getWorkspaceMembers(workspaceId: string): Promise<WorkspaceMember[]> {
+  const { data, error } = await supabase
+    .from('workspace_joins')
+    .select('*, user:users!user_id(id, name, handle, avatar_url, initials, avatar_color)')
+    .eq('workspace_id', workspaceId)
+    .order('joined_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as WorkspaceMember[]
+}
+
 export async function hasJoinedWorkspace(userId: string, workspaceId: string): Promise<boolean> {
   const { data } = await supabase
     .from('workspace_joins')

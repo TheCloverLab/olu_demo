@@ -325,7 +325,7 @@ function MemberCount({ count, t }: { count: number; t: any }) {
   )
 }
 
-function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
+function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
   return (
     <>
       <div className="h-52 relative bg-gradient-to-br from-slate-900 to-slate-800">
@@ -353,7 +353,7 @@ function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining,
   )
 }
 
-function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
+function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
   return (
     <div className="relative min-h-[300px] flex flex-col justify-end">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800">
@@ -384,7 +384,7 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
   )
 }
 
-function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
+function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
   return (
     <div className="px-4 pt-4 pb-2 space-y-4">
       <button
@@ -414,7 +414,7 @@ function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin
   )
 }
 
-function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, t, navigate, memberCount }: any) {
+function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
   return (
     <div className="relative overflow-hidden">
       <div className="h-36 bg-gradient-to-r from-cyan-600 to-blue-700">

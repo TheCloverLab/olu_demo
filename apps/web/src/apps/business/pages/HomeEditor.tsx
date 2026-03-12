@@ -335,12 +335,17 @@ export default function HomeEditor() {
     setSaving(true)
     setMessage('')
     try {
+      // Get auth uid for storage folder (RLS requires folder = auth.uid())
+      const { data: { session } } = await supabase.auth.getSession()
+      const authUid = session?.user?.id
+      if (!authUid) throw new Error('Not authenticated')
+
       let coverUrl = cover || null
 
       // Upload cover image if a file was selected
       if (coverFile) {
         const ext = coverFile.name.split('.').pop() || 'jpg'
-        const path = `${workspaceId}/cover-${Date.now()}.${ext}`
+        const path = `${authUid}/ws-cover-${workspaceId}-${Date.now()}.${ext}`
         const { error } = await supabase.storage.from('covers').upload(path, coverFile, { upsert: true, contentType: coverFile.type })
         if (error) throw error
         coverUrl = supabase.storage.from('covers').getPublicUrl(path).data.publicUrl
@@ -351,7 +356,7 @@ export default function HomeEditor() {
       // Upload workspace icon if a file was selected
       if (iconFile) {
         const ext = iconFile.name.split('.').pop() || 'jpg'
-        const path = `${workspaceId}/icon-${Date.now()}.${ext}`
+        const path = `${authUid}/ws-icon-${workspaceId}-${Date.now()}.${ext}`
         const { error } = await supabase.storage.from('avatars').upload(path, iconFile, { upsert: true, contentType: iconFile.type })
         if (error) throw error
         const iconUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl

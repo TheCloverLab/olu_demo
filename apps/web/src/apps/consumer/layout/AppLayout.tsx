@@ -11,6 +11,18 @@ import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
 import type { ConsumerNavItem } from '../templateConfig'
 
+function WorkspaceIcon({ icon, name }: { icon?: string | null; name: string }) {
+  const [broken, setBroken] = useState(false)
+  if (icon && !broken) {
+    return <img src={icon} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" onError={() => setBroken(true)} />
+  }
+  return (
+    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
+      <span className="text-[9px] font-bold text-white">{name[0]}</span>
+    </div>
+  )
+}
+
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
   const avatarSrc = user.avatar_img || user.avatarImg
@@ -105,13 +117,7 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces
                       onClick={() => go(`/w/${jw.workspace.slug}`)}
                       className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-olu-card transition-colors text-left rounded-xl"
                     >
-                      {jw.workspace.icon ? (
-                        <img src={jw.workspace.icon} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[9px] font-bold text-white">{jw.workspace.name[0]}</span>
-                        </div>
-                      )}
+                      <WorkspaceIcon icon={jw.workspace.icon} name={jw.workspace.name} />
                       <span className="text-sm font-medium truncate">{jw.workspace.name}</span>
                       <ChevronRight size={14} className="text-olu-muted ml-auto" />
                     </button>
@@ -231,13 +237,7 @@ export default function AppLayout() {
                     isActive ? 'bg-olu-card text-olu-text' : 'text-olu-muted hover:text-olu-text hover:bg-olu-card'
                   )}
                 >
-                  {jw.workspace.icon ? (
-                    <img src={jw.workspace.icon} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[9px] font-bold text-white">{jw.workspace.name[0]}</span>
-                    </div>
-                  )}
+                  <WorkspaceIcon icon={jw.workspace.icon} name={jw.workspace.name} />
                   <span className="truncate">{jw.workspace.name}</span>
                 </NavLink>
               ))}

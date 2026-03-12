@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Upload, Loader2, Users, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Upload, Loader2, Users, ShieldCheck, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
-import { getExperience, updateExperience } from '../../../domain/experience/api'
+import { getExperience, updateExperience, deleteExperience } from '../../../domain/experience/api'
 import type { WorkspaceExperience } from '../../../lib/supabase'
 
 type ForumConfig = {
@@ -102,6 +102,17 @@ export default function ForumEditor() {
     }
   }
 
+  async function handleDelete() {
+    if (!exp) return
+    if (!confirm(`Delete "${exp.name}"? This cannot be undone.`)) return
+    try {
+      await deleteExperience(exp.id)
+      navigate('/business/experiences')
+    } catch (err) {
+      console.error('Failed to delete experience', err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -134,13 +145,21 @@ export default function ForumEditor() {
             <h1 className="font-bold text-lg">{name}</h1>
           </div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-5 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Done'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-xl hover:bg-red-500/10 transition-colors text-[var(--olu-muted)] hover:text-red-500"
+          >
+            <Trash2 size={16} />
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-5 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </div>
 
       {/* Title */}

@@ -15,6 +15,9 @@ import {
   larkTasks, larkCalendar, larkBitable,
   generateChart, manageCredentials,
 } from '../tools/workspace-tools.js'
+import {
+  postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions,
+} from '../tools/twitter-tools.js'
 import { supabase } from './supabase.js'
 
 /**
@@ -74,6 +77,11 @@ export const SKILL_DEFINITIONS: Record<string, {
     name: 'Credentials',
     description: 'Manage OAuth credentials and API keys',
     tools: [manageCredentials],
+  },
+  'social': {
+    name: 'Social Media',
+    description: 'Post tweets, search, like, and monitor mentions on X/Twitter',
+    tools: [postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions],
   },
 }
 

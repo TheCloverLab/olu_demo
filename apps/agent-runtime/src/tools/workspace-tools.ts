@@ -7,6 +7,7 @@ import { tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase.js'
 import { generateEmbedding } from '../lib/models.js'
+import { twitterTools } from './twitter-tools.js'
 
 /**
  * List tasks assigned to this agent
@@ -1399,5 +1400,5 @@ export const allTools = [
   browseWebpage, facebookAds, googlePlayReviews, generateFile,
   scheduleCronJob, rememberMemory, recallMemory, logEvent,
   larkTasks, larkCalendar, larkBitable, generateChart,
-  manageCredentials,
+  manageCredentials, ...twitterTools,
 ]

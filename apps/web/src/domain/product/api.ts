@@ -202,6 +202,24 @@ export async function getProductExperienceIds(productId: string): Promise<string
   return (data || []).map((row) => row.experience_id)
 }
 
+export async function getProductsForExperience(experienceId: string): Promise<WorkspaceProduct[]> {
+  const { data: links, error: linkErr } = await supabase
+    .from('workspace_product_experiences')
+    .select('product_id')
+    .eq('experience_id', experienceId)
+  if (linkErr) throw linkErr
+  if (!links || links.length === 0) return []
+
+  const productIds = links.map((l) => l.product_id)
+  const { data, error } = await supabase
+    .from('workspace_products')
+    .select('*')
+    .in('id', productIds)
+    .eq('status', 'active')
+  if (error) throw error
+  return (data || []) as WorkspaceProduct[]
+}
+
 // ── Purchases ───────────────────────────────────────────────────
 
 export async function purchaseProduct(

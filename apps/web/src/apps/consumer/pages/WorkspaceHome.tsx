@@ -83,14 +83,23 @@ function ExperienceListItem({ exp, onClick }: { exp: WorkspaceExperience; onClic
 function TabContent({
   tab,
   experiences,
+  purchasedProductIds,
+  onRequirePurchase,
 }: {
   tab: WorkspaceHomeTab
   experiences: WorkspaceExperience[]
+  purchasedProductIds: Set<string>
+  onRequirePurchase: () => void
 }) {
   const navigate = useNavigate()
   const tabExps = experiences.filter((e) => tab.experience_ids.includes(e.id))
 
   function handleOpen(exp: WorkspaceExperience) {
+    // If experience is product_gated and user hasn't purchased any product, show About tab
+    if (exp.visibility === 'product_gated' && purchasedProductIds.size === 0) {
+      onRequirePurchase()
+      return
+    }
     if (exp.type === 'forum') {
       navigate(`/forum/${exp.id}`)
     } else if (exp.type === 'course') {
@@ -459,7 +468,7 @@ export default function WorkspaceHome() {
           (() => {
             const tab = tabs.find((t) => t.key === activeTab)
             return tab ? (
-              <TabContent tab={tab} experiences={experiences} />
+              <TabContent tab={tab} experiences={experiences} purchasedProductIds={joinedIds} onRequirePurchase={() => setActiveTab('about')} />
             ) : null
           })()
         )}

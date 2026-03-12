@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Loader2, Tag, DollarSign, Link2, Unlink, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Pencil, Loader2, Tag, DollarSign, Link2, Unlink, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience } from '../../../lib/supabase'
@@ -13,7 +13,9 @@ import {
   createPlan,
   linkExperienceToProduct,
   unlinkExperienceFromProduct,
+  deleteProduct,
 } from '../../../domain/product/api'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 
 function PlanBadge({ plan }: { plan: ProductWithPlans['plans'][number] }) {
   const label = plan.billing_type === 'recurring'
@@ -105,6 +107,7 @@ function ProductCard({
 }) {
   const [expanded, setExpanded] = useState(true)
   const [linking, setLinking] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
 
   const linkedExps = allExperiences.filter((e) => product.experience_ids.includes(e.id))
   const unlinkedExps = allExperiences.filter((e) => !product.experience_ids.includes(e.id))
@@ -128,32 +131,61 @@ function ProductCard({
     }
   }
 
+  async function handleToggleAccess() {
+    const newType = product.access_type === 'free' ? 'paid' : 'free'
+    await updateProduct(product.id, { access_type: newType })
+    onUpdated()
+  }
+
+  async function handleDelete() {
+    try {
+      await deleteProduct(product.id)
+      onUpdated()
+    } catch (err) {
+      console.error('Failed to delete product', err)
+    }
+  }
+
   return (
     <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className={clsx(
-              'w-8 h-8 rounded-xl flex items-center justify-center',
-              product.access_type === 'free' ? 'bg-emerald-400/10' : 'bg-amber-400/10'
-            )}>
+            <button
+              onClick={handleToggleAccess}
+              title={`Switch to ${product.access_type === 'free' ? 'paid' : 'free'}`}
+              className={clsx(
+                'w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:ring-2 hover:ring-cyan-300/30',
+                product.access_type === 'free' ? 'bg-emerald-400/10' : 'bg-amber-400/10'
+              )}
+            >
               {product.access_type === 'free' ? (
                 <Tag size={16} className="text-emerald-600 dark:text-emerald-400" />
               ) : (
                 <DollarSign size={16} className="text-amber-600 dark:text-amber-400" />
               )}
-            </div>
+            </button>
             <div>
               <h3 className="font-semibold text-sm">{product.name}</h3>
-              <p className="text-[var(--olu-muted)] text-xs">{product.access_type === 'free' ? 'Free' : 'Paid'}</p>
+              <button onClick={handleToggleAccess} className="text-[var(--olu-muted)] text-xs hover:text-cyan-400 transition-colors">
+                {product.access_type === 'free' ? 'Free' : 'Paid'} <span className="text-[10px]">↔</span>
+              </button>
             </div>
           </div>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors"
-          >
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowDelete(true)}
+              className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors text-[var(--olu-muted)] hover:text-red-500"
+            >
+              <Trash2 size={14} />
+            </button>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors"
+            >
+              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          </div>
         </div>
 
         {product.description && (
@@ -182,41 +214,35 @@ function ProductCard({
                 </button>
               </span>
             ))}
+            {unlinkedExps.length > 0 && unlinkedExps.map((exp) => (
+              <button
+                key={exp.id}
+                onClick={() => handleLink(exp.id)}
+                disabled={linking}
+                className="text-xs px-2 py-0.5 rounded-full border border-dashed border-[var(--olu-card-border)] hover:border-cyan-300/40 flex items-center gap-1 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+              >
+                <Link2 size={10} />
+                {exp.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        {expanded && (
-          <div className="space-y-3 pt-3 border-t border-[var(--olu-card-border)]">
-            {/* Add plan */}
-            {product.access_type === 'paid' && (
-              <div>
-                <p className="text-xs text-[var(--olu-text-secondary)] mb-2">Add pricing plan</p>
-                <AddPlanForm productId={product.id} onCreated={onUpdated} />
-              </div>
-            )}
-
-            {/* Link experience */}
-            {unlinkedExps.length > 0 && (
-              <div>
-                <p className="text-xs text-[var(--olu-text-secondary)] mb-2">Link experience</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {unlinkedExps.map((exp) => (
-                    <button
-                      key={exp.id}
-                      onClick={() => handleLink(exp.id)}
-                      disabled={linking}
-                      className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] hover:border-cyan-300/40 flex items-center gap-1 transition-colors disabled:opacity-50"
-                    >
-                      <Link2 size={10} />
-                      {exp.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        {expanded && product.access_type === 'paid' && (
+          <div className="pt-3 border-t border-[var(--olu-card-border)]">
+            <p className="text-xs text-[var(--olu-text-secondary)] mb-2">Add pricing plan</p>
+            <AddPlanForm productId={product.id} onCreated={onUpdated} />
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={showDelete}
+        title="Delete product"
+        message={`Delete "${product.name}"? This cannot be undone.`}
+        onConfirm={() => { setShowDelete(false); handleDelete() }}
+        onCancel={() => setShowDelete(false)}
+      />
     </div>
   )
 }

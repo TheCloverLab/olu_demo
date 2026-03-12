@@ -120,6 +120,14 @@ export async function updateProduct(
   return data
 }
 
+export async function deleteProduct(productId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workspace_products')
+    .delete()
+    .eq('id', productId)
+  if (error) throw error
+}
+
 // ── Plans ───────────────────────────────────────────────────────
 
 export async function listPlans(productId: string): Promise<WorkspaceProductPlan[]> {

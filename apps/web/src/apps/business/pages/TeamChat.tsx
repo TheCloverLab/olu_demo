@@ -7,6 +7,7 @@ import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTri
 import { Highlight, themes } from 'prism-react-renderer'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
+import { approveBudgetAPI, pauseBudget } from '../../../domain/agent/runtime-api'
 import {
   getAgentConversation,
   getWorkspaceGroupChatsForUser,
@@ -316,9 +317,9 @@ function CodeBlock({ className, children }: { className?: string; children?: any
 
 // --- Budget cards ---
 
-type BudgetApprovalData = { type: 'budget_approval_required'; task: string; options: number[]; currency: string }
+type BudgetApprovalData = { type: 'budget_approval_required'; budget_id: string; task: string; options: number[]; currency: string; available_balance: number }
 type BudgetProgressData = {
-  type: 'budget_progress'; task: string; approved: number; spent: number; remaining: number
+  type: 'budget_progress'; budget_id: string; task: string; approved: number; spent: number; remaining: number
   currency: string; status: string; breakdown?: { item: string; amount: number }[]
 }
 
@@ -363,6 +364,9 @@ function BudgetApprovalCard({ data, onApprove }: { data: BudgetApprovalData; onA
         <span className="font-semibold text-sm">Budget Approval Required</span>
       </div>
       <p className="text-xs text-[var(--olu-text-secondary)]">{data.task}</p>
+      {data.available_balance > 0 && (
+        <p className="text-xs text-[var(--olu-muted)]">Available balance: ${data.available_balance.toFixed(2)}</p>
+      )}
       <div className="flex flex-wrap gap-2">
         {data.options.map((amount) => (
           <button
@@ -1148,13 +1152,23 @@ export default function TeamChat() {
                             const budgetData = parseBudgetFromToolCalls(msg.toolCalls)
                             if (!budgetData) return null
                             if (budgetData.type === 'budget_approval_required') {
-                              return <BudgetApprovalCard data={budgetData} onApprove={(amount) => {
-                                sendMessage(`Budget approved: $${amount}. Proceed with the task.`)
+                              return <BudgetApprovalCard data={budgetData} onApprove={async (amount) => {
+                                try {
+                                  await approveBudgetAPI(budgetData.budget_id, amount)
+                                  sendMessage(`Budget approved: $${amount}. Proceed with the task.`)
+                                } catch (err) {
+                                  sendMessage(`Budget approval failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+                                }
                               }} />
                             }
                             if (budgetData.type === 'budget_progress') {
-                              return <BudgetProgressCard data={budgetData} onStop={() => {
-                                sendMessage('Stop the task immediately. Pause all spending.')
+                              return <BudgetProgressCard data={budgetData} onStop={async () => {
+                                try {
+                                  await pauseBudget(budgetData.budget_id)
+                                  sendMessage('Budget paused. Remaining funds returned to wallet.')
+                                } catch (err) {
+                                  sendMessage(`Failed to pause budget: ${err instanceof Error ? err.message : 'Unknown error'}`)
+                                }
                               }} />
                             }
                             return null

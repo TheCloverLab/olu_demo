@@ -115,3 +115,105 @@ export async function getWorkspaceAgents(
   const data = await res.json()
   return data.agents
 }
+
+export type ChatResult = {
+  response: string
+  reasoning?: string
+  toolCalls: { name: string; args: Record<string, unknown>; result: string }[]
+  model?: string
+  provider?: string
+  notice?: string
+}
+
+export async function chatWithAgent(params: {
+  workspaceId: string
+  agentId: string
+  agentName?: string
+  agentRole?: string
+  message: string
+  sessionId?: string
+  provider?: string
+  model?: string
+}): Promise<ChatResult> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+  if (!res.ok) throw new Error(`Chat failed: ${res.status}`)
+  return res.json()
+}
+
+export type ModelOption = {
+  id: string
+  provider: string
+  model: string
+  supportsTools: boolean
+  supportsVision: boolean
+}
+
+export async function getAvailableModels(): Promise<ModelOption[]> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/models`)
+  if (!res.ok) throw new Error(`Models fetch failed: ${res.status}`)
+  const data = await res.json()
+  return data.models || []
+}
+
+// --- Budget API ---
+
+export type BudgetRecord = {
+  id: string
+  workspace_id: string
+  agent_id: string
+  task_id: string | null
+  requested_amount: number
+  approved_amount: number | null
+  spent_amount: number
+  currency: string
+  status: 'pending' | 'approved' | 'in_progress' | 'paused' | 'completed' | 'cancelled'
+  description: string
+  breakdown: { item: string; amount: number }[]
+  created_at: string
+  updated_at: string
+}
+
+export async function approveBudgetAPI(budgetId: string, approvedAmount: number): Promise<{
+  budget_id: string
+  approved_amount: number
+  status: string
+}> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ approved_amount: approvedAmount }),
+  })
+  if (!res.ok) throw new Error(`Approve budget failed: ${res.status}`)
+  return res.json()
+}
+
+export async function pauseBudget(budgetId: string): Promise<{
+  budget_id: string
+  status: string
+  spent: number
+  refunded: number
+}> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}/pause`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Pause budget failed: ${res.status}`)
+  return res.json()
+}
+
+export async function getBudget(budgetId: string): Promise<BudgetRecord> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}`)
+  if (!res.ok) throw new Error(`Get budget failed: ${res.status}`)
+  return res.json()
+}
+
+export async function listBudgets(workspaceId: string): Promise<BudgetRecord[]> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets?workspace_id=${workspaceId}`)
+  if (!res.ok) throw new Error(`List budgets failed: ${res.status}`)
+  const data = await res.json()
+  return data.budgets
+}

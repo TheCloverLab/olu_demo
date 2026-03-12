@@ -504,6 +504,178 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // --- Budget endpoints ---
+
+    // Approve a budget — lock funds and update status
+    const approveMatch = url.pathname.match(/^\/budgets\/(.+)\/approve$/)
+    if (approveMatch && req.method === 'POST') {
+      const budgetId = approveMatch[1]
+      const body = JSON.parse(await readBody(req))
+      const approvedAmount = body.approved_amount as number
+
+      if (!approvedAmount || approvedAmount <= 0) {
+        json(res, 400, { error: 'approved_amount is required and must be positive' })
+        return
+      }
+
+      const { data: budget, error: budgetErr } = await supabase
+        .from('agent_budgets')
+        .select('id, workspace_id, status')
+        .eq('id', budgetId)
+        .single()
+
+      if (budgetErr || !budget) {
+        json(res, 404, { error: 'Budget not found' })
+        return
+      }
+      if (budget.status !== 'pending') {
+        json(res, 400, { error: `Budget is ${budget.status}, not pending` })
+        return
+      }
+
+      const { data: wallet } = await supabase
+        .from('workspace_wallets')
+        .select('usdc_balance, locked_amount')
+        .eq('workspace_id', budget.workspace_id)
+        .single()
+
+      const available = wallet ? Number(wallet.usdc_balance) - Number(wallet.locked_amount) : 0
+      if (approvedAmount > available) {
+        json(res, 400, { error: `Insufficient balance. Available: $${available.toFixed(2)}` })
+        return
+      }
+
+      await supabase
+        .from('workspace_wallets')
+        .update({ locked_amount: Number(wallet!.locked_amount) + approvedAmount, updated_at: new Date().toISOString() })
+        .eq('workspace_id', budget.workspace_id)
+
+      await supabase
+        .from('agent_budgets')
+        .update({ approved_amount: approvedAmount, status: 'approved', updated_at: new Date().toISOString() })
+        .eq('id', budgetId)
+
+      await supabase.from('budget_transactions').insert({
+        budget_id: budgetId,
+        type: 'allocation',
+        amount: approvedAmount,
+        description: `Budget approved: $${approvedAmount}`,
+      })
+
+      json(res, 200, { budget_id: budgetId, approved_amount: approvedAmount, status: 'approved' })
+      return
+    }
+
+    // Pause a budget — stop spending and return remaining funds
+    const pauseMatch = url.pathname.match(/^\/budgets\/(.+)\/pause$/)
+    if (pauseMatch && req.method === 'POST') {
+      const budgetId = pauseMatch[1]
+
+      const { data: budget, error: budgetErr } = await supabase
+        .from('agent_budgets')
+        .select('id, workspace_id, approved_amount, spent_amount, status')
+        .eq('id', budgetId)
+        .single()
+
+      if (budgetErr || !budget) {
+        json(res, 404, { error: 'Budget not found' })
+        return
+      }
+
+      if (budget.status !== 'in_progress' && budget.status !== 'approved') {
+        json(res, 400, { error: `Cannot pause budget with status: ${budget.status}` })
+        return
+      }
+
+      const approved = Number(budget.approved_amount)
+      const spent = Number(budget.spent_amount)
+      const remaining = approved - spent
+
+      if (remaining > 0) {
+        const { data: wallet } = await supabase
+          .from('workspace_wallets')
+          .select('locked_amount')
+          .eq('workspace_id', budget.workspace_id)
+          .single()
+
+        if (wallet) {
+          await supabase
+            .from('workspace_wallets')
+            .update({ locked_amount: Math.max(0, Number(wallet.locked_amount) - remaining), updated_at: new Date().toISOString() })
+            .eq('workspace_id', budget.workspace_id)
+        }
+
+        await supabase.from('budget_transactions').insert({
+          budget_id: budgetId,
+          type: 'pause',
+          amount: remaining,
+          description: `Paused by owner. $${remaining.toFixed(2)} returned to wallet.`,
+        })
+      }
+
+      if (spent > 0) {
+        const { data: wallet } = await supabase
+          .from('workspace_wallets')
+          .select('usdc_balance, total_spent, locked_amount')
+          .eq('workspace_id', budget.workspace_id)
+          .single()
+
+        if (wallet) {
+          await supabase
+            .from('workspace_wallets')
+            .update({
+              usdc_balance: Number(wallet.usdc_balance) - spent,
+              total_spent: Number(wallet.total_spent) + spent,
+              locked_amount: Math.max(0, Number(wallet.locked_amount) - approved),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('workspace_id', budget.workspace_id)
+        }
+      }
+
+      await supabase
+        .from('agent_budgets')
+        .update({ status: 'paused', updated_at: new Date().toISOString() })
+        .eq('id', budgetId)
+
+      json(res, 200, { budget_id: budgetId, status: 'paused', spent, refunded: remaining })
+      return
+    }
+
+    // Get budget details
+    const budgetMatch = url.pathname.match(/^\/budgets\/(.+)$/)
+    if (budgetMatch && req.method === 'GET') {
+      const budgetId = budgetMatch[1]
+      const { data: budget, error } = await supabase
+        .from('agent_budgets')
+        .select('*, budget_transactions(*)')
+        .eq('id', budgetId)
+        .single()
+
+      if (error || !budget) {
+        json(res, 404, { error: 'Budget not found' })
+        return
+      }
+      json(res, 200, budget)
+      return
+    }
+
+    // List budgets for a workspace
+    if (url.pathname === '/budgets' && req.method === 'GET') {
+      const workspaceId = url.searchParams.get('workspace_id')
+      if (!workspaceId) {
+        json(res, 400, { error: 'workspace_id required' })
+        return
+      }
+      const { data, error } = await supabase
+        .from('agent_budgets')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false })
+      json(res, 200, { budgets: data || [], error: error?.message })
+      return
+    }
+
     json(res, 404, { error: 'not found' })
   } catch (err: any) {
     console.error('Request error:', err)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Loader2, MessageSquare, BookOpen, Users, Headphones, Eye, EyeOff, Lock, GripVertical } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Plus, Pencil, Trash2, Loader2, MessageSquare, BookOpen, Users, Headphones, Eye, EyeOff, Lock, GripVertical, ChevronRight } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience, ExperienceType, ExperienceVisibility } from '../../../lib/supabase'
@@ -135,6 +136,7 @@ function ExperienceCard({
   exp: WorkspaceExperience
   onUpdated: () => void
 }) {
+  const navigate = useNavigate()
   const meta = TYPE_META[exp.type]
   const visMeta = VISIBILITY_META[exp.visibility]
   const Icon = meta.icon
@@ -143,6 +145,10 @@ function ExperienceCard({
   const [name, setName] = useState(exp.name)
   const [visibility, setVisibility] = useState(exp.visibility)
   const [saving, setSaving] = useState(false)
+
+  const editorPath = exp.type === 'forum' ? `/business/experiences/forum?id=${exp.id}`
+    : exp.type === 'course' ? `/business/experiences/courses?id=${exp.id}`
+    : null
 
   async function handleSave() {
     setSaving(true)
@@ -168,7 +174,10 @@ function ExperienceCard({
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
+    <div className={clsx(
+      'rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden',
+      editorPath && 'cursor-pointer hover:border-cyan-300/30 transition-colors'
+    )} onClick={() => editorPath && !editing && navigate(editorPath)}>
       {exp.cover && (
         <div className="h-20 bg-cover bg-center" style={{ backgroundImage: `url(${exp.cover})` }} />
       )}
@@ -185,6 +194,7 @@ function ExperienceCard({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
                   className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-cyan-500/30"
                 />
               ) : (
@@ -193,7 +203,7 @@ function ExperienceCard({
               <p className="text-[var(--olu-muted)] text-xs">{meta.label}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setEditing(!editing)} className="p-1.5 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors">
               <Pencil size={12} className="text-[var(--olu-text-secondary)]" />
             </button>
@@ -201,6 +211,9 @@ function ExperienceCard({
               <button onClick={handleDelete} className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors">
                 <Trash2 size={12} className="text-[var(--olu-muted)]" />
               </button>
+            )}
+            {editorPath && !editing && (
+              <ChevronRight size={14} className="text-[var(--olu-muted)]" />
             )}
           </div>
         </div>

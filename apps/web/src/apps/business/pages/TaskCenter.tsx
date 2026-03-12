@@ -8,7 +8,7 @@ import { invokeAgent, resumeAgent, type InvokeResult } from '../../../domain/age
 import type { EmployeeWithTasks, TeamTaskStatus } from '../../../domain/team/types'
 
 const STATUS_CONFIG: Record<TeamTaskStatus, { icon: typeof Circle; color: string; bg: string; label: string }> = {
-  pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Pending' },
+  pending: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]', label: 'Pending' },
   in_progress: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'In Progress' },
   done: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Done' },
   cancelled: { icon: Circle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Cancelled' },
@@ -17,7 +17,7 @@ const STATUS_CONFIG: Record<TeamTaskStatus, { icon: typeof Circle; color: string
 const PRIORITY_COLOR = {
   high: 'text-red-400 bg-red-400/10',
   medium: 'text-amber-600 dark:text-amber-400 bg-amber-400/10',
-  low: 'text-[var(--olu-text-secondary)] bg-cyan-500/10',
+  low: 'text-[var(--olu-text-secondary)] bg-[var(--olu-accent-bg)]',
 }
 
 type TaskWithOwner = {
@@ -263,7 +263,7 @@ export default function TaskCenter() {
                 {task.isAiAgent && task.status === 'pending' && !executions.has(task.id) && (
                   <button
                     onClick={() => handleRunAgent(task)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors border border-cyan-500/20"
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-500/20 transition-colors border border-[var(--olu-card-border)]"
                   >
                     <Play size={14} /> Run
                   </button>

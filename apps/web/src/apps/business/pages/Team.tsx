@@ -24,7 +24,7 @@ type AgentWithTasks = WorkspaceAgentWithTasks
 const ROLE_COLORS: Record<string, string> = {
   'IP Manager': 'bg-violet-500/15 text-violet-400',
   'Legal Officer': 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  'Community Manager': 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
+  'Community Manager': 'bg-[var(--olu-accent-bg-strong)] text-cyan-600 dark:text-cyan-400',
   'Growth Officer': 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
   'Data Analyst': 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
   'Creativity Officer': 'bg-pink-500/15 text-pink-400',
@@ -70,7 +70,7 @@ function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: 
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-semibold text-sm">{agent.name}</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-600 dark:text-sky-300 font-semibold uppercase tracking-wide">AI</span>
-            <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-[var(--olu-text-secondary)] bg-cyan-500/10')}>
+            <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-[var(--olu-text-secondary)] bg-[var(--olu-accent-bg)]')}>
               {agent.role}
             </span>
           </div>
@@ -172,7 +172,7 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
         )}
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           {(emp.skills || []).map((skill) => (
-            <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-[var(--olu-text-secondary)] font-medium">
+            <span key={skill} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)] font-medium">
               {skill}
             </span>
           ))}
@@ -340,7 +340,7 @@ export default function Team() {
 
       <div className="rounded-[28px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-[var(--olu-section-bg)] border border-cyan-400/10 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center">
             <ShieldCheck size={18} className="text-cyan-600 dark:text-cyan-300" />
           </div>
           <div>
@@ -412,15 +412,15 @@ export default function Team() {
           </div>
 
           {showInvite && (
-            <div className="rounded-2xl border border-cyan-500/20 bg-[var(--olu-section-bg)] p-5 mb-3 space-y-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-3 space-y-4">
               <div className="grid sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
+                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
                 </div>
                 <div>
                   <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-500/30" />
+                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
                 </div>
                 <div className="flex items-end">
                   <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">

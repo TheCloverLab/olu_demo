@@ -134,7 +134,7 @@ export default function WalletPage() {
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="Amount in USD"
-                className="w-full rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-300/40"
+                className="w-full rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[var(--olu-card-border)]"
               />
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[100, 300, 500, 1000].map((quick) => (
@@ -212,7 +212,7 @@ export default function WalletPage() {
         <div className="rounded-[28px] p-4 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
           {TRANSACTIONS.map((tx) => (
             <motion.div key={tx.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] flex items-center gap-3">
-              <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300')}>
+              <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300')}>
                 {tx.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
               </div>
               <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export default function WalletPage() {
                     <p className="text-[var(--olu-text-secondary)] text-xs">Digital wallet · primary</p>
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-700 dark:text-cyan-300">Active</span>
+                <span className="text-xs px-2 py-1 rounded-full bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300">Active</span>
               </div>
             </div>
           </div>

@@ -198,7 +198,7 @@ function ProductCard({
                     ? v === 'free'
                       ? 'bg-emerald-500 text-white'
                       : 'bg-amber-500 text-white'
-                    : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:border-cyan-300/40'
+                    : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:border-[var(--olu-card-border)]'
                 )}
               >
                 {v === 'free' ? <Tag size={12} /> : <DollarSign size={12} />}
@@ -244,7 +244,7 @@ function ProductCard({
                 value=""
                 onChange={(e) => { if (e.target.value) handleLink(e.target.value) }}
                 disabled={linking}
-                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-xs appearance-none cursor-pointer hover:border-cyan-300/40 transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
+                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-xs appearance-none cursor-pointer hover:border-[var(--olu-card-border)] transition-colors disabled:opacity-50 text-[var(--olu-muted)]"
               >
                 <option value="">+ Add experience...</option>
                 {unlinkedExps.map((exp) => (
@@ -304,7 +304,7 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Pro Membership"
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
         <div>
@@ -314,7 +314,7 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Full access to all content"
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
         <div>

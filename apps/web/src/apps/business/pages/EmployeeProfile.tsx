@@ -140,7 +140,7 @@ export default function EmployeeProfile() {
                 {employee.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-[var(--olu-sidebar-text)] text-sm font-medium border border-[var(--olu-card-border)]"
+                    className="px-3 py-1.5 rounded-full bg-[var(--olu-accent-bg)] text-[var(--olu-sidebar-text)] text-sm font-medium border border-[var(--olu-card-border)]"
                   >
                     {skill}
                   </span>

@@ -48,6 +48,8 @@
   --olu-card-border: #cbd5e1;
   --olu-card-hover: #f1f5f9;
   --olu-text-secondary: #475569;
+  --olu-accent-bg: rgba(14, 165, 233, 0.08);
+  --olu-accent-bg-strong: rgba(14, 165, 233, 0.15);
   --olu-hero-bg: linear-gradient(180deg, #f8fafc 0%, #f8fafc 100%);
   --olu-hero-accent: rgba(14, 165, 233, 0.02);
   --olu-chat-area-bg: linear-gradient(180deg, #f8fafc, #f1f5f9);
@@ -99,6 +101,8 @@
   --olu-card-border: rgba(6, 182, 212, 0.1);
   --olu-card-hover: #12213a;
   --olu-text-secondary: rgba(207, 250, 254, 0.45);
+  --olu-accent-bg: rgba(6, 182, 212, 0.10);
+  --olu-accent-bg-strong: rgba(6, 182, 212, 0.18);
   --olu-hero-bg: linear-gradient(180deg, #0b1422 0%, #08111d 100%);
   --olu-hero-accent: rgba(34, 211, 238, 0.14);
   --olu-chat-area-bg: linear-gradient(180deg, rgba(7,18,33,0.92), rgba(4,11,22,0.96));

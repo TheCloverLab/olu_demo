@@ -60,7 +60,7 @@ function CourseCard({
 
   return (
     <div
-      className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden text-left hover:border-cyan-300/30 transition-colors group"
+      className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden text-left hover:border-[var(--olu-card-border)] transition-colors group"
     >
       <div className="relative h-28 cursor-pointer" onClick={onSelect}>
         {coverSrc ? (
@@ -187,7 +187,7 @@ function CourseListView({
             {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+          <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
             <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
             <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f) }} />
@@ -210,7 +210,7 @@ function CourseListView({
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Course name"
                 autoFocus
-                className="w-full bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+                className="w-full bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               />
               <div className="flex gap-2">
@@ -265,7 +265,7 @@ function LessonRow({
       className={clsx(
         'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors text-sm',
         selected
-          ? 'bg-cyan-300/10 border border-cyan-300/30'
+          ? 'bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)]'
           : 'hover:bg-[var(--olu-card-hover)]'
       )}
     >
@@ -324,7 +324,7 @@ function ChapterSection({
             onBlur={() => { onUpdateChapter({ title }); setEditing(false) }}
             onKeyDown={(e) => { if (e.key === 'Enter') { onUpdateChapter({ title }); setEditing(false) } }}
             autoFocus
-            className="flex-1 bg-transparent border-b border-cyan-300/30 text-sm font-semibold focus:outline-none px-1"
+            className="flex-1 bg-transparent border-b border-[var(--olu-card-border)] text-sm font-semibold focus:outline-none px-1"
           />
         ) : (
           <span
@@ -409,7 +409,7 @@ function LessonDetailPanel({
           type="text"
           value={title}
           onChange={(e) => { setTitle(e.target.value); setDirty(true) }}
-          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
         />
       </div>
 
@@ -438,7 +438,7 @@ function LessonDetailPanel({
             value={videoUrl}
             onChange={(e) => { setVideoUrl(e.target.value); setDirty(true) }}
             placeholder="https://youtube.com/watch?v=..."
-            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+            className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         )}
       </div>
@@ -462,7 +462,7 @@ function LessonDetailPanel({
           onChange={(e) => { setContent(e.target.value); setDirty(true) }}
           rows={12}
           placeholder="Write lesson content here..."
-          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-cyan-500/30 resize-y"
+          className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[var(--olu-card-border)] resize-y"
         />
       </div>
     </div>
@@ -577,7 +577,7 @@ function CourseDetailView({
             {savingCover && <div className="absolute inset-0 bg-black/30 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-white" /></div>}
           </div>
         ) : (
-          <label className="flex items-center justify-center gap-2 h-20 border-b border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors text-[var(--olu-muted)] text-xs">
+          <label className="flex items-center justify-center gap-2 h-20 border-b border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors text-[var(--olu-muted)] text-xs">
             <ImagePlus size={16} />
             Add course cover
             <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCourseCoverUpload(f) }} />
@@ -599,7 +599,7 @@ function CourseDetailView({
               onBlur={() => { updateCourse(courseId, { name: courseName }); setEditingName(false) }}
               onKeyDown={(e) => { if (e.key === 'Enter') { updateCourse(courseId, { name: courseName }); setEditingName(false) } }}
               autoFocus
-              className="bg-transparent border-b border-cyan-300/30 font-bold text-lg focus:outline-none"
+              className="bg-transparent border-b border-[var(--olu-card-border)] font-bold text-lg focus:outline-none"
             />
           ) : (
             <h1

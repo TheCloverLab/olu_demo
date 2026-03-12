@@ -152,12 +152,12 @@ export default function CreatorConsole() {
             <p className="text-[var(--olu-text-secondary)] text-sm mt-1">Creator-side approvals, monetization, and workflow telemetry inside the business workspace</p>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Reward Locked</p>
               <p className="font-black text-2xl">${myTarget?.creator_reward ?? 0}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Current workflow payout</p>
             </div>
-            <div className="rounded-2xl border border-cyan-400/10 bg-[var(--olu-section-bg)] p-4">
+            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4">
               <p className="text-[var(--olu-text-secondary)] text-xs uppercase tracking-[0.18em] mb-2">Current Stage</p>
               <p className="font-black text-2xl capitalize">{workflow?.campaign.status || 'idle'}</p>
               <p className="text-[var(--olu-text-secondary)] text-xs mt-1">Synced from backend campaign state</p>
@@ -193,7 +193,7 @@ export default function CreatorConsole() {
                   The creator now sees the same workflow from Supabase, not from local UI state. This is the approval step for an incoming advertiser collaboration.
                 </p>
               </div>
-              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+              <span className={clsx('text-xs px-3 py-1.5 rounded-full font-semibold', campaignAccepted ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : hasIncomingCampaign ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]')}>
                 {campaignAccepted ? 'Accepted' : hasIncomingCampaign ? 'Needs review' : 'No request'}
               </span>
             </div>
@@ -261,7 +261,7 @@ export default function CreatorConsole() {
                 { title: 'Metrics returned', desc: 'The creator-side workspace can see when reported results come back from the live placement.', active: ['completed'].includes(workflow?.campaign.status || '') },
               ].map((item) => (
                 <div key={item.title} className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-start gap-3">
-                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-cyan-500/10 text-[var(--olu-text-secondary)]')}>
+                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', item.active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-[var(--olu-accent-bg)] text-[var(--olu-text-secondary)]')}>
                     {item.active ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
                   </div>
                   <div>

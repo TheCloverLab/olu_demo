@@ -249,7 +249,7 @@ export default function AppLayout() {
           {enabledBusinessModules.length > 0 && (
             <button
               onClick={() => window.open('/business', '_blank')}
-              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600/20 to-sky-600/20 hover:from-cyan-600/30 hover:to-sky-600/30 border border-cyan-500/20"
+              className="w-full py-2.5 px-3 rounded-2xl text-sm font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600/20 to-sky-600/20 hover:from-cyan-600/30 hover:to-sky-600/30 border border-[var(--olu-card-border)]"
             >
               <Briefcase size={14} />
               {t('nav.businessOS')}

@@ -59,7 +59,7 @@ export default function BusinessAccount() {
             <p className="text-[var(--olu-text-secondary)] text-xs mb-2">{t('account.enabledModules')}</p>
             <div className="flex flex-wrap gap-2">
               {enabledBusinessModules.map((moduleKey) => (
-                <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-sm capitalize text-olu-text border border-[var(--olu-card-border)]">
+                <span key={moduleKey} className="px-3 py-1.5 rounded-full bg-[var(--olu-accent-bg)] text-sm capitalize text-olu-text border border-[var(--olu-card-border)]">
                   {moduleKey.replace('_', ' ')}
                 </span>
               ))}

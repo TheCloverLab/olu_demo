@@ -140,7 +140,7 @@ const OAUTH_PROVIDERS = new Set(['X'])
 
 const STATUS_CFG = {
   connected: { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10', label: 'Connected' },
-  planned: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10', label: 'Planned' },
+  planned: { icon: Circle, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]', label: 'Planned' },
   error: { icon: Circle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Error' },
   disconnected: { icon: Circle, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10', label: 'Disconnected' },
 }
@@ -339,7 +339,7 @@ function PlatformCard({ platform, t, onConnect, connecting }: {
           <button
             onClick={() => onConnect(platform.provider)}
             disabled={connecting === platform.provider}
-            className="mt-3 px-3 py-1.5 rounded-xl bg-cyan-300/10 text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-300/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            className="mt-3 px-3 py-1.5 rounded-xl bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-300/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
           >
             {connecting === platform.provider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
             {t('common.connect')}
@@ -461,7 +461,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
             {method === 'browser_session' && (
               <div className="space-y-4">
                 <div className="rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] p-5 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-cyan-400/10 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--olu-accent-bg)] flex items-center justify-center mx-auto mb-3">
                     <Monitor size={24} className="text-cyan-700 dark:text-cyan-300" />
                   </div>
                   <h3 className="font-semibold text-sm mb-1">{t('connectors.sandboxBrowserTitle')}</h3>
@@ -471,7 +471,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
                   <div className="space-y-2 text-left">
                     {[t('connectors.sandboxStep1'), t('connectors.sandboxStep2', { provider }), t('connectors.sandboxStep3')].map((step, i) => (
                       <div key={i} className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-cyan-400/10 text-cyan-700 dark:text-cyan-300 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                           {i + 1}
                         </span>
                         <p className="text-xs text-[var(--olu-text-secondary)]">{step}</p>
@@ -506,7 +506,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 rounded-xl bg-cyan-400/15 text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors disabled:opacity-50 flex items-center gap-1.5"
               >
                 {saving && <Loader2 size={14} className="animate-spin" />}
                 {t('connectors.saveAndConnect')}
@@ -514,7 +514,7 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
             )}
             {method === 'browser_session' && (
               <button
-                className="px-4 py-2 rounded-xl bg-cyan-400/15 text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--olu-accent-bg-strong)] text-cyan-700 dark:text-cyan-300 text-sm font-medium hover:bg-cyan-400/25 transition-colors flex items-center gap-1.5"
               >
                 <Monitor size={14} />
                 {t('connectors.launchBrowser')}

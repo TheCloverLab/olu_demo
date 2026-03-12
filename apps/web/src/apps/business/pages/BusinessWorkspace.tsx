@@ -107,7 +107,7 @@ export default function BusinessWorkspace() {
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: t('common.pending'), value: pendingTasks, icon: Clock, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-cyan-500/10' },
+              { label: t('common.pending'), value: pendingTasks, icon: Clock, color: 'text-[var(--olu-text-secondary)]', bg: 'bg-[var(--olu-accent-bg)]' },
               { label: t('common.inProgress'), value: inProgressTasks, icon: Zap, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10' },
               { label: t('common.done'), value: doneTasks, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
             ].map((item) => (
@@ -193,7 +193,7 @@ export default function BusinessWorkspace() {
           )
           const content = (
             <>
-              <div className={clsx('w-11 h-11 rounded-2xl flex items-center justify-center mb-4', enabled ? 'bg-cyan-400/10 text-cyan-500' : 'bg-gray-500/10 text-[var(--olu-muted)]')}>
+              <div className={clsx('w-11 h-11 rounded-2xl flex items-center justify-center mb-4', enabled ? 'bg-[var(--olu-accent-bg)] text-cyan-500' : 'bg-gray-500/10 text-[var(--olu-muted)]')}>
                 <Icon size={20} />
               </div>
               <div className="flex items-center justify-between gap-3">

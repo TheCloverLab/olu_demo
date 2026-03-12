@@ -98,7 +98,7 @@ function TabEditor({
           type="text"
           value={tab.label}
           onChange={(e) => onChange({ ...tab, label: e.target.value })}
-          className="flex-1 bg-transparent border-b border-[var(--olu-card-border)] px-1 py-0.5 text-sm font-semibold focus:outline-none focus:border-cyan-500/30"
+          className="flex-1 bg-transparent border-b border-[var(--olu-card-border)] px-1 py-0.5 text-sm font-semibold focus:outline-none focus:border-[var(--olu-card-border)]"
         />
         <button onClick={onDelete} className="p-1 rounded-lg hover:bg-red-500/10">
           <Trash2 size={12} className="text-[var(--olu-muted)]" />
@@ -131,7 +131,7 @@ function TabEditor({
         <p className="text-[10px] text-[var(--olu-muted)] mb-1">Experiences</p>
         <div className="flex flex-wrap gap-1">
           {linkedExps.map((exp) => (
-            <span key={exp.id} className="text-xs px-2 py-0.5 rounded-full bg-cyan-300/10 text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
+            <span key={exp.id} className="text-xs px-2 py-0.5 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
               {exp.name}
               <button
                 onClick={() => onChange({ ...tab, experience_ids: tab.experience_ids.filter((id) => id !== exp.id) })}
@@ -193,7 +193,7 @@ function HomePreview({ config, experiences }: { config: { cover?: string | null;
       </div>
       {/* Tabs */}
       <div className="px-4 pt-3 pb-2 flex gap-1 overflow-x-auto">
-        <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-300/10 text-cyan-700 dark:text-cyan-300 font-medium flex-shrink-0">About</span>
+        <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 font-medium flex-shrink-0">About</span>
         {config.tabs.map((tab) => (
           <span key={tab.key} className="text-xs px-2.5 py-1 rounded-full bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)] font-medium flex-shrink-0">
             {tab.label}
@@ -397,7 +397,7 @@ export default function HomeEditor() {
                   </label>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-cyan-500/30 transition-colors">
+                <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
                   <ImagePlus size={20} className="text-[var(--olu-muted)] mb-1" />
                   <span className="text-xs text-[var(--olu-muted)]">Click to upload cover</span>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />
@@ -413,7 +413,7 @@ export default function HomeEditor() {
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
                 placeholder="Short tagline for your workspace"
-                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/30"
+                className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
               />
             </div>
           </div>
@@ -435,8 +435,8 @@ export default function HomeEditor() {
                   className={clsx(
                     'p-3 rounded-xl border transition-colors text-left',
                     layout === key
-                      ? 'border-cyan-300/50 bg-cyan-300/10'
-                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-cyan-300/30'
+                      ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
+                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-[var(--olu-card-border)]'
                   )}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -461,7 +461,7 @@ export default function HomeEditor() {
                     const newTabs = tmpl.defaultTabs(experiences).map((t, i) => ({ ...t, position: i + 1 }))
                     setTabs(newTabs)
                   }}
-                  className="p-3 rounded-xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-cyan-300/30 transition-colors text-left"
+                  className="p-3 rounded-xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:border-[var(--olu-card-border)] transition-colors text-left"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">{tmpl.icon}</span>

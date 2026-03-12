@@ -171,9 +171,9 @@ export default function PublicProfile() {
         <section className="rounded-[28px] border border-olu-border bg-olu-surface p-5">
           <div className="flex items-start gap-4">
             {creator.avatar_img ? (
-              <img src={creator.avatar_img} alt={creator.name} className="w-18 h-18 rounded-2xl object-cover" />
+              <img src={creator.avatar_img} alt={creator.name} className="w-[72px] h-[72px] rounded-2xl object-cover flex-shrink-0" />
             ) : (
-              <div className={`w-18 h-18 rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-xl text-white`}>
+              <div className={`w-[72px] h-[72px] rounded-2xl bg-gradient-to-br ${creator.avatar_color || 'from-gray-600 to-gray-500'} flex items-center justify-center font-black text-xl text-white flex-shrink-0`}>
                 {creator.initials || 'U'}
               </div>
             )}

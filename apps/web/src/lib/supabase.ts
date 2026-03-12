@@ -682,6 +682,13 @@ export type WorkspaceHomeTab = {
   position: number
 }
 
+export type WorkspaceJoin = {
+  id: string
+  user_id: string
+  workspace_id: string
+  joined_at: string
+}
+
 export type WorkspaceHomeConfig = {
   workspace_id: string
   cover?: string | null

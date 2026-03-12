@@ -30,9 +30,9 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
       className="group relative w-full overflow-hidden rounded-2xl text-left transition-all hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-0.5"
     >
       <div className="aspect-[16/9] relative">
-        {workspace.icon && !imgBroken ? (
+        {(workspace.cover || workspace.icon) && !imgBroken ? (
           <img
-            src={workspace.icon}
+            src={workspace.cover || workspace.icon!}
             alt={workspace.name}
             className="absolute inset-0 h-full w-full object-cover"
             onError={() => setImgBroken(true)}

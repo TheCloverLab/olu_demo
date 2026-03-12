@@ -252,14 +252,14 @@ function getPresetExperiences(preset: PresetKey, workspaceId: string) {
       return [
         { ...base, name: 'Getting Started', type: 'course', description: 'Introductory course for beginners', position: 0 },
         { ...base, name: 'Q&A Forum', type: 'forum', description: 'Ask questions and get help', position: 1 },
-        { ...base, name: 'Office Hours', type: 'support_chat', description: 'Live support sessions', position: 2 },
+        { ...base, name: 'Office Hours', type: 'group_chat', description: 'Live support sessions', position: 2 },
       ]
     case 'hybrid':
       return [
         { ...base, name: 'Community Hub', type: 'forum', description: 'Main discussion forum', position: 0 },
         { ...base, name: 'Courses', type: 'course', description: 'Structured learning content', position: 1 },
         { ...base, name: 'Group Chat', type: 'group_chat', description: 'Chat with other members', position: 2 },
-        { ...base, name: 'Support', type: 'support_chat', description: 'Get help from the team', position: 3 },
+        { ...base, name: 'Support', type: 'group_chat', description: 'Get help from the team', position: 3 },
       ]
     default:
       return []

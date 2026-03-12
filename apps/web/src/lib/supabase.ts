@@ -592,7 +592,7 @@ export type ConsumerLessonProgress = {
 
 // ── Experience & Product Model ──────────────────────────────────
 
-export type ExperienceType = 'forum' | 'course' | 'group_chat' | 'support_chat'
+export type ExperienceType = 'forum' | 'course' | 'group_chat'
 
 export type ExperienceVisibility = 'public' | 'product_gated'
 

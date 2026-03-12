@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Loader2, MessageSquare, BookOpen, Users, Headphones, ChevronRight, ExternalLink } from 'lucide-react'
+import { Plus, Loader2, MessageSquare, BookOpen, Users, ChevronRight, ExternalLink } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience, ExperienceType } from '../../../lib/supabase'
@@ -11,7 +11,6 @@ const TYPE_META: Record<ExperienceType, { label: string; icon: typeof MessageSqu
   forum: { label: 'Forum', icon: MessageSquare, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-400/10' },
   course: { label: 'Course', icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-400/10' },
   group_chat: { label: 'Group Chat', icon: Users, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
-  support_chat: { label: 'Support Chat', icon: Headphones, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-400/10' },
 }
 
 const CREATABLE_TYPES: { type: ExperienceType; description: string }[] = [

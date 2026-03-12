@@ -170,4 +170,9 @@ aws ssm put-parameter \
 | GET | `/models` | List available models |
 | GET | `/bots` | List registered Lark bots |
 | GET | `/mcp/tools` | List MCP tools |
+| GET | `/mcp/servers` | List registered MCP servers |
+| POST | `/mcp/servers` | Register MCP server dynamically |
+| POST | `/mcp/credentials` | Store MCP server credentials per workspace |
+| GET | `/agents/:id/runtime` | Get agent runtime type |
+| GET | `/skills` | List available skill packs |
 | GET | `/scheduler/jobs` | List active cron jobs |

@@ -35,6 +35,7 @@ if (shortSha === 'nogit') {
   }
 }
 
-writeFileSync(outputPath, `export const APP_VERSION = '${version}'\n`)
+const buildTime = new Date().toISOString()
+writeFileSync(outputPath, `export const APP_VERSION = '${version}'\nexport const BUILD_TIME = '${buildTime}'\n`)
 
 console.log(`Wrote ${outputPath} with ${version}`)

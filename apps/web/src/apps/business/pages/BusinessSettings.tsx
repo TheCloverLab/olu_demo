@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bell, ChevronLeft, CreditCard, KeyRound, LogOut, Megaphone, PackageCheck, Sparkles } from 'lucide-react'
+import { Bell, ChevronLeft, CreditCard, Info, KeyRound, LogOut, Megaphone, PackageCheck, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,6 +7,7 @@ import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceSettingsForUser, updateWorkspaceModuleForUser } from '../../../domain/workspace/api'
 import type { BusinessModuleKey, WorkspaceSettingsData } from '../../../lib/supabase'
+import { APP_VERSION, BUILD_TIME } from '../../../lib/version'
 
 const MODULE_METADATA: Array<{
   key: BusinessModuleKey
@@ -48,6 +49,7 @@ export default function BusinessSettings() {
   const [savingModule, setSavingModule] = useState<BusinessModuleKey | null>(null)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [runtimeHealth, setRuntimeHealth] = useState<{ status: string; version: string; buildTime: string | null } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -64,7 +66,21 @@ export default function BusinessSettings() {
       }
     }
 
+    async function loadRuntimeHealth() {
+      try {
+        const runtimeUrl = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
+        const res = await fetch(`${runtimeUrl}/health`)
+        if (res.ok) {
+          const data = await res.json()
+          if (!cancelled) setRuntimeHealth(data)
+        }
+      } catch {
+        // Runtime might not be reachable — that's ok
+      }
+    }
+
     loadSettings()
+    loadRuntimeHealth()
     return () => { cancelled = true }
   }, [user?.id])
 
@@ -222,6 +238,45 @@ export default function BusinessSettings() {
           <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
             <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Sandbox takeover</p>
             <p className="font-semibold text-sm capitalize">{settings?.policies?.sandbox_policy?.takeover_mode || 'Manual'}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Build Info */}
+      <section className="rounded-3xl p-6 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="w-10 h-10 rounded-2xl bg-slate-500/15 text-slate-400 flex items-center justify-center">
+            <Info size={18} />
+          </span>
+          <div>
+            <p className="font-bold">Build Info</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs">Frontend and agent runtime versions</p>
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Frontend</p>
+            <p className="font-semibold text-sm font-mono">{APP_VERSION}</p>
+            {BUILD_TIME && (
+              <p className="text-[var(--olu-text-secondary)] text-xs mt-1">{new Date(BUILD_TIME).toLocaleString()}</p>
+            )}
+          </div>
+          <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
+            <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Agent Runtime</p>
+            {runtimeHealth ? (
+              <>
+                <p className="font-semibold text-sm font-mono">{runtimeHealth.version}</p>
+                {runtimeHealth.buildTime && (
+                  <p className="text-[var(--olu-text-secondary)] text-xs mt-1">{new Date(runtimeHealth.buildTime).toLocaleString()}</p>
+                )}
+                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">Online</span>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-sm text-[var(--olu-text-secondary)]">—</p>
+                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/8 text-[var(--olu-text-secondary)]">Unreachable</span>
+              </>
+            )}
           </div>
         </div>
       </section>

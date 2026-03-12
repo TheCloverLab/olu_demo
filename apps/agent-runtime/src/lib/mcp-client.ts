@@ -10,12 +10,25 @@
 
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
+import { supabase } from './supabase.js'
 
 export interface MCPTool {
   name: string
   description: string
   inputSchema: Record<string, unknown>
   serverName: string
+}
+
+export type MCPCredentialType = 'bearer' | 'api_key' | 'basic' | 'custom_header'
+
+export interface MCPCredentials {
+  type: MCPCredentialType
+  token?: string        // for bearer
+  api_key?: string      // for api_key (sent as X-API-Key header)
+  username?: string     // for basic
+  password?: string     // for basic
+  header_name?: string  // for custom_header
+  header_value?: string // for custom_header
 }
 
 interface MCPServer {
@@ -71,14 +84,56 @@ async function discoverSSETools(server: MCPServer): Promise<MCPTool[]> {
   }
 }
 
+/**
+ * Build auth headers from MCP credentials.
+ */
+function buildAuthHeaders(creds: MCPCredentials): Record<string, string> {
+  switch (creds.type) {
+    case 'bearer':
+      return creds.token ? { Authorization: `Bearer ${creds.token}` } : {}
+    case 'api_key':
+      return creds.api_key ? { 'X-API-Key': creds.api_key } : {}
+    case 'basic': {
+      if (!creds.username) return {}
+      const encoded = Buffer.from(`${creds.username}:${creds.password || ''}`).toString('base64')
+      return { Authorization: `Basic ${encoded}` }
+    }
+    case 'custom_header':
+      return creds.header_name && creds.header_value
+        ? { [creds.header_name]: creds.header_value }
+        : {}
+    default:
+      return {}
+  }
+}
+
+/**
+ * Look up MCP server credentials from workspace_integrations.
+ * Stores credentials as: provider = `mcp:<serverName>`, config_json = MCPCredentials
+ */
+async function loadMCPCredentials(workspaceId: string, serverName: string): Promise<MCPCredentials | null> {
+  const provider = `mcp:${serverName}`
+  const { data, error } = await supabase
+    .from('workspace_integrations')
+    .select('config_json')
+    .eq('workspace_id', workspaceId)
+    .eq('provider', provider)
+    .eq('status', 'connected')
+    .maybeSingle()
+
+  if (error || !data?.config_json) return null
+  return data.config_json as MCPCredentials
+}
+
 /** Call a tool on an SSE-based MCP server */
-async function callSSETool(server: MCPServer, toolName: string, args: Record<string, unknown>): Promise<string> {
+async function callSSETool(server: MCPServer, toolName: string, args: Record<string, unknown>, credentials?: MCPCredentials | null): Promise<string> {
   if (!server.url) return JSON.stringify({ error: 'Server URL not configured' })
 
   try {
+    const authHeaders = credentials ? buildAuthHeaders(credentials) : {}
     const res = await fetch(`${server.url}/tools/call`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'tools/call',
@@ -122,8 +177,8 @@ export async function initMCPServers(): Promise<MCPTool[]> {
   return allTools
 }
 
-/** Call an MCP tool by its namespaced name */
-export async function callMCPTool(namespacedName: string, args: Record<string, unknown>): Promise<string> {
+/** Call an MCP tool by its namespaced name, with optional workspace credential injection */
+export async function callMCPTool(namespacedName: string, args: Record<string, unknown>, workspaceId?: string): Promise<string> {
   const parts = namespacedName.split('__')
   if (parts.length < 2) return JSON.stringify({ error: 'Invalid MCP tool name format' })
 
@@ -133,8 +188,14 @@ export async function callMCPTool(namespacedName: string, args: Record<string, u
 
   if (!server) return JSON.stringify({ error: `MCP server not found: ${serverName}` })
 
+  // Look up per-workspace credentials for this MCP server
+  let credentials: MCPCredentials | null = null
+  if (workspaceId) {
+    credentials = await loadMCPCredentials(workspaceId, serverName)
+  }
+
   if (server.type === 'sse') {
-    return callSSETool(server, toolName, args)
+    return callSSETool(server, toolName, args, credentials)
   }
 
   return JSON.stringify({ error: `Unsupported server type: ${server.type}` })
@@ -203,8 +264,9 @@ function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodTypeAny {
 /**
  * Convert all discovered MCP tools to LangChain DynamicStructuredTool instances.
  * Optionally filter to only include tools from specific servers.
+ * When workspaceId is provided, MCP calls inject per-workspace credentials.
  */
-export function getMCPToolsAsLangChain(serverFilter?: string[]): DynamicStructuredTool[] {
+export function getMCPToolsAsLangChain(serverFilter?: string[], workspaceId?: string): DynamicStructuredTool[] {
   const mcpTools = getMCPTools()
   const filtered = serverFilter
     ? mcpTools.filter((t) => serverFilter.includes(t.serverName))
@@ -218,7 +280,7 @@ export function getMCPToolsAsLangChain(serverFilter?: string[]): DynamicStructur
       description: `[MCP:${tool.serverName}] ${tool.description}`,
       schema,
       func: async (input: Record<string, unknown>) => {
-        return callMCPTool(tool.name, input)
+        return callMCPTool(tool.name, input, workspaceId)
       },
     })
   })

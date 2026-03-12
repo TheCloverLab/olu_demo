@@ -105,21 +105,22 @@ interface AgentConfig {
  * Load agent configuration from the database.
  * Returns skills, MCP servers, and runtime type.
  */
-async function loadAgentConfig(agentId: string): Promise<AgentConfig> {
+async function loadAgentConfig(agentId: string): Promise<AgentConfig & { workspace_id: string | null }> {
   const { data, error } = await supabase
     .from('workspace_agents')
-    .select('enabled_skills, enabled_mcp_servers, runtime_type')
+    .select('enabled_skills, enabled_mcp_servers, runtime_type, workspace_id')
     .eq('id', agentId)
     .single()
 
   if (error || !data) {
-    return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null }
+    return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null, workspace_id: null }
   }
 
   return {
     enabled_skills: data.enabled_skills as string[] | null,
     enabled_mcp_servers: data.enabled_mcp_servers as string[] | null,
     runtime_type: data.runtime_type as AgentConfig['runtime_type'],
+    workspace_id: (data as any).workspace_id as string | null,
   }
 }
 
@@ -147,10 +148,10 @@ export async function getAgentTools(agentId: string): Promise<StructuredToolInte
     }
   }
 
-  // Load MCP tools from enabled servers
+  // Load MCP tools from enabled servers (with per-workspace credential injection)
   const mcpServers = config.enabled_mcp_servers
   if (mcpServers && mcpServers.length > 0) {
-    const mcpTools = getMCPToolsAsLangChain(mcpServers)
+    const mcpTools = getMCPToolsAsLangChain(mcpServers, config.workspace_id || undefined)
     for (const tool of mcpTools) {
       if (!seen.has(tool.name)) {
         seen.add(tool.name)

@@ -95,7 +95,7 @@ const builtinProviders: Record<string, Omit<ModelProvider, 'apiKey'>> = {
   openai: {
     name: 'openai',
     baseURL: 'https://api.openai.com/v1',
-    model: 'gpt-4o-mini',
+    model: 'gpt-5.4-2026-03-05',
     supportsTools: true,
     supportsVision: true,
   },
@@ -223,7 +223,7 @@ function loadProviderFromEnv(name: string): ModelProvider | null {
 
   const builtin = builtinProviders[name.toLowerCase()]
   const baseURL = process.env[`${prefix}BASE_URL`] || builtin?.baseURL || 'https://api.openai.com/v1'
-  const model = process.env[`${prefix}MODEL`] || builtin?.model || 'gpt-4o-mini'
+  const model = process.env[`${prefix}MODEL`] || builtin?.model || 'gpt-5.4-2026-03-05'
   const envSupportsVision = parseBooleanEnv(process.env[`${prefix}SUPPORTS_VISION`])
   const visionModel = process.env[`${prefix}VISION_MODEL`] || builtin?.visionModel
   return {
@@ -243,7 +243,7 @@ function getDefaultProvider(): ModelProvider {
     .map((name) => loadProviderFromEnv(name))
     .find((provider) => provider?.apiKey)
   const baseURL = process.env.LLM_BASE_URL || legacyFallback?.baseURL || 'https://api.openai.com/v1'
-  const model = process.env.LLM_MODEL || legacyFallback?.model || 'gpt-4o-mini'
+  const model = process.env.LLM_MODEL || legacyFallback?.model || 'gpt-5.4-2026-03-05'
   const envSupportsVision = parseBooleanEnv(process.env.LLM_SUPPORTS_VISION)
   const visionModel = process.env.LLM_VISION_MODEL
   const hasExplicitDefaultConfig = Boolean(process.env.LLM_BASE_URL || process.env.LLM_MODEL)

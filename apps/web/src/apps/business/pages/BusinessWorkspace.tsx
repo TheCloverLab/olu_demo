@@ -65,10 +65,6 @@ export default function BusinessWorkspace() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 overflow-x-hidden">
       {/* Hero + live stats */}
       <section>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--olu-sidebar-active-bg)]/10 text-xs text-[var(--olu-text-secondary)] mb-4">
-          <Briefcase size={14} />
-          {t('workspace.overview')}
-        </div>
         <h2 className="font-black text-3xl leading-tight">
           {t('workspace.title', { name: currentUser.name })}
         </h2>

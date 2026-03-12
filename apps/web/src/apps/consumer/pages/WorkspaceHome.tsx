@@ -276,8 +276,8 @@ function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace
           onClick={onJoin}
           disabled={joining}
           className={clsx(
-            'flex items-center gap-1.5 rounded-xl font-semibold bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 flex-shrink-0 shadow-md shadow-white/20',
-            size === 'sm' ? 'px-5 py-2 text-xs' : 'px-6 py-2.5 text-sm'
+            'flex items-center gap-1.5 rounded-xl font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex-shrink-0 shadow-md shadow-emerald-500/25',
+            size === 'sm' ? 'px-5 py-2 text-sm' : 'px-6 py-2.5 text-sm'
           )}
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}

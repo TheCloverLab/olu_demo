@@ -166,7 +166,11 @@ export default function AppLayout() {
 
   useEffect(() => {
     window.addEventListener('workspace-joined', refreshJoined)
-    return () => window.removeEventListener('workspace-joined', refreshJoined)
+    window.addEventListener('workspace-left', refreshJoined)
+    return () => {
+      window.removeEventListener('workspace-joined', refreshJoined)
+      window.removeEventListener('workspace-left', refreshJoined)
+    }
   }, [refreshJoined])
 
   return (

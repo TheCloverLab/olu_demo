@@ -10,7 +10,7 @@ import { joinWorkspace, hasJoinedWorkspace } from '../../../domain/workspace/api
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences } from '../../../domain/experience/api'
-import { getHomeConfig, listProducts, listPlans, purchaseProduct, getUserPurchases } from '../../../domain/product/api'
+import { getHomeConfig, listProducts, listPlans, purchaseProduct, getUserPurchases, getProductExperienceIds } from '../../../domain/product/api'
 
 const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
@@ -84,21 +84,26 @@ function TabContent({
   tab,
   experiences,
   purchasedProductIds,
-  onRequirePurchase,
+  workspaceSlug,
+  experienceProductMap,
 }: {
   tab: WorkspaceHomeTab
   experiences: WorkspaceExperience[]
   purchasedProductIds: Set<string>
-  onRequirePurchase: () => void
+  workspaceSlug: string
+  experienceProductMap: Record<string, string>
 }) {
   const navigate = useNavigate()
   const tabExps = experiences.filter((e) => tab.experience_ids.includes(e.id))
 
   function handleOpen(exp: WorkspaceExperience) {
-    // If experience is product_gated and user hasn't purchased any product, show About tab
-    if (exp.visibility === 'product_gated' && purchasedProductIds.size === 0) {
-      onRequirePurchase()
-      return
+    // If experience is product_gated and user hasn't purchased the gating product, go to product page
+    if (exp.visibility === 'product_gated' && !purchasedProductIds.has(experienceProductMap[exp.id])) {
+      const productId = experienceProductMap[exp.id]
+      if (productId) {
+        navigate(`/w/${workspaceSlug}/product/${productId}`)
+        return
+      }
     }
     if (exp.type === 'forum') {
       navigate(`/forum/${exp.id}`)
@@ -288,6 +293,7 @@ export default function WorkspaceHome() {
   const [joiningId, setJoiningId] = useState<string | null>(null)
   const [hasJoined, setHasJoined] = useState(false)
   const [joiningWorkspace, setJoiningWorkspace] = useState(false)
+  const [experienceProductMap, setExperienceProductMap] = useState<Record<string, string>>({})
 
   const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
 
@@ -343,11 +349,21 @@ export default function WorkspaceHome() {
         setHomeConfig(config)
         setExperiences(exps)
 
-        // Load plans for each product
+        // Load plans and experience links for each product
         const cards: ProductCardData[] = await Promise.all(
           prods.map(async (p) => ({ ...p, plans: await listPlans(p.id) }))
         )
         setProductCards(cards)
+
+        // Build experience→product map for gating
+        const expProdMap: Record<string, string> = {}
+        await Promise.all(
+          prods.map(async (p) => {
+            const expIds = await getProductExperienceIds(p.id)
+            expIds.forEach((eid) => { expProdMap[eid] = p.id })
+          })
+        )
+        setExperienceProductMap(expProdMap)
 
         // Load existing purchases + workspace join status
         if (userId) {
@@ -468,7 +484,7 @@ export default function WorkspaceHome() {
           (() => {
             const tab = tabs.find((t) => t.key === activeTab)
             return tab ? (
-              <TabContent tab={tab} experiences={experiences} purchasedProductIds={joinedIds} onRequirePurchase={() => setActiveTab('about')} />
+              <TabContent tab={tab} experiences={experiences} purchasedProductIds={joinedIds} workspaceSlug={workspaceSlug!} experienceProductMap={experienceProductMap} />
             ) : null
           })()
         )}

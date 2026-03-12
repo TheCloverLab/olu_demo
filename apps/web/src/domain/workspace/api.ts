@@ -7,6 +7,7 @@ import type {
   WorkspaceBilling,
   WorkspaceConsumerConfig,
   WorkspaceIntegration,
+  WorkspaceJoin,
   WorkspaceMembership,
   WorkspaceModule,
   WorkspacePermission,
@@ -316,6 +317,51 @@ export async function updateWorkspaceIntegrationConfig(
 
   if (error) throw error
   return data as WorkspaceIntegration
+}
+
+// ---------- Workspace Joins (Consumer) ----------
+
+export async function joinWorkspace(userId: string, workspaceId: string): Promise<WorkspaceJoin> {
+  const { data, error } = await supabase
+    .from('workspace_joins')
+    .upsert({ user_id: userId, workspace_id: workspaceId }, { onConflict: 'user_id,workspace_id' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as WorkspaceJoin
+}
+
+export async function leaveWorkspace(userId: string, workspaceId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workspace_joins')
+    .delete()
+    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
+
+  if (error) throw error
+}
+
+export async function getJoinedWorkspaces(userId: string): Promise<(WorkspaceJoin & { workspace: Workspace })[]> {
+  const { data, error } = await supabase
+    .from('workspace_joins')
+    .select('*, workspace:workspaces(*)')
+    .eq('user_id', userId)
+    .order('joined_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as (WorkspaceJoin & { workspace: Workspace })[]
+}
+
+export async function hasJoinedWorkspace(userId: string, workspaceId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('workspace_joins')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  return !!data
 }
 
 // ---------- Wallet ----------

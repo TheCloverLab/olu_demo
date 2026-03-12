@@ -50,7 +50,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabel: 'Experiences',
+    groupLabel: 'App',
     items: [
       { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
       { to: '/business/products', icon: Tag, labelKey: 'nav.products' },

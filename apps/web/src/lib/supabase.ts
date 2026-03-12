@@ -581,3 +581,109 @@ export type ConsumerLessonProgress = {
   created_at?: string
   updated_at?: string
 }
+
+// ── Experience & Product Model ──────────────────────────────────
+
+export type ExperienceType = 'forum' | 'course' | 'group_chat' | 'support_chat'
+
+export type ExperienceVisibility = 'public' | 'members_only' | 'product_gated'
+
+export type WorkspaceExperience = {
+  id: string
+  workspace_id: string
+  type: ExperienceType
+  name: string
+  icon?: string | null
+  cover?: string | null
+  config_json?: Record<string, any>
+  position: number
+  visibility: ExperienceVisibility
+  status: 'active' | 'archived'
+  created_at?: string
+  updated_at?: string
+}
+
+export type WorkspaceProduct = {
+  id: string
+  workspace_id: string
+  name: string
+  description?: string | null
+  access_type: 'free' | 'paid'
+  status: 'active' | 'archived'
+  position: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type WorkspaceProductPlan = {
+  id: string
+  product_id: string
+  billing_type: 'one_time' | 'recurring'
+  price: number
+  currency: string
+  interval?: 'week' | 'month' | 'year' | null
+  trial_days?: number
+  status: 'active' | 'archived'
+  created_at?: string
+  updated_at?: string
+}
+
+export type WorkspaceProductExperience = {
+  product_id: string
+  experience_id: string
+}
+
+export type ConsumerPurchase = {
+  id: string
+  user_id: string
+  product_id: string
+  plan_id?: string | null
+  status: 'active' | 'cancelled' | 'expired' | 'refunded'
+  started_at?: string
+  expires_at?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type ForumPost = {
+  id: string
+  experience_id: string
+  author_id: string
+  content: string
+  images?: string[]
+  like_count: number
+  comment_count: number
+  created_at?: string
+  updated_at?: string
+}
+
+export type ForumPostComment = {
+  id: string
+  post_id: string
+  author_id: string
+  content: string
+  created_at?: string
+}
+
+export type ForumPostLike = {
+  post_id: string
+  user_id: string
+  created_at?: string
+}
+
+export type WorkspaceHomeTab = {
+  key: string
+  label: string
+  experience_ids: string[]
+  display_mode: 'list' | 'tile' | 'grid' | 'featured'
+  position: number
+}
+
+export type WorkspaceHomeConfig = {
+  workspace_id: string
+  cover?: string | null
+  headline?: string | null
+  tabs: WorkspaceHomeTab[]
+  created_at?: string
+  updated_at?: string
+}

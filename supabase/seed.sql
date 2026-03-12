@@ -12,6 +12,15 @@ TRUNCATE TABLE
   consumer_lesson_progress,
   consumer_course_purchases,
   consumer_memberships,
+  consumer_purchases,
+  workspace_product_experiences,
+  workspace_product_plans,
+  workspace_products,
+  forum_post_likes,
+  forum_post_comments,
+  forum_posts,
+  workspace_home_configs,
+  workspace_experiences,
   workspace_billing,
   workspace_consumer_configs,
   workspace_policies,
@@ -177,6 +186,159 @@ VALUES
   ('05000000-0000-0000-0000-000000000004', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"GameVerse Arena","cover_img":"/images/covers/gameverse.jpg"}'::jsonb),
   ('05000000-0000-0000-0000-000000000005', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Tech & Gaming Hub","cover_img":"/images/covers/marcuschen.jpg"}'::jsonb),
   ('05000000-0000-0000-0000-000000000006', 'fan_community', '{"featured_template":"fan_community","community_hero_title":"Artisan Workshop","cover_img":"/images/covers/artisancraft.jpg"}'::jsonb);
+
+-- ── Workspace Experiences (Luna = Community preset, Kai = Academy preset) ──
+
+-- Luna's experiences (Community + Course)
+INSERT INTO workspace_experiences (id, workspace_id, type, name, icon, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'forum', 'General Discussion', NULL, '/images/covers/dragonart.jpg', 0, 'public', 'active'),
+  ('06000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'forum', 'Art Critique Room', NULL, NULL, 1, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000001', 'course', 'Digital Art Academy', NULL, '/images/covers/gamingsetup.jpg', 2, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000001', 'group_chat', 'Pixel Realm Lounge', NULL, NULL, 3, 'members_only', 'active'),
+  ('06000000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000001', 'support_chat', 'Support', NULL, NULL, 99, 'public', 'active');
+
+-- Kai's experiences (Academy preset)
+INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000002', 'course', 'Lo-fi Production Academy', '/images/covers/galaxyquest.jpg', 0, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000007', '05000000-0000-0000-0000-000000000002', 'forum', 'Producer Talk', NULL, 1, 'public', 'active'),
+  ('06000000-0000-0000-0000-000000000008', '05000000-0000-0000-0000-000000000002', 'group_chat', 'The Listening Room', NULL, 2, 'members_only', 'active');
+
+-- Zara's experiences
+INSERT INTO workspace_experiences (id, workspace_id, type, name, cover, position, visibility, status)
+VALUES
+  ('06000000-0000-0000-0000-000000000009', '05000000-0000-0000-0000-000000000003', 'course', 'Sustainable Fashion Lab', '/images/covers/alexpark.jpg', 0, 'product_gated', 'active'),
+  ('06000000-0000-0000-0000-000000000010', '05000000-0000-0000-0000-000000000003', 'forum', 'Style Community', NULL, 1, 'public', 'active');
+
+-- Link existing courses to experiences
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000003' WHERE id = '20500000-0000-0000-0000-000000000001';
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000006' WHERE id = '20500000-0000-0000-0000-000000000002';
+UPDATE consumer_courses SET experience_id = '06000000-0000-0000-0000-000000000009' WHERE id = '20500000-0000-0000-0000-000000000003';
+
+-- ── Workspace Products ──────────────────────────────────────────
+
+-- Luna's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000001', '05000000-0000-0000-0000-000000000001', 'Free Community', 'Access public forums and community features', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000002', '05000000-0000-0000-0000-000000000001', 'Pro Membership', 'Full access to all forums, courses, and group chat', 'paid', 1, 'active');
+
+-- Kai's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000003', '05000000-0000-0000-0000-000000000002', 'Free Access', 'Access the community forum', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000004', '05000000-0000-0000-0000-000000000002', 'Producer Pass', 'Full access to courses and listening room', 'paid', 1, 'active');
+
+-- Zara's products
+INSERT INTO workspace_products (id, workspace_id, name, description, access_type, position, status)
+VALUES
+  ('07000000-0000-0000-0000-000000000005', '05000000-0000-0000-0000-000000000003', 'Fashion Starter', 'Community access', 'free', 0, 'active'),
+  ('07000000-0000-0000-0000-000000000006', '05000000-0000-0000-0000-000000000003', 'Design Lab Access', 'Full access to courses and community', 'paid', 1, 'active');
+
+-- ── Product Plans ───────────────────────────────────────────────
+
+-- Luna Pro Membership plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000001', '07000000-0000-0000-0000-000000000002', 'recurring', 9.99, 'USD', 'month', 'active'),
+  ('08000000-0000-0000-0000-000000000002', '07000000-0000-0000-0000-000000000002', 'recurring', 89.99, 'USD', 'year', 'active');
+
+-- Kai Producer Pass plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000003', '07000000-0000-0000-0000-000000000004', 'recurring', 14.99, 'USD', 'month', 'active'),
+  ('08000000-0000-0000-0000-000000000004', '07000000-0000-0000-0000-000000000004', 'one_time', 149.00, 'USD', NULL, 'active');
+
+-- Zara Design Lab plans
+INSERT INTO workspace_product_plans (id, product_id, billing_type, price, currency, interval, status)
+VALUES
+  ('08000000-0000-0000-0000-000000000005', '07000000-0000-0000-0000-000000000006', 'recurring', 19.99, 'USD', 'month', 'active');
+
+-- ── Product ↔ Experience Linking ────────────────────────────────
+
+-- Luna: Free Community → public forum only
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000001', '06000000-0000-0000-0000-000000000001');
+
+-- Luna: Pro Membership → all experiences
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000001'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000002'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000003'),
+  ('07000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000004');
+
+-- Kai: Free → forum only
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000003', '06000000-0000-0000-0000-000000000007');
+
+-- Kai: Producer Pass → courses + listening room + forum
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000006'),
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000007'),
+  ('07000000-0000-0000-0000-000000000004', '06000000-0000-0000-0000-000000000008');
+
+-- Zara: Free → community forum
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000005', '06000000-0000-0000-0000-000000000010');
+
+-- Zara: Design Lab → course + community
+INSERT INTO workspace_product_experiences (product_id, experience_id) VALUES
+  ('07000000-0000-0000-0000-000000000006', '06000000-0000-0000-0000-000000000009'),
+  ('07000000-0000-0000-0000-000000000006', '06000000-0000-0000-0000-000000000010');
+
+-- ── Consumer Purchases (Alex has Luna Pro) ──────────────────────
+
+INSERT INTO consumer_purchases (id, user_id, product_id, plan_id, status, started_at)
+VALUES
+  ('09000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '07000000-0000-0000-0000-000000000002', '08000000-0000-0000-0000-000000000001', 'active', NOW() - INTERVAL '45 days');
+
+-- ── Forum Posts (Luna's General Discussion) ─────────────────────
+
+INSERT INTO forum_posts (id, experience_id, author_id, content, like_count, comment_count)
+VALUES
+  ('0a000000-0000-0000-0000-000000000001', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 'Welcome to Pixel Realm! Share your latest pixel art here. 🎨', 42, 3),
+  ('0a000000-0000-0000-0000-000000000002', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Just finished my first pixel portrait! What do you all think?', 18, 2),
+  ('0a000000-0000-0000-0000-000000000003', '06000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'Anyone doing the weekly challenge? I am in for this week!', 8, 1);
+
+INSERT INTO forum_post_comments (id, post_id, author_id, content)
+VALUES
+  ('0a100000-0000-0000-0000-000000000001', '0a000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'So excited to be here! Love the community vibes.'),
+  ('0a100000-0000-0000-0000-000000000002', '0a000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'This is amazing, Luna! Can not wait for the next drop.'),
+  ('0a100000-0000-0000-0000-000000000003', '0a000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'Looks great Alex! Love the color palette.');
+
+-- ── Workspace Home Configs ──────────────────────────────────────
+
+-- Luna's home page (Community preset: About + Discussion + Courses + Chat)
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000001', '/images/covers/dragonart.jpg', 'Digital artist & gamer. Creating worlds one pixel at a time.', '[
+    {"key": "discussion", "label": "Discussion", "experience_ids": ["06000000-0000-0000-0000-000000000001", "06000000-0000-0000-0000-000000000002"], "display_mode": "list", "position": 1},
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000003"], "display_mode": "featured", "position": 2},
+    {"key": "chat", "label": "Chat", "experience_ids": ["06000000-0000-0000-0000-000000000004"], "display_mode": "list", "position": 3}
+  ]'::jsonb);
+
+-- Kai's home page (Academy preset: About + Courses + Community)
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000002', '/images/covers/midnightdrift.jpg', 'Lo-fi producer and creator. Craft chill beats with me.', '[
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000006"], "display_mode": "featured", "position": 1},
+    {"key": "community", "label": "Community", "experience_ids": ["06000000-0000-0000-0000-000000000007"], "display_mode": "list", "position": 2},
+    {"key": "chat", "label": "Chat", "experience_ids": ["06000000-0000-0000-0000-000000000008"], "display_mode": "list", "position": 3}
+  ]'::jsonb);
+
+-- Zara's home page
+INSERT INTO workspace_home_configs (workspace_id, cover, headline, tabs)
+VALUES
+  ('05000000-0000-0000-0000-000000000003', '/images/covers/neoncity.jpg', 'Fashion and lifestyle creator. Sustainability meets style.', '[
+    {"key": "courses", "label": "Courses", "experience_ids": ["06000000-0000-0000-0000-000000000009"], "display_mode": "featured", "position": 1},
+    {"key": "community", "label": "Community", "experience_ids": ["06000000-0000-0000-0000-000000000010"], "display_mode": "list", "position": 2}
+  ]'::jsonb);
+
+-- Add icon/cover/headline to workspaces
+UPDATE workspaces SET icon = '/images/avatars/luna.jpg', cover = '/images/covers/dragonart.jpg', headline = 'Digital artist & gamer' WHERE id = '05000000-0000-0000-0000-000000000001';
+UPDATE workspaces SET icon = '/images/avatars/kai.jpg', cover = '/images/covers/midnightdrift.jpg', headline = 'Lo-fi producer' WHERE id = '05000000-0000-0000-0000-000000000002';
+UPDATE workspaces SET icon = '/images/avatars/zara.jpg', cover = '/images/covers/neoncity.jpg', headline = 'Sustainable fashion' WHERE id = '05000000-0000-0000-0000-000000000003';
 
 -- ── Agent Templates ───────────────────────────────────────────────
 

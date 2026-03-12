@@ -359,6 +359,25 @@ getCourseLibrarySnapshot → replaced by listExperiences(type='course')
 
 ---
 
+## Workspace Presets
+
+When creating a new workspace, the creator can choose a preset to auto-populate experiences and homepage tabs. Presets reduce onboarding friction — the creator gets a working app immediately, then customizes from there.
+
+| Preset | Auto-created Experiences | Default Tabs |
+|--------|------------------------|--------------|
+| Community | Forum, Group Chat | About, Discussion, Chat |
+| Academy | Course | About, Courses |
+| Hybrid | Forum, Course, Group Chat | About, Community, Courses, Chat |
+| Blank | (none) | About |
+
+**Implementation notes:**
+- Presets are a **UI convenience**, not a database concept — they just call `createExperience()` + `updateHomeConfig()` in sequence
+- Creator can always add/remove experiences and tabs after creation
+- Preset selection is optional; "Blank" starts with only the About tab
+- Presets live in frontend code (no new table needed)
+
+---
+
 ## Decisions
 
 1. **Multiple workspaces per user** — Yes, supported from day 1.
@@ -367,6 +386,7 @@ getCourseLibrarySnapshot → replaced by listExperiences(type='course')
 4. **Drip feeding** — Deferred, not in v1.
 5. **Payment integration** — Stripe integration.
 6. **Existing data** — Delete all, recreate seed demo data from scratch.
+7. **Workspace Presets** — Yes, provide presets (Community/Academy/Hybrid/Blank) to streamline workspace creation.
 
 ## Business Dashboard Sidebar
 

@@ -652,10 +652,12 @@ export default function TeamChat() {
   useEffect(() => {
     if (isGroup && selectedGroupDbId) {
       return subscribeGroupChatMessages(selectedGroupDbId, (raw: any) => {
+        // Skip own messages (already added optimistically)
+        if (raw.from_name === 'You') return
         setMessages((prev) => {
           if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
           return [...prev, {
-            from: raw.from_name === 'You' ? 'user' : raw.from_name,
+            from: raw.from_name,
             text: raw.text,
             rawText: raw.text,
             images: (raw.attachments || []).map((a: any) => a.url),
@@ -668,10 +670,12 @@ export default function TeamChat() {
     }
     if (!isGroup && selectedAgentDbId) {
       return subscribeConversations(selectedAgentDbId, (raw: any) => {
+        // Skip own messages (already added optimistically)
+        if (raw.from_type === 'user') return
         setMessages((prev) => {
           if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
           return [...prev, {
-            from: raw.from_type === 'user' ? 'user' : 'agent',
+            from: 'agent',
             text: raw.text,
             rawText: raw.text,
             images: [],

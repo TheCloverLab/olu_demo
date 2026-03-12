@@ -214,6 +214,8 @@ export default function SupportChat() {
     if (!chatId) return
     const seenIds = new Set(messages.map((m) => m.id))
     const unsub = subscribeSocialChatMessages(chatId, (raw: any) => {
+      // Skip own messages (already added optimistically)
+      if (raw.from_type === 'user') return
       if (seenIds.has(raw.id)) return
       seenIds.add(raw.id)
       const msg: ChatMessage = {

@@ -18,8 +18,8 @@ import { supabase } from './lib/supabase.js'
 import { listAvailableModelOptions, listAvailableProviders, parseModelSelection } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
-import { loadMCPFromEnv, initMCPServers, getMCPTools } from './lib/mcp-client.js'
-import { listSkills } from './lib/skill-registry.js'
+import { loadMCPFromEnv, initMCPServers, getMCPTools, getRegisteredServers, registerMCPServer } from './lib/mcp-client.js'
+import { listSkills, getAgentRuntimeType } from './lib/skill-registry.js'
 import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
@@ -401,6 +401,35 @@ const server = createServer(async (req, res) => {
     // List MCP tools
     if (url.pathname === '/mcp/tools' && req.method === 'GET') {
       json(res, 200, { tools: getMCPTools() })
+      return
+    }
+
+    // List registered MCP servers
+    if (url.pathname === '/mcp/servers' && req.method === 'GET') {
+      json(res, 200, { servers: getRegisteredServers() })
+      return
+    }
+
+    // Register a new MCP server dynamically
+    if (url.pathname === '/mcp/servers' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { name, url: serverUrl, type = 'sse' } = body
+      if (!name || !serverUrl) {
+        json(res, 400, { error: 'Missing name or url' })
+        return
+      }
+      registerMCPServer({ name, type, url: serverUrl })
+      // Discover tools immediately
+      const tools = await initMCPServers()
+      json(res, 200, { ok: true, totalTools: tools.length })
+      return
+    }
+
+    // Get agent runtime type
+    if (url.pathname.match(/^\/agents\/.+\/runtime$/) && req.method === 'GET') {
+      const agentId = url.pathname.split('/')[2]
+      const runtimeType = await getAgentRuntimeType(agentId)
+      json(res, 200, { agentId, runtimeType })
       return
     }
 

@@ -3,6 +3,9 @@
  *
  * Groups related tools into "skills" that can be enabled/disabled per agent.
  * If an agent has no skill configuration, all tools are available (backward compatible).
+ *
+ * Also integrates MCP tools: agents can have `enabled_mcp_servers` to pull in
+ * external tools from MCP server ecosystems (e.g., OpenClaw).
  */
 
 import type { StructuredToolInterface } from '@langchain/core/tools'
@@ -19,6 +22,7 @@ import {
   postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions,
 } from '../tools/twitter-tools.js'
 import { supabase } from './supabase.js'
+import { getMCPToolsAsLangChain } from './mcp-client.js'
 
 /**
  * Skill definitions — each skill groups related tools
@@ -91,32 +95,47 @@ export const ALL_SKILL_NAMES = Object.keys(SKILL_DEFINITIONS)
 /** Default skills enabled for all agents (when no configuration exists) */
 const DEFAULT_SKILLS = ALL_SKILL_NAMES
 
-/**
- * Load enabled skills for an agent from the database.
- * Returns null if no configuration found (meaning all skills are enabled).
- */
-async function loadAgentSkills(agentId: string): Promise<string[] | null> {
-  const { data, error } = await supabase
-    .from('workspace_agents')
-    .select('enabled_skills')
-    .eq('id', agentId)
-    .single()
-
-  if (error || !data?.enabled_skills) return null
-  return data.enabled_skills as string[]
+interface AgentConfig {
+  enabled_skills: string[] | null
+  enabled_mcp_servers: string[] | null
+  runtime_type: 'langgraph' | 'openclaw' | null
 }
 
 /**
- * Get tools for an agent based on their enabled skills.
- * If no skill configuration exists, returns all tools.
+ * Load agent configuration from the database.
+ * Returns skills, MCP servers, and runtime type.
+ */
+async function loadAgentConfig(agentId: string): Promise<AgentConfig> {
+  const { data, error } = await supabase
+    .from('workspace_agents')
+    .select('enabled_skills, enabled_mcp_servers, runtime_type')
+    .eq('id', agentId)
+    .single()
+
+  if (error || !data) {
+    return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null }
+  }
+
+  return {
+    enabled_skills: data.enabled_skills as string[] | null,
+    enabled_mcp_servers: data.enabled_mcp_servers as string[] | null,
+    runtime_type: data.runtime_type as AgentConfig['runtime_type'],
+  }
+}
+
+/**
+ * Get tools for an agent based on their enabled skills + MCP servers.
+ * If no skill configuration exists, returns all native tools.
+ * MCP tools are appended if the agent has enabled_mcp_servers configured.
  */
 export async function getAgentTools(agentId: string): Promise<StructuredToolInterface[]> {
-  const enabledSkills = await loadAgentSkills(agentId)
-  const skillNames = enabledSkills || DEFAULT_SKILLS
+  const config = await loadAgentConfig(agentId)
+  const skillNames = config.enabled_skills || DEFAULT_SKILLS
 
   const tools: StructuredToolInterface[] = []
   const seen = new Set<string>()
 
+  // Load native skill-based tools
   for (const skillName of skillNames) {
     const skill = SKILL_DEFINITIONS[skillName]
     if (!skill) continue
@@ -128,7 +147,28 @@ export async function getAgentTools(agentId: string): Promise<StructuredToolInte
     }
   }
 
+  // Load MCP tools from enabled servers
+  const mcpServers = config.enabled_mcp_servers
+  if (mcpServers && mcpServers.length > 0) {
+    const mcpTools = getMCPToolsAsLangChain(mcpServers)
+    for (const tool of mcpTools) {
+      if (!seen.has(tool.name)) {
+        seen.add(tool.name)
+        tools.push(tool)
+      }
+    }
+    console.log(`[skills] Agent ${agentId}: loaded ${mcpTools.length} MCP tools from [${mcpServers.join(', ')}]`)
+  }
+
   return tools
+}
+
+/**
+ * Get the runtime type for an agent. Defaults to 'langgraph'.
+ */
+export async function getAgentRuntimeType(agentId: string): Promise<'langgraph' | 'openclaw'> {
+  const config = await loadAgentConfig(agentId)
+  return config.runtime_type || 'langgraph'
 }
 
 /**

@@ -3,9 +3,15 @@
  *
  * Connects to external MCP servers to discover and invoke tools dynamically.
  * Supports stdio-based MCP servers (subprocess) and SSE-based servers (HTTP).
+ *
+ * MCP tools are converted to LangChain StructuredTools so agents can use them
+ * alongside native skill-based tools.
  */
 
-interface MCPTool {
+import { DynamicStructuredTool } from '@langchain/core/tools'
+import { z } from 'zod'
+
+export interface MCPTool {
   name: string
   description: string
   inputSchema: Record<string, unknown>
@@ -134,13 +140,98 @@ export async function callMCPTool(namespacedName: string, args: Record<string, u
   return JSON.stringify({ error: `Unsupported server type: ${server.type}` })
 }
 
-/** Get all discovered MCP tools */
+/** Get all discovered MCP tools (raw format) */
 export function getMCPTools(): MCPTool[] {
   const tools: MCPTool[] = []
   for (const server of servers.values()) {
     tools.push(...server.tools)
   }
   return tools
+}
+
+/**
+ * Convert a JSON Schema to a Zod schema for LangChain compatibility.
+ * Handles basic types — complex schemas fall back to z.record.
+ */
+function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodTypeAny {
+  const properties = schema.properties as Record<string, any> | undefined
+  if (!properties || Object.keys(properties).length === 0) {
+    return z.object({}).passthrough()
+  }
+
+  const required = new Set((schema.required as string[]) || [])
+  const shape: Record<string, z.ZodTypeAny> = {}
+
+  for (const [key, prop] of Object.entries(properties)) {
+    let field: z.ZodTypeAny
+
+    switch (prop.type) {
+      case 'string':
+        field = prop.enum ? z.enum(prop.enum) : z.string()
+        break
+      case 'number':
+      case 'integer':
+        field = z.number()
+        break
+      case 'boolean':
+        field = z.boolean()
+        break
+      case 'array':
+        field = z.array(z.any())
+        break
+      case 'object':
+        field = z.record(z.any())
+        break
+      default:
+        field = z.any()
+    }
+
+    if (prop.description) {
+      field = field.describe(prop.description)
+    }
+
+    if (!required.has(key)) {
+      field = field.optional()
+    }
+
+    shape[key] = field
+  }
+
+  return z.object(shape)
+}
+
+/**
+ * Convert all discovered MCP tools to LangChain DynamicStructuredTool instances.
+ * Optionally filter to only include tools from specific servers.
+ */
+export function getMCPToolsAsLangChain(serverFilter?: string[]): DynamicStructuredTool[] {
+  const mcpTools = getMCPTools()
+  const filtered = serverFilter
+    ? mcpTools.filter((t) => serverFilter.includes(t.serverName))
+    : mcpTools
+
+  return filtered.map((tool) => {
+    const schema = jsonSchemaToZod(tool.inputSchema)
+
+    return new DynamicStructuredTool({
+      name: tool.name,
+      description: `[MCP:${tool.serverName}] ${tool.description}`,
+      schema,
+      func: async (input: Record<string, unknown>) => {
+        return callMCPTool(tool.name, input)
+      },
+    })
+  })
+}
+
+/** Get all registered server names */
+export function getRegisteredServers(): Array<{ name: string; type: string; url?: string; toolCount: number }> {
+  return Array.from(servers.entries()).map(([name, server]) => ({
+    name,
+    type: server.type,
+    url: server.url,
+    toolCount: server.tools.length,
+  }))
 }
 
 /** Load MCP server configs from environment */

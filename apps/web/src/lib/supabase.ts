@@ -443,6 +443,8 @@ export type AgentTemplate = {
   updated_at?: string
 }
 
+export type AgentRuntimeType = 'langgraph' | 'openclaw'
+
 export type WorkspaceAgent = {
   id: string
   workspace_id: string
@@ -455,6 +457,9 @@ export type WorkspaceAgent = {
   color?: string | null
   status: 'online' | 'offline' | 'busy'
   description?: string | null
+  runtime_type?: AgentRuntimeType | null
+  enabled_skills?: string[] | null
+  enabled_mcp_servers?: string[] | null
   last_message?: string | null
   last_time?: string | null
   hired_at?: string

@@ -26,20 +26,6 @@ type ChatMessage = {
   isCurrentUser: boolean
 }
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
-
-const DEMO_MESSAGES: ChatMessage[] = [
-  { id: 'm-1', authorId: 'u2', authorName: 'Alex Park', authorAvatar: '/images/fans/AlexPark.png', authorColor: 'from-pink-500 to-rose-600', authorInitials: 'AP', text: 'Hey everyone! Just finished the latest assignment from the masterclass. The layering technique is mind-blowing!', time: '10:23 AM', isCurrentUser: false },
-  { id: 'm-2', authorId: 'u4', authorName: 'Mia Zhang', authorAvatar: '/images/fans/MeiSuzuki.png', authorColor: 'from-violet-500 to-purple-600', authorInitials: 'MZ', text: 'Nice! Can you share a screenshot? I\'m still working on mine', time: '10:25 AM', isCurrentUser: false },
-  { id: 'm-3', authorId: 'u2', authorName: 'Alex Park', authorAvatar: '/images/fans/AlexPark.png', authorColor: 'from-pink-500 to-rose-600', authorInitials: 'AP', text: 'Sure! Here it is — the cyberpunk city scene with the neon reflections 🌃', time: '10:26 AM', isCurrentUser: false },
-  { id: 'm-4', authorId: 'demo-consumer', authorName: 'You', authorAvatar: null, authorColor: 'from-cyan-500 to-blue-600', authorInitials: 'ME', text: 'That looks amazing! How did you get the reflection effect on the water?', time: '10:28 AM', isCurrentUser: true },
-  { id: 'm-5', authorId: 'u3', authorName: 'Jordan Lee', authorAvatar: '/images/fans/JordanLee.png', authorColor: 'from-blue-500 to-blue-700', authorInitials: 'JL', text: 'I think that was covered in lesson 5 — the gradient masking technique. Check the course notes!', time: '10:30 AM', isCurrentUser: false },
-  { id: 'm-6', authorId: 'u5', authorName: 'Sofia Martinez', authorAvatar: '/images/fans/DanaReyes.png', authorColor: 'from-rose-500 to-pink-600', authorInitials: 'SM', text: 'Who\'s planning to join the live session this weekend? Luna said she\'ll be doing a Q&A!', time: '10:35 AM', isCurrentUser: false },
-  { id: 'm-7', authorId: 'u4', authorName: 'Mia Zhang', authorAvatar: '/images/fans/MeiSuzuki.png', authorColor: 'from-violet-500 to-purple-600', authorInitials: 'MZ', text: 'Count me in! 🙋‍♀️', time: '10:36 AM', isCurrentUser: false },
-  { id: 'm-8', authorId: 'demo-consumer', authorName: 'You', authorAvatar: null, authorColor: 'from-cyan-500 to-blue-600', authorInitials: 'ME', text: 'I\'ll be there too. What time does it start?', time: '10:38 AM', isCurrentUser: true },
-  { id: 'm-9', authorId: 'u5', authorName: 'Sofia Martinez', authorAvatar: '/images/fans/DanaReyes.png', authorColor: 'from-rose-500 to-pink-600', authorInitials: 'SM', text: '3 PM EST on Saturday. She posted it in the announcements!', time: '10:39 AM', isCurrentUser: false },
-]
-
 const COLORS = [
   'from-pink-500 to-rose-600',
   'from-violet-500 to-purple-600',
@@ -126,12 +112,6 @@ export default function GroupChatView() {
         const exp = await getExperience(experienceId)
         setExperience(exp)
 
-        if (IS_DEMO) {
-          setMessages(DEMO_MESSAGES)
-          setMemberCount(24)
-          return
-        }
-
         const userId = user?.id
         if (!userId) return
 
@@ -154,7 +134,7 @@ export default function GroupChatView() {
 
   // Subscribe to Realtime
   useEffect(() => {
-    if (!experienceId || IS_DEMO || !user?.id) return
+    if (!experienceId || !user?.id) return
     const unsub = subscribeExperienceChat(experienceId, (msg) => {
       if (seenIds.current.has(msg.id)) return
       seenIds.current.add(msg.id)
@@ -185,22 +165,20 @@ export default function GroupChatView() {
     }
     setMessages((prev) => [...prev, optimistic])
 
-    if (!IS_DEMO) {
-      try {
-        const saved = await sendExperienceChatMessage(
-          experienceId,
-          user.id,
-          user.name || 'Anonymous',
-          text,
-        )
-        // Replace optimistic with real message
-        seenIds.current.add(saved.id)
-        setMessages((prev) =>
-          prev.map((m) => m.id === optimistic.id ? toViewMessage(saved, user.id) : m)
-        )
-      } catch (err) {
-        console.error('Failed to send message', err)
-      }
+    try {
+      const saved = await sendExperienceChatMessage(
+        experienceId,
+        user.id,
+        user.name || 'Anonymous',
+        text,
+      )
+      // Replace optimistic with real message
+      seenIds.current.add(saved.id)
+      setMessages((prev) =>
+        prev.map((m) => m.id === optimistic.id ? toViewMessage(saved, user.id) : m)
+      )
+    } catch (err) {
+      console.error('Failed to send message', err)
     }
   }
 

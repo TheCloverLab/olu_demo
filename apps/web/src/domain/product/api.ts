@@ -7,9 +7,39 @@ import type {
   WorkspaceHomeTab,
 } from '../../lib/supabase'
 
+const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
+
+const DEMO_PRODUCTS: WorkspaceProduct[] = [
+  { id: 'prod-1', workspace_id: 'ws-demo', name: 'Free Community', description: 'Access to public forums and content', access_type: 'free', status: 'active', position: 0, created_at: '', updated_at: '' },
+  { id: 'prod-2', workspace_id: 'ws-demo', name: 'Pro Membership', description: 'Unlock all courses, VIP chat, and exclusive content', access_type: 'paid', status: 'active', position: 1, created_at: '', updated_at: '' },
+]
+
+const DEMO_PLANS: WorkspaceProductPlan[] = [
+  { id: 'plan-1', product_id: 'prod-2', billing_type: 'recurring', price: 9.99, currency: 'USD', interval: 'month', trial_days: 7, status: 'active', created_at: '', updated_at: '' },
+  { id: 'plan-2', product_id: 'prod-2', billing_type: 'recurring', price: 89.99, currency: 'USD', interval: 'year', trial_days: 0, status: 'active', created_at: '', updated_at: '' },
+]
+
+const DEMO_HOME_CONFIG: WorkspaceHomeConfig = {
+  workspace_id: 'ws-demo',
+  cover: '/images/covers/lunachen.jpg',
+  headline: 'Welcome to the Pixel Realm — where art meets community',
+  tabs: [
+    { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4'] },
+    { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2'] },
+  ],
+  created_at: '',
+  updated_at: '',
+}
+
+const DEMO_PRODUCT_EXPERIENCE_MAP: Record<string, string[]> = {
+  'prod-1': ['exp-1', 'exp-4'],
+  'prod-2': ['exp-1', 'exp-2', 'exp-3', 'exp-4', 'exp-5'],
+}
+
 // ── Product CRUD ────────────────────────────────────────────────
 
 export async function listProducts(workspaceId: string): Promise<WorkspaceProduct[]> {
+  if (IS_DEMO) return DEMO_PRODUCTS
   const { data, error } = await supabase
     .from('workspace_products')
     .select('*')
@@ -78,6 +108,7 @@ export async function updateProduct(
 // ── Plans ───────────────────────────────────────────────────────
 
 export async function listPlans(productId: string): Promise<WorkspaceProductPlan[]> {
+  if (IS_DEMO) return DEMO_PLANS.filter((p) => p.product_id === productId)
   const { data, error } = await supabase
     .from('workspace_product_plans')
     .select('*')
@@ -148,6 +179,7 @@ export async function unlinkExperienceFromProduct(
 }
 
 export async function getProductExperienceIds(productId: string): Promise<string[]> {
+  if (IS_DEMO) return DEMO_PRODUCT_EXPERIENCE_MAP[productId] || []
   const { data, error } = await supabase
     .from('workspace_product_experiences')
     .select('experience_id')
@@ -213,6 +245,7 @@ export async function getUserPurchases(
 // ── Home Config ─────────────────────────────────────────────────
 
 export async function getHomeConfig(workspaceId: string): Promise<WorkspaceHomeConfig | null> {
+  if (IS_DEMO) return DEMO_HOME_CONFIG
   const { data, error } = await supabase
     .from('workspace_home_configs')
     .select('*')

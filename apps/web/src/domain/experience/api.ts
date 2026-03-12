@@ -8,9 +8,31 @@ import type {
   User,
 } from '../../lib/supabase'
 
+const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
+
+const DEMO_EXPERIENCES: WorkspaceExperience[] = [
+  { id: 'exp-1', workspace_id: 'ws-demo', type: 'forum', name: 'General Discussion', icon: null, cover: null, config_json: {}, position: 0, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-2', workspace_id: 'ws-demo', type: 'course', name: 'Digital Art Masterclass', icon: null, cover: '/images/covers/dragonart.jpg', config_json: {}, position: 1, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-3', workspace_id: 'ws-demo', type: 'group_chat', name: 'VIP Lounge', icon: null, cover: null, config_json: {}, position: 2, visibility: 'members_only', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-4', workspace_id: 'ws-demo', type: 'forum', name: 'Fan Art Showcase', icon: null, cover: '/images/covers/lunachen.jpg', config_json: {}, position: 3, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+  { id: 'exp-5', workspace_id: 'ws-demo', type: 'support_chat', name: 'Help Center', icon: null, cover: null, config_json: {}, position: 4, visibility: 'public', status: 'active', created_at: '', updated_at: '' },
+]
+
+const DEMO_FORUM_POSTS: ForumPostWithAuthor[] = [
+  { id: 'fp-1', experience_id: 'exp-1', author_id: 'demo-user-001', content: 'Just dropped my latest pixel art collection — 20 unique pieces inspired by cyberpunk Tokyo. Check them out!', images: [], like_count: 42, comment_count: 5, created_at: '2026-03-10T10:00:00Z', updated_at: '', author: { id: 'demo-user-001', name: 'Demo Creator', handle: '@demo_creator', avatar_img: undefined, avatar_color: 'from-violet-500 to-fuchsia-500', initials: 'DC' } },
+  { id: 'fp-2', experience_id: 'exp-1', author_id: 'u2', content: 'Love the new collection! The neon reflections on the rain-soaked streets are incredible. Any plans for prints?', images: [], like_count: 18, comment_count: 2, created_at: '2026-03-09T15:30:00Z', updated_at: '', author: { id: 'u2', name: 'Alex Park', handle: '@alexpark', avatar_img: undefined, avatar_color: 'from-pink-500 to-rose-600', initials: 'AP' } },
+  { id: 'fp-3', experience_id: 'exp-1', author_id: 'u3', content: 'Tutorial request: How do you achieve that glitch effect on your latest pieces? Would love a behind-the-scenes breakdown.', images: [], like_count: 31, comment_count: 8, created_at: '2026-03-08T09:15:00Z', updated_at: '', author: { id: 'u3', name: 'Jordan Lee', handle: '@jordanlee', avatar_img: undefined, avatar_color: 'from-blue-500 to-blue-700', initials: 'JL' } },
+]
+
+const DEMO_COMMENTS: (ForumPostComment & { author?: Pick<User, 'id' | 'name' | 'handle' | 'avatar_img' | 'avatar_color' | 'initials'> })[] = [
+  { id: 'fc-1', post_id: 'fp-1', author_id: 'u2', content: 'These are amazing! My favorite is the rooftop scene.', created_at: '2026-03-10T11:00:00Z', author: { id: 'u2', name: 'Alex Park', handle: '@alexpark', avatar_img: undefined, avatar_color: 'from-pink-500 to-rose-600', initials: 'AP' } },
+  { id: 'fc-2', post_id: 'fp-1', author_id: 'u3', content: 'The color palette is next level!', created_at: '2026-03-10T12:30:00Z', author: { id: 'u3', name: 'Jordan Lee', handle: '@jordanlee', avatar_img: undefined, avatar_color: 'from-blue-500 to-blue-700', initials: 'JL' } },
+]
+
 // ── Experience CRUD ─────────────────────────────────────────────
 
 export async function listExperiences(workspaceId: string): Promise<WorkspaceExperience[]> {
+  if (IS_DEMO) return DEMO_EXPERIENCES
   const { data, error } = await supabase
     .from('workspace_experiences')
     .select('*')
@@ -22,6 +44,7 @@ export async function listExperiences(workspaceId: string): Promise<WorkspaceExp
 }
 
 export async function getExperience(experienceId: string): Promise<WorkspaceExperience | null> {
+  if (IS_DEMO) return DEMO_EXPERIENCES.find((e) => e.id === experienceId) || null
   const { data, error } = await supabase
     .from('workspace_experiences')
     .select('*')
@@ -151,6 +174,7 @@ export async function canAccessExperience(
 export type ForumPostWithAuthor = ForumPost & { author?: Pick<User, 'id' | 'name' | 'handle' | 'avatar_img' | 'avatar_color' | 'initials'> }
 
 export async function getForumPosts(experienceId: string): Promise<ForumPostWithAuthor[]> {
+  if (IS_DEMO) return DEMO_FORUM_POSTS.filter((p) => p.experience_id === experienceId)
   const { data, error } = await supabase
     .from('forum_posts')
     .select('*, author:users!author_id(id, name, handle, avatar_img, avatar_color, initials)')
@@ -176,6 +200,7 @@ export async function createForumPost(
 }
 
 export async function getForumPostComments(postId: string): Promise<(ForumPostComment & { author?: Pick<User, 'id' | 'name' | 'handle' | 'avatar_img' | 'avatar_color' | 'initials'> })[]> {
+  if (IS_DEMO) return DEMO_COMMENTS.filter((c) => c.post_id === postId)
   const { data, error } = await supabase
     .from('forum_post_comments')
     .select('*, author:users!author_id(id, name, handle, avatar_img, avatar_color, initials)')

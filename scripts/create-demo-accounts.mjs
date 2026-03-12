@@ -349,9 +349,51 @@ async function createWorkspaceWithModules(userId, account) {
   return workspace.id
 }
 
+// ── Link-only mode: just create auth users and link to existing public.users ──
+
+const LINK_ONLY = process.argv.includes('--link-only')
+
+async function linkAuthToExistingUsers() {
+  console.log('Linking auth accounts to existing public.users...\n')
+
+  await deleteAllAuthUsers()
+
+  const summary = []
+  for (const account of ACCOUNTS) {
+    const authUser = await ensureAuthUser(account)
+
+    // Update existing public.users row to link auth_id
+    const { data, error } = await admin
+      .from('users')
+      .update({ auth_id: authUser.id, onboarding_completed: true })
+      .eq('email', account.email)
+      .select('id')
+      .single()
+
+    if (error || !data) {
+      console.log(`  ⚠ ${account.name}: no matching user row (${error?.message || 'not found'})`)
+      continue
+    }
+
+    const moduleLabel = account.modules.length > 0 ? account.modules.join(', ') : 'consumer'
+    summary.push({ email: account.email, password: DEMO_PASSWORD, name: account.name, handle: account.handle, type: moduleLabel })
+    console.log(`  ✓ ${account.name} (${moduleLabel})`)
+  }
+
+  console.log('\n=== Summary ===\n')
+  console.table(summary)
+  console.log(`\nAll ${summary.length} accounts linked with password: ${DEMO_PASSWORD}`)
+  console.log('Tip: Run after "supabase db reset" to link auth with seed data.')
+}
+
 // ── Main ────────────────────────────────────────────────────────────
 
 console.log('=== OLU Demo Account Setup ===\n')
+
+if (LINK_ONLY) {
+  await linkAuthToExistingUsers()
+  process.exit(0)
+}
 
 await deleteAllAuthUsers()
 await truncateAllTables()

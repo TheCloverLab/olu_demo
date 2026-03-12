@@ -5,6 +5,8 @@ import { Loader2, MessageSquare, BookOpen, Users, Headphones, Lock, Eye, Chevron
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceExperience, WorkspaceProduct } from '../../../lib/supabase'
+
+const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences } from '../../../domain/experience/api'
 import { getHomeConfig, listProducts } from '../../../domain/product/api'
 
@@ -190,12 +192,17 @@ export default function WorkspaceHome() {
     async function load() {
       setLoading(true)
       try {
-        // Resolve workspace by slug
-        const { data: ws } = await supabase
-          .from('workspaces')
-          .select('*')
-          .eq('slug', workspaceSlug)
-          .single()
+        let ws: Workspace | null = null
+        if (IS_DEMO) {
+          ws = { id: 'ws-demo', name: 'Pixel Realm', slug: workspaceSlug!, owner_id: 'demo-user-001', status: 'active', icon: null, cover: null, headline: 'Where art meets community', created_at: '' } as Workspace
+        } else {
+          const { data } = await supabase
+            .from('workspaces')
+            .select('*')
+            .eq('slug', workspaceSlug)
+            .single()
+          ws = data
+        }
         if (!ws) { setLoading(false); return }
         setWorkspace(ws)
 

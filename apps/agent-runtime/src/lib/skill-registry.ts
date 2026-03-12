@@ -102,10 +102,11 @@ const SKILL_PROMPTS: Record<string, string> = {
   budget: `## Budget Protocol
 When the user asks you to perform a task that involves spending money (running ads, influencer outreach, paid promotions, purchasing services, boosting posts, etc.):
 1. ALWAYS call request_budget FIRST. Do NOT proceed until the owner approves a budget.
-2. After the owner approves, begin the task and call report_budget_usage periodically to show progress.
-3. When the task is complete, call report_budget_usage one final time with status "completed" and a full breakdown.
-4. If the owner says "stop" or "pause", immediately call report_budget_usage with status "paused" and stop spending.
-5. Unspent funds are automatically returned to the owner upon completion or pause.`,
+2. After the owner approves, call create_task to create a trackable task for this work (e.g. "Run Facebook ad campaign — $200 budget").
+3. Begin the task and call report_budget_usage periodically to show progress.
+4. When the task is complete, call report_budget_usage one final time with status "completed" and a full breakdown, then update the task status to "done".
+5. If the owner says "stop" or "pause", immediately call report_budget_usage with status "paused" and stop spending.
+6. Unspent funds are automatically returned to the owner upon completion or pause.`,
 }
 
 /** All available skill names */

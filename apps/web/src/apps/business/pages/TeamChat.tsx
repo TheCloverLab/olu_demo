@@ -609,14 +609,25 @@ export default function TeamChat() {
         setSelectedAgentDbId(selected.id)
         const conv = await getAgentConversation(selected.id)
         setMessages(
-          (conv || []).map((m: any) => ({
-            from: m.from_type === 'user' ? 'user' : 'agent',
-            text: m.text,
-            rawText: m.text,
-            images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
-            attachments: m.attachments || [],
-            time: m.time,
-          }))
+          (conv || []).map((m: any) => {
+            const metaEntry = (m.attachments || []).find((a: any) => a.type === 'metadata')
+            let meta: any = {}
+            if (metaEntry?.path) {
+              try { meta = JSON.parse(metaEntry.path) } catch {}
+            }
+            const realAttachments = (m.attachments || []).filter((a: any) => a.type !== 'metadata')
+            return {
+              from: m.from_type === 'user' ? 'user' : 'agent',
+              text: m.text,
+              rawText: m.text,
+              images: realAttachments.map((attachment: ChatAttachment) => attachment.url),
+              attachments: realAttachments,
+              toolCalls: meta.toolCalls,
+              reasoning: meta.reasoning,
+              notice: meta.notice,
+              time: m.time,
+            }
+          })
         )
         setDataLoaded(true)
         return
@@ -790,7 +801,19 @@ export default function TeamChat() {
 
       if (assistantText.trim()) {
         try {
-          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now')
+          const meta: ChatAttachment[] = []
+          if (result.toolCalls || result.reasoning || result.notice) {
+            meta.push({
+              type: 'metadata' as any,
+              url: '',
+              path: JSON.stringify({
+                toolCalls: result.toolCalls,
+                reasoning: result.reasoning,
+                notice: result.notice,
+              }),
+            })
+          }
+          await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
         } catch (err) {
           console.error('Failed saving assistant message', err)
         }

@@ -14,10 +14,6 @@ import {
   addSocialChatMessage,
   subscribeSocialChatMessages,
 } from '../../../domain/social/data'
-import { getAiSupportEnabled } from '../../../domain/product/api'
-import { getSupportAgents } from '../../../domain/team/api'
-import { chatWithAgent } from '../../../domain/agent/runtime-api'
-import type { WorkspaceAgent } from '../../../lib/supabase'
 
 type ChatMessage = {
   id: string
@@ -143,10 +139,7 @@ export default function SupportChat() {
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
   const [staffName, setStaffName] = useState('Support')
-  const [aiEnabled, setAiEnabled] = useState(false)
   const [aiTyping, setAiTyping] = useState(false)
-  const [wsId, setWsId] = useState<string | null>(null)
-  const [supportAgentList, setSupportAgentList] = useState<WorkspaceAgent[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -173,11 +166,6 @@ export default function SupportChat() {
 
         if (!ws) { setLoading(false); return }
         setWorkspaceName(ws.name)
-        setWsId(ws.id)
-
-        // Load AI support config + support agents
-        getAiSupportEnabled(ws.id).then(setAiEnabled).catch(() => {})
-        getSupportAgents(ws.id).then(setSupportAgentList).catch(() => {})
 
         const staffUserId = ws.owner_user_id
         const { data: staffUser } = await supabase
@@ -246,67 +234,28 @@ export default function SupportChat() {
     }
     setMessages((prev) => [...prev, optimistic])
 
-    if (!IS_DEMO && chatId) {
-      try {
-        await addSocialChatMessage(chatId, 'user', text)
-      } catch (err) {
-        console.error('Failed to send message', err)
-      }
-    }
-
-    // AI auto-reply (master toggle + at least one support agent, or demo mode)
-    const supportAgent = supportAgentList[0]
-    if ((aiEnabled && supportAgent) || IS_DEMO) {
+    if (IS_DEMO) {
+      // Demo mode: generate local reply
       setAiTyping(true)
-      const addAiMessage = (reply: string) => {
+      setTimeout(() => {
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
           fromType: 'other',
-          text: reply,
+          text: generateDemoReply(text),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         }
         setMessages((prev) => [...prev, aiMsg])
         setAiTyping(false)
-        if (!IS_DEMO && chatId) {
-          addSocialChatMessage(chatId, 'other', reply).catch(console.error)
-        }
-      }
+      }, 1200 + Math.random() * 800)
+      return
+    }
 
-      if (wsId && supportAgent && !IS_DEMO) {
-        // Parse agent model (format: "provider::model" or just "model")
-        let provider: string | undefined
-        let model: string | undefined
-        if (supportAgent.model) {
-          if (supportAgent.model.includes('::')) {
-            const [p, m] = supportAgent.model.split('::')
-            provider = p
-            model = m
-          } else {
-            model = supportAgent.model
-          }
-        }
-
-        try {
-          const result = await chatWithAgent({
-            workspaceId: wsId,
-            agentId: supportAgent.id,
-            agentName: supportAgent.name,
-            agentRole: `${supportAgent.role || 'Customer support assistant'} for ${workspaceName}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
-            message: text,
-            sessionId: chatId || undefined,
-            ...(provider && { provider }),
-            ...(model && { model }),
-          })
-          addAiMessage(result.response)
-        } catch (err) {
-          console.error('LLM support failed:', err)
-          addAiMessage('Sorry, our AI assistant is temporarily unavailable. A human agent will follow up shortly.')
-        }
-      } else {
-        // Demo mode only
-        setTimeout(() => {
-          addAiMessage(generateDemoReply(text))
-        }, 1200 + Math.random() * 800)
+    if (chatId) {
+      try {
+        await addSocialChatMessage(chatId, 'user', text)
+        // AI reply handled by backend trigger → arrives via Realtime
+      } catch (err) {
+        console.error('Failed to send message', err)
       }
     }
   }

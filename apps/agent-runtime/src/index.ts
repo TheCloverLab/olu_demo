@@ -386,6 +386,106 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // Support auto-reply webhook — called by pg_net trigger when consumer sends a message
+    if (url.pathname === '/webhook/support-message' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req))
+      const { social_chat_id, text, message_id } = body
+
+      if (!social_chat_id || !text) {
+        json(res, 200, { skipped: true, reason: 'missing fields' })
+        return
+      }
+
+      console.log(`[support-auto-reply] chat=${social_chat_id} msg_id=${message_id}`)
+
+      // Look up the chat to find the workspace owner
+      const { data: chat } = await supabase
+        .from('social_chats')
+        .select('with_user_id')
+        .eq('id', social_chat_id)
+        .single()
+
+      if (!chat) {
+        json(res, 200, { skipped: true, reason: 'chat not found' })
+        return
+      }
+
+      // Find the workspace owned by with_user_id
+      const { data: ws } = await supabase
+        .from('workspaces')
+        .select('id, name')
+        .eq('owner_user_id', chat.with_user_id)
+        .limit(1)
+        .single()
+
+      if (!ws) {
+        json(res, 200, { skipped: true, reason: 'workspace not found' })
+        return
+      }
+
+      // Check AI support enabled
+      const { data: config } = await supabase
+        .from('workspace_home_configs')
+        .select('ai_support_enabled')
+        .eq('workspace_id', ws.id)
+        .single()
+
+      if (!config?.ai_support_enabled) {
+        json(res, 200, { skipped: true, reason: 'ai support disabled' })
+        return
+      }
+
+      // Get first support-enabled agent
+      const { data: agents } = await supabase
+        .from('workspace_agents')
+        .select('id, name, role, model')
+        .eq('workspace_id', ws.id)
+        .eq('support_enabled', true)
+        .limit(1)
+
+      const agent = agents?.[0]
+      if (!agent) {
+        json(res, 200, { skipped: true, reason: 'no support agent' })
+        return
+      }
+
+      // Parse agent model
+      const parsedModel = parseModelSelection(
+        agent.model?.includes('::') ? agent.model.split('::')[0] : undefined,
+        agent.model?.includes('::') ? agent.model.split('::')[1] : agent.model || undefined,
+      )
+
+      // Run chat agent (fire-and-forget to avoid blocking the trigger)
+      runChatAgent({
+        workspaceId: ws.id,
+        agentId: agent.id,
+        agentName: agent.name,
+        agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
+        userMessage: text,
+        modelProvider: parsedModel.providerName,
+        modelOverride: parsedModel.modelOverride,
+        sourceId: social_chat_id,
+      }).then(async (result) => {
+        const replyText = result.response || ''
+        if (!replyText.trim()) return
+        const { error: insertErr } = await supabase
+          .from('social_chat_messages')
+          .insert({
+            social_chat_id,
+            from_type: 'other',
+            text: replyText,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          })
+        if (insertErr) console.error('[support-auto-reply] insert error:', insertErr)
+        else console.log(`[support-auto-reply] replied: ${replyText.slice(0, 100)}`)
+      }).catch((err) => {
+        console.error('[support-auto-reply] chat error:', err.message)
+      })
+
+      json(res, 202, { accepted: true, agent: agent.name })
+      return
+    }
+
     // List registered Lark bots
     if (url.pathname === '/bots' && req.method === 'GET') {
       json(res, 200, { bots: getRegisteredBots() })

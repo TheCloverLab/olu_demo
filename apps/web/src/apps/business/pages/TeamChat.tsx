@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X, Copy, Check, Square, RefreshCcw } from 'lucide-react'
+import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X, Copy, Check, Square, RefreshCcw, DollarSign, Pause } from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
@@ -310,6 +310,153 @@ function CodeBlock({ className, children }: { className?: string; children?: any
           </pre>
         )}
       </Highlight>
+    </div>
+  )
+}
+
+// --- Budget cards ---
+
+type BudgetApprovalData = { type: 'budget_approval_required'; task: string; options: number[]; currency: string }
+type BudgetProgressData = {
+  type: 'budget_progress'; task: string; approved: number; spent: number; remaining: number
+  currency: string; status: string; breakdown?: { item: string; amount: number }[]
+}
+
+function parseBudgetFromToolCalls(toolCalls: ToolCallSummary[]): BudgetApprovalData | BudgetProgressData | null {
+  for (const tc of toolCalls) {
+    if (tc.name === 'request_budget' || tc.name === 'report_budget_usage') {
+      try {
+        const data = JSON.parse(tc.result)
+        if (data?.type === 'budget_approval_required' || data?.type === 'budget_progress') return data
+      } catch { /* ignore */ }
+    }
+  }
+  return null
+}
+
+function BudgetApprovalCard({ data, onApprove }: { data: BudgetApprovalData; onApprove: (amount: number) => void }) {
+  const [approved, setApproved] = useState<number | null>(null)
+  const [customMode, setCustomMode] = useState(false)
+  const [customVal, setCustomVal] = useState('')
+
+  function handleApprove(amount: number) {
+    setApproved(amount)
+    onApprove(amount)
+  }
+
+  if (approved !== null) {
+    return (
+      <div className="mt-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 size={16} />
+          <span className="font-semibold text-sm">Budget Approved: ${approved}</span>
+        </div>
+        <p className="text-xs text-[var(--olu-muted)] mt-1">{data.task}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <DollarSign size={16} className="text-amber-500" />
+        <span className="font-semibold text-sm">Budget Approval Required</span>
+      </div>
+      <p className="text-xs text-[var(--olu-text-secondary)]">{data.task}</p>
+      <div className="flex flex-wrap gap-2">
+        {data.options.map((amount) => (
+          <button
+            key={amount}
+            onClick={() => handleApprove(amount)}
+            className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-sm font-medium text-amber-600 dark:text-amber-300 transition-colors"
+          >
+            ${amount}
+          </button>
+        ))}
+        {!customMode ? (
+          <button
+            onClick={() => setCustomMode(true)}
+            className="px-4 py-2 rounded-xl bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)] border border-[var(--olu-card-border)] text-sm text-[var(--olu-text-secondary)] transition-colors"
+          >
+            Custom
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm text-[var(--olu-text-secondary)]">$</span>
+            <input
+              autoFocus
+              type="number"
+              value={customVal}
+              onChange={(e) => setCustomVal(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && customVal) handleApprove(Number(customVal)) }}
+              className="w-20 px-2 py-1.5 rounded-lg bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)] text-sm focus:outline-none focus:border-amber-400"
+              placeholder="Amount"
+            />
+            <button
+              onClick={() => customVal && handleApprove(Number(customVal))}
+              disabled={!customVal}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-medium disabled:opacity-40 hover:bg-amber-600 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BudgetProgressCard({ data, onStop }: { data: BudgetProgressData; onStop?: () => void }) {
+  const pct = data.approved > 0 ? Math.min(100, (data.spent / data.approved) * 100) : 0
+  const statusColors: Record<string, { bar: string; badge: string; label: string }> = {
+    in_progress: { bar: 'bg-amber-400', badge: 'bg-amber-400/10 text-amber-600 dark:text-amber-400', label: 'In Progress' },
+    paused: { bar: 'bg-gray-400', badge: 'bg-gray-400/10 text-gray-500', label: 'Paused' },
+    completed: { bar: 'bg-emerald-400', badge: 'bg-emerald-400/10 text-emerald-600 dark:text-emerald-400', label: 'Completed' },
+    cancelled: { bar: 'bg-red-400', badge: 'bg-red-400/10 text-red-500', label: 'Cancelled' },
+  }
+  const st = statusColors[data.status] || statusColors.in_progress
+
+  return (
+    <div className="mt-3 rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <DollarSign size={16} className="text-[var(--olu-text-secondary)]" />
+          <span className="font-semibold text-sm">{data.task}</span>
+        </div>
+        <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', st.badge)}>{st.label}</span>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className={clsx('h-full rounded-full transition-all', st.bar)} style={{ width: `${Math.max(3, pct)}%` }} />
+        </div>
+        <div className="flex justify-between text-xs text-[var(--olu-text-secondary)]">
+          <span>Spent: ${data.spent.toFixed(2)}</span>
+          <span>Remaining: ${data.remaining.toFixed(2)}</span>
+          <span>Budget: ${data.approved.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {data.breakdown && data.breakdown.length > 0 && (
+        <div className="space-y-1 pt-1 border-t border-[var(--olu-card-border)]">
+          {data.breakdown.map((item, i) => (
+            <div key={i} className="flex justify-between text-xs">
+              <span className="text-[var(--olu-text-secondary)]">{item.item}</span>
+              <span className="font-medium">${item.amount.toFixed(2)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {data.status === 'in_progress' && onStop && (
+        <button
+          onClick={onStop}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-medium text-red-500 transition-colors"
+        >
+          <Pause size={12} />
+          Stop & Return Funds
+        </button>
+      )}
     </div>
   )
 }
@@ -973,6 +1120,23 @@ export default function TeamChat() {
                             </p>
                           )}
                           {showToolDebug && msg.toolCalls?.length > 0 && <ToolCallCards toolCalls={msg.toolCalls} />}
+                          {msg.toolCalls && (() => {
+                            const budgetData = parseBudgetFromToolCalls(msg.toolCalls)
+                            if (!budgetData) return null
+                            if (budgetData.type === 'budget_approval_required') {
+                              return <BudgetApprovalCard data={budgetData} onApprove={(amount) => {
+                                setInput(`Budget approved: $${amount}. Proceed with the task.`)
+                                setTimeout(() => sendMessage(), 100)
+                              }} />
+                            }
+                            if (budgetData.type === 'budget_progress') {
+                              return <BudgetProgressCard data={budgetData} onStop={() => {
+                                setInput('Stop the task immediately. Pause all spending.')
+                                setTimeout(() => sendMessage(), 100)
+                              }} />
+                            }
+                            return null
+                          })()}
                         </>
                       ) : (
                         <span className="flex gap-1 items-center h-4">

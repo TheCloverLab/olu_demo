@@ -52,7 +52,7 @@ function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: 
       <motion.button
         whileHover={{ x: 4 }}
         onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
-        className="flex items-center gap-3 flex-1 min-w-0"
+        className="flex items-center gap-3 flex-1 min-w-0 text-left"
       >
         <div className="relative flex-shrink-0">
           {agent.avatar_img ? (

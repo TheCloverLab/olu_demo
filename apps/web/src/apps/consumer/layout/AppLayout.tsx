@@ -2,15 +2,14 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Sun, Moon, Monitor, Globe, Hash } from 'lucide-react'
+import { Settings, ChevronRight, Menu, X, Zap, LogIn, Briefcase, Wallet, Compass, User } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import { useTheme } from '../../../context/ThemeContext'
 import { getUserWallet, getJoinedWorkspaces } from '../../../domain/workspace/api'
 import type { Workspace, WorkspaceJoin } from '../../../lib/supabase'
 import clsx from 'clsx'
 import { APP_VERSION } from '../../../lib/version'
-import { CONSUMER_NAV, getTemplateKeyForAppType } from '../templateConfig'
+import type { ConsumerNavItem } from '../templateConfig'
 
 function Avatar({ user, size = 'sm' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -37,49 +36,6 @@ function MenuItem({ icon: Icon, label, onClick }) {
       <Icon size={20} className="text-olu-muted" />
       <span className="text-sm font-medium">{label}</span>
       <ChevronRight size={16} className="text-olu-muted ml-auto" />
-    </button>
-  )
-}
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const options = [
-    { value: 'light' as const, icon: Sun },
-    { value: 'dark' as const, icon: Moon },
-    { value: 'system' as const, icon: Monitor },
-  ]
-
-  return (
-    <div className="flex items-center gap-0.5 rounded-lg border border-olu-border bg-olu-surface p-0.5">
-      {options.map(({ value, icon: Icon }) => (
-        <button
-          key={value}
-          onClick={() => setTheme(value)}
-          className={clsx(
-            'p-1.5 rounded-md transition-colors',
-            theme === value
-              ? 'bg-olu-primary text-white'
-              : 'text-olu-muted hover:text-olu-text'
-          )}
-        >
-          <Icon size={14} />
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function LanguageToggle() {
-  const { i18n } = useTranslation()
-  const isZh = i18n.language?.startsWith('zh')
-
-  return (
-    <button
-      onClick={() => i18n.changeLanguage(isZh ? 'en' : 'zh')}
-      className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-olu-border bg-olu-surface text-xs font-medium text-olu-muted hover:text-olu-text transition-colors"
-    >
-      <Globe size={14} />
-      {isZh ? 'EN' : '中文'}
     </button>
   )
 }
@@ -171,15 +127,21 @@ function MoreMenu({ open, onClose, showBusiness, walletBalance, joinedWorkspaces
   )
 }
 
+const NAV_ITEMS: ConsumerNavItem[] = [
+  { to: '/discover', icon: Compass, label: 'nav.discover', exact: true },
+  { to: '/wallet', icon: Wallet, label: 'common.wallet' },
+  { to: '/settings', icon: Settings, label: 'common.settings' },
+]
+
 export default function AppLayout() {
-  const { currentUser, appType, enabledBusinessModules } = useApp()
+  const { currentUser, enabledBusinessModules } = useApp()
   const { user: authUser } = useAuth()
   const { t } = useTranslation()
   const [moreOpen, setMoreOpen] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const [joinedWorkspaces, setJoinedWorkspaces] = useState<(WorkspaceJoin & { workspace: Workspace })[]>([])
   const navigate = useNavigate()
-  const navItems = CONSUMER_NAV[getTemplateKeyForAppType(appType)]
+  const navItems = NAV_ITEMS
   const publicProfilePath = currentUser?.id ? `/people/${currentUser.id}` : '/profile'
 
   useEffect(() => {

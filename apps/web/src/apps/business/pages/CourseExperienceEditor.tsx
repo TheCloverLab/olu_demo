@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 import { getExperience, deleteExperience, updateExperience } from '../../../domain/experience/api'
 import {
   listCourses, createCourse, updateCourse, deleteCourse,
@@ -697,9 +698,10 @@ export default function CourseExperienceEditor() {
     }).finally(() => setLoading(false))
   }
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   async function handleDeleteExperience() {
     if (!exp) return
-    if (!confirm(`Delete "${exp.name}"? This cannot be undone.`)) return
     try {
       await deleteExperience(exp.id)
       navigate('/business/experiences')
@@ -736,13 +738,22 @@ export default function CourseExperienceEditor() {
   }
 
   return (
-    <CourseListView
-      experience={exp}
-      courses={courses}
-      onSelect={setSelectedCourseId}
-      onCreated={reload}
-      onDeleteExperience={handleDeleteExperience}
-      onCoverUpdated={reload}
-    />
+    <>
+      <CourseListView
+        experience={exp}
+        courses={courses}
+        onSelect={setSelectedCourseId}
+        onCreated={reload}
+        onDeleteExperience={() => setShowDeleteConfirm(true)}
+        onCoverUpdated={reload}
+      />
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete experience"
+        message={`Delete "${exp.name}"? This cannot be undone.`}
+        onConfirm={() => { setShowDeleteConfirm(false); handleDeleteExperience() }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    </>
   )
 }

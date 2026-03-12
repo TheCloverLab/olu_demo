@@ -401,6 +401,27 @@ export async function upsertHomeConfig(
   return data
 }
 
+export async function setAiSupportEnabled(workspaceId: string, enabled: boolean) {
+  const { error } = await supabase
+    .from('workspace_home_configs')
+    .upsert({
+      workspace_id: workspaceId,
+      ai_support_enabled: enabled,
+      updated_at: new Date().toISOString(),
+    })
+  if (error) throw error
+}
+
+export async function getAiSupportEnabled(workspaceId: string): Promise<boolean> {
+  if (IS_DEMO) return true
+  const { data } = await supabase
+    .from('workspace_home_configs')
+    .select('ai_support_enabled')
+    .eq('workspace_id', workspaceId)
+    .single()
+  return data?.ai_support_enabled ?? false
+}
+
 // ── Product with Plans (convenience) ────────────────────────────
 
 export type ProductWithPlans = WorkspaceProduct & {

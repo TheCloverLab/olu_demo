@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, ArrowLeft, Send, Headphones } from 'lucide-react'
+import { Loader2, ArrowLeft, Send, Headphones, Bot } from 'lucide-react'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
@@ -11,6 +11,7 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
+import { getAiSupportEnabled } from '../../../domain/product/api'
 
 type ChatMessage = {
   id: string
@@ -32,6 +33,7 @@ const DEMO_MESSAGES: ChatMessage[] = [
 
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.fromType === 'user'
+  const isAi = msg.id.startsWith('ai-')
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -39,12 +41,24 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
       className={clsx('flex gap-2.5', isUser ? 'flex-row-reverse' : '')}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center flex-shrink-0">
-          <Headphones size={14} className="text-amber-600 dark:text-amber-400" />
+        <div className={clsx(
+          'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+          isAi
+            ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10'
+            : 'bg-gradient-to-br from-amber-500/20 to-amber-600/10'
+        )}>
+          {isAi ? (
+            <Bot size={14} className="text-cyan-600 dark:text-cyan-400" />
+          ) : (
+            <Headphones size={14} className="text-amber-600 dark:text-amber-400" />
+          )}
         </div>
       )}
 
       <div className={clsx('max-w-[80%] flex flex-col gap-0.5', isUser ? 'items-end' : 'items-start')}>
+        {isAi && (
+          <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium px-1">AI Assistant</span>
+        )}
         <div className={clsx(
           'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
           isUser
@@ -54,6 +68,32 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.text}
         </div>
         <p className="text-[10px] text-[var(--olu-muted)] px-1">{msg.time}</p>
+      </div>
+    </motion.div>
+  )
+}
+
+function TypingIndicator() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex gap-2.5"
+    >
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/10 flex items-center justify-center flex-shrink-0">
+        <Bot size={14} className="text-cyan-600 dark:text-cyan-400" />
+      </div>
+      <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)]">
+        <div className="flex gap-1">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-1.5 h-1.5 rounded-full bg-[var(--olu-muted)]"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+            />
+          ))}
+        </div>
       </div>
     </motion.div>
   )
@@ -69,6 +109,8 @@ export default function SupportChat() {
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
   const [staffName, setStaffName] = useState('Support')
+  const [aiEnabled, setAiEnabled] = useState(false)
+  const [aiTyping, setAiTyping] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -95,6 +137,9 @@ export default function SupportChat() {
 
         if (!ws) { setLoading(false); return }
         setWorkspaceName(ws.name)
+
+        // Check if AI support is enabled
+        getAiSupportEnabled(ws.id).then(setAiEnabled).catch(() => {})
 
         const staffUserId = ws.owner_user_id
         const { data: staffUser } = await supabase
@@ -150,6 +195,48 @@ export default function SupportChat() {
         console.error('Failed to send message', err)
       }
     }
+
+    // AI auto-reply
+    if (aiEnabled || IS_DEMO) {
+      setAiTyping(true)
+      setTimeout(async () => {
+        const reply = generateAiReply(text)
+        const aiMsg: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          fromType: 'other',
+          text: reply,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }
+        setMessages((prev) => [...prev, aiMsg])
+        setAiTyping(false)
+        if (!IS_DEMO && chatId) {
+          addSocialChatMessage(chatId, 'other', reply).catch(console.error)
+        }
+      }, 1200 + Math.random() * 800)
+    }
+  }
+
+  function generateAiReply(userText: string): string {
+    const lower = userText.toLowerCase()
+    if (lower.includes('price') || lower.includes('cost') || lower.includes('pricing') || lower.includes('价格') || lower.includes('多少钱')) {
+      return "I'd be happy to help with pricing! Our plans start from $9.99/month. Would you like me to walk you through the options?"
+    }
+    if (lower.includes('refund') || lower.includes('cancel') || lower.includes('退款') || lower.includes('取消')) {
+      return "I understand you'd like help with a refund or cancellation. Let me look into your account. Could you share your order ID or the product name?"
+    }
+    if (lower.includes('access') || lower.includes('locked') || lower.includes('unlock') || lower.includes('打不开') || lower.includes('权限')) {
+      return "It looks like you might be having an access issue. Let me check your membership status — this usually resolves in a few minutes after payment confirmation."
+    }
+    if (lower.includes('bug') || lower.includes('error') || lower.includes('broken') || lower.includes('问题') || lower.includes('错误')) {
+      return "Sorry to hear you're running into issues! Could you describe what you're seeing? A screenshot would also help us investigate faster."
+    }
+    if (lower.includes('thank') || lower.includes('谢谢') || lower.includes('thanks')) {
+      return "You're welcome! Is there anything else I can help you with? 😊"
+    }
+    if (lower.includes('hi') || lower.includes('hello') || lower.includes('你好') || lower.includes('hey')) {
+      return "Hello! Welcome to our support. How can I help you today?"
+    }
+    return "Thanks for reaching out! I've noted your message and will look into this. Is there any additional context you can share to help me assist you better?"
   }
 
   if (loading) {
@@ -187,6 +274,7 @@ export default function SupportChat() {
         {messages.map((msg) => (
           <MessageBubble key={msg.id} msg={msg} />
         ))}
+        {aiTyping && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 

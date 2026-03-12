@@ -4,11 +4,13 @@ import { Loader2, Send, Headphones, ArrowLeft, MessageSquare, Bot } from 'lucide
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
+import { useApp } from '../../../context/AppContext'
 import {
   getSupportChatsForOwner,
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
+import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
 
 type SupportChat = {
   id: string
@@ -211,6 +213,7 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
 export default function SupportCenter() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const { workspace } = useApp()
   const [chats, setChats] = useState<SupportChat[]>([])
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
@@ -223,6 +226,22 @@ export default function SupportCenter() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [user?.id])
+
+  useEffect(() => {
+    if (!workspace?.id) return
+    getAiSupportEnabled(workspace.id).then(setAiEnabled).catch(() => {})
+  }, [workspace?.id])
+
+  async function toggleAi() {
+    if (!workspace?.id) return
+    const next = !aiEnabled
+    setAiEnabled(next)
+    try {
+      await setAiSupportEnabled(workspace.id, next)
+    } catch {
+      setAiEnabled(!next)
+    }
+  }
 
   if (loading) {
     return (
@@ -253,7 +272,7 @@ export default function SupportCenter() {
           </div>
           {/* AI Agent toggle */}
           <button
-            onClick={() => setAiEnabled(!aiEnabled)}
+            onClick={toggleAi}
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled

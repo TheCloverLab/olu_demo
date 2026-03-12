@@ -51,7 +51,7 @@ const AgentState = Annotation.Root({
 async function callLLM(prompt: string, options?: { json?: boolean }): Promise<string> {
   const apiKey = process.env.LLM_API_KEY
   const baseURL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1'
-  const model = process.env.LLM_MODEL || 'gpt-4o-mini'
+  const model = process.env.LLM_MODEL || 'gpt-5.4-2026-03-05'
 
   const body: Record<string, unknown> = {
     model,

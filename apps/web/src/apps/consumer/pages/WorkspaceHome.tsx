@@ -473,6 +473,7 @@ export default function WorkspaceHome() {
   const [joiningWorkspace, setJoiningWorkspace] = useState(false)
   const [experienceProductMap, setExperienceProductMap] = useState<Record<string, string>>({})
   const [memberCount, setMemberCount] = useState(0)
+  const navigate = useNavigate()
 
   const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
 
@@ -584,7 +585,6 @@ export default function WorkspaceHome() {
   const tabs = homeConfig?.tabs || []
   const layout: WorkspaceHomeLayout = (homeConfig?.layout as WorkspaceHomeLayout) || 'classic'
 
-  const navigate = useNavigate()
   const headerProps = { workspace, headline, cover, userId, hasJoined, joining: joiningWorkspace, onJoin: handleJoinWorkspace, t, navigate, memberCount }
 
   return (

@@ -212,32 +212,28 @@ function HomePreview({ config, experiences }: { config: { cover?: string | null;
 
       {currentLayout === 'classic' && (
         <>
-          <div className="h-32 bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)] relative">
+          <div className="h-32 bg-gradient-to-br from-slate-900 to-slate-800 relative">
             {config.cover && <img src={config.cover} alt="Cover" className="w-full h-full object-cover" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
           </div>
-          <div className="px-4 -mt-4 relative z-10">
-            <div className="flex items-end gap-3">
-              <WorkspaceIcon workspace={workspace} />
-              <div className="pb-1">
-                <p className="font-bold text-sm">{name}</p>
-                <p className="text-xs text-[var(--olu-muted)]">{headlineText}</p>
-              </div>
+          <div className="px-4 -mt-6 relative z-10">
+            <WorkspaceIcon workspace={workspace} size="lg" />
+            <div className="mt-2 space-y-1">
+              <p className="font-black text-base">{name}</p>
+              <p className="text-[11px] text-[var(--olu-text-secondary)] leading-relaxed">{headlineText}</p>
             </div>
           </div>
         </>
       )}
 
       {currentLayout === 'hero' && (
-        <div className="h-48 bg-gradient-to-br from-cyan-900/60 to-[var(--olu-card-bg)] relative flex items-end">
-          {config.cover && <img src={config.cover} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />}
-          <div className="relative z-10 px-5 pb-4 w-full" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.5))' }}>
-            <div className="flex items-center gap-3">
-              <WorkspaceIcon workspace={workspace} size="lg" />
-              <div>
-                <p className="font-black text-lg text-white">{name}</p>
-                <p className="text-xs text-white/70">{headlineText}</p>
-              </div>
-            </div>
+        <div className="h-48 bg-gradient-to-br from-slate-900 to-slate-800 relative flex items-end">
+          {config.cover && <img src={config.cover} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+          <div className="relative z-10 px-4 pb-4 w-full space-y-2">
+            <WorkspaceIcon workspace={workspace} size="lg" />
+            <p className="font-black text-base text-white">{name}</p>
+            <p className="text-[11px] text-white/60">{headlineText}</p>
           </div>
         </div>
       )}
@@ -256,8 +252,8 @@ function HomePreview({ config, experiences }: { config: { cover?: string | null;
 
       {currentLayout === 'catalog' && (
         <>
-          <div className="h-24 bg-gradient-to-br from-cyan-900/40 to-[var(--olu-card-bg)] relative">
-            {config.cover && <img src={config.cover} alt="Cover" className="w-full h-full object-cover" />}
+          <div className="h-24 bg-gradient-to-r from-cyan-600 to-blue-700 relative">
+            {config.cover && <img src={config.cover} alt="Cover" className="w-full h-full object-cover opacity-40" />}
           </div>
           <div className="px-4 -mt-6 relative z-10">
             <div className="bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl p-3 flex items-center gap-3 shadow-sm">

@@ -511,6 +511,7 @@ export default function TeamChat() {
   const [attachedImages, setAttachedImages] = useState<{ file: File; preview: string }[]>([])
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('olu-chat-model') || '')
   const [showModelMenu, setShowModelMenu] = useState(false)
+  const [modelSearch, setModelSearch] = useState('')
   const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
   const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number; label: string } | null>(null)
   const [expandedImage, setExpandedImage] = useState<string | null>(null)
@@ -696,7 +697,10 @@ export default function TeamChat() {
 
   const selectedModelOption = availableModels.find((option) => option.id === selectedModel) || null
   const selectedModelSupportsVision = Boolean(selectedModelOption?.supportsVision)
-  const groupedModels = availableModels.reduce<Record<string, ModelOption[]>>((acc, option) => {
+  const filteredModels = modelSearch
+    ? availableModels.filter((m) => m.model.toLowerCase().includes(modelSearch.toLowerCase()) || m.providerLabel.toLowerCase().includes(modelSearch.toLowerCase()))
+    : availableModels
+  const groupedModels = filteredModels.reduce<Record<string, ModelOption[]>>((acc, option) => {
     if (!acc[option.providerLabel]) acc[option.providerLabel] = []
     acc[option.providerLabel].push(option)
     return acc
@@ -1367,8 +1371,8 @@ export default function TeamChat() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    {/* Model selector */}
-                    {availableModels.length > 1 && (
+                    {/* Model selector — hidden for marketplace (openclaw) agents */}
+                    {availableModels.length > 1 && agent?.runtime_type !== 'openclaw' && (
                       <div className="relative">
                         <button
                           onMouseDown={e => e.preventDefault()}
@@ -1380,13 +1384,27 @@ export default function TeamChat() {
                         <AnimatePresence>
                           {showModelMenu && (
                             <>
-                              <div className="fixed inset-0 z-40" onClick={() => setShowModelMenu(false)} />
+                              <div className="fixed inset-0 z-40" onClick={() => { setShowModelMenu(false); setModelSearch('') }} />
                               <motion.div
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 8 }}
-                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[260px] max-h-80 overflow-y-auto py-1 rounded-xl bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)] shadow-2xl"
+                                className="absolute bottom-full right-0 mb-2 z-50 flex flex-col min-w-[260px] max-h-80 rounded-xl bg-[var(--olu-input-bg)] border border-[var(--olu-card-border)] shadow-2xl"
                               >
+                                <div className="px-3 pt-2 pb-1 border-b border-[var(--olu-card-border)]">
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={modelSearch}
+                                    onChange={(e) => setModelSearch(e.target.value)}
+                                    placeholder="Search models..."
+                                    className="w-full px-2 py-1.5 rounded-lg bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-xs text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-400"
+                                  />
+                                </div>
+                                <div className="overflow-y-auto py-1 max-h-64">
+                                {Object.keys(groupedModels).length === 0 && modelSearch && (
+                                  <div className="px-4 py-3 text-xs text-[var(--olu-muted)] text-center">No models found</div>
+                                )}
                                 {Object.entries(groupedModels).map(([providerLabel, models]) => (
                                   <div key={providerLabel} className="py-1">
                                     <div className="px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--olu-input-placeholder)]">
@@ -1399,6 +1417,7 @@ export default function TeamChat() {
                                           setSelectedModel(m.id)
                                           localStorage.setItem('olu-chat-model', m.id)
                                           setShowModelMenu(false)
+                                          setModelSearch('')
                                         }}
                                         className={clsx(
                                           'w-full px-4 py-2.5 text-left text-sm transition-colors',
@@ -1413,6 +1432,7 @@ export default function TeamChat() {
                                     ))}
                                   </div>
                                 ))}
+                                </div>
                               </motion.div>
                             </>
                           )}

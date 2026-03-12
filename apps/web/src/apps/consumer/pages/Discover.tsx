@@ -130,7 +130,7 @@ export default function Discover() {
         )}
 
         {!loading && workspaces.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-[var(--olu-border)] px-6 py-12 text-center space-y-3">
+          <div className="rounded-2xl border border-dashed border-gray-400 dark:border-[var(--olu-border)] px-6 py-12 text-center space-y-3">
             <Users size={28} className="text-[var(--olu-muted)] mx-auto" />
             <p className="text-sm text-[var(--olu-muted)]">
               {debouncedQuery ? t('discover.noResults') : t('discover.nothingNew')}

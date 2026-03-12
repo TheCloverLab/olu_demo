@@ -186,7 +186,7 @@ export default function ForumEditor() {
       {/* Banner Image */}
       <div className="space-y-3">
         <h3 className="font-semibold text-sm">Banner Image</h3>
-        <div className="rounded-xl border border-dashed border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-8 flex flex-col items-center justify-center gap-3">
+        <div className="rounded-xl border border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] p-8 flex flex-col items-center justify-center gap-3">
           {config.banner ? (
             <div className="relative w-full">
               <img src={config.banner} alt="Banner" className="w-full h-32 object-cover rounded-lg" />

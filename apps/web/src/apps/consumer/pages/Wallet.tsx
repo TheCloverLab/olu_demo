@@ -250,7 +250,7 @@ export default function Wallet() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
+          <div className="rounded-2xl border border-dashed border-gray-400 dark:border-olu-border px-4 py-6 text-sm text-olu-muted">
             {t('wallet.noMemberships')}
           </div>
         )}
@@ -287,7 +287,7 @@ export default function Wallet() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-olu-border px-4 py-6 text-sm text-olu-muted">
+          <div className="rounded-2xl border border-dashed border-gray-400 dark:border-olu-border px-4 py-6 text-sm text-olu-muted">
             {t('wallet.noPurchases')}
           </div>
         )}
@@ -322,7 +322,7 @@ export default function Wallet() {
           </div>
         </div>
 
-        <button className="mt-3 w-full rounded-2xl border border-dashed border-olu-border px-4 py-3 text-sm text-olu-muted hover:bg-[var(--olu-card-hover)] transition-colors">
+        <button className="mt-3 w-full rounded-2xl border border-dashed border-gray-400 dark:border-olu-border px-4 py-3 text-sm text-olu-muted hover:bg-[var(--olu-card-hover)] transition-colors">
           {t('wallet.addPaymentMethod')}
         </button>
       </section>

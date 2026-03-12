@@ -991,14 +991,14 @@ export default function TeamChat() {
         <>
           {runtimeError && (
             <div className="px-4 pt-4">
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-start gap-2 text-sm text-amber-100">
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-100">
                 <AlertTriangle size={16} className="mt-0.5 text-amber-600 dark:text-amber-300 flex-shrink-0" />
                 <div className="flex-1">
                   <p>{runtimeError}</p>
                   {retryMode && (
                     <button
                       onClick={retryMode === 'upload' ? sendMessage : retryLastAgentRequest}
-                      className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-400/15"
+                      className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-100 hover:bg-amber-400/15"
                     >
                       <RefreshCcw size={12} />
                       <span>{retryMode === 'upload' ? 'Retry upload' : 'Retry request'}</span>

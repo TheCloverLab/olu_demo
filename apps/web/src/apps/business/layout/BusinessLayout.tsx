@@ -54,6 +54,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     items: [
       { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
       { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
+      { to: '/business/members', icon: Users, labelKey: 'nav.members' },
       { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
     ],
   },

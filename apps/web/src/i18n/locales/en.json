@@ -63,6 +63,7 @@
     "products": "Products",
     "supportChats": "Support Chats",
     "homeEditor": "Home Editor",
+    "members": "Members",
     "aiAgentMarketplace": "AI Agent Marketplace",
     "openOlu": "Open OLU",
     "workspaceOperator": "Workspace operator",
@@ -266,7 +267,9 @@
     "namePlaceholder": "Display name",
     "handlePlaceholder": "Choose a handle",
     "continueButton": "Continue",
-    "uploadAvatar": "Upload avatar"
+    "uploadAvatar": "Upload avatar",
+    "presetTitle": "Choose your template",
+    "presetSubtitle": "This sets up your workspace with starter content. You can customize everything later."
   },
   "consumer": {
     "topics": "Topics",

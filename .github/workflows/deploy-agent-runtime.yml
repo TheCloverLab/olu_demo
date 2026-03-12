@@ -64,8 +64,9 @@ jobs:
         id: register-task-def
         run: |
           EXEC_ROLE_ARN=$(aws iam get-role --role-name ecsTaskExecutionRole --query 'Role.Arn' --output text)
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
           TMPFILE=$(mktemp)
-          sed "s|\${EXECUTION_ROLE_ARN}|$EXEC_ROLE_ARN|g; s|\${TASK_ROLE_ARN}|$EXEC_ROLE_ARN|g" \
+          sed "s|\${EXECUTION_ROLE_ARN}|$EXEC_ROLE_ARN|g; s|\${TASK_ROLE_ARN}|$EXEC_ROLE_ARN|g; s|\${IMAGE_URI}|$IMAGE_URI|g" \
             apps/agent-runtime/infra/task-definition.json > "$TMPFILE"
           TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json "file://$TMPFILE" \

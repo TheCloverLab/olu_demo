@@ -10,7 +10,8 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
-import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
+import { setAiSupportEnabled, getAiSupportEnabled, setAiSupportModel, getAiSupportModel } from '../../../domain/product/api'
+import { getAvailableModels, type ModelOption } from '../../../domain/agent/runtime-api'
 
 type SupportChat = {
   id: string
@@ -218,6 +219,8 @@ export default function SupportCenter() {
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
   const [aiEnabled, setAiEnabled] = useState(false)
+  const [aiModel, setAiModel] = useState<string | null>(null)
+  const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
 
   useEffect(() => {
     if (!user?.id) return
@@ -230,6 +233,8 @@ export default function SupportCenter() {
   useEffect(() => {
     if (!workspace?.id) return
     getAiSupportEnabled(workspace.id).then(setAiEnabled).catch(() => {})
+    getAiSupportModel(workspace.id).then(setAiModel).catch(() => {})
+    getAvailableModels().then(setAvailableModels).catch(() => {})
   }, [workspace?.id])
 
   async function toggleAi() {
@@ -297,6 +302,25 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
+          {/* Model selector */}
+          {aiEnabled && availableModels.length > 0 && (
+            <select
+              value={aiModel || ''}
+              onChange={async (e) => {
+                const val = e.target.value || null
+                setAiModel(val)
+                if (workspace?.id) {
+                  setAiSupportModel(workspace.id, val).catch(() => {})
+                }
+              }}
+              className="w-full px-3 py-2 rounded-xl border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] text-xs focus:outline-none focus:border-cyan-400"
+            >
+              <option value="">Default model</option>
+              {availableModels.map((m) => (
+                <option key={m.id} value={m.id}>{m.provider} / {m.model}</option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
           {chats.length === 0 ? (

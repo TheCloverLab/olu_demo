@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Loader2, ArrowLeft, Send, Headphones, Bot } from 'lucide-react'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
@@ -11,7 +13,8 @@ import {
   getSocialChatMessages,
   addSocialChatMessage,
 } from '../../../domain/social/data'
-import { getAiSupportEnabled } from '../../../domain/product/api'
+import { getAiSupportEnabled, getAiSupportModel } from '../../../domain/product/api'
+import { chatWithAgent } from '../../../domain/agent/runtime-api'
 
 type ChatMessage = {
   id: string
@@ -62,10 +65,31 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
         <div className={clsx(
           'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
           isUser
-            ? 'bg-cyan-500 text-white rounded-tr-sm'
+            ? 'bg-cyan-500 text-white rounded-tr-sm whitespace-pre-wrap'
             : 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
         )}>
-          {msg.text}
+          {isUser ? msg.text : (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-4 mb-1.5">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5">{children}</ol>,
+                li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                table: ({ children }) => <table className="border-collapse text-xs my-1.5 w-full">{children}</table>,
+                th: ({ children }) => <th className="border border-gray-300 dark:border-gray-600 px-2 py-1 text-left font-semibold bg-gray-200 dark:bg-gray-700">{children}</th>,
+                td: ({ children }) => <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">{children}</td>,
+                code: ({ children, className }) => {
+                  if (className) return <pre className="bg-black/10 dark:bg-black/30 rounded-lg px-3 py-2 overflow-x-auto text-xs my-1.5"><code>{children}</code></pre>
+                  return <code className="bg-black/10 dark:bg-black/20 rounded px-1 py-0.5 text-xs">{children}</code>
+                },
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-600 dark:text-cyan-400 underline">{children}</a>,
+              }}
+            >
+              {msg.text}
+            </ReactMarkdown>
+          )}
         </div>
         <p className="text-[10px] text-[var(--olu-muted)] px-1">{msg.time}</p>
       </div>
@@ -99,6 +123,13 @@ function TypingIndicator() {
   )
 }
 
+function generateDemoReply(userText: string): string {
+  const lower = userText.toLowerCase()
+  if (lower.includes('price') || lower.includes('cost')) return "Our plans start from $9.99/month. Would you like details?"
+  if (lower.includes('hi') || lower.includes('hello')) return "Hello! Welcome to our support. How can I help you today?"
+  return "Thanks for reaching out! I've noted your message. Is there anything else you can share?"
+}
+
 export default function SupportChat() {
   const { workspaceSlug } = useParams()
   const { t } = useTranslation()
@@ -111,6 +142,8 @@ export default function SupportChat() {
   const [staffName, setStaffName] = useState('Support')
   const [aiEnabled, setAiEnabled] = useState(false)
   const [aiTyping, setAiTyping] = useState(false)
+  const [wsId, setWsId] = useState<string | null>(null)
+  const [aiModel, setAiModel] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -137,9 +170,11 @@ export default function SupportChat() {
 
         if (!ws) { setLoading(false); return }
         setWorkspaceName(ws.name)
+        setWsId(ws.id)
 
-        // Check if AI support is enabled
+        // Check if AI support is enabled + load model config
         getAiSupportEnabled(ws.id).then(setAiEnabled).catch(() => {})
+        getAiSupportModel(ws.id).then(setAiModel).catch(() => {})
 
         const staffUserId = ws.owner_user_id
         const { data: staffUser } = await supabase
@@ -199,8 +234,7 @@ export default function SupportChat() {
     // AI auto-reply
     if (aiEnabled || IS_DEMO) {
       setAiTyping(true)
-      setTimeout(async () => {
-        const reply = generateAiReply(text)
+      const addAiMessage = (reply: string) => {
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
           fromType: 'other',
@@ -212,31 +246,45 @@ export default function SupportChat() {
         if (!IS_DEMO && chatId) {
           addSocialChatMessage(chatId, 'other', reply).catch(console.error)
         }
-      }, 1200 + Math.random() * 800)
-    }
-  }
+      }
 
-  function generateAiReply(userText: string): string {
-    const lower = userText.toLowerCase()
-    if (lower.includes('price') || lower.includes('cost') || lower.includes('pricing') || lower.includes('价格') || lower.includes('多少钱')) {
-      return "I'd be happy to help with pricing! Our plans start from $9.99/month. Would you like me to walk you through the options?"
+      if (wsId && !IS_DEMO) {
+        // Parse model selection (format: "provider::model" or just "model")
+        let provider: string | undefined
+        let model: string | undefined
+        if (aiModel) {
+          if (aiModel.includes('::')) {
+            const [p, m] = aiModel.split('::')
+            provider = p
+            model = m
+          } else {
+            model = aiModel
+          }
+        }
+
+        try {
+          const result = await chatWithAgent({
+            workspaceId: wsId,
+            agentId: 'support-virtual',
+            agentName: workspaceName + ' Support',
+            agentRole: `Customer support assistant for ${workspaceName}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
+            message: text,
+            sessionId: chatId || undefined,
+            ...(provider && { provider }),
+            ...(model && { model }),
+          })
+          addAiMessage(result.response)
+        } catch (err) {
+          console.error('LLM support failed:', err)
+          addAiMessage('Sorry, our AI assistant is temporarily unavailable. A human agent will follow up shortly.')
+        }
+      } else {
+        // Demo mode only
+        setTimeout(() => {
+          addAiMessage(generateDemoReply(text))
+        }, 1200 + Math.random() * 800)
+      }
     }
-    if (lower.includes('refund') || lower.includes('cancel') || lower.includes('退款') || lower.includes('取消')) {
-      return "I understand you'd like help with a refund or cancellation. Let me look into your account. Could you share your order ID or the product name?"
-    }
-    if (lower.includes('access') || lower.includes('locked') || lower.includes('unlock') || lower.includes('打不开') || lower.includes('权限')) {
-      return "It looks like you might be having an access issue. Let me check your membership status — this usually resolves in a few minutes after payment confirmation."
-    }
-    if (lower.includes('bug') || lower.includes('error') || lower.includes('broken') || lower.includes('问题') || lower.includes('错误')) {
-      return "Sorry to hear you're running into issues! Could you describe what you're seeing? A screenshot would also help us investigate faster."
-    }
-    if (lower.includes('thank') || lower.includes('谢谢') || lower.includes('thanks')) {
-      return "You're welcome! Is there anything else I can help you with? 😊"
-    }
-    if (lower.includes('hi') || lower.includes('hello') || lower.includes('你好') || lower.includes('hey')) {
-      return "Hello! Welcome to our support. How can I help you today?"
-    }
-    return "Thanks for reaching out! I've noted your message and will look into this. Is there any additional context you can share to help me assist you better?"
   }
 
   if (loading) {

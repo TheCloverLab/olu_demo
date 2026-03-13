@@ -10,3 +10,4 @@ dist/
 test-results/
 apps/web/e2e/
 tmp/
+apps/web/src/lib/version.ts

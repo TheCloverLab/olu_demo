@@ -5,21 +5,15 @@ import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
 import { useApp } from '../../../context/AppContext'
-import {
-  getSupportChatsForOwner,
-  getSocialChatMessages,
-  addSocialChatMessage,
-} from '../../../domain/social/data'
+import { supabase } from '../../../lib/supabase'
+import { listSupportChats, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import type { Chat, ChatMessage as UnifiedMessage, ChatMember } from '../../../domain/chat/types'
 import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
 import { getWorkspaceAgentsForUser, toggleAgentSupport } from '../../../domain/team/api'
 import type { WorkspaceAgent } from '../../../lib/supabase'
 
-type SupportChat = {
-  id: string
-  user_id: string
-  last_message: string | null
-  last_time: string | null
-  unread: number
+type SupportChatView = Chat & {
+  members?: ChatMember[]
   customer: {
     id: string
     name: string | null
@@ -30,14 +24,14 @@ type SupportChat = {
   } | null
 }
 
-type ChatMessage = {
+type ViewMessage = {
   id: string
-  fromType: 'user' | 'other'
+  isCustomer: boolean
   text: string
   time: string
 }
 
-function CustomerAvatar({ customer, size = 'md' }: { customer: SupportChat['customer']; size?: 'sm' | 'md' }) {
+function CustomerAvatar({ customer, size = 'md' }: { customer: SupportChatView['customer']; size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
   if (customer?.avatar_img) {
     return <img src={customer.avatar_img} alt="" className={clsx(sz, 'rounded-full object-cover flex-shrink-0')} />
@@ -50,7 +44,7 @@ function CustomerAvatar({ customer, size = 'md' }: { customer: SupportChat['cust
   )
 }
 
-function ChatListItem({ chat, active, onClick }: { chat: SupportChat; active: boolean; onClick: () => void }) {
+function ChatListItem({ chat, active, onClick }: { chat: SupportChatView; active: boolean; onClick: () => void }) {
   const name = chat.customer?.name || chat.customer?.handle || 'Customer'
   return (
     <button
@@ -66,46 +60,62 @@ function ChatListItem({ chat, active, onClick }: { chat: SupportChat; active: bo
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="font-semibold text-sm truncate">{name}</span>
-          {chat.last_time && (
-            <span className="text-[10px] text-[var(--olu-muted)] flex-shrink-0">{chat.last_time}</span>
+          {chat.last_message_at && (
+            <span className="text-[10px] text-[var(--olu-muted)] flex-shrink-0">
+              {new Date(chat.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           )}
         </div>
         {chat.last_message && (
           <p className="text-xs text-[var(--olu-text-secondary)] truncate mt-0.5">{chat.last_message}</p>
         )}
       </div>
-      {chat.unread > 0 && (
-        <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-          {chat.unread}
-        </span>
-      )}
     </button>
   )
 }
 
-function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => void }) {
+function ConversationView({ chat, currentUserId, onBack }: { chat: SupportChatView; currentUserId: string; onBack: () => void }) {
   const { t } = useTranslation()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ViewMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const seenIds = useRef(new Set<string>())
   const name = chat.customer?.name || chat.customer?.handle || 'Customer'
 
   useEffect(() => {
     setLoading(true)
-    getSocialChatMessages(chat.id)
+    getMessages(chat.id)
       .then((msgs) => {
-        setMessages(msgs.map((m: any) => ({
+        const viewMsgs = msgs.map((m): ViewMessage => ({
           id: m.id,
-          fromType: m.from_type as 'user' | 'other',
-          text: m.text,
-          time: m.time || new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        })))
+          isCustomer: m.sender_id !== currentUserId,
+          text: m.content || '',
+          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }))
+        viewMsgs.forEach((m) => seenIds.current.add(m.id))
+        setMessages(viewMsgs)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [chat.id])
+  }, [chat.id, currentUserId])
+
+  // Realtime
+  useEffect(() => {
+    const unsub = subscribeChatMessages(chat.id, (raw) => {
+      if (raw.sender_id === currentUserId) return
+      if (seenIds.current.has(raw.id)) return
+      seenIds.current.add(raw.id)
+      setMessages((prev) => [...prev, {
+        id: raw.id,
+        isCustomer: true,
+        text: raw.content || '',
+        time: new Date(raw.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }])
+    })
+    return unsub
+  }, [chat.id, currentUserId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -117,16 +127,17 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
     setInput('')
     setSending(true)
 
-    const optimistic: ChatMessage = {
+    const optimistic: ViewMessage = {
       id: `m-${Date.now()}`,
-      fromType: 'other',
+      isCustomer: false,
       text,
       time: 'Just now',
     }
     setMessages((prev) => [...prev, optimistic])
 
     try {
-      await addSocialChatMessage(chat.id, 'other', text)
+      const sent = await sendChatMessage(chat.id, currentUserId, 'user', text)
+      seenIds.current.add(sent.id)
     } catch (err) {
       console.error('Failed to send reply', err)
     } finally {
@@ -136,7 +147,6 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
 
   return (
     <div className="flex flex-col h-full">
-      {/* Conversation header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--olu-border)] flex-shrink-0">
         <button onClick={onBack} className="md:hidden p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors">
           <ArrowLeft size={18} />
@@ -150,7 +160,6 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 scrollbar-hide">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -162,36 +171,31 @@ function ConversationView({ chat, onBack }: { chat: SupportChat; onBack: () => v
             <p className="text-sm text-[var(--olu-muted)]">No messages yet</p>
           </div>
         ) : (
-          messages.map((msg) => {
-            // In business view: from_type='user' is the customer, 'other' is us (the owner)
-            const isCustomer = msg.fromType === 'user'
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={clsx('flex gap-2.5', isCustomer ? '' : 'flex-row-reverse')}
-              >
-                {isCustomer && <CustomerAvatar customer={chat.customer} size="sm" />}
-                <div className={clsx('max-w-[80%] flex flex-col gap-0.5', isCustomer ? 'items-start' : 'items-end')}>
-                  <div className={clsx(
-                    'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
-                    isCustomer
-                      ? 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
-                      : 'bg-cyan-500 text-white rounded-tr-sm'
-                  )}>
-                    {msg.text}
-                  </div>
-                  <p className="text-[10px] text-[var(--olu-muted)] px-1">{msg.time}</p>
+          messages.map((msg) => (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={clsx('flex gap-2.5', msg.isCustomer ? '' : 'flex-row-reverse')}
+            >
+              {msg.isCustomer && <CustomerAvatar customer={chat.customer} size="sm" />}
+              <div className={clsx('max-w-[80%] flex flex-col gap-0.5', msg.isCustomer ? 'items-start' : 'items-end')}>
+                <div className={clsx(
+                  'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
+                  msg.isCustomer
+                    ? 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
+                    : 'bg-cyan-500 text-white rounded-tr-sm'
+                )}>
+                  {msg.text}
                 </div>
-              </motion.div>
-            )
-          })
+                <p className="text-[10px] text-[var(--olu-muted)] px-1">{msg.time}</p>
+              </div>
+            </motion.div>
+          ))
         )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Reply input */}
       <div className="p-4 border-t border-[var(--olu-border)] flex gap-3 flex-shrink-0">
         <input
           value={input}
@@ -216,25 +220,45 @@ export default function SupportCenter() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { workspace } = useApp()
-  const [chats, setChats] = useState<SupportChat[]>([])
+  const [chats, setChats] = useState<SupportChatView[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeChat, setActiveChat] = useState<SupportChat | null>(null)
+  const [activeChat, setActiveChat] = useState<SupportChatView | null>(null)
   const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
   const [masterToggle, setMasterToggle] = useState(false)
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id || !workspace?.id) return
+
     Promise.all([
-      getSupportChatsForOwner(user.id),
+      listSupportChats(workspace.id),
       getWorkspaceAgentsForUser(user),
     ])
-      .then(([chatData, agentData]) => {
-        setChats(chatData as SupportChat[])
+      .then(async ([chatData, agentData]) => {
+        // Resolve customer info for each support chat
+        const enriched: SupportChatView[] = await Promise.all(
+          chatData.map(async (chat) => {
+            // Find the non-owner member (the customer)
+            const customerMember = (chat.members || []).find((m: ChatMember) => m.role === 'member')
+            let customer: SupportChatView['customer'] = null
+
+            if (customerMember) {
+              const { data: customerUser } = await supabase
+                .from('users')
+                .select('id, name, handle, avatar_img, avatar_color, initials')
+                .eq('id', customerMember.user_id)
+                .single()
+              customer = customerUser
+            }
+
+            return { ...chat, customer }
+          })
+        )
+        setChats(enriched)
         setAllAgents(agentData)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [user?.id])
+  }, [user?.id, workspace?.id])
 
   useEffect(() => {
     if (!workspace?.id) return
@@ -242,7 +266,6 @@ export default function SupportCenter() {
   }, [workspace?.id])
 
   const anyAgentEnabled = allAgents.some((a) => a.support_enabled)
-  // Visual state: if no agents enabled, always show off regardless of DB
   const aiEnabled = anyAgentEnabled && masterToggle
 
   async function toggleMaster() {
@@ -273,11 +296,8 @@ export default function SupportCenter() {
     )
   }
 
-  // Mobile: show either list or conversation
-  // Desktop: side-by-side layout
   return (
     <div className="h-full flex flex-col md:flex-row">
-      {/* Chat list */}
       <div className={clsx(
         'md:w-80 md:border-r md:border-[var(--olu-border)] flex flex-col flex-shrink-0',
         activeChat ? 'hidden md:flex' : 'flex'
@@ -292,7 +312,6 @@ export default function SupportCenter() {
               {chats.length} conversation{chats.length !== 1 ? 's' : ''}
             </span>
           </div>
-          {/* AI master toggle — orthogonal to agent toggles in DB, but visually off when no agents enabled */}
           <button
             onClick={toggleMaster}
             disabled={!anyAgentEnabled}
@@ -320,7 +339,6 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
-          {/* Per-agent support assignment */}
           {allAgents.length > 0 && (
             <div className="space-y-1">
               <p className="text-[10px] text-[var(--olu-muted)] font-medium px-1">Assign agents</p>
@@ -378,15 +396,15 @@ export default function SupportCenter() {
         </div>
       </div>
 
-      {/* Conversation panel */}
       <div className={clsx(
         'flex-1 min-w-0',
         activeChat ? 'flex' : 'hidden md:flex'
       )}>
-        {activeChat ? (
+        {activeChat && user?.id ? (
           <ConversationView
             key={activeChat.id}
             chat={activeChat}
+            currentUserId={user.id}
             onBack={() => setActiveChat(null)}
           />
         ) : (

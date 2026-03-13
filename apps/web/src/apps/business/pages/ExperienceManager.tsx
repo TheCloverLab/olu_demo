@@ -97,9 +97,11 @@ function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => voi
   )
 }
 
+const FALLBACK_META = { label: 'Unknown', icon: MessageSquare, color: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-400/10' }
+
 function ExperienceCard({ exp }: { exp: WorkspaceExperience }) {
   const navigate = useNavigate()
-  const meta = TYPE_META[exp.type]
+  const meta = TYPE_META[exp.type] || FALLBACK_META
   const Icon = meta.icon
 
   const editorPath = exp.type === 'forum' ? `/business/experiences/forum?id=${exp.id}`

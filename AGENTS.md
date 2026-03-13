@@ -88,14 +88,12 @@ When `VITE_SUPABASE_URL` contains `demo-placeholder`, all Supabase calls are byp
 | `agent_memories` | Long-term agent memory with pgvector embeddings |
 | `agent_events` | Event queue for agent processing |
 
-### Social & Chat
+### Unified Chat
 | Table | Purpose |
 |-------|---------|
-| `social_chats` | 1-to-1 DM channels |
-| `social_chat_messages` | Messages in DM threads |
-| `group_chats` | Multi-user chat rooms |
-| `group_chat_messages` | Group chat messages |
-| `conversations` | Agent ↔ user chat logs |
+| `chats` | Chat rooms — scope: `experience`, `support`, `team`, `agent` |
+| `chat_members` | Room membership (user_id, role, unread count) |
+| `chat_messages` | Messages (sender_id, sender_type, content, metadata) |
 
 ### Business
 | Table | Purpose |
@@ -155,9 +153,14 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `hireWorkspaceAgent(user, template, name?)` — Hire agent from template
 - `getTeamEmployeesForUser(user)` — Human employees as EmployeeWithTasks
 - `getWorkspaceTeamSnapshotForUser(user)` — All agents + humans + task counts
-- `getWorkspaceGroupChatsForUser(userId)` / `getWorkspaceGroupMessages(groupChatId)` — Group chat
-- `getAgentConversation(agentId)` / `postAgentConversationMessage(...)` — Agent DMs
-- `uploadTeamChatImages(userId, scope, files)` — Upload chat attachments
+### chat/api.ts
+- `getChat(chatId)` / `getChatByExperience(id)` / `getChatByAgent(id)` — Find chat rooms
+- `listChats(workspaceId, scope?)` / `listSupportChats(workspaceId)` — List chats
+- `createChat(workspaceId, scope, name, opts?)` / `ensureSupportChat(...)` — Create rooms
+- `getChatMembers(chatId)` / `joinChat(chatId, userId)` — Membership
+- `getMessages(chatId)` / `sendMessage(chatId, senderId, senderType, content, opts?)` — Messages
+- `subscribeChatMessages(chatId, onMessage)` — Realtime via Supabase
+- `uploadChatImages(userId, chatId, files)` — Upload attachments to storage
 
 ### business/api.ts
 - `getCreatorRevenueAnalytics(creatorId)` / `getCreatorViewsAnalytics(creatorId)` — Analytics
@@ -171,11 +174,6 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `startBusinessCampaignDemo(advertiserId, creatorId)` — Create demo campaign
 - `advanceBusinessCampaign(campaignId, advertiserId)` — Step through workflow
 - `approveBusinessCampaignTarget(targetId, creatorId)` / `rejectBusinessCampaignTarget(...)` — Creator response
-
-### social/api.ts
-- `ensureDirectSocialChat(userId, withUserId)` — Get or create DM channel
-- `getDirectSocialChats(userId)` / `getDirectSocialMessages(chatId)` — DM list & messages
-- `postDirectSocialMessage(chatId, fromType, text)` — Send DM
 
 ### profile/api.ts
 - `getProfileById(userId)` — User profile details

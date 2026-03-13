@@ -12,11 +12,10 @@ import clsx from 'clsx'
 
 type GroupChat = {
   id: string
-  chat_key?: string
   name: string
-  icons: string[]
-  last_message?: string
-  last_time?: string
+  config: Record<string, any>
+  last_message?: string | null
+  last_message_at?: string | null
 }
 
 type AgentWithTasks = WorkspaceAgentWithTasks
@@ -105,13 +104,13 @@ function GroupRow({ group }: { group: GroupChat }) {
   return (
     <motion.button
       whileHover={{ x: 4 }}
-      onClick={() => navigate(`/business/team/grp-${group.chat_key || group.id}`)}
+      onClick={() => navigate(`/business/team/grp-${group.config?.chat_key || group.id}`)}
       className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_2px_8px_rgba(2,8,23,0.12)]"
     >
       <div className="relative flex-shrink-0">
         <div className="w-12 h-12 rounded-xl bg-[var(--olu-card-bg)] flex items-center justify-center border border-[var(--olu-card-border)]">
           <div className="flex -space-x-1">
-            {(group.icons || []).slice(0, 3).map((icon, i) => (
+            {(group.config?.icons || []).slice(0, 3).map((icon: string, i: number) => (
               <span key={i} className="text-sm">{icon}</span>
             ))}
           </div>
@@ -120,7 +119,7 @@ function GroupRow({ group }: { group: GroupChat }) {
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm mb-0.5">{group.name}</p>
         <p className="text-[var(--olu-text-secondary)] text-xs line-clamp-1">{group.last_message || 'No messages yet'}</p>
-        <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5">{group.last_time || '—'}</p>
+        <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5">{group.last_message_at ? new Date(group.last_message_at).toLocaleString() : '—'}</p>
       </div>
       <ChevronRight size={16} className="text-[var(--olu-text-secondary)] flex-shrink-0" />
     </motion.button>

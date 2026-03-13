@@ -6,18 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTriangle, Brain, ChevronDown, ChevronRight, Image as ImageIcon, X, Copy, Check, Square, RefreshCcw, DollarSign, Pause } from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { useAuth } from '../../../context/AuthContext'
+import { useWorkspace } from '../../../context/WorkspaceContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import { approveBudgetAPI, pauseBudget } from '../../../domain/agent/runtime-api'
 import {
-  getAgentConversation,
-  getWorkspaceGroupChatsForUser,
-  getWorkspaceGroupMessages,
-  postAgentConversationMessage,
-  postWorkspaceGroupMessage,
-  uploadTeamChatImages,
-} from '../../../domain/team/api'
-import { subscribeGroupChatMessages, subscribeConversations } from '../../../domain/team/data'
-import type { ChatAttachment } from '../../../lib/supabase'
+  getChatByAgent,
+  listChats,
+  createChat,
+  getMessages,
+  sendMessage as sendChatMessage,
+  subscribeChatMessages,
+  uploadChatImages,
+  joinChat,
+} from '../../../domain/chat/api'
+import type { ChatAttachment } from '../../../domain/chat/types'
 import clsx from 'clsx'
 
 type ModelOption = {
@@ -503,6 +505,7 @@ export default function TeamChat() {
   const { agentId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { workspace } = useWorkspace()
   const [tab, setTab] = useState('chat')
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -527,8 +530,7 @@ export default function TeamChat() {
   const pendingRequestRef = useRef<PendingAgentRequest | null>(null)
   const [liveAgents, setLiveAgents] = useState<any[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [selectedAgentDbId, setSelectedAgentDbId] = useState<string | null>(null)
-  const [selectedGroupDbId, setSelectedGroupDbId] = useState<string | null>(null)
+  const [chatId, setChatId] = useState<string | null>(null)
   const [liveGroups, setLiveGroups] = useState<any[]>([])
   const [dataLoaded, setDataLoaded] = useState(false)
   const showToolDebug = isToolDebugEnabled()
@@ -563,32 +565,42 @@ export default function TeamChat() {
   const mention = useMention(textareaRef, groupParticipants)
   const participantNames = groupParticipants.map((p) => p.name)
 
+  // Convert unified ChatMessage to local display format
+  function toDisplayMessage(m: any, currentUserId?: string): ChatMessage {
+    const meta = m.metadata || {}
+    const attachments: ChatAttachment[] = meta.attachments || []
+    return {
+      from: m.sender_id === currentUserId ? 'user' : (m.sender_type === 'user' ? (m.sender_name || 'user') : 'agent'),
+      text: m.content || '',
+      rawText: m.content || '',
+      images: attachments.filter((a: ChatAttachment) => a.type === 'image').map((a: ChatAttachment) => a.url),
+      attachments,
+      toolCalls: meta.toolCalls,
+      reasoning: meta.reasoning,
+      notice: meta.notice,
+      time: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+      _realtimeId: m.id,
+    }
+  }
+
   useEffect(() => {
     async function loadLiveData() {
-      if (!user?.id) {
+      if (!user?.id || !workspace?.id) {
         setDataLoaded(true)
         return
       }
 
       try {
         if (isGroup) {
+          // Load team chats from unified table
+          const teamChats = await listChats(workspace.id, 'team')
+          setLiveGroups(teamChats || [])
           const groupKey = (agentId || '').replace('grp-', '')
-          const groups = await getWorkspaceGroupChatsForUser(user.id)
-          setLiveGroups(groups || [])
-          const group = (groups || []).find((g: any) => g.chat_key === groupKey || g.id === groupKey)
+          const group = (teamChats || []).find((g: any) => g.config?.chat_key === groupKey || g.id === groupKey)
           if (group?.id) {
-            setSelectedGroupDbId(group.id)
-            const groupMessages = await getWorkspaceGroupMessages(group.id)
-            setMessages(
-              (groupMessages || []).map((m: any) => ({
-                from: m.from_name === 'You' ? 'user' : m.from_name,
-                text: m.text,
-                rawText: m.text,
-                images: (m.attachments || []).map((attachment: ChatAttachment) => attachment.url),
-                attachments: m.attachments || [],
-                time: m.time,
-              }))
-            )
+            setChatId(group.id)
+            const msgs = await getMessages(group.id)
+            setMessages(msgs.map(m => toDisplayMessage(m, user.id)))
             setDataLoaded(true)
             return
           }
@@ -613,29 +625,16 @@ export default function TeamChat() {
           return
         }
 
-        setSelectedAgentDbId(selected.id)
-        const conv = await getAgentConversation(selected.id)
-        setMessages(
-          (conv || []).map((m: any) => {
-            const metaEntry = (m.attachments || []).find((a: any) => a.type === 'metadata')
-            let meta: any = {}
-            if (metaEntry?.path) {
-              try { meta = JSON.parse(metaEntry.path) } catch {}
-            }
-            const realAttachments = (m.attachments || []).filter((a: any) => a.type !== 'metadata')
-            return {
-              from: m.from_type === 'user' ? 'user' : 'agent',
-              text: m.text,
-              rawText: m.text,
-              images: realAttachments.map((attachment: ChatAttachment) => attachment.url),
-              attachments: realAttachments,
-              toolCalls: meta.toolCalls,
-              reasoning: meta.reasoning,
-              notice: meta.notice,
-              time: m.time,
-            }
-          })
-        )
+        // Find or create agent chat room
+        let agentChat = await getChatByAgent(selected.id)
+        if (!agentChat) {
+          agentChat = await createChat(workspace.id, 'agent', selected.name || 'Agent Chat', { agentId: selected.id })
+          await joinChat(agentChat.id, user.id, 'owner')
+        }
+        setChatId(agentChat.id)
+
+        const msgs = await getMessages(agentChat.id)
+        setMessages(msgs.map(m => toDisplayMessage(m, user.id)))
         setDataLoaded(true)
         return
       } catch (err) {
@@ -647,47 +646,20 @@ export default function TeamChat() {
     }
 
     loadLiveData()
-  }, [user?.id, agentId, isGroup])
+  }, [user?.id, workspace?.id, agentId, isGroup])
 
-  // Realtime subscription
+  // Realtime subscription via unified chat
   useEffect(() => {
-    if (isGroup && selectedGroupDbId) {
-      return subscribeGroupChatMessages(selectedGroupDbId, (raw: any) => {
-        // Skip own messages (already added optimistically)
-        if (raw.from_name === 'You') return
-        setMessages((prev) => {
-          if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
-          return [...prev, {
-            from: raw.from_name,
-            text: raw.text,
-            rawText: raw.text,
-            images: (raw.attachments || []).map((a: any) => a.url),
-            attachments: raw.attachments || [],
-            time: raw.time,
-            _realtimeId: raw.id,
-          }]
-        })
+    if (!chatId || !user?.id) return
+    return subscribeChatMessages(chatId, (raw) => {
+      // Skip own messages (already added optimistically)
+      if (raw.sender_id === user.id) return
+      setMessages((prev) => {
+        if (prev.some((m) => m._realtimeId === raw.id)) return prev
+        return [...prev, toDisplayMessage(raw, user.id)]
       })
-    }
-    if (!isGroup && selectedAgentDbId) {
-      return subscribeConversations(selectedAgentDbId, (raw: any) => {
-        // Skip own messages (already added optimistically)
-        if (raw.from_type === 'user') return
-        setMessages((prev) => {
-          if (prev.some((m: any) => m._realtimeId === raw.id)) return prev
-          return [...prev, {
-            from: 'agent',
-            text: raw.text,
-            rawText: raw.text,
-            images: [],
-            attachments: [],
-            time: raw.time,
-            _realtimeId: raw.id,
-          }]
-        })
-      })
-    }
-  }, [isGroup, selectedGroupDbId, selectedAgentDbId])
+    })
+  }, [chatId, user?.id])
 
   useEffect(() => {
     if (tab !== 'chat') return
@@ -787,7 +759,7 @@ export default function TeamChat() {
     runtimeImages,
     replaceLastAgent = false,
   }: PendingAgentRequest & { replaceLastAgent?: boolean }) => {
-    if (!selectedAgentDbId || !agent) return
+    if (!chatId || !agent) return
 
     const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
     const controller = new AbortController()
@@ -804,13 +776,13 @@ export default function TeamChat() {
         signal: controller.signal,
         body: JSON.stringify({
           workspaceId: agent.workspace_id || '',
-          agentId: selectedAgentDbId,
+          agentId: agent.id,
           agentName: agent.name,
           agentRole: agent.role,
           message: userText,
           provider: selectedModelOption?.provider,
           model: selectedModelOption?.model,
-          sessionId: `web-${selectedAgentDbId}`,
+          sessionId: `web-${agent.id}`,
           images: runtimeImages,
         }),
       })
@@ -851,19 +823,15 @@ export default function TeamChat() {
 
       if (assistantText.trim()) {
         try {
-          const meta: ChatAttachment[] = []
-          if (result.toolCalls || result.reasoning || result.notice) {
-            meta.push({
-              type: 'metadata' as any,
-              url: '',
-              path: JSON.stringify({
-                toolCalls: result.toolCalls,
-                reasoning: result.reasoning,
-                notice: result.notice,
-              }),
-            })
-          }
-          const saved = await postAgentConversationMessage(selectedAgentDbId, 'agent', assistantText, 'Just now', meta.length ? meta : undefined)
+          const msgMeta: Record<string, any> = {}
+          if (result.toolCalls) msgMeta.toolCalls = result.toolCalls
+          if (result.reasoning) msgMeta.reasoning = result.reasoning
+          if (result.notice) msgMeta.notice = result.notice
+          const saved = await sendChatMessage(chatId, agent.id, 'agent', assistantText, {
+            senderName: agent.name,
+            senderAvatar: agent.avatarImg,
+            metadata: msgMeta,
+          })
           if (saved?.id) {
             setMessages((prev) => {
               const last = [...prev]
@@ -893,7 +861,7 @@ export default function TeamChat() {
       setStreaming(false)
       setThinking('')
     }
-  }, [agent, selectedAgentDbId, selectedModelOption])
+  }, [agent, chatId, selectedModelOption])
 
   const retryLastAgentRequest = useCallback(async () => {
     if (!pendingRequestRef.current) return
@@ -906,7 +874,7 @@ export default function TeamChat() {
 
   const regenerateLastResponse = useCallback(async () => {
     const lastUser = [...messages].reverse().find((msg) => msg.from === 'user')
-    if (!lastUser || !selectedAgentDbId) return
+    if (!lastUser || !chatId) return
     setRuntimeError(null)
     await sendAgentRequest({
       userText: lastUser.rawText || '',
@@ -914,7 +882,7 @@ export default function TeamChat() {
       runtimeImages: lastUser.images,
       replaceLastAgent: true,
     })
-  }, [messages, selectedAgentDbId, sendAgentRequest])
+  }, [messages, chatId, sendAgentRequest])
 
   const sendMessage = async (overrideText?: string) => {
     const text = overrideText ?? input
@@ -928,7 +896,7 @@ export default function TeamChat() {
     const imageFiles = images.map((img) => img.file)
     let runtimeImages: string[] | undefined
 
-    if (imageFiles.length > 0 && !selectedModelSupportsVision) {
+    if (!isGroup && imageFiles.length > 0 && !selectedModelSupportsVision) {
       setRuntimeError(runtimeErrorMessage('vision-unsupported'))
       return
     }
@@ -963,14 +931,11 @@ export default function TeamChat() {
 
     // Upload images in background, then update message with real URLs
     let attachments: ChatAttachment[] = []
-    if (imageFiles.length > 0) {
+    if (imageFiles.length > 0 && chatId) {
       try {
-        const scope = isGroup
-          ? `group-${selectedGroupDbId || agentId || 'unknown'}`
-          : `agent-${selectedAgentDbId || agentId || 'unknown'}`
         setUploadProgress({ completed: 0, total: imageFiles.length, label: 'Uploading images...' })
         for (const file of imageFiles) {
-          const [attachment] = await uploadTeamChatImages(user.auth_id || user.id, scope, [file])
+          const [attachment] = await uploadChatImages(user.auth_id || user.id, chatId, [file])
           if (attachment) attachments.push(attachment)
           setUploadProgress((prev) => prev ? { ...prev, completed: prev.completed + 1 } : prev)
         }
@@ -989,26 +954,21 @@ export default function TeamChat() {
     setUploadProgress(null)
     images.forEach((img) => URL.revokeObjectURL(img.preview))
 
-    if (isGroup) {
-      if (selectedGroupDbId) {
-        try {
-          await postWorkspaceGroupMessage(selectedGroupDbId, 'You', userText, undefined, attachments)
-        } catch (err) {
-          console.error('Failed saving group message', err)
-        }
+    // Save message to unified chat table
+    if (chatId) {
+      try {
+        await sendChatMessage(chatId, user.id, 'user', userText, {
+          senderName: user.name,
+          metadata: attachments.length ? { attachments } : {},
+        })
+      } catch (err) {
+        console.error('Failed saving user message', err)
       }
-      return
     }
 
-    try {
-      if (selectedAgentDbId) {
-        try {
-          await postAgentConversationMessage(selectedAgentDbId, 'user', userText, 'Just now', attachments)
-        } catch (err) {
-          console.error('Failed saving user message', err)
-        }
-      }
+    if (isGroup) return
 
+    try {
       await sendAgentRequest({
         userText,
         attachments,
@@ -1083,7 +1043,7 @@ export default function TeamChat() {
                   <p>{runtimeError}</p>
                   {retryMode && (
                     <button
-                      onClick={retryMode === 'upload' ? sendMessage : retryLastAgentRequest}
+                      onClick={() => retryMode === 'upload' ? sendMessage() : retryLastAgentRequest()}
                       className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-100 hover:bg-amber-400/15"
                     >
                       <RefreshCcw size={12} />
@@ -1372,7 +1332,7 @@ export default function TeamChat() {
                     const files = Array.from(e.clipboardData.files)
                     if (files.some(f => f.type.startsWith('image/'))) {
                       e.preventDefault()
-                      if (!selectedModelSupportsVision) {
+                      if (!isGroup && !selectedModelSupportsVision) {
                         setRuntimeError(runtimeErrorMessage('vision-unsupported'))
                         return
                       }
@@ -1387,8 +1347,8 @@ export default function TeamChat() {
                 {/* Toolbar row inside the input container */}
                 <div className="flex items-center justify-between px-2 pb-2">
                   <div className="flex items-center gap-0.5">
-                    {/* Image attach */}
-                    {selectedModelSupportsVision && (
+                    {/* Image attach — always for group chats, vision-only for agent chats */}
+                    {(isGroup || selectedModelSupportsVision) && (
                       <>
                         <input
                           ref={fileInputRef}
@@ -1496,7 +1456,7 @@ export default function TeamChat() {
 
                     {/* Send */}
                     <button
-                      onClick={loading ? stopGeneration : sendMessage}
+                      onClick={() => loading ? stopGeneration() : sendMessage()}
                       disabled={uploadProgress !== null || (!loading && !input.trim() && attachedImages.length === 0)}
                       className={clsx(
                         'p-2 rounded-lg transition-opacity',

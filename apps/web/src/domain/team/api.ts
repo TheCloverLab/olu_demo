@@ -1,15 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import type { AgentTemplate, User, WorkspaceAgent, WorkspaceAgentWithTasks, WorkspaceAgentTask, WorkspaceEmployee } from '../../lib/supabase'
-import type { ChatAttachment } from '../../lib/supabase'
 import { ensureWorkspaceForUser } from '../workspace/api'
-import {
-  addConversationMessage,
-  addGroupChatMessage,
-  createGroupChat,
-  getConversations,
-  getGroupChatMessages,
-  getGroupChatsByUser,
-} from './data'
+import { listChats, createChat, joinChat } from '../chat/api'
 import type { Employee, EmployeeWithTasks, TeamTaskSummary } from './types'
 
 // ---------- Employee adapter (WorkspaceAgent → Employee) ----------
@@ -218,9 +210,10 @@ export async function getTeamEmployeesForUser(user: Pick<User, 'id' | 'username'
 // ---------- Team snapshot ----------
 
 export async function getWorkspaceTeamSnapshotForUser(user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>) {
+  const ws = await ensureWorkspaceForUser(user)
   const [agents, groups, humans] = await Promise.all([
     getWorkspaceAgentsWithTasksForUser(user),
-    getGroupChatsByUser(user.id),
+    listChats(ws.workspace_id, 'team').catch(() => []),
     getWorkspaceEmployeesForUser(user).catch(() => [] as WorkspaceEmployee[]),
   ])
 
@@ -238,18 +231,20 @@ export async function getWorkspaceTeamSnapshotForUser(user: Pick<User, 'id' | 'u
 export async function ensureDefaultGroupChat(
   user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
 ) {
-  const groups = await getGroupChatsByUser(user.id)
-  if (groups.some((g: any) => g.chat_key === 'all-members')) return
+  const ws = await ensureWorkspaceForUser(user)
+  const groups = await listChats(ws.workspace_id, 'team').catch(() => [])
+  if (groups.some((g: any) => g.config?.chat_key === 'all-members')) return
   const agents = await getWorkspaceAgentsForUser(user)
-  const icons = agents.slice(0, 3).map((a) => a.avatar_img ? '👤' : '🤖')
+  const icons: string[] = agents.slice(0, 3).map((a: any) => a.avatar_img ? '👤' : '🤖')
   if (icons.length === 0) icons.push('👥')
-  await createGroupChat(
-    user.id,
-    'all-members',
-    'All Members',
-    agents.map((a) => a.name),
-    icons,
-  )
+  const chat = await createChat(ws.workspace_id, 'team', 'All Members', {
+    config: {
+      chat_key: 'all-members',
+      participants: agents.map((a) => a.name),
+      icons,
+    },
+  })
+  await joinChat(chat.id, user.id, 'owner')
 }
 
 export async function createNewGroupChat(
@@ -258,78 +253,23 @@ export async function createNewGroupChat(
   participants: string[],
   icons: string[],
 ) {
-  const chatKey = `group-${Date.now()}`
-  return await createGroupChat(userId, chatKey, name, participants, icons)
-}
-
-export async function getWorkspaceGroupChatsForUser(userId: string) {
-  return await getGroupChatsByUser(userId)
-}
-
-export async function getWorkspaceGroupMessages(groupChatId: string) {
-  return await getGroupChatMessages(groupChatId)
-}
-
-export async function postWorkspaceGroupMessage(
-  groupChatId: string,
-  fromName: string,
-  text: string,
-  avatar?: string,
-  attachments?: ChatAttachment[],
-) {
-  return await addGroupChatMessage(groupChatId, fromName, text, avatar, attachments)
-}
-
-// ---------- Agent conversation ----------
-
-export async function getAgentConversation(agentId: string) {
-  return await getConversations(agentId)
-}
-
-export async function postAgentConversationMessage(
-  agentId: string,
-  fromType: 'agent' | 'user',
-  text: string,
-  time: string,
-  attachments?: ChatAttachment[],
-) {
-  return await addConversationMessage(agentId, fromType, text, time, attachments)
-}
-
-function sanitizeFileName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '-')
-}
-
-export async function uploadTeamChatImages(
-  userId: string,
-  scope: string,
-  files: File[],
-): Promise<ChatAttachment[]> {
-  const uploaded: ChatAttachment[] = []
-
-  for (const file of files) {
-    const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : ''
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${sanitizeFileName(file.name || `image${ext}`)}`
-    const path = `${userId}/${scope}/${fileName}`
-
-    const { error } = await supabase.storage
-      .from('chat-attachments')
-      .upload(path, file, { upsert: true, contentType: file.type || 'image/png' })
-
-    if (error) throw error
-
-    const { data } = supabase.storage.from('chat-attachments').getPublicUrl(path)
-    uploaded.push({
-      type: 'image',
-      url: data.publicUrl,
-      path,
-      mime_type: file.type || 'image/png',
-      name: file.name,
-      size_bytes: file.size,
-    })
-  }
-
-  return uploaded
+  // Need workspace_id — look up from user's membership
+  const { data: wm } = await supabase
+    .from('workspace_memberships')
+    .select('workspace_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .single()
+  if (!wm) throw new Error('No workspace found')
+  const chat = await createChat(wm.workspace_id, 'team', name, {
+    config: {
+      chat_key: `group-${Date.now()}`,
+      participants,
+      icons,
+    },
+  })
+  await joinChat(chat.id, userId, 'owner')
+  return chat
 }
 
 export function getAgentTaskSummaries(tasks: Array<TeamTaskSummary> | undefined) {

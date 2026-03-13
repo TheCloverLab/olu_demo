@@ -144,6 +144,7 @@ graph TD
     D_WORKSPACE["workspace/<br/>Multi-tenant workspaces"]
     D_EXPERIENCE["experience/<br/>Modular content (forum, course, chat)"]
     D_PRODUCT["product/<br/>Products, plans, purchases, home config"]
+    D_CHAT["chat/<br/>Unified chat (4 scopes)"]
     D_CONNECTORS["connectors/<br/>Task targets (Twitter, Shopify...)"]
     D_INTEGRATIONS["integrations/<br/>Communication bridges"]
     D_CAMPAIGN["campaign/<br/>Marketing campaigns"]
@@ -258,6 +259,61 @@ graph TD
 
 ---
 
+## Unified Chat System
+
+All chat/messaging in OLU uses a single set of tables (`chats`, `chat_members`, `chat_messages`), differentiated by **scope**. Each scope enables a different subset of features via `SCOPE_FEATURES`.
+
+```mermaid
+graph TD
+  subgraph Scopes["Chat Scopes"]
+    EXP["experience<br/>Consumer group chats<br/>in experiences"]
+    SUP["support<br/>1:N customer support<br/>with AI agent toggle"]
+    TEAM["team<br/>Internal team group chats<br/>with @mentions"]
+    AGENT["agent<br/>1:1 AI agent chat<br/>streaming + model selector"]
+  end
+
+  subgraph Tables["Unified Tables"]
+    CHATS["chats<br/>scope, workspace_id,<br/>experience_id?, agent_id?"]
+    MEMBERS["chat_members<br/>user_id, role, unread"]
+    MSGS["chat_messages<br/>sender_id, sender_type,<br/>content, metadata"]
+  end
+
+  subgraph Features["Feature Flags (SCOPE_FEATURES)"]
+    F_MD["markdown"]
+    F_IMG["images (all scopes)"]
+    F_TC["toolCalls (agent only)"]
+    F_REASON["reasoning (agent only)"]
+    F_MODEL["modelSelector (agent only)"]
+    F_STREAM["streaming (agent only)"]
+    F_MENTION["mentions (experience, support, team)"]
+    F_AI["aiReply (support only)"]
+  end
+
+  Scopes --> Tables
+  Tables --> Features
+```
+
+### Chat Architecture
+
+| Component | Path | Purpose |
+|-----------|------|---------|
+| `domain/chat/types.ts` | Types + `SCOPE_FEATURES` | `ChatScope`, `ChatMessage`, `ChatFeatures` |
+| `domain/chat/api.ts` | Data layer | CRUD, realtime subscriptions, file upload |
+| `components/ChatRoom.tsx` | Reusable chat UI | Used by consumer pages (GroupChatView, SupportChat) |
+| `pages/TeamChat.tsx` | Business agent/team chat | Custom UI with model selector, budget cards, tool calls |
+| `pages/SupportCenter.tsx` | Business support inbox | Lists support chats, per-agent assignment |
+
+### RLS Strategy
+
+Chat RLS uses `SECURITY DEFINER` functions to break recursion:
+
+- `is_chat_member(chat_id, user_id)` — bypasses RLS on `chat_members`
+- `is_workspace_owner(workspace_id, user_id)` — bypasses RLS on `workspace_memberships`
+
+Workspace owners can see all chats in their workspace. Members can only see chats they belong to.
+
+---
+
 ## Database Schema (Key Tables)
 
 ```mermaid
@@ -266,12 +322,16 @@ erDiagram
   workspaces ||--o{ workspace_integrations : has
   workspaces ||--o{ workspace_experiences : has
   workspaces ||--o{ workspace_products : has
+  workspaces ||--o{ chats : has
   workspace_agents ||--o{ workspace_agent_tasks : assigned
-  workspace_agents ||--o{ agent_conversations : chats
+  workspace_agents ||--o{ chats : "agent scope"
+  workspace_experiences ||--o{ chats : "experience scope"
   workspace_experiences ||--o{ workspace_product_experiences : linked
   workspace_products ||--o{ workspace_product_plans : has
   workspace_products ||--o{ workspace_product_experiences : linked
   workspace_experiences ||--o{ forum_posts : contains
+  chats ||--o{ chat_members : has
+  chats ||--o{ chat_messages : contains
 
   workspaces {
     uuid id PK
@@ -326,11 +386,33 @@ erDiagram
     text access_type
   }
 
-  agent_conversations {
+  chats {
     uuid id PK
-    text conversation_key
+    uuid workspace_id FK
+    text scope
+    text name
+    uuid experience_id FK
+    uuid agent_id FK
+    jsonb config
+    text last_message
+    timestamptz last_message_at
+  }
+
+  chat_members {
+    uuid chat_id PK_FK
+    uuid user_id PK_FK
     text role
+    int unread
+  }
+
+  chat_messages {
+    uuid id PK
+    uuid chat_id FK
+    text sender_id
+    text sender_type
+    text message_type
     text content
+    jsonb metadata
     timestamptz created_at
   }
 ```
@@ -389,5 +471,5 @@ graph TB
 | **Domain-driven frontend** | 10 domains under `src/domain/`, each with own `api.ts`, `types.ts`, `hooks.ts` |
 | **Separation of concerns** | Connectors (task targets) vs Integrations (communication bridges) |
 | **Multi-tenant** | Workspace-scoped data isolation via Supabase RLS |
-| **Agent memory** | Conversation history keyed by `agentId:sourceId` for multi-turn chat |
+| **Unified chat** | Single `chats`/`chat_members`/`chat_messages` tables; 4 scopes (experience, support, team, agent) with feature flags |
 | **OAuth delegation** | Workspace-level OAuth tokens for platform connectors (Twitter, etc.) |

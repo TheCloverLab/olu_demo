@@ -8,23 +8,20 @@ import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
-import {
-  ensureSocialChat,
-  getSocialChatMessages,
-  addSocialChatMessage,
-  subscribeSocialChatMessages,
-} from '../../../domain/social/data'
+import { ensureSupportChat, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import type { ChatMessage as UnifiedMessage } from '../../../domain/chat/types'
 
-type ChatMessage = {
+type ViewMessage = {
   id: string
   fromType: 'user' | 'other'
   text: string
   time: string
+  isAi?: boolean
 }
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 
-const DEMO_MESSAGES: ChatMessage[] = [
+const DEMO_MESSAGES: ViewMessage[] = [
   { id: 'm-1', fromType: 'other', text: 'Hi! Welcome to support. How can I help you today?', time: '10:00 AM' },
   { id: 'm-2', fromType: 'user', text: "Hi! I'm having trouble accessing the premium course content.", time: '10:02 AM' },
   { id: 'm-3', fromType: 'other', text: 'Let me look into that for you. Can you tell me which course you\'re trying to access?', time: '10:03 AM' },
@@ -33,9 +30,19 @@ const DEMO_MESSAGES: ChatMessage[] = [
   { id: 'm-6', fromType: 'other', text: "Your payment has been confirmed now! Try refreshing the page and you should have full access. Let me know if it works.", time: '10:08 AM' },
 ]
 
-function MessageBubble({ msg }: { msg: ChatMessage }) {
+function toViewMessage(msg: UnifiedMessage, currentUserId: string): ViewMessage {
+  const isUser = msg.sender_id === currentUserId
+  return {
+    id: msg.id,
+    fromType: isUser ? 'user' : 'other',
+    text: msg.content || '',
+    time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    isAi: msg.sender_type === 'agent',
+  }
+}
+
+function MessageBubble({ msg }: { msg: ViewMessage }) {
   const isUser = msg.fromType === 'user'
-  const isAi = msg.id.startsWith('ai-')
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -45,11 +52,11 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
       {!isUser && (
         <div className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-          isAi
+          msg.isAi
             ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10'
             : 'bg-gradient-to-br from-amber-500/20 to-amber-600/10'
         )}>
-          {isAi ? (
+          {msg.isAi ? (
             <Bot size={14} className="text-cyan-600 dark:text-cyan-400" />
           ) : (
             <Headphones size={14} className="text-amber-600 dark:text-amber-400" />
@@ -58,7 +65,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
       )}
 
       <div className={clsx('max-w-[80%] flex flex-col gap-0.5', isUser ? 'items-end' : 'items-start')}>
-        {isAi && (
+        {msg.isAi && (
           <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium px-1">AI Assistant</span>
         )}
         <div className={clsx(
@@ -134,13 +141,14 @@ export default function SupportChat() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [workspaceName, setWorkspaceName] = useState('')
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ViewMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
   const [staffName, setStaffName] = useState('Support')
   const [aiTyping, setAiTyping] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const seenIds = useRef(new Set<string>())
 
   useEffect(() => {
     async function load() {
@@ -176,18 +184,15 @@ export default function SupportChat() {
 
         if (staffUser) setStaffName(staffUser.name || 'Support')
 
-        // Ensure 1-on-1 chat exists with staff
-        const chat = await ensureSocialChat(userId, staffUserId)
+        // Ensure support chat exists (unified)
+        const chat = await ensureSupportChat(ws.id, userId, staffUserId)
         setChatId(chat.id)
 
         // Load messages
-        const msgs = await getSocialChatMessages(chat.id)
-        setMessages(msgs.map((m: any) => ({
-          id: m.id,
-          fromType: m.from_type as 'user' | 'other',
-          text: m.text,
-          time: m.time || new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        })))
+        const msgs = await getMessages(chat.id)
+        const viewMsgs = msgs.map((m) => toViewMessage(m, userId))
+        viewMsgs.forEach((m) => seenIds.current.add(m.id))
+        setMessages(viewMsgs)
       } catch (err) {
         console.error(err)
       } finally {
@@ -197,36 +202,28 @@ export default function SupportChat() {
     load()
   }, [workspaceSlug, user?.id])
 
-  // Realtime subscription for new messages from other side
+  // Realtime subscription
   useEffect(() => {
-    if (!chatId) return
-    const seenIds = new Set(messages.map((m) => m.id))
-    const unsub = subscribeSocialChatMessages(chatId, (raw: any) => {
-      // Skip own messages (already added optimistically)
-      if (raw.from_type === 'user') return
-      if (seenIds.has(raw.id)) return
-      seenIds.add(raw.id)
-      const msg: ChatMessage = {
-        id: raw.id,
-        fromType: raw.from_type as 'user' | 'other',
-        text: raw.text,
-        time: raw.time || new Date(raw.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }
-      setMessages((prev) => [...prev, msg])
+    if (!chatId || !user?.id) return
+    const unsub = subscribeChatMessages(chatId, (raw) => {
+      if (raw.sender_id === user.id) return  // skip own messages
+      if (seenIds.current.has(raw.id)) return
+      seenIds.current.add(raw.id)
+      setMessages((prev) => [...prev, toViewMessage(raw, user.id)])
     })
     return unsub
-  }, [chatId])
+  }, [chatId, user?.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function sendMessage() {
+  async function handleSend() {
     if (!input.trim()) return
     const text = input.trim()
     setInput('')
 
-    const optimistic: ChatMessage = {
+    const optimistic: ViewMessage = {
       id: `m-${Date.now()}`,
       fromType: 'user',
       text,
@@ -235,14 +232,14 @@ export default function SupportChat() {
     setMessages((prev) => [...prev, optimistic])
 
     if (IS_DEMO) {
-      // Demo mode: generate local reply
       setAiTyping(true)
       setTimeout(() => {
-        const aiMsg: ChatMessage = {
+        const aiMsg: ViewMessage = {
           id: `ai-${Date.now()}`,
           fromType: 'other',
           text: generateDemoReply(text),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isAi: true,
         }
         setMessages((prev) => [...prev, aiMsg])
         setAiTyping(false)
@@ -250,10 +247,12 @@ export default function SupportChat() {
       return
     }
 
-    if (chatId) {
+    if (chatId && user?.id) {
       try {
-        await addSocialChatMessage(chatId, 'user', text)
-        // AI reply handled by backend trigger → arrives via Realtime
+        const sent = await sendChatMessage(chatId, user.id, 'user', text, {
+          senderName: user.name || 'Anonymous',
+        })
+        seenIds.current.add(sent.id)
       } catch (err) {
         console.error('Failed to send message', err)
       }
@@ -304,12 +303,12 @@ export default function SupportChat() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && sendMessage()}
+          onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSend()}
           placeholder={t('consumer.supportPlaceholder', 'Type a message...')}
           className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-400 dark:focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
         />
         <button
-          onClick={sendMessage}
+          onClick={handleSend}
           disabled={!input.trim()}
           className="p-2.5 rounded-xl bg-white text-black hover:opacity-90 transition-opacity disabled:opacity-50"
         >

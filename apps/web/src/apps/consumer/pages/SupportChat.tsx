@@ -286,7 +286,7 @@ export default function SupportChat() {
                 agentId: agent.id,
                 agentName: agent.name,
                 agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
-                userMessage: text,
+                message: text,
                 sessionId: chatId,
               }),
             })

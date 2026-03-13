@@ -187,7 +187,10 @@ export async function approveBudgetAPI(budgetId: string, approvedAmount: number)
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ approved_amount: approvedAmount }),
   })
-  if (!res.ok) throw new Error(`Approve budget failed: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `Approve budget failed: ${res.status}`)
+  }
   return res.json()
 }
 
@@ -201,7 +204,10 @@ export async function pauseBudget(budgetId: string): Promise<{
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
-  if (!res.ok) throw new Error(`Pause budget failed: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `Pause budget failed: ${res.status}`)
+  }
   return res.json()
 }
 

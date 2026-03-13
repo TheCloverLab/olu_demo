@@ -239,13 +239,13 @@ function MentionDropdown({ filtered, mentionIndex, onSelect }) {
 }
 
 // Render text with highlighted @mentions
-function renderWithMentions(text, participantNames) {
+function renderWithMentions(text, participantNames, isUserBubble = false) {
   if (!participantNames?.length) return text
   const pattern = new RegExp(`(@(?:${participantNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}))`, 'g')
   const parts = text.split(pattern)
   return parts.map((part, i) =>
     pattern.test(part)
-      ? <span key={i} className="text-sky-600 dark:text-sky-400 font-medium">{part}</span>
+      ? <span key={i} className={clsx('font-semibold underline underline-offset-2', isUserBubble ? 'text-[#04111f] dark:text-white' : 'text-sky-600 dark:text-sky-400')}>{part}</span>
       : part
   )
 }
@@ -1240,7 +1240,7 @@ export default function TeamChat() {
                         </span>
                       )
                     ) : (isGroup && participantNames.length > 0)
-                      ? renderWithMentions(msg.text, participantNames)
+                      ? renderWithMentions(msg.text, participantNames, msg.from === 'user')
                       : msg.text}
                     {msg.images?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">

@@ -173,7 +173,7 @@ const server = createServer(async (req, res) => {
               summary: result.summary,
               actions: result.actions,
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             // Set agent back to online on error
             await supabase
               .from('workspace_agents')
@@ -599,8 +599,8 @@ const server = createServer(async (req, res) => {
           Location: `${appUrl}/business/connectors?twitter=connected&username=${result.username || ''}`,
         })
         res.end()
-      } catch (err: any) {
-        json(res, 400, { error: err.message })
+      } catch (err: unknown) {
+        json(res, 400, { error: err instanceof Error ? err.message : 'bad request' })
       }
       return
     }
@@ -778,13 +778,14 @@ const server = createServer(async (req, res) => {
     }
 
     json(res, 404, { error: 'not found' })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Request error:', err)
-    if (err?.message === 'vision-unsupported') {
+    const msg = err instanceof Error ? err.message : 'internal error'
+    if (msg === 'vision-unsupported') {
       json(res, 422, { error: 'vision-unsupported' })
       return
     }
-    json(res, 500, { error: err.message || 'internal error' })
+    json(res, 500, { error: msg })
   }
 })
 

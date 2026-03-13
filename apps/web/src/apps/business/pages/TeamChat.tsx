@@ -19,7 +19,7 @@ import {
   uploadChatImages,
   joinChat,
 } from '../../../domain/chat/api'
-import type { ChatAttachment } from '../../../domain/chat/types'
+import type { Chat, ChatAttachment, ChatMessage as UnifiedChatMessage } from '../../../domain/chat/types'
 import type { ModelOption, ChatRequest, ChatResponse, ToolCallResult } from '@olu/shared'
 import clsx from 'clsx'
 
@@ -34,6 +34,40 @@ type ChatMessage = {
   toolCalls?: ToolCallResult[]
   time: string
   _realtimeId?: string
+}
+
+type AgentData = {
+  id: string
+  name: string
+  agent_key?: string
+  role?: string | null
+  status?: string | null
+  workspace_id?: string
+  avatar_img?: string | null
+  avatarImg?: string | null
+  last_message?: string | null
+  lastMessage?: string | null
+  lastTime?: string | null
+  tasks?: { id: string; title: string; status: string; priority: string; progress: number }[]
+  color?: string | null
+  icon?: string
+  model?: string | null
+  support_enabled?: boolean | null
+  template_id?: string | null
+  runtime_type?: string | null
+  [key: string]: unknown
+}
+
+type GroupData = Chat & {
+  participants?: string[]
+  conversation?: ChatMessage[]
+}
+
+type Participant = {
+  name: string
+  id: string
+  role?: string | null
+  color?: string | null
 }
 
 type PendingAgentRequest = {
@@ -137,7 +171,7 @@ function TaskItem({ task }) {
 }
 
 // --- @mention helpers ---
-function useMention(inputRef: any, participants: any[]) {
+function useMention(inputRef: React.RefObject<HTMLTextAreaElement | null>, participants: Participant[]) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null) // null = closed, string = filter
   const [mentionIndex, setMentionIndex] = useState(0)
   const [mentionStart, setMentionStart] = useState(-1) // cursor pos of '@'
@@ -267,7 +301,7 @@ function ReasoningBlock({ text }: { text: string }) {
   )
 }
 
-function CodeBlock({ className, children }: { className?: string; children?: any }) {
+function CodeBlock({ className, children }: { className?: string; children?: React.ReactNode }) {
   const [copied, setCopied] = useState(false)
   const language = className?.replace('language-', '') || 'text'
   const code = String(children || '').replace(/\n$/, '')
@@ -287,7 +321,7 @@ function CodeBlock({ className, children }: { className?: string; children?: any
           <span>{copied ? 'Copied' : 'Copy'}</span>
         </button>
       </div>
-      <Highlight theme={themes.vsDark} code={code} language={language as any}>
+      <Highlight theme={themes.vsDark} code={code} language={language}>
         {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => (
           <pre className={`${highlightClassName} overflow-x-auto px-4 py-3 text-[13px] leading-6`} style={{ ...style, background: 'transparent', margin: 0 }}>
             {tokens.map((line, index) => (
@@ -513,33 +547,35 @@ export default function TeamChat() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const pendingRequestRef = useRef<PendingAgentRequest | null>(null)
-  const [liveAgents, setLiveAgents] = useState<any[]>([])
+  const [liveAgents, setLiveAgents] = useState<AgentData[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatId, setChatId] = useState<string | null>(null)
-  const [liveGroups, setLiveGroups] = useState<any[]>([])
+  const [liveGroups, setLiveGroups] = useState<Chat[]>([])
+
   const [dataLoaded, setDataLoaded] = useState(false)
   const showToolDebug = isToolDebugEnabled()
 
   const isGroup = agentId?.startsWith('grp-')
   const allAgents = liveAgents
 
-  let agent: any
-  let tasks: any[]
-  let groupParticipants: any[] = []
+  let agent: AgentData | null = null
+  let tasks: { id: string; title: string; status: string; priority: string; progress: number }[] = []
+  let groupParticipants: Participant[] = []
 
   if (isGroup) {
     const groupId = (agentId || '').replace('grp-', '')
     const groups = liveGroups || []
-    const group = groups.find((g: any) => g.chat_key === groupId || g.id === groupId) || groups[0]
-    agent = group ? { name: group.name, icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online', conversation: group?.conversation || [] } : null
+    const group = groups.find((g) => (g.config as Record<string, unknown>)?.chat_key === groupId || g.id === groupId) || groups[0]
+    agent = group ? { id: group.id, name: group.name || 'Group Chat', icon: '👥', color: '[#2a2a2a]', role: 'Group Chat', status: 'online' } : null
     tasks = []
-    // Build participant list from agent data
-    if (group?.participants) {
-      groupParticipants = group.participants
+    // Build participant list from chat config
+    const configParticipants = (group?.config as Record<string, unknown>)?.participants as string[] | undefined
+    if (configParticipants) {
+      groupParticipants = configParticipants
         .filter(name => name !== 'Luna' && name !== 'You') // exclude self
         .map(name => {
           const found = allAgents.find(a => a.name === name)
-          return found || { name, id: name.toLowerCase(), role: '', color: 'from-gray-600 to-gray-500' }
+          return found ? { name: found.name, id: found.id, role: found.role, color: found.color } : { name, id: name.toLowerCase(), role: '', color: 'from-gray-600 to-gray-500' }
         })
     }
   } else {
@@ -551,18 +587,18 @@ export default function TeamChat() {
   const participantNames = groupParticipants.map((p) => p.name)
 
   // Convert unified ChatMessage to local display format
-  function toDisplayMessage(m: any, currentUserId?: string): ChatMessage {
-    const meta = m.metadata || {}
-    const attachments: ChatAttachment[] = meta.attachments || []
+  function toDisplayMessage(m: UnifiedChatMessage, currentUserId?: string): ChatMessage {
+    const meta = (m.metadata || {}) as Record<string, unknown>
+    const attachments = (meta.attachments || []) as ChatAttachment[]
     return {
       from: m.sender_id === currentUserId ? 'user' : (m.sender_type === 'user' ? (m.sender_name || 'user') : 'agent'),
       text: m.content || '',
       rawText: m.content || '',
-      images: attachments.filter((a: ChatAttachment) => a.type === 'image').map((a: ChatAttachment) => a.url),
+      images: attachments.filter((a) => a.type === 'image').map((a) => a.url),
       attachments,
-      toolCalls: meta.toolCalls,
-      reasoning: meta.reasoning,
-      notice: meta.notice,
+      toolCalls: meta.toolCalls as ToolCallResult[] | undefined,
+      reasoning: meta.reasoning as string | undefined,
+      notice: meta.notice as string | undefined,
       time: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
       _realtimeId: m.id,
     }
@@ -581,7 +617,7 @@ export default function TeamChat() {
           const teamChats = await listChats(workspace.id, 'team')
           setLiveGroups(teamChats || [])
           const groupKey = (agentId || '').replace('grp-', '')
-          const group = (teamChats || []).find((g: any) => g.config?.chat_key === groupKey || g.id === groupKey)
+          const group = (teamChats || []).find((g) => (g.config as Record<string, unknown>)?.chat_key === groupKey || g.id === groupKey)
           if (group?.id) {
             setChatId(group.id)
             const msgs = await getMessages(group.id)
@@ -595,7 +631,7 @@ export default function TeamChat() {
         }
 
         const agentRows = await getWorkspaceAgentsWithTasksForUser(user)
-        const mappedAgents = (agentRows || []).map((a: any) => ({
+        const mappedAgents: AgentData[] = (agentRows || []).map((a) => ({
           ...a,
           avatarImg: a.avatar_img,
           lastMessage: a.last_message,
@@ -603,7 +639,7 @@ export default function TeamChat() {
         }))
         setLiveAgents(mappedAgents)
 
-        const selected = mappedAgents.find((a: any) => a.id === agentId || a.agent_key === agentId)
+        const selected = mappedAgents.find((a) => a.id === agentId || a.agent_key === agentId)
         if (!selected?.id) {
           setMessages([])
           setDataLoaded(true)
@@ -765,7 +801,7 @@ export default function TeamChat() {
           workspaceId: agent.workspace_id || '',
           agentId: agent.id,
           agentName: agent.name,
-          agentRole: agent.role,
+          agentRole: agent.role || undefined,
           message: userText,
           provider: selectedModelOption?.provider,
           model: selectedModelOption?.model,
@@ -816,7 +852,7 @@ export default function TeamChat() {
           if (result.notice) msgMeta.notice = result.notice
           const saved = await sendChatMessage(chatId, agent.id, 'agent', assistantText, {
             senderName: agent.name,
-            senderAvatar: agent.avatarImg,
+            senderAvatar: agent.avatarImg || undefined,
             metadata: msgMeta,
           })
           if (saved?.id) {
@@ -838,8 +874,8 @@ export default function TeamChat() {
 
       setRuntimeError(null)
       setRetryMode(null)
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return
+    } catch (e: unknown) {
+      if (e instanceof DOMException && e.name === 'AbortError') return
       setRetryMode('request')
       setRuntimeError(runtimeErrorMessage('provider-fetch-failed'))
     } finally {
@@ -1189,9 +1225,9 @@ export default function TeamChat() {
                     ) : (isGroup && participantNames.length > 0)
                       ? renderWithMentions(msg.text, participantNames, msg.from === 'user')
                       : msg.text}
-                    {msg.images?.length > 0 && (
+                    {(msg.images?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {msg.images.map((src: string, j: number) => (
+                        {msg.images!.map((src: string, j: number) => (
                           <img
                             key={j}
                             src={src}

@@ -62,7 +62,7 @@ export async function createChat(
   workspaceId: string,
   scope: ChatScope,
   name: string,
-  opts?: { experienceId?: string; agentId?: string; config?: Record<string, any> }
+  opts?: { experienceId?: string; agentId?: string; config?: Record<string, unknown> }
 ): Promise<Chat> {
   const { data, error } = await supabase
     .from('chats')
@@ -160,7 +160,7 @@ export async function sendMessage(
     senderName?: string
     senderAvatar?: string
     messageType?: 'text' | 'image' | 'file' | 'tool_call' | 'system'
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }
 ): Promise<ChatMessage> {
   const { data, error } = await supabase

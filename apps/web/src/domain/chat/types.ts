@@ -12,7 +12,7 @@ export interface Chat {
   name: string | null
   experience_id: string | null
   agent_id: string | null
-  config: Record<string, any>
+  config: Record<string, unknown>
   last_message: string | null
   last_message_at: string | null
   created_at: string
@@ -36,7 +36,7 @@ export interface ChatMessage {
   sender_avatar: string | null
   message_type: MessageType
   content: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   created_at: string
 }
 

@@ -239,14 +239,10 @@ function loadProviderFromEnv(name: string): ModelProvider | null {
 }
 
 function getDefaultProvider(): ModelProvider {
-  const legacyFallback = ['openai', 'gemini', 'qwen', 'claude', 'kimi', 'deepseek']
-    .map((name) => loadProviderFromEnv(name))
-    .find((provider) => provider?.apiKey)
-  const baseURL = process.env.LLM_BASE_URL || legacyFallback?.baseURL || 'https://api.openai.com/v1'
-  const model = process.env.LLM_MODEL || legacyFallback?.model || 'gpt-5.4-2026-03-05'
+  const baseURL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1'
+  const model = process.env.LLM_MODEL || 'gpt-5.4-2026-03-05'
   const envSupportsVision = parseBooleanEnv(process.env.LLM_SUPPORTS_VISION)
   const visionModel = process.env.LLM_VISION_MODEL
-  const hasExplicitDefaultConfig = Boolean(process.env.LLM_BASE_URL || process.env.LLM_MODEL)
   const explicitBuiltin = Object.values(builtinProviders).find((provider) =>
     provider.baseURL === baseURL || provider.model === model,
   )
@@ -254,19 +250,17 @@ function getDefaultProvider(): ModelProvider {
 
   return {
     name: 'default',
-    apiKey: process.env.LLM_API_KEY || legacyFallback?.apiKey || '',
+    apiKey: process.env.LLM_API_KEY || process.env.OPENAI_API_KEY || '',
     baseURL,
     model,
-    headers: explicitBuiltin?.headers || legacyFallback?.headers || {
+    headers: explicitBuiltin?.headers || {
       'User-Agent': 'claude-code/1.0.0',
       'X-Client-Name': 'claude-code',
     },
-    supportsTools: explicitBuiltin?.supportsTools ?? legacyFallback?.supportsTools ?? true,
+    supportsTools: explicitBuiltin?.supportsTools ?? true,
     supportsVision: envSupportsVision
-      ?? (hasExplicitDefaultConfig
-        ? (explicitBuiltin?.supportsVision ?? inferVisionSupport(model, baseURL, inferredProviderName))
-        : (legacyFallback?.supportsVision ?? inferVisionSupport(model, baseURL, inferredProviderName))),
-    visionModel: visionModel || legacyFallback?.visionModel,
+      ?? (explicitBuiltin?.supportsVision ?? inferVisionSupport(model, baseURL, inferredProviderName)),
+    visionModel,
   }
 }
 

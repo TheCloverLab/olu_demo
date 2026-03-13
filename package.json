@@ -14,9 +14,11 @@
     "ops:role-apps": "node scripts/list-role-applications.mjs",
     "ops:role-review": "node scripts/review-role-application.mjs",
     "cli": "node scripts/olu-cli.mjs",
-    "gen:types": "supabase gen types typescript --linked > packages/shared/src/types/database.ts"
+    "gen:types": "supabase gen types typescript --linked > packages/shared/src/types/database.ts",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "husky": "^9.1.7"
   }
 }

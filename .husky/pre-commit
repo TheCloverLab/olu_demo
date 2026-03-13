@@ -1,0 +1,6 @@
+# Auto-regenerate Supabase types when migrations change
+if git diff --cached --name-only | grep -q "supabase/migrations/"; then
+  echo "📦 Migration changed — regenerating database types..."
+  npm run gen:types
+  git add packages/shared/src/types/database.ts
+fi

@@ -654,12 +654,14 @@ export default function TeamChat() {
     return subscribeChatMessages(chatId, (raw) => {
       // Skip own messages (already added optimistically)
       if (raw.sender_id === user.id) return
+      // In agent chat, skip agent messages — they're added locally from runtime response
+      if (!isGroup && raw.sender_type === 'agent') return
       setMessages((prev) => {
         if (prev.some((m) => m._realtimeId === raw.id)) return prev
         return [...prev, toDisplayMessage(raw, user.id)]
       })
     })
-  }, [chatId, user?.id])
+  }, [chatId, user?.id, isGroup])
 
   useEffect(() => {
     if (tab !== 'chat') return

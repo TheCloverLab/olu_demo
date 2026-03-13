@@ -907,6 +907,11 @@ export default function WorkspaceHome() {
         setHomeConfig(config)
         setExperiences(exps)
 
+        // Default to first tab if tabs exist
+        if (config?.tabs && config.tabs.length > 0) {
+          setActiveTab(config.tabs[0].key)
+        }
+
         const cards: ProductCardData[] = await Promise.all(
           prods.map(async (p) => ({ ...p, plans: await listPlans(p.id) }))
         )

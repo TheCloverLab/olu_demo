@@ -21,6 +21,7 @@ import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lar
 import { loadMCPFromEnv, initMCPServers, getMCPTools, getRegisteredServers, registerMCPServer } from './lib/mcp-client.js'
 import { listSkills, getAgentRuntimeType } from './lib/skill-registry.js'
 import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
+import type { ChatRequest, ChatResponse } from '@olu/shared'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
 
@@ -311,7 +312,7 @@ const server = createServer(async (req, res) => {
 
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = JSON.parse(await readBody(req)) as ChatRequest
       const { workspaceId, agentId, agentName, agentRole, message, provider, model, sessionId, images } = body
 
       if (!workspaceId || !agentId || (!message && !images?.length)) {

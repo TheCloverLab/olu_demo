@@ -20,23 +20,8 @@ import {
   joinChat,
 } from '../../../domain/chat/api'
 import type { ChatAttachment } from '../../../domain/chat/types'
+import type { ModelOption, ChatRequest, ChatResponse, ToolCallResult } from '@olu/shared'
 import clsx from 'clsx'
-
-type ModelOption = {
-  id: string
-  provider: string
-  providerLabel: string
-  model: string
-  label: string
-  supportsVision: boolean
-  isDefault?: boolean
-}
-
-type ToolCallSummary = {
-  name: string
-  args: Record<string, unknown>
-  result: string
-}
 
 type ChatMessage = {
   from: string
@@ -46,7 +31,7 @@ type ChatMessage = {
   attachments?: ChatAttachment[]
   reasoning?: string
   notice?: string
-  toolCalls?: ToolCallSummary[]
+  toolCalls?: ToolCallResult[]
   time: string
   _realtimeId?: string
 }
@@ -327,7 +312,7 @@ type BudgetProgressData = {
   currency: string; status: string; breakdown?: { item: string; amount: number }[]
 }
 
-function parseBudgetFromToolCalls(toolCalls: ToolCallSummary[]): BudgetApprovalData | BudgetProgressData | null {
+function parseBudgetFromToolCalls(toolCalls: ToolCallResult[]): BudgetApprovalData | BudgetProgressData | null {
   for (const tc of toolCalls) {
     if (tc.name === 'request_budget' || tc.name === 'report_budget_usage') {
       try {
@@ -469,7 +454,7 @@ function BudgetProgressCard({ data, onStop }: { data: BudgetProgressData; onStop
   )
 }
 
-function ToolCallCards({ toolCalls }: { toolCalls: ToolCallSummary[] }) {
+function ToolCallCards({ toolCalls }: { toolCalls: ToolCallResult[] }) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
 
   const onCopy = async (index: number, value: string) => {
@@ -786,7 +771,7 @@ export default function TeamChat() {
           model: selectedModelOption?.model,
           sessionId: `web-${agent.id}`,
           images: runtimeImages,
-        }),
+        } satisfies ChatRequest),
       })
 
       if (!res.ok) {
@@ -1167,7 +1152,7 @@ export default function TeamChat() {
                               {msg.notice}
                             </p>
                           )}
-                          {showToolDebug && msg.toolCalls?.length > 0 && <ToolCallCards toolCalls={msg.toolCalls} />}
+                          {showToolDebug && (msg.toolCalls?.length ?? 0) > 0 && <ToolCallCards toolCalls={msg.toolCalls!} />}
                           {msg.toolCalls && (() => {
                             const budgetData = parseBudgetFromToolCalls(msg.toolCalls)
                             if (!budgetData) return null

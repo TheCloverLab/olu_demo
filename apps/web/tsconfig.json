@@ -19,7 +19,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@olu/shared": ["../../packages/shared/src/index.ts"],
+      "@olu/shared/*": ["../../packages/shared/src/*"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

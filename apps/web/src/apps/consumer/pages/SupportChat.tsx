@@ -10,6 +10,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { ensureSupportChat, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { ChatMessage as UnifiedMessage } from '../../../domain/chat/types'
+import type { ChatRequest } from '@olu/shared'
 
 const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
 
@@ -288,7 +289,7 @@ export default function SupportChat() {
                 agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
                 message: text,
                 sessionId: chatId,
-              }),
+              } satisfies ChatRequest),
             })
             if (res.ok) {
               const result = await res.json()

@@ -19,16 +19,8 @@ export interface ModelProvider {
   visionModel?: string
 }
 
-export interface ModelOption {
-  id: string
-  provider: string
-  providerLabel: string
-  model: string
-  label: string
-  supportsTools: boolean
-  supportsVision: boolean
-  isDefault?: boolean
-}
+export type { ModelOption } from '@olu/shared'
+import type { ModelOption } from '@olu/shared'
 
 const empiricalVisionSupport: Record<string, boolean> = {
   'kimi-for-coding': true,

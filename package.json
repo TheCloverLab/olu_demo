@@ -12,7 +12,8 @@
     "test": "npm run test --workspace=apps/web",
     "dev:agent": "npm run dev --workspace=apps/agent-runtime",
     "ops:role-apps": "node scripts/list-role-applications.mjs",
-    "ops:role-review": "node scripts/review-role-application.mjs"
+    "ops:role-review": "node scripts/review-role-application.mjs",
+    "cli": "node scripts/olu-cli.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2"

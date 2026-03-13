@@ -272,6 +272,32 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `approve-role/` — Role/module approval workflow
 - `upgrade-role/` — Role upgrade flow
 
+## TypeScript: No `any`, Use Shared Types
+
+**NEVER use `any` in TypeScript.** Always use proper types.
+
+- Use `Record<string, unknown>` instead of `Record<string, any>`
+- Use `catch (err: unknown)` and narrow with `err instanceof Error`
+- Use `satisfies` to type-check object literals against interfaces
+
+**Cross-package API types** live in `@olu/shared` (`packages/shared/src/types/`):
+```typescript
+// In frontend — compile-time validation of API request shape
+import type { ChatRequest } from '@olu/shared'
+
+body: JSON.stringify({
+  workspaceId: ws.id,
+  agentId: agent.id,
+  message: text,         // TS error if you write 'userMessage' instead
+} satisfies ChatRequest)
+
+// In agent-runtime — type the parsed body
+import type { ChatRequest } from '@olu/shared'
+const body = JSON.parse(rawBody) as ChatRequest
+```
+
+Available shared types: `ChatRequest`, `ChatResponse`, `ModelOption`, `ToolCallResult`, `ModelsResponse`.
+
 ## Conventions
 
 - **Module-based gating** — Use `hasModule('creator_ops')` etc., not roles

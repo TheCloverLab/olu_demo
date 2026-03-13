@@ -6,34 +6,31 @@ const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 // ── Chat CRUD ─────────────────────────────────────────────────
 
 export async function getChat(chatId: string): Promise<Chat | null> {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('chats')
     .select('*')
     .eq('id', chatId)
-    .single()
-  if (error) return null
+    .maybeSingle()
   return data
 }
 
 export async function getChatByExperience(experienceId: string): Promise<Chat | null> {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('chats')
     .select('*')
     .eq('experience_id', experienceId)
     .eq('scope', 'experience')
-    .single()
-  if (error) return null
+    .maybeSingle()
   return data
 }
 
 export async function getChatByAgent(agentId: string): Promise<Chat | null> {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('chats')
     .select('*')
     .eq('agent_id', agentId)
     .eq('scope', 'agent')
-    .single()
-  if (error) return null
+    .maybeSingle()
   return data
 }
 

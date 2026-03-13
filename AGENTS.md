@@ -35,6 +35,37 @@ When `VITE_SUPABASE_URL` contains `demo-placeholder`, all Supabase calls are byp
 - WorkspaceContext enables all modules
 - ConsumerContext uses `DEFAULT_TEMPLATE` without API calls
 
+## RLS Critical Pattern: auth.uid() vs users.id
+
+**NEVER use `auth.uid()` directly in RLS policies that compare against `users.id` or any FK referencing `users(id)`.**
+
+- `auth.uid()` returns `auth.users.id` (Supabase auth UUID)
+- `users.id` is the **internal** app UUID (different!)
+- The link is `users.auth_id = auth.uid()`
+
+**Use the `current_user_id()` helper** (SECURITY DEFINER):
+```sql
+-- Returns internal users.id from the current auth session
+SELECT current_user_id()
+-- equivalent to: SELECT id FROM users WHERE auth_id = auth.uid()
+```
+
+**Correct RLS pattern:**
+```sql
+CREATE POLICY "example" ON my_table FOR SELECT USING (
+  my_table.user_id = current_user_id()
+);
+```
+
+**Wrong (will never match):**
+```sql
+CREATE POLICY "example" ON my_table FOR SELECT USING (
+  my_table.user_id = auth.uid()  -- WRONG: comparing internal UUID with auth UUID
+);
+```
+
+Other SECURITY DEFINER helpers: `is_chat_member(chat_id, user_id)`, `is_workspace_owner(workspace_id, user_id)` — these accept `users.id` (internal), so pass `current_user_id()` to them.
+
 ## Database Schema
 
 ### Core

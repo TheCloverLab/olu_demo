@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Loader2, MessageSquare, BookOpen, Users, ChevronRight, ExternalLink } from 'lucide-react'
+import { Plus, Loader2, MessageSquare, BookOpen, Users, ChevronRight, ExternalLink, Play } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import type { WorkspaceExperience, ExperienceType } from '../../../lib/supabase'
@@ -11,12 +11,14 @@ const TYPE_META: Record<ExperienceType, { label: string; icon: typeof MessageSqu
   forum: { label: 'Forum', icon: MessageSquare, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-400/10' },
   course: { label: 'Course', icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-400/10' },
   group_chat: { label: 'Group Chat', icon: Users, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-400/10' },
+  video: { label: 'Video', icon: Play, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-400/10' },
 }
 
 const CREATABLE_TYPES: { type: ExperienceType; description: string }[] = [
   { type: 'forum', description: 'Discussion forum with posts and comments' },
   { type: 'course', description: 'Structured lessons with chapters' },
   { type: 'group_chat', description: 'Real-time group messaging room' },
+  { type: 'video', description: 'Video gallery with YouTube links' },
 ]
 
 function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => void; onClose: () => void; workspaceId: string }) {
@@ -107,6 +109,7 @@ function ExperienceCard({ exp }: { exp: WorkspaceExperience }) {
   const consumerPath = exp.type === 'forum' ? `/forum/${exp.id}`
     : exp.type === 'course' ? `/course/${exp.id}`
     : exp.type === 'group_chat' ? `/group-chat/${exp.id}`
+    : exp.type === 'video' ? `/video/${exp.id}`
     : null
 
   return (

@@ -594,7 +594,7 @@ export type ConsumerLessonProgress = {
 
 // ── Experience & Product Model ──────────────────────────────────
 
-export type ExperienceType = 'forum' | 'course' | 'group_chat'
+export type ExperienceType = 'forum' | 'course' | 'group_chat' | 'video'
 
 export type ExperienceVisibility = 'public' | 'product_gated'
 
@@ -685,8 +685,22 @@ export type WorkspaceHomeTab = {
   key: string
   label: string
   experience_ids: string[]
-  display_mode: 'list' | 'tile' | 'grid' | 'featured'
+  display_mode: 'list' | 'tile' | 'grid' | 'featured' | 'inline'
   position: number
+}
+
+// ── Experience Video Items ───────────────────────────────────────
+
+export type ExperienceVideoItem = {
+  id: string
+  experience_id: string
+  title: string
+  video_url: string
+  thumbnail_url?: string | null
+  description?: string | null
+  position: number
+  author_id?: string | null
+  created_at?: string
 }
 
 // ── Experience Course Hierarchy (Whop-style) ─────────────────────

@@ -138,6 +138,7 @@ const KNOWN_TABLES = [
   'workspace_agent_task_logs',
   'workspace_employees',
   'workspace_experiences',
+  'experience_video_items',
   'workspace_products',
   'workspace_product_plans',
   'workspace_product_experiences',

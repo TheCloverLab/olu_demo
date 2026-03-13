@@ -6,6 +6,7 @@ import WorkspaceHome from './pages/WorkspaceHome'
 import ForumView from './pages/ForumView'
 import CourseView from './pages/CourseView'
 import GroupChatView from './pages/GroupChatView'
+import VideoView from './pages/VideoView'
 import SupportChat from './pages/SupportChat'
 import ProductDetail from './pages/ProductDetail'
 import PublicProfile from './pages/PublicProfile'
@@ -24,6 +25,7 @@ export const consumerRoutes: RouteObject[] = [
       { path: 'forum/:experienceId', element: <ForumView /> },
       { path: 'course/:experienceId', element: <CourseView /> },
       { path: 'group-chat/:experienceId', element: <GroupChatView /> },
+      { path: 'video/:experienceId', element: <VideoView /> },
       { path: 'w/:workspaceSlug/support', element: <SupportChat /> },
       { path: 'w/:workspaceSlug/product/:productId', element: <ProductDetail /> },
       { path: 'people/:id', element: <PublicProfile /> },

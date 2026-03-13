@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones, LogOut } from 'lucide-react'
+import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, ChevronDown, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones, LogOut, Heart, Send, Play } from 'lucide-react'
 import clsx from 'clsx'
 import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
@@ -9,19 +9,23 @@ import { useAuth } from '../../../context/AuthContext'
 import { joinWorkspace, hasJoinedWorkspace, leaveWorkspace } from '../../../domain/workspace/api'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
-import { listExperiences } from '../../../domain/experience/api'
+import { listExperiences, getForumPosts, getVideoItems, extractYouTubeId, type ForumPostWithAuthor } from '../../../domain/experience/api'
+import type { ExperienceVideoItem } from '../../../lib/supabase'
+import { getCourseTree, type CourseTree } from '../../../domain/experience/course-api'
 import { getHomeConfig, listProducts, listPlans, purchaseProduct, getUserPurchases, getProductExperienceIds } from '../../../domain/product/api'
 
 const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
   course: BookOpen,
   group_chat: Users,
+  video: Play,
 }
 
 const TYPE_GRADIENT: Record<string, string> = {
   forum: 'from-purple-500/20 to-purple-600/5',
   course: 'from-blue-500/20 to-blue-600/5',
   group_chat: 'from-emerald-500/20 to-emerald-600/5',
+  video: 'from-red-500/20 to-red-600/5',
 }
 
 function ExperienceCard({ exp, onClick }: { exp: WorkspaceExperience; onClick: () => void }) {
@@ -78,6 +82,311 @@ function ExperienceListItem({ exp, onClick }: { exp: WorkspaceExperience; onClic
   )
 }
 
+// ── Inline Experience (renders experience content directly in tab) ──
+
+function LockedExperienceCard({ exp, workspaceSlug, experienceProductMap }: { exp: WorkspaceExperience; workspaceSlug: string; experienceProductMap: Record<string, string> }) {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const Icon = TYPE_ICON[exp.type] || MessageSquare
+  const productId = experienceProductMap[exp.id]
+
+  return (
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
+      {exp.cover ? (
+        <div className="h-36 bg-cover bg-center relative" style={{ backgroundImage: `url(${exp.cover})` }}>
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Lock size={32} className="text-white/70" />
+          </div>
+        </div>
+      ) : (
+        <div className={clsx('h-36 bg-gradient-to-br flex items-center justify-center', TYPE_GRADIENT[exp.type])}>
+          <Lock size={32} className="text-[var(--olu-muted)]" />
+        </div>
+      )}
+      <div className="p-5 space-y-3 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Icon size={16} className="text-[var(--olu-text-secondary)]" />
+          <h3 className="font-bold text-lg">{exp.name}</h3>
+        </div>
+        <p className="text-sm text-[var(--olu-muted)]">
+          {t('consumer.lockedContent', 'This content requires a subscription to access.')}
+        </p>
+        {productId && (
+          <button
+            onClick={() => navigate(`/w/${workspaceSlug}/product/${productId}`)}
+            className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold hover:from-amber-600 hover:to-orange-600 transition-colors"
+          >
+            <Sparkles size={14} />
+            {t('consumer.getAccess', 'Get Access')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function InlineForumContent({ experienceId }: { experienceId: string }) {
+  const { user } = useAuth()
+  const [posts, setPosts] = useState<ForumPostWithAuthor[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getForumPosts(experienceId)
+      .then(setPosts)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [experienceId])
+
+  if (loading) {
+    return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[var(--olu-muted)]" /></div>
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-8 text-center">
+        <MessageSquare size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
+        <p className="text-sm text-[var(--olu-muted)]">No posts yet.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {posts.map((post) => (
+        <div key={post.id} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            {post.author?.avatar_img ? (
+              <img src={post.author.avatar_img} alt="" className="w-8 h-8 rounded-xl object-cover flex-shrink-0" />
+            ) : (
+              <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-xs flex-shrink-0 bg-gradient-to-br', post.author?.avatar_color || 'from-gray-600 to-gray-500')}>
+                {post.author?.initials || '?'}
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-sm">{post.author?.name || 'Unknown'}</p>
+              <p className="text-[var(--olu-muted)] text-xs">{post.author?.handle}</p>
+            </div>
+          </div>
+          <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+          <div className="flex items-center gap-4 pt-1">
+            <span className="flex items-center gap-1.5 text-xs text-[var(--olu-text-secondary)]">
+              <Heart size={14} /> {post.like_count}
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-[var(--olu-text-secondary)]">
+              <MessageSquare size={14} /> {post.comment_count}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function InlineCourseContent({ experienceId }: { experienceId: string }) {
+  const navigate = useNavigate()
+  const [tree, setTree] = useState<CourseTree | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [expandedChapter, setExpandedChapter] = useState<string | null>(null)
+
+  useEffect(() => {
+    getCourseTree(experienceId)
+      .then((t) => {
+        setTree(t)
+        if (t && t.chapters.length > 0) setExpandedChapter(t.chapters[0].id)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [experienceId])
+
+  if (loading) {
+    return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[var(--olu-muted)]" /></div>
+  }
+
+  if (!tree || tree.chapters.length === 0) {
+    return (
+      <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-8 text-center">
+        <BookOpen size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
+        <p className="text-sm text-[var(--olu-muted)]">No course content yet.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {tree.chapters.map((chapter) => (
+        <div key={chapter.id} className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] overflow-hidden">
+          <button
+            onClick={() => setExpandedChapter(expandedChapter === chapter.id ? null : chapter.id)}
+            className="w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--olu-card-hover)] transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-cyan-300/20 flex items-center justify-center flex-shrink-0">
+              <BookOpen size={14} className="text-cyan-600 dark:text-cyan-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-sm truncate">{chapter.title}</h4>
+              <p className="text-xs text-[var(--olu-muted)]">{chapter.lessons.length} lesson{chapter.lessons.length !== 1 ? 's' : ''}</p>
+            </div>
+            {expandedChapter === chapter.id ? <ChevronDown size={14} className="text-[var(--olu-muted)]" /> : <ChevronRight size={14} className="text-[var(--olu-muted)]" />}
+          </button>
+          {expandedChapter === chapter.id && chapter.lessons.length > 0 && (
+            <div className="border-t border-[var(--olu-card-border)] px-4 py-2 space-y-1">
+              {chapter.lessons.map((lesson) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => navigate(`/course/${experienceId}`)}
+                  className="w-full flex items-center gap-3 px-2 py-2 text-left rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-full bg-[var(--olu-card-bg)] flex items-center justify-center flex-shrink-0">
+                    <Play size={10} className="text-[var(--olu-text-secondary)]" />
+                  </div>
+                  <span className="text-sm truncate flex-1">{lesson.title}</span>
+                  {lesson.video_url && <Play size={12} className="text-[var(--olu-muted)] flex-shrink-0" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function InlineChatPreview({ exp, workspaceSlug }: { exp: WorkspaceExperience; workspaceSlug: string }) {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  return (
+    <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-6 text-center space-y-3">
+      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 flex items-center justify-center mx-auto">
+        <Users size={24} className="text-emerald-500" />
+      </div>
+      <h3 className="font-bold text-lg">{exp.name}</h3>
+      <p className="text-sm text-[var(--olu-muted)]">
+        {t('consumer.joinChat', 'Join the conversation with the community.')}
+      </p>
+      <button
+        onClick={() => navigate(`/group-chat/${exp.id}`)}
+        className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors"
+      >
+        <Send size={14} />
+        {t('consumer.openChat', 'Open Chat')}
+      </button>
+    </div>
+  )
+}
+
+function InlineVideoContent({ experienceId }: { experienceId: string }) {
+  const [items, setItems] = useState<ExperienceVideoItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeVideo, setActiveVideo] = useState<string | null>(null)
+
+  useEffect(() => {
+    getVideoItems(experienceId)
+      .then((v) => {
+        setItems(v)
+        if (v.length > 0) {
+          const id = extractYouTubeId(v[0].video_url)
+          if (id) setActiveVideo(id)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [experienceId])
+
+  if (loading) {
+    return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[var(--olu-muted)]" /></div>
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-8 text-center">
+        <Play size={24} className="text-[var(--olu-muted)] mx-auto mb-2" />
+        <p className="text-sm text-[var(--olu-muted)]">No videos yet.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Active video player */}
+      {activeVideo && (
+        <div className="rounded-2xl overflow-hidden border border-[var(--olu-card-border)] aspect-video">
+          <iframe
+            src={`https://www.youtube.com/embed/${activeVideo}`}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      )}
+
+      {/* Video list */}
+      <div className="space-y-2">
+        {items.map((item) => {
+          const ytId = extractYouTubeId(item.video_url)
+          const isActive = ytId === activeVideo
+          return (
+            <button
+              key={item.id}
+              onClick={() => ytId && setActiveVideo(ytId)}
+              className={clsx(
+                'w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors',
+                isActive
+                  ? 'bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)]'
+                  : 'hover:bg-[var(--olu-card-hover)]'
+              )}
+            >
+              <div className="w-24 h-14 rounded-lg overflow-hidden flex-shrink-0 relative bg-black">
+                {item.thumbnail_url ? (
+                  <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500/20 to-red-600/5">
+                    <Play size={16} className="text-[var(--olu-muted)]" />
+                  </div>
+                )}
+                {isActive && (
+                  <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
+                    <Play size={16} className="text-cyan-300" fill="currentColor" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={clsx('text-sm font-medium truncate', isActive && 'text-cyan-700 dark:text-cyan-300')}>{item.title}</p>
+                {item.description && <p className="text-xs text-[var(--olu-muted)] truncate">{item.description}</p>}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function InlineExperience({
+  exp,
+  isLocked,
+  workspaceSlug,
+  experienceProductMap,
+}: {
+  exp: WorkspaceExperience
+  isLocked: boolean
+  workspaceSlug: string
+  experienceProductMap: Record<string, string>
+}) {
+  if (isLocked) {
+    return <LockedExperienceCard exp={exp} workspaceSlug={workspaceSlug} experienceProductMap={experienceProductMap} />
+  }
+
+  if (exp.type === 'forum') return <InlineForumContent experienceId={exp.id} />
+  if (exp.type === 'course') return <InlineCourseContent experienceId={exp.id} />
+  if (exp.type === 'group_chat') return <InlineChatPreview exp={exp} workspaceSlug={workspaceSlug} />
+  if (exp.type === 'video') return <InlineVideoContent experienceId={exp.id} />
+
+  return null
+}
+
+// ── Tab Content ──
+
 function TabContent({
   tab,
   experiences,
@@ -105,10 +414,29 @@ function TabContent({
     if (exp.type === 'forum') navigate(`/forum/${exp.id}`)
     else if (exp.type === 'course') navigate(`/course/${exp.id}`)
     else if (exp.type === 'group_chat') navigate(`/group-chat/${exp.id}`)
+    else if (exp.type === 'video') navigate(`/video/${exp.id}`)
   }
 
   if (tabExps.length === 0) {
     return <p className="text-sm text-[var(--olu-muted)] text-center py-8">No experiences in this tab.</p>
+  }
+
+  // Inline mode: render the single experience content directly
+  if (tab.display_mode === 'inline' && tabExps.length === 1) {
+    const exp = tabExps[0]
+    const isLocked = exp.visibility === 'product_gated' && !purchasedProductIds.has(experienceProductMap[exp.id])
+    return <InlineExperience exp={exp} isLocked={isLocked} workspaceSlug={workspaceSlug} experienceProductMap={experienceProductMap} />
+  }
+
+  // Inline mode with multiple exps: fall back to list
+  if (tab.display_mode === 'inline') {
+    return (
+      <div className="space-y-2">
+        {tabExps.map((exp) => (
+          <ExperienceListItem key={exp.id} exp={exp} onClick={() => handleOpen(exp)} />
+        ))}
+      </div>
+    )
   }
 
   if (tab.display_mode === 'list') {

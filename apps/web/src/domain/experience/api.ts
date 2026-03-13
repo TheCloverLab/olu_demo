@@ -363,3 +363,62 @@ export function subscribeExperienceChat(
     supabase.removeChannel(channel)
   }
 }
+
+// ---------- Experience video ----------
+
+import type { ExperienceVideoItem } from '../../lib/supabase'
+
+export async function getVideoItems(experienceId: string): Promise<ExperienceVideoItem[]> {
+  const { data, error } = await supabase
+    .from('experience_video_items')
+    .select('*')
+    .eq('experience_id', experienceId)
+    .order('position')
+  if (error) throw error
+  return data || []
+}
+
+export async function addVideoItem(
+  experienceId: string,
+  title: string,
+  videoUrl: string,
+  authorId?: string,
+  description?: string,
+): Promise<ExperienceVideoItem> {
+  const { data: maxPos } = await supabase
+    .from('experience_video_items')
+    .select('position')
+    .eq('experience_id', experienceId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .single()
+
+  const position = (maxPos?.position ?? -1) + 1
+  const thumbnailUrl = extractYouTubeThumbnail(videoUrl)
+
+  const { data, error } = await supabase
+    .from('experience_video_items')
+    .insert({ experience_id: experienceId, title, video_url: videoUrl, thumbnail_url: thumbnailUrl, description, position, author_id: authorId })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteVideoItem(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('experience_video_items')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+export function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/)
+  return match ? match[1] : null
+}
+
+function extractYouTubeThumbnail(url: string): string | null {
+  const id = extractYouTubeId(url)
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null
+}

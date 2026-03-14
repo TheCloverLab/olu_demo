@@ -235,7 +235,7 @@ export default function SupportChat() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, aiTyping])
 
   async function handleSend() {
     if (!input.trim()) return

@@ -5,21 +5,21 @@ WORKDIR /app
 
 # --- deps stage: install production dependencies ---
 FROM base AS deps
-ENV HUSKY=0
 COPY package.json package-lock.json ./
 COPY apps/agent-runtime/package.json ./apps/agent-runtime/
 COPY packages/shared/package.json ./packages/shared/
 RUN --mount=type=cache,target=/root/.npm \
-  npm install --workspace=apps/agent-runtime --workspace=packages/shared --omit=dev
+  npm install --workspace=apps/agent-runtime --workspace=packages/shared --omit=dev --ignore-scripts && \
+  npm rebuild --workspace=apps/agent-runtime --workspace=packages/shared
 
 # --- build stage: compile TypeScript ---
 FROM base AS build
-ENV HUSKY=0
 COPY package.json package-lock.json ./
 COPY apps/agent-runtime/ ./apps/agent-runtime/
 COPY packages/shared/ ./packages/shared/
 RUN --mount=type=cache,target=/root/.npm \
-  npm install --workspace=apps/agent-runtime --workspace=packages/shared
+  npm install --workspace=apps/agent-runtime --workspace=packages/shared --ignore-scripts && \
+  npm rebuild --workspace=apps/agent-runtime --workspace=packages/shared
 RUN npm run build --workspace=packages/shared 2>/dev/null; \
     npm run build --workspace=apps/agent-runtime
 

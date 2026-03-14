@@ -517,7 +517,7 @@ function ProductCard({
           {product.plans.map((plan) => (
             <span key={plan.id} className="text-xs px-2 py-0.5 rounded-lg bg-[var(--olu-card-bg)] text-[var(--olu-text-secondary)]">
               ${plan.price}/{plan.interval || 'once'}
-              {plan.trial_days > 0 && ` · ${plan.trial_days}d trial`}
+              {(plan.trial_days ?? 0) > 0 && ` · ${plan.trial_days}d trial`}
             </span>
           ))}
         </div>

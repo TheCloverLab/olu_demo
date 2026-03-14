@@ -1,89 +1,45 @@
+import type { Tables, Json } from './database'
+
+import type { Narrow } from './helpers'
+
 export type BusinessModuleKey = 'creator_ops' | 'marketing' | 'supply_chain'
 
-export type Workspace = {
-  id: string
-  owner_user_id: string
-  name: string
-  slug: string
+export type Workspace = Narrow<Tables<'workspaces'>, {
   status: 'active' | 'paused' | 'archived'
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspaceMembership = {
-  id: string
-  workspace_id: string
-  user_id: string
+export type WorkspaceMembership = Narrow<Tables<'workspace_memberships'>, {
   membership_role: 'owner' | 'admin' | 'operator' | 'viewer'
   status: 'active' | 'invited' | 'disabled'
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspaceModule = {
-  id: string
-  workspace_id: string
+export type WorkspaceModule = Narrow<Tables<'workspace_modules'>, {
   module_key: BusinessModuleKey
-  enabled: boolean
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspacePermission = {
-  id: string
-  workspace_id: string
+export type WorkspacePermission = Narrow<Tables<'workspace_permissions'>, {
   membership_role: 'owner' | 'admin' | 'operator' | 'viewer'
-  resource: string
-  action: string
-  allowed: boolean
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspaceIntegration = {
-  id: string
-  workspace_id: string
-  provider: string
+export type WorkspaceIntegration = Narrow<Tables<'workspace_integrations'>, {
   status: 'connected' | 'disconnected' | 'planned' | 'error'
-  config_json: Record<string, any>
-  last_sync_at?: string | null
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspacePolicy = {
-  id: string
-  workspace_id: string
-  approval_policy: Record<string, any>
-  sandbox_policy: Record<string, any>
-  notification_policy: Record<string, any>
-  created_at?: string
-  updated_at?: string
-}
+export type WorkspacePolicy = Tables<'workspace_policies'>
 
-export type WorkspaceBilling = {
-  id: string
-  workspace_id: string
-  plan: string
+export type WorkspaceBilling = Narrow<Tables<'workspace_billing'>, {
   status: 'trial' | 'active' | 'past_due' | 'cancelled'
-  billing_email?: string | null
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type WorkspaceConsumerConfig = {
-  id: string
-  workspace_id: string
-  template_key: string
+// Override config_json with app-specific shape
+export type WorkspaceConsumerConfig = Narrow<Tables<'workspace_consumer_configs'>, {
   config_json: {
     featured_template?: string
     featured_creator_id?: string | null
     featured_course_slug?: string | null
-    [key: string]: any
+    [key: string]: Json | undefined
   }
-  created_at?: string
-  updated_at?: string
-}
+}>
 
 export type WorkspaceSettingsData = {
   workspace: Workspace
@@ -95,3 +51,12 @@ export type WorkspaceSettingsData = {
   billing: WorkspaceBilling | null
   consumerConfig: WorkspaceConsumerConfig | null
 }
+
+export type WorkspaceEmployee = Narrow<Tables<'workspace_employees'>, {
+  status: 'online' | 'offline' | 'busy'
+  employment_status: 'active' | 'paused' | 'offboarded'
+}>
+
+export type WorkspaceWallet = Tables<'workspace_wallets'>
+
+export type WorkspaceJoin = Tables<'workspace_joins'>

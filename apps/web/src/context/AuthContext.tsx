@@ -14,6 +14,8 @@ const DEMO_USER: User = {
   email: 'demo@olu.app',
   name: 'Demo Creator',
   bio: 'Welcome to the OLU demo experience',
+  avatar_img: null,
+  cover_img: null,
   avatar_color: 'from-violet-500 to-fuchsia-500',
   initials: 'DC',
   followers: 12400,
@@ -21,6 +23,11 @@ const DEMO_USER: User = {
   posts: 86,
   verified: true,
   onboarding_completed: true,
+  role: 'creator',
+  roles: null,
+  social_links: null,
+  created_at: null,
+  updated_at: null,
 }
 
 interface AuthContextType {

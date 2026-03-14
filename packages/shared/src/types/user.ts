@@ -1,21 +1,5 @@
-export type User = {
-  id: string
-  auth_id?: string
-  username: string
-  handle: string
-  email: string
-  name: string
-  bio?: string
-  avatar_img?: string
-  cover_img?: string
-  avatar_color?: string
-  initials?: string
-  followers: number
-  following: number
-  posts: number
-  verified: boolean
-  onboarding_completed?: boolean
-  social_links?: Record<string, string>
-  created_at?: string
-  updated_at?: string
-}
+import type { Database } from './database'
+
+export type User = Database['public']['Tables']['users']['Row']
+
+export type UserWallet = Database['public']['Tables']['user_wallets']['Row']

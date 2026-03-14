@@ -19,6 +19,11 @@ const mockAgent: WorkspaceAgent = {
   hired_at: '2024-01-01',
   created_at: '2024-01-01',
   updated_at: '2024-01-01',
+  model: null,
+  enabled_skills: null,
+  lark_app_id: null,
+  lark_app_secret: null,
+  support_enabled: null,
 }
 
 describe('Employee adapter', () => {
@@ -48,6 +53,8 @@ describe('Employee adapter', () => {
           priority: 'medium',
           due: 'Today',
           progress: 0,
+          created_at: null,
+          updated_at: null,
         },
       ],
     }

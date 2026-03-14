@@ -110,7 +110,7 @@ export function ConsumerProvider({ children }: { children: ReactNode }) {
       if (authUser) {
         updateWorkspaceConsumerConfigForUser(authUser, {
           config_json: next,
-          template_key: consumerTemplate,
+          template_key: consumerTemplate ?? undefined,
         }).catch((error) => {
           console.error('Failed to persist consumer config', error)
         })

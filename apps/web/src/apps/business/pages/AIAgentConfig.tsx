@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, Plus, Settings, Trash2, ShoppingBag, Check, Star, Sparkles, ShieldCheck } from 'lucide-react'
+import { Bot, Plus, Settings, Trash2, ShoppingBag, Check, Star, Sparkles, ShieldCheck, Cpu } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { getAgentTemplates, getWorkspaceAgentsForUser, hireWorkspaceAgent } from '../../../domain/agent/api'
@@ -56,9 +56,10 @@ function HireModal({
   agent: AgentTemplate
   loading: boolean
   onClose: () => void
-  onConfirm: (agent: AgentTemplate, name: string) => void
+  onConfirm: (agent: AgentTemplate, name: string, runtimeType: 'langgraph' | 'openclaw') => void
 }) {
   const [name, setName] = useState('')
+  const [runtimeType, setRuntimeType] = useState<'langgraph' | 'openclaw'>('langgraph')
 
   return (
     <AnimatePresence>
@@ -77,12 +78,34 @@ function HireModal({
               placeholder="Give your agent a name, like Ashley, Ada, or Luca."
               className="w-full p-3 bg-[var(--olu-card-bg)] rounded-xl text-sm focus:outline-none border border-[var(--olu-card-border)] focus:border-[var(--olu-card-border)] transition-colors mb-4 placeholder:text-[var(--olu-muted)]"
             />
+            <label className="text-xs font-semibold text-[var(--olu-text-secondary)] uppercase tracking-wider block mb-2">
+              <Cpu size={10} className="inline mr-1" />
+              Runtime
+            </label>
+            <div className="flex gap-2 mb-4">
+              {(['langgraph', 'openclaw'] as const).map((rt) => (
+                <button
+                  key={rt}
+                  onClick={() => setRuntimeType(rt)}
+                  className={clsx(
+                    'flex-1 py-2 rounded-xl text-xs font-semibold transition-all border',
+                    runtimeType === rt
+                      ? rt === 'openclaw'
+                        ? 'bg-orange-500/20 text-orange-600 dark:text-orange-300 border-orange-500/30'
+                        : 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30'
+                      : 'border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
+                  )}
+                >
+                  {rt === 'openclaw' ? 'OpenClaw' : 'LangGraph'}
+                </button>
+              ))}
+            </div>
             <p className="text-xs text-[var(--olu-text-secondary)] mb-4">
               This agent will join your team as <strong>{name || agent.name}</strong>, {agent.role}. You can rename or remove them anytime.
             </p>
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 min-w-0 py-2.5 rounded-xl border border-[var(--olu-card-border)] text-sm font-medium text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)] transition-colors">Cancel</button>
-              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
+              <button disabled={loading} onClick={() => onConfirm(agent, name || agent.name, runtimeType)} className="flex-1 min-w-0 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap">
                 {loading ? 'Hiring...' : 'Confirm Hire'}
               </button>
             </div>
@@ -141,12 +164,12 @@ export default function AIAgentConfig() {
   const filteredMarket = templates.filter((a) => filter === 'All' || a.category === filter)
   const hiredTemplateKeys = useMemo(() => new Set(activeAgents.map((agent) => agent.agent_key)), [activeAgents])
 
-  async function handleConfirm(agent: AgentTemplate, name: string) {
+  async function handleConfirm(agent: AgentTemplate, name: string, runtimeType: 'langgraph' | 'openclaw') {
     if (!user) return
 
     setHireLoading(true)
     try {
-      const created = await hireWorkspaceAgent(user, agent, name)
+      const created = await hireWorkspaceAgent(user, agent, name, runtimeType)
       setActiveAgents((prev) => [...prev, created])
       setHireTarget(null)
       setSuccessAgent(created.name)
@@ -230,7 +253,17 @@ export default function AIAgentConfig() {
                       <div className={clsx('absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--olu-section-bg)]', agent.status === 'online' ? 'bg-emerald-400' : 'bg-amber-400')} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm">{agent.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-semibold text-sm">{agent.name}</p>
+                        <span className={clsx(
+                          'text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide',
+                          agent.runtime_type === 'openclaw'
+                            ? 'bg-orange-500/20 text-orange-600 dark:text-orange-300'
+                            : 'bg-blue-500/20 text-blue-600 dark:text-blue-300'
+                        )}>
+                          {agent.runtime_type === 'openclaw' ? 'OpenClaw' : 'LangGraph'}
+                        </span>
+                      </div>
                       <p className="text-[var(--olu-text-secondary)] text-xs">{agent.role}</p>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

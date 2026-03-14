@@ -15,6 +15,8 @@ const owner = {
   name: 'Luna Chen',
   handle: '@lunachen',
   username: 'lunachen',
+  email: 'test@test.com',
+  cover_img: null,
 }
 
 const communityConfig: WorkspaceConsumerConfig = {
@@ -25,6 +27,8 @@ const communityConfig: WorkspaceConsumerConfig = {
     featured_template: 'fan_community',
     community_hero_description: 'Private reviews and weekly drops.',
   },
+  created_at: null,
+  updated_at: null,
 }
 
 const publishedCourse: ConsumerCourse = {
@@ -44,6 +48,9 @@ const publishedCourse: ConsumerCourse = {
   students_count: 124,
   completion_rate: '71%',
   status: 'published',
+  experience_id: null,
+  created_at: null,
+  updated_at: null,
 }
 
 describe('consumer app domain helpers', () => {

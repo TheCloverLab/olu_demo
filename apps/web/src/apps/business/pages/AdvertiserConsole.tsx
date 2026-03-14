@@ -385,7 +385,7 @@ export default function AdvertiserConsole() {
       {tab === 'campaigns' && (
         <div className="space-y-3">
           {campaigns.map((campaign) => {
-            const progress = campaign.budget > 0 ? Math.min(100, (campaign.spent / campaign.budget) * 100) : 0
+            const progress = campaign.budget > 0 ? Math.min(100, ((campaign.spent ?? 0) / campaign.budget) * 100) : 0
             return (
               <div key={campaign.id} className="rounded-[28px] p-5 space-y-3 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
                 <div className="flex items-center justify-between gap-3">
@@ -403,10 +403,10 @@ export default function AdvertiserConsole() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <p className="text-[var(--olu-text-secondary)]">Spent <span className="text-white font-semibold">${Math.round(campaign.spent).toLocaleString()}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Spent <span className="text-white font-semibold">${Math.round(campaign.spent ?? 0).toLocaleString()}</span></p>
                   <p className="text-[var(--olu-text-secondary)]">Budget <span className="text-white font-semibold">${Math.round(campaign.budget).toLocaleString()}</span></p>
-                  <p className="text-[var(--olu-text-secondary)]">Reach <span className="text-white font-semibold">{compactNumber(campaign.reach)}</span></p>
-                  <p className="text-[var(--olu-text-secondary)]">Conversions <span className="text-white font-semibold">{compactNumber(campaign.conversions)}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Reach <span className="text-white font-semibold">{compactNumber(campaign.reach ?? 0)}</span></p>
+                  <p className="text-[var(--olu-text-secondary)]">Conversions <span className="text-white font-semibold">{compactNumber(campaign.conversions ?? 0)}</span></p>
                 </div>
               </div>
             )

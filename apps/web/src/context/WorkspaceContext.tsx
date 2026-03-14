@@ -15,6 +15,8 @@ const DEMO_WORKSPACE: Workspace = {
   cover: null,
   headline: null,
   status: 'active',
+  created_at: null,
+  updated_at: null,
 }
 
 interface WorkspaceContextType {

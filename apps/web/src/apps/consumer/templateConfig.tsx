@@ -8,7 +8,8 @@ export type ConsumerNavItem = {
   exact?: boolean
 }
 
-export type ConsumerAppType = 'community' | 'academy' | 'consulting'
+import type { ConsumerAppType } from '@olu/shared'
+export type { ConsumerAppType }
 
 export type ConsumerTemplateDefinition = {
   label: string

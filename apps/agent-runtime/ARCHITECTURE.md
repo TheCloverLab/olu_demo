@@ -33,23 +33,26 @@ Key files:
 - `src/lib/skill-registry.ts` — Skill packs + MCP tool loading, per-agent config
 - `src/index.ts` — HTTP API (register servers, store credentials)
 
-### Phase 2: OpenClaw Runtime (TODO)
+### Phase 2: OpenClaw Runtime (✅ Done)
 
-Deploy a standalone OpenClaw instance as an alternative runtime alongside LangGraph.
+OpenClaw runs as a standalone Docker service alongside the agent-runtime.
 
 ```
-docker-compose.yml
+docker-compose.yml (repo root)
 ├── agent-runtime (port 8080)
-├── openclaw (port 3100)       ← new
+├── openclaw-gateway (port 18789 UI, internal 3100)
 ├── mcp-github (port 3001)     ← optional MCP servers
 └── mcp-slack (port 3002)      ← optional MCP servers
 ```
 
-Implementation steps:
-1. Add `openclaw/openclaw:latest` service to Docker Compose
-2. Add runtime router in `index.ts`: forward to OpenClaw when `runtime_type === 'openclaw'`
-3. Frontend: agent settings page adds runtime selector (DB field `runtime_type` already exists)
-4. API layer stays unified — `/chat` and `/invoke` endpoints don't change
+How it works:
+1. `docker-compose.yml` defines `openclaw-gateway` service (`ghcr.io/openclaw/openclaw:v2026.3.12`)
+2. `index.ts` checks `getAgentRuntimeType(agentId)` — if `openclaw`, proxies `/chat` and `/invoke` to OpenClaw
+3. All `/openclaw/*` requests are forwarded to the OpenClaw gateway (for direct API access)
+4. API layer stays unified — callers use the same `/chat` and `/invoke` endpoints regardless of runtime
+5. OpenClaw Gateway UI available at `http://localhost:18789`
+6. Env: `OPENCLAW_URL` (default `http://openclaw-gateway:3100` in Docker, `http://localhost:3100` locally)
+7. LLM API keys are passed through to OpenClaw via docker-compose environment
 
 ## Tool System
 

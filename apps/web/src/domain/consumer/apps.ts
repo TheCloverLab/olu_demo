@@ -13,7 +13,7 @@ import { getConsumerCoursesForFeed } from './data'
 import { getProfileById } from '../profile/api'
 import { getWorkspaceConsumerConfigForUser } from '../workspace/api'
 
-type AppOwner = Pick<User, 'id' | 'name' | 'handle' | 'username' | 'email'>
+type AppOwner = Pick<User, 'id' | 'name' | 'handle' | 'username' | 'email' | 'cover_img'>
 type DiscoverQueryOptions = {
   query?: string
   page?: number
@@ -86,7 +86,7 @@ export function buildCommunityConsumerApp(
     visibility: 'public',
     source: 'workspace_config',
     template_key: config.template_key,
-    cover_img: config.config_json?.cover_img || owner.cover_img || null,
+    cover_img: (config.config_json?.cover_img as string | null) || owner.cover_img || null,
     config_json: config.config_json || {},
   }
 }
@@ -178,7 +178,7 @@ export function buildCommunityCardFromCreator(
     visibility: 'public',
     source: 'workspace_config',
     template_key: 'fan_community',
-    cover_img: configJson?.cover_img || creator.cover_img || null,
+    cover_img: (configJson?.cover_img as string | null) || creator.cover_img || null,
     config_json: configJson || null,
   }, creator, {
     priceLabel: 'Membership',

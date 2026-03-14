@@ -10,7 +10,7 @@
  *   GET  /oauth/twitter/callback — handle Twitter OAuth callback
  */
 
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
 import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
@@ -42,6 +42,31 @@ function cors(res: ServerResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+}
+
+// OpenClaw proxy — forward /openclaw/* requests to the OpenClaw gateway
+const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://localhost:3100'
+
+function proxyToOpenClaw(req: IncomingMessage, res: ServerResponse, path: string) {
+  const target = new URL(path, OPENCLAW_URL)
+  const proxyReq = httpRequest(
+    {
+      hostname: target.hostname,
+      port: target.port,
+      path: target.pathname + target.search,
+      method: req.method,
+      headers: { ...req.headers, host: target.host },
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers)
+      proxyRes.pipe(res)
+    },
+  )
+  proxyReq.on('error', (err) => {
+    console.error('[openclaw-proxy] error:', err.message)
+    json(res, 502, { error: `OpenClaw unreachable: ${err.message}` })
+  })
+  req.pipe(proxyReq)
 }
 
 const server = createServer(async (req, res) => {
@@ -78,6 +103,13 @@ const server = createServer(async (req, res) => {
         json(res, 400, {
           error: 'Missing required fields: workspaceId, agentId, taskDescription',
         })
+        return
+      }
+
+      // Runtime-aware routing: forward to OpenClaw if agent uses openclaw runtime
+      const invokeRuntime = await getAgentRuntimeType(agentId)
+      if (invokeRuntime === 'openclaw') {
+        proxyToOpenClaw(req, res, '/invoke')
         return
       }
 
@@ -317,6 +349,13 @@ const server = createServer(async (req, res) => {
 
       if (!workspaceId || !agentId || (!message && !images?.length)) {
         json(res, 400, { error: 'Missing required fields: workspaceId, agentId, message' })
+        return
+      }
+
+      // Runtime-aware routing: forward to OpenClaw if agent uses openclaw runtime
+      const runtimeType = await getAgentRuntimeType(agentId)
+      if (runtimeType === 'openclaw') {
+        proxyToOpenClaw(req, res, '/chat')
         return
       }
 
@@ -774,6 +813,13 @@ const server = createServer(async (req, res) => {
         .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
       json(res, 200, { budgets: data || [], error: error?.message })
+      return
+    }
+
+    // OpenClaw proxy — forward /openclaw/* to the OpenClaw gateway
+    if (url.pathname.startsWith('/openclaw/')) {
+      const forwardPath = url.pathname.slice('/openclaw'.length) + url.search
+      proxyToOpenClaw(req, res, forwardPath)
       return
     }
 

@@ -105,7 +105,8 @@ export async function getWorkspaceAgentsWithTasksForUser(user: Pick<User, 'id' |
 export async function hireWorkspaceAgent(
   user: Pick<User, 'id' | 'username' | 'handle' | 'name' | 'email'>,
   template: Pick<AgentTemplate, 'id' | 'template_key' | 'name' | 'role' | 'avatar_img' | 'color' | 'description'>,
-  assignedName?: string
+  assignedName?: string,
+  runtimeType?: 'langgraph' | 'openclaw',
 ) {
   const membership = await ensureWorkspaceForUser(user)
   const effectiveName = assignedName?.trim() || template.name
@@ -125,6 +126,7 @@ export async function hireWorkspaceAgent(
       description: template.description ?? null,
       last_message: `${effectiveName} is live in your workspace.`,
       last_time: 'Just now',
+      runtime_type: runtimeType || 'langgraph',
     })
     .select('*')
     .single()
@@ -155,6 +157,22 @@ export async function updateAgentModel(agentId: string, model: string | null) {
   const { error } = await supabase
     .from('workspace_agents')
     .update({ model, updated_at: new Date().toISOString() })
+    .eq('id', agentId)
+  if (error) throw error
+}
+
+export async function updateAgentRuntimeType(agentId: string, runtimeType: 'langgraph' | 'openclaw') {
+  const { error } = await supabase
+    .from('workspace_agents')
+    .update({ runtime_type: runtimeType, updated_at: new Date().toISOString() })
+    .eq('id', agentId)
+  if (error) throw error
+}
+
+export async function updateAgentEnabledSkills(agentId: string, skills: string[] | null) {
+  const { error } = await supabase
+    .from('workspace_agents')
+    .update({ enabled_skills: skills, updated_at: new Date().toISOString() })
     .eq('id', agentId)
   if (error) throw error
 }

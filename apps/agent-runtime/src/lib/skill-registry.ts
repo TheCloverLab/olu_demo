@@ -140,7 +140,7 @@ async function loadAgentConfig(agentId: string): Promise<AgentConfig & { workspa
     enabled_skills: data.enabled_skills as string[] | null,
     enabled_mcp_servers: data.enabled_mcp_servers as string[] | null,
     runtime_type: data.runtime_type as AgentConfig['runtime_type'],
-    workspace_id: (data as any).workspace_id as string | null,
+    workspace_id: (data as { workspace_id: string | null }).workspace_id,
   }
 }
 

@@ -1,78 +1,28 @@
+import type { Tables, Json } from './database'
 import type { WorkspaceConsumerConfig } from './workspace'
 
-export type Post = {
-  id: string
-  creator_id: string
+import type { Narrow } from './helpers'
+
+export type Post = Narrow<Tables<'posts'>, {
   type: 'image' | 'video' | 'music' | 'text'
-  title: string
-  preview?: string
-  cover_img?: string
-  gradient_bg?: string
-  emoji?: string
-  likes: number
-  comments: number
-  tips: number
-  locked: boolean
-  lock_price?: number
-  allow_fan_creation: boolean
-  fan_creation_fee?: number
-  sponsored: boolean
-  sponsored_by?: string
-  tags: string[]
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type Product = {
-  id: string
-  creator_id: string
-  name: string
-  description?: string
-  price: number
-  image?: string
-  category?: string
-  stock: number
-  sold_count: number
+export type Product = Narrow<Tables<'products'>, {
   status: 'active' | 'inactive' | 'low_stock' | 'out_of_stock'
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type Fan = {
-  id: string
-  user_id?: string
-  creator_id: string
-  name: string
-  handle: string
+export type Fan = Narrow<Tables<'fans'>, {
   tier: 'free' | 'creator_club' | 'vip'
-  joined_date: string
-  total_spend: number
   status: 'active' | 'new' | 'churned'
-  color?: string
-  initials?: string
-  last_seen?: string
-  avatar_img?: string
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type MembershipTier = {
-  id: string
-  creator_id: string
-  tier_key: string
-  name: string
-  price: number
-  description?: string
-  perks: string[]
-  subscriber_count: number
-  created_at?: string
-  updated_at?: string
-}
+export type MembershipTier = Tables<'membership_tiers'>
 
-export type ConsumerAppType = 'community' | 'academy'
+export type ConsumerAppType = 'community' | 'academy' | 'consulting'
 export type ConsumerAppVisibility = 'public' | 'private'
 export type ConsumerAppStatus = 'draft' | 'published' | 'archived'
 
+/** No backing DB table — assembled in app code */
 export type ConsumerApp = {
   id: string
   owner_user_id: string
@@ -87,75 +37,29 @@ export type ConsumerApp = {
   linked_course_id?: string | null
   linked_course_slug?: string | null
   cover_img?: string | null
-  config_json?: Record<string, any> | null
+  config_json?: Record<string, Json | undefined> | null
 }
 
-export type ConsumerCourse = {
-  id: string
-  creator_id: string
-  slug: string
-  title: string
-  subtitle: string
-  instructor: string
-  price: number
+export type ConsumerCourse = Narrow<Tables<'consumer_courses'>, {
   level: 'Beginner' | 'Intermediate' | 'Advanced'
-  hero: string
-  headline: string
-  description: string
-  outcomes: string[]
-  lessons_count: number
-  students_count: number
-  completion_rate: string
   status: 'draft' | 'published' | 'archived'
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type ConsumerCourseSection = {
-  id: string
-  course_id: string
-  section_key: string
-  title: string
-  duration: string
-  summary: string
-  preview: boolean
-  position: number
-  created_at?: string
-  updated_at?: string
-}
+export type ConsumerCourseSection = Tables<'consumer_course_sections'>
 
-export type ConsumerMembership = {
-  id: string
-  user_id: string
-  creator_id: string
-  tier_key: string
-  tier_name: string
+export type ConsumerMembership = Narrow<Tables<'consumer_memberships'>, {
   status: 'active' | 'cancelled'
-  joined_at?: string
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type ConsumerCoursePurchase = {
-  id: string
-  user_id: string
-  course_id: string
+export type ConsumerCoursePurchase = Narrow<Tables<'consumer_course_purchases'>, {
   status: 'purchased' | 'refunded'
-  purchased_at?: string
-  created_at?: string
-  updated_at?: string
-}
+}>
 
-export type ConsumerLessonProgress = {
-  id: string
-  user_id: string
-  course_id: string
-  section_key: string
-  completed: boolean
-  completed_at?: string | null
-  created_at?: string
-  updated_at?: string
-}
+export type ConsumerLessonProgress = Tables<'consumer_lesson_progress'>
+
+export type ConsumerPurchase = Narrow<Tables<'consumer_purchases'>, {
+  status: 'active' | 'cancelled' | 'expired' | 'refunded'
+}>
 
 // --- Creator Theme & Layout Customization ---
 
@@ -163,9 +67,9 @@ export type CreatorThemePreset = 'default' | 'neon' | 'pastel' | 'minimal' | 'bo
 
 export type CreatorTheme = {
   preset: CreatorThemePreset
-  accentColor: string       // hex, e.g. '#e11d48'
+  accentColor: string
   bgStyle: 'solid' | 'gradient' | 'image'
-  bgValue: string           // color, gradient class, or image URL
+  bgValue: string
   cardRadius: 'sm' | 'md' | 'lg' | 'xl'
   fontStyle: 'modern' | 'serif' | 'mono'
 }
@@ -189,7 +93,7 @@ export type CreatorTabConfig = {
 
 export type CreatorCustomization = {
   theme: CreatorTheme
-  sections: CreatorLayoutSection[]   // ordered list of visible sections
+  sections: CreatorLayoutSection[]
   tabs: CreatorTabConfig[]
   heroStyle: 'fullscreen' | 'card' | 'minimal' | 'video'
   logo?: string
@@ -202,7 +106,7 @@ export type PostComment = {
   id: string
   post_id: string
   user_id: string
-  parent_id?: string | null     // nested replies
+  parent_id?: string | null
   text: string
   likes: number
   pinned: boolean

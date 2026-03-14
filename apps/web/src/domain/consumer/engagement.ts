@@ -134,6 +134,8 @@ export async function markLessonComplete(
       section_key: sectionKey,
       completed: true,
       completed_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     },
   ]
   current[course.slug] = next

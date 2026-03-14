@@ -34,7 +34,15 @@ const SessionContext = createContext<SessionContextType | null>(null)
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const { user: authUser } = useAuth()
-  const currentUser = authUser || GUEST_USER
+  const currentUser: SessionUser = authUser ? {
+    ...authUser,
+    initials: authUser.initials ?? '',
+    avatar_color: authUser.avatar_color ?? '',
+    followers: authUser.followers ?? 0,
+    following: authUser.following ?? 0,
+    posts: authUser.posts ?? 0,
+    verified: authUser.verified ?? false,
+  } : GUEST_USER
 
   return (
     <SessionContext.Provider value={{ currentUser }}>

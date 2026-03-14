@@ -1,0 +1,51 @@
+# OLU Platform — Docker Compose
+# Usage: docker compose up -d
+#
+# Services:
+#   agent-runtime  — LangGraph-based AI agent backend (port 8080)
+#   openclaw       — OpenClaw AI agent runtime (port 3100 internal, 18789 gateway)
+
+services:
+  agent-runtime:
+    build:
+      context: .
+      dockerfile: apps/agent-runtime/Dockerfile
+      args:
+        BUILD_TIME: ${BUILD_TIME:-}
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+      OPENCLAW_URL: http://openclaw-gateway:3100
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+
+  openclaw-gateway:
+    image: ghcr.io/openclaw/openclaw:v2026.3.12
+    ports:
+      - "18789:18789"   # Gateway UI
+    volumes:
+      - openclaw-config:/home/node/.openclaw
+      - openclaw-workspace:/home/node/openclaw/workspace
+    environment:
+      OPENCLAW_GATEWAY_BIND: lan
+      # Pass through LLM keys so OpenClaw agents can use the same providers
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      KIMI_API_KEY: ${KIMI_API_KEY:-}
+    user: "1000:1000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:18789/healthz"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  openclaw-config:
+  openclaw-workspace:

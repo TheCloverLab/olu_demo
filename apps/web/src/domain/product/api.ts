@@ -36,10 +36,12 @@ const DEMO_HOME_CONFIG: WorkspaceHomeConfig = {
   headline: 'Welcome to the Pixel Realm — where art meets community',
   layout: 'classic',
   tabs: [
-    { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4', 'exp-7'] },
-    { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2', 'exp-6'] },
-    { key: 'connect', label: 'Connect', display_mode: 'list', experience_ids: ['exp-3', 'exp-5'] },
+    { key: 'community', label: 'Community', display_mode: 'tile', experience_ids: ['exp-1', 'exp-4', 'exp-7'], position: 0 },
+    { key: 'learn', label: 'Learn', display_mode: 'featured', experience_ids: ['exp-2', 'exp-6'], position: 1 },
+    { key: 'connect', label: 'Connect', display_mode: 'list', experience_ids: ['exp-3', 'exp-5'], position: 2 },
   ],
+  ai_support_enabled: null,
+  ai_support_model: null,
   created_at: '',
   updated_at: '',
 }

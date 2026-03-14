@@ -9,6 +9,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { useWorkspace } from '../../../context/WorkspaceContext'
 import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
 import { approveBudgetAPI, pauseBudget } from '../../../domain/agent/runtime-api'
+import { updateAgentRuntimeType } from '../../../domain/team/api'
 import {
   getChatByAgent,
   listChats,
@@ -1032,6 +1033,28 @@ export default function TeamChat() {
           <div className="flex items-center gap-1.5">
             <div className={clsx('w-1.5 h-1.5 rounded-full', loading ? 'bg-amber-400' : agent.status === 'online' ? 'bg-emerald-400' : 'bg-gray-500')} />
             <p className="text-[var(--olu-text-secondary)] text-xs capitalize">{loading ? 'typing...' : `${agent.status} · ${agent.role}`}</p>
+            {!isGroup && (
+              <button
+                onClick={async () => {
+                  const newType = agent!.runtime_type === 'openclaw' ? 'langgraph' : 'openclaw'
+                  try {
+                    await updateAgentRuntimeType(agent!.id, newType)
+                    setLiveAgents(prev => prev.map(a => a.id === agent!.id ? { ...a, runtime_type: newType } : a))
+                  } catch (err) {
+                    console.error('Failed to update runtime type:', err)
+                  }
+                }}
+                className={clsx(
+                  'text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide ml-1 transition-colors cursor-pointer hover:opacity-80',
+                  agent.runtime_type === 'openclaw'
+                    ? 'bg-orange-500/20 text-orange-600 dark:text-orange-300'
+                    : 'bg-blue-500/20 text-blue-600 dark:text-blue-300'
+                )}
+                title={`Runtime: ${agent.runtime_type || 'langgraph'}. Click to switch.`}
+              >
+                {agent.runtime_type === 'openclaw' ? 'OpenClaw' : 'LangGraph'}
+              </button>
+            )}
           </div>
         </div>
         {!isGroup && tasks.length > 0 && (

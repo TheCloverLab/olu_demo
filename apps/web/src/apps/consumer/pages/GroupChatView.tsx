@@ -62,7 +62,7 @@ export default function GroupChatView() {
         scope="experience"
         currentUserId={user.id}
         currentUserName={user.name || 'Anonymous'}
-        currentUserAvatar={user.avatar_img}
+        currentUserAvatar={user.avatar_img ?? undefined}
         headerSlot={
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--olu-border)] flex-shrink-0">
             <button onClick={() => window.history.back()} className="p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors">

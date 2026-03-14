@@ -90,8 +90,8 @@ export default function CreatorConsole() {
   }, [user?.id])
 
   const totals = useMemo(() => {
-    const totalRevenue = revenue.reduce((acc, r) => acc + r.subscriptions + r.tips + r.shop + r.ip, 0)
-    const totalViews = views.reduce((acc, v) => acc + v.tiktok + v.youtube + v.instagram, 0)
+    const totalRevenue = revenue.reduce((acc, r) => acc + (r.subscriptions ?? 0) + (r.tips ?? 0) + (r.shop ?? 0) + (r.ip ?? 0), 0)
+    const totalViews = views.reduce((acc, v) => acc + (v.tiktok ?? 0) + (v.youtube ?? 0) + (v.instagram ?? 0), 0)
     const activeFans = fans.filter((f) => f.status === 'active').length
     return { totalRevenue, totalViews, activeFans }
   }, [revenue, views, fans])
@@ -354,7 +354,7 @@ export default function CreatorConsole() {
                 <p className="font-medium text-sm">{fan.name}</p>
                 <p className="text-[var(--olu-text-secondary)] text-xs">{fan.handle} · {fan.tier}</p>
               </div>
-              <p className="text-sm font-semibold">${Math.round(fan.total_spend)}</p>
+              <p className="text-sm font-semibold">${Math.round(fan.total_spend ?? 0)}</p>
             </div>
           ))}
           {fans.length === 0 && <p className="text-[var(--olu-text-secondary)] text-sm">No customer data yet.</p>}

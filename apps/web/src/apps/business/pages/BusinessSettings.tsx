@@ -209,11 +209,11 @@ export default function BusinessSettings() {
               <p className="text-[var(--olu-text-secondary)] text-xs mt-0.5">Route creator approvals, rejected offers, and publish events to workspace</p>
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              settings?.policies?.notification_policy?.route_publish_events_to_workspace
+              (settings?.policies?.notification_policy as Record<string, unknown> | null)?.route_publish_events_to_workspace
                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
                 : 'bg-white/8 text-[var(--olu-text-secondary)]'
             }`}>
-              {settings?.policies?.notification_policy?.route_publish_events_to_workspace ? 'On' : 'Off'}
+              {(settings?.policies?.notification_policy as Record<string, unknown> | null)?.route_publish_events_to_workspace ? 'On' : 'Off'}
             </span>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function BusinessSettings() {
           </div>
           <div className="rounded-2xl p-4 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)]">
             <p className="text-[var(--olu-text-secondary)] text-xs mb-1">Sandbox takeover</p>
-            <p className="font-semibold text-sm capitalize">{settings?.policies?.sandbox_policy?.takeover_mode || 'Manual'}</p>
+            <p className="font-semibold text-sm capitalize">{(settings?.policies?.sandbox_policy as Record<string, unknown> | null)?.takeover_mode as string || 'Manual'}</p>
           </div>
         </div>
       </section>

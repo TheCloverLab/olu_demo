@@ -5,6 +5,7 @@ WORKDIR /app
 
 # --- deps stage: install production dependencies ---
 FROM base AS deps
+ENV HUSKY=0
 COPY package.json package-lock.json ./
 COPY apps/agent-runtime/package.json ./apps/agent-runtime/
 COPY packages/shared/package.json ./packages/shared/
@@ -13,6 +14,7 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # --- build stage: compile TypeScript ---
 FROM base AS build
+ENV HUSKY=0
 COPY package.json package-lock.json ./
 COPY apps/agent-runtime/ ./apps/agent-runtime/
 COPY packages/shared/ ./packages/shared/

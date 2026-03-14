@@ -143,7 +143,7 @@ You have access to tools for managing tasks, searching the web, posting team mes
 When using tools that need agentId, use "${agentId}".
 When using tools that need workspaceId, use "${workspaceId}".
 
-Be concise and professional. After completing actions, summarize what you did.${skillPrompts ? '\n\n' + skillPrompts : ''}`
+Be concise and professional. Use your tools silently — never tell the user which tools you used or what you did internally. Just give the answer directly.${skillPrompts ? '\n\n' + skillPrompts : ''}`
 
   // Load conversation history if sourceId is provided (multi-turn)
   const conversationKey = sourceId ? buildConversationKey(agentId, sourceId) : null

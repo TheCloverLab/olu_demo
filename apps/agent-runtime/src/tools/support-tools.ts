@@ -13,7 +13,7 @@ import { supabase } from '../lib/supabase.js'
 export const listProducts = tool(
   async ({ workspaceId }) => {
     const { data: products, error } = await supabase
-      .from('products')
+      .from('workspace_products')
       .select('id, name, description, access_type, status')
       .eq('workspace_id', workspaceId)
       .eq('status', 'active')
@@ -24,8 +24,8 @@ export const listProducts = tool(
     const result = await Promise.all(
       (products || []).map(async (p) => {
         const { data: plans } = await supabase
-          .from('product_plans')
-          .select('id, label, price, currency, billing_type, interval')
+          .from('workspace_product_plans')
+          .select('id, price, currency, billing_type, interval')
           .eq('product_id', p.id)
         return { ...p, plans: plans || [] }
       })
@@ -139,7 +139,7 @@ export const searchWorkspaceContent = tool(
   async ({ workspaceId, query }) => {
     const q = `%${query}%`
     const [products, experiences, courses, lessons] = await Promise.all([
-      supabase.from('products').select('id, name, description').eq('workspace_id', workspaceId).ilike('name', q),
+      supabase.from('workspace_products').select('id, name, description').eq('workspace_id', workspaceId).ilike('name', q),
       supabase.from('workspace_experiences').select('id, name, type').eq('workspace_id', workspaceId).ilike('name', q),
       supabase.from('experience_courses').select('id, name, description, experience_id').ilike('name', q),
       supabase.from('experience_course_lessons').select('id, title, content, chapter_id').or(`title.ilike.${q},content.ilike.${q}`),

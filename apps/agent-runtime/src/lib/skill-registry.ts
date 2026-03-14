@@ -22,6 +22,7 @@ import {
   postTweet, getMyTweets, likeTweet, searchTweets, getMyMentions,
 } from '../tools/twitter-tools.js'
 import { requestBudget, reportBudgetUsage } from '../tools/budget-tools.js'
+import { supportTools } from '../tools/support-tools.js'
 import { supabase } from './supabase.js'
 import { getMCPToolsAsLangChain } from './mcp-client.js'
 
@@ -92,6 +93,11 @@ export const SKILL_DEFINITIONS: Record<string, {
     name: 'Budget Management',
     description: 'Request budget approval and report spending progress for paid tasks',
     tools: [requestBudget, reportBudgetUsage],
+  },
+  'support': {
+    name: 'Customer Support',
+    description: 'Query workspace products, experiences, courses, and search content for customer support',
+    tools: supportTools,
   },
 }
 

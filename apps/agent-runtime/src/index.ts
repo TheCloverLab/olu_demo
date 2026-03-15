@@ -24,6 +24,17 @@ import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
 import type { ChatRequest, ChatResponse } from '@olu/shared'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
+const API_SECRET = process.env.API_SECRET || ''
+
+/** Check Authorization header: Bearer <API_SECRET> or x-api-key header */
+function isAuthorized(req: IncomingMessage): boolean {
+  if (!API_SECRET) return true // No secret configured → allow all (dev mode)
+  const auth = req.headers['authorization']
+  if (auth === `Bearer ${API_SECRET}`) return true
+  const apiKey = req.headers['x-api-key']
+  if (apiKey === API_SECRET) return true
+  return false
+}
 
 async function readBody(req: IncomingMessage): Promise<string> {
   const chunks: Buffer[] = []
@@ -81,9 +92,15 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://localhost:${PORT}`)
 
   try {
-    // Health check
+    // Health check (unauthenticated)
     if (url.pathname === '/health' && req.method === 'GET') {
       json(res, 200, { status: 'ok', version: '0.1.0', buildTime: process.env.BUILD_TIME || null })
+      return
+    }
+
+    // Auth gate — all endpoints below require API_SECRET when configured
+    if (!isAuthorized(req)) {
+      json(res, 401, { error: 'Unauthorized' })
       return
     }
 

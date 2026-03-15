@@ -78,6 +78,10 @@
         {
           "name": "LARK_APP_SECRET",
           "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/LARK_APP_SECRET"
+        },
+        {
+          "name": "API_SECRET",
+          "valueFrom": "arn:aws:ssm:us-west-2:749391130736:parameter/olu/agent-runtime/API_SECRET"
         }
       ],
       "logConfiguration": {

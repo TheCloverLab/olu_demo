@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
   }
 
   const agentRuntimeUrl = Deno.env.get('AGENT_RUNTIME_URL')
+  const apiSecret = Deno.env.get('AGENT_RUNTIME_SECRET') || ''
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
 
     const chatResp = await fetch(`${agentRuntimeUrl}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(apiSecret ? { Authorization: `Bearer ${apiSecret}` } : {}) },
       body: JSON.stringify(chatPayload),
     })
 

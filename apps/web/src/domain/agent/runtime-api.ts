@@ -5,6 +5,13 @@
 
 const AGENT_RUNTIME_URL =
   import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'
+const API_SECRET = import.meta.env.VITE_AGENT_RUNTIME_SECRET || ''
+
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (API_SECRET) headers['Authorization'] = `Bearer ${API_SECRET}`
+  return headers
+}
 
 export type InvokeResult = {
   threadId: string
@@ -41,7 +48,7 @@ export async function invokeAgent(params: {
 }): Promise<InvokeResult> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/invoke`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(params),
   })
   if (!res.ok) throw new Error(`Agent invoke failed: ${res.status}`)
@@ -54,7 +61,7 @@ export async function resumeAgent(
 ): Promise<ResumeResult> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/resume/${threadId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ decision }),
   })
   if (!res.ok) throw new Error(`Agent resume failed: ${res.status}`)
@@ -62,7 +69,7 @@ export async function resumeAgent(
 }
 
 export async function getThreadState(threadId: string): Promise<ThreadState> {
-  const res = await fetch(`${AGENT_RUNTIME_URL}/threads/${threadId}`)
+  const res = await fetch(`${AGENT_RUNTIME_URL}/threads/${threadId}`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`Thread fetch failed: ${res.status}`)
   return res.json()
 }
@@ -100,7 +107,7 @@ export async function batchRunAgents(
 ): Promise<BatchResult> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/batch`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ workspaceId, taskDescription }),
   })
   if (!res.ok) throw new Error(`Batch run failed: ${res.status}`)
@@ -110,7 +117,7 @@ export async function batchRunAgents(
 export async function getWorkspaceAgents(
   workspaceId: string,
 ): Promise<AgentWithTasks[]> {
-  const res = await fetch(`${AGENT_RUNTIME_URL}/agents/${workspaceId}`)
+  const res = await fetch(`${AGENT_RUNTIME_URL}/agents/${workspaceId}`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`Agents fetch failed: ${res.status}`)
   const data = await res.json()
   return data.agents
@@ -137,7 +144,7 @@ export async function chatWithAgent(params: {
 }): Promise<ChatResult> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(params),
   })
   if (!res.ok) throw new Error(`Chat failed: ${res.status}`)
@@ -153,7 +160,7 @@ export type ModelOption = {
 }
 
 export async function getAvailableModels(): Promise<ModelOption[]> {
-  const res = await fetch(`${AGENT_RUNTIME_URL}/models`)
+  const res = await fetch(`${AGENT_RUNTIME_URL}/models`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`Models fetch failed: ${res.status}`)
   const data = await res.json()
   return data.models || []
@@ -184,7 +191,7 @@ export async function approveBudgetAPI(budgetId: string, approvedAmount: number)
 }> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}/approve`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ approved_amount: approvedAmount }),
   })
   if (!res.ok) {
@@ -202,7 +209,7 @@ export async function pauseBudget(budgetId: string): Promise<{
 }> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}/pause`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
@@ -212,13 +219,13 @@ export async function pauseBudget(budgetId: string): Promise<{
 }
 
 export async function getBudget(budgetId: string): Promise<BudgetRecord> {
-  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}`)
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets/${budgetId}`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`Get budget failed: ${res.status}`)
   return res.json()
 }
 
 export async function listBudgets(workspaceId: string): Promise<BudgetRecord[]> {
-  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets?workspace_id=${workspaceId}`)
+  const res = await fetch(`${AGENT_RUNTIME_URL}/budgets?workspace_id=${workspaceId}`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`List budgets failed: ${res.status}`)
   const data = await res.json()
   return data.budgets

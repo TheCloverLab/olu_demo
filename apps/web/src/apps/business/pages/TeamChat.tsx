@@ -708,7 +708,8 @@ export default function TeamChat() {
   // Fetch available models
   useEffect(() => {
     const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
-    fetch(`${AGENT_RUNTIME_URL}/models`)
+    const secret = import.meta.env.VITE_AGENT_RUNTIME_SECRET || ''
+    fetch(`${AGENT_RUNTIME_URL}/models`, { headers: secret ? { Authorization: `Bearer ${secret}` } : {} })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data?.models?.length) return
@@ -794,9 +795,10 @@ export default function TeamChat() {
     setRetryMode(null)
 
     try {
+      const secret = import.meta.env.VITE_AGENT_RUNTIME_SECRET || ''
       const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(secret ? { Authorization: `Bearer ${secret}` } : {}) },
         signal: controller.signal,
         body: JSON.stringify({
           workspaceId: agent.workspace_id || '',

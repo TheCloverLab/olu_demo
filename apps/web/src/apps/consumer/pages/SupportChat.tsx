@@ -13,6 +13,7 @@ import type { ChatMessage as UnifiedMessage } from '../../../domain/chat/types'
 import type { ChatRequest } from '@olu/shared'
 
 const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
+const API_SECRET = import.meta.env.VITE_AGENT_RUNTIME_SECRET || ''
 
 type ViewMessage = {
   id: string
@@ -281,7 +282,7 @@ export default function SupportChat() {
           try {
             const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...(API_SECRET ? { Authorization: `Bearer ${API_SECRET}` } : {}) },
               body: JSON.stringify({
                 workspaceId: ws.id,
                 agentId: agent.id,

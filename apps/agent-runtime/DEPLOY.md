@@ -24,6 +24,7 @@
 /olu/agent-runtime/MODEL_CLAUDE_API_KEY      # Claude via api123.icu proxy (default model)
 /olu/agent-runtime/LARK_APP_ID              # Lark Suite API
 /olu/agent-runtime/LARK_APP_SECRET
+/olu/agent-runtime/API_SECRET               # API auth key (all endpoints except /health)
 ```
 
 ### Optional (placeholder until configured)
@@ -40,8 +41,8 @@
 ```
 NODE_ENV=production
 PORT=8080
-LLM_BASE_URL=https://api123.icu/v1
-LLM_MODEL=claude-opus-4-6
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-5.4-2026-03-05
 VOLCENGINE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 VOLCENGINE_IMAGE_MODEL=doubao-seedream-5-0-260128
 MODEL_CLAUDE_BASE_URL=https://api123.icu/v1

@@ -11,6 +11,7 @@
  */
 
 import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
@@ -34,6 +35,90 @@ function isAuthorized(req: IncomingMessage): boolean {
   const apiKey = req.headers['x-api-key']
   if (apiKey === API_SECRET) return true
   return false
+}
+
+// --- Webhook signature verification ---
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ''
+const LARK_ENCRYPT_KEY = process.env.LARK_ENCRYPT_KEY || ''
+
+function verifySupabaseWebhook(req: IncomingMessage, body: string): boolean {
+  if (!WEBHOOK_SECRET) return true // Skip in dev
+  const sig = req.headers['x-webhook-signature'] as string | undefined
+  if (!sig) return false
+  const expected = createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex')
+  try {
+    return timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+  } catch {
+    return false
+  }
+}
+
+function verifyLarkWebhook(req: IncomingMessage, body: string): boolean {
+  if (!LARK_ENCRYPT_KEY) return true // Skip in dev
+  const timestamp = req.headers['x-lark-request-timestamp'] as string | undefined
+  const nonce = req.headers['x-lark-request-nonce'] as string | undefined
+  const sig = req.headers['x-lark-signature'] as string | undefined
+  if (!timestamp || !nonce || !sig) return false
+  const content = timestamp + nonce + LARK_ENCRYPT_KEY + body
+  const expected = createHmac('sha256', '').update(content).digest('hex')
+  try {
+    return timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+  } catch {
+    return false
+  }
+}
+
+// --- In-memory rate limiter (sliding window) ---
+const RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
+const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '120', 10)
+const rateBuckets = new Map<string, number[]>()
+
+function isRateLimited(key: string): boolean {
+  if (RATE_LIMIT_MAX <= 0) return false
+  const now = Date.now()
+  const windowStart = now - RATE_LIMIT_WINDOW_MS
+  let timestamps = rateBuckets.get(key) || []
+  timestamps = timestamps.filter((t) => t > windowStart)
+  if (timestamps.length >= RATE_LIMIT_MAX) return true
+  timestamps.push(now)
+  rateBuckets.set(key, timestamps)
+  return false
+}
+
+// Clean up old rate limit entries every 5 minutes
+setInterval(() => {
+  const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS
+  for (const [key, timestamps] of rateBuckets) {
+    const filtered = timestamps.filter((t) => t > cutoff)
+    if (filtered.length === 0) rateBuckets.delete(key)
+    else rateBuckets.set(key, filtered)
+  }
+}, 300_000)
+
+// --- MCP credential encryption ---
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '' // 32+ char key for AES-256
+
+function encryptCredentials(data: unknown): string {
+  if (!ENCRYPTION_KEY) return JSON.stringify(data) // Plaintext fallback in dev
+  const { createCipheriv, randomBytes } = require('node:crypto')
+  const iv = randomBytes(16)
+  const key = createHmac('sha256', ENCRYPTION_KEY).update('mcp-credentials').digest()
+  const cipher = createCipheriv('aes-256-cbc', key, iv)
+  const plaintext = JSON.stringify(data)
+  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()])
+  return `enc:${iv.toString('hex')}:${encrypted.toString('hex')}`
+}
+
+function decryptCredentials(stored: string): unknown {
+  if (!stored.startsWith('enc:')) return JSON.parse(stored) // Legacy plaintext
+  if (!ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY required to decrypt credentials')
+  const { createDecipheriv } = require('node:crypto')
+  const [, ivHex, dataHex] = stored.split(':')
+  const iv = Buffer.from(ivHex, 'hex')
+  const key = createHmac('sha256', ENCRYPTION_KEY).update('mcp-credentials').digest()
+  const decipher = createDecipheriv('aes-256-cbc', key, iv)
+  const decrypted = Buffer.concat([decipher.update(Buffer.from(dataHex, 'hex')), decipher.final()])
+  return JSON.parse(decrypted.toString('utf8'))
 }
 
 async function readBody(req: IncomingMessage): Promise<string> {
@@ -116,6 +201,13 @@ const server = createServer(async (req, res) => {
     // Auth gate — all endpoints below require API_SECRET when configured
     if (!isAuthorized(req)) {
       json(res, 401, { error: 'Unauthorized' })
+      return
+    }
+
+    // Rate limit — keyed by client IP
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown'
+    if (isRateLimited(clientIp)) {
+      json(res, 429, { error: 'Too many requests' })
       return
     }
 
@@ -310,7 +402,12 @@ const server = createServer(async (req, res) => {
 
     // Webhook trigger — Supabase/external events can trigger agent runs
     if (url.pathname === '/webhook/task-created' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const rawBody = await readBody(req)
+      if (!verifySupabaseWebhook(req, rawBody)) {
+        json(res, 403, { error: 'Invalid webhook signature' })
+        return
+      }
+      const body = JSON.parse(rawBody)
       const { record } = body // Supabase webhook sends { type, table, record, ... }
 
       if (!record?.workspace_agent_id) {
@@ -438,7 +535,12 @@ const server = createServer(async (req, res) => {
 
     // Lark Bot webhook — receives messages from Lark bots
     if (url.pathname === '/webhook/lark' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const rawBody = await readBody(req)
+      if (!verifyLarkWebhook(req, rawBody)) {
+        json(res, 403, { error: 'Invalid Lark webhook signature' })
+        return
+      }
+      const body = JSON.parse(rawBody)
       const result = await handleLarkWebhook(body)
       json(res, 200, result)
       return
@@ -446,7 +548,12 @@ const server = createServer(async (req, res) => {
 
     // Lark card action callback (interactive cards)
     if (url.pathname === '/webhook/lark/card-action' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const rawBody = await readBody(req)
+      if (!verifyLarkWebhook(req, rawBody)) {
+        json(res, 403, { error: 'Invalid Lark webhook signature' })
+        return
+      }
+      const body = JSON.parse(rawBody)
       // Handle URL verification challenge
       if (body.challenge) {
         json(res, 200, { challenge: body.challenge })
@@ -460,7 +567,12 @@ const server = createServer(async (req, res) => {
 
     // Support auto-reply webhook — called by pg_net trigger when consumer sends a message
     if (url.pathname === '/webhook/support-message' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const rawBody = await readBody(req)
+      if (!verifySupabaseWebhook(req, rawBody)) {
+        json(res, 403, { error: 'Invalid webhook signature' })
+        return
+      }
+      const body = JSON.parse(rawBody)
       const { social_chat_id, text, message_id } = body
 
       if (!social_chat_id || !text) {
@@ -612,7 +724,7 @@ const server = createServer(async (req, res) => {
           workspace_id: workspaceId,
           provider,
           status: 'connected',
-          config_json: credentials,
+          config_json: encryptCredentials(credentials),
         }, { onConflict: 'workspace_id,provider' })
         .select('provider, status')
         .single()

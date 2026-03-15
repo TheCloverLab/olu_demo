@@ -24,7 +24,8 @@
         { "name": "VOLCENGINE_BASE_URL", "value": "https://ark.cn-beijing.volces.com/api/v3" },
         { "name": "VOLCENGINE_IMAGE_MODEL", "value": "doubao-seedream-5-0-260128" },
         { "name": "MODEL_CLAUDE_BASE_URL", "value": "https://api123.icu/v1" },
-        { "name": "MODEL_CLAUDE_MODEL", "value": "claude-sonnet-4-6" }
+        { "name": "MODEL_CLAUDE_MODEL", "value": "claude-sonnet-4-6" },
+        { "name": "ALLOWED_ORIGINS", "value": "https://internal-demo.olu.tech,https://internal-dev.olu.tech" }
       ],
       "secrets": [
         {

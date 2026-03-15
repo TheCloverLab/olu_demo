@@ -49,10 +49,25 @@ function json(res: ServerResponse, status: number, data: unknown) {
   res.end(JSON.stringify(data))
 }
 
-function cors(res: ServerResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function parseBody(req: IncomingMessage): Promise<any> {
+  const text = await readBody(req)
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw { statusCode: 400, message: 'Invalid JSON body' }
+  }
+}
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean)
+
+function cors(req: IncomingMessage, res: ServerResponse) {
+  const origin = req.headers['origin'] || ''
+  if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*')
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key')
 }
 
 // OpenClaw proxy — forward /openclaw/* requests to the OpenClaw gateway
@@ -81,7 +96,7 @@ function proxyToOpenClaw(req: IncomingMessage, res: ServerResponse, path: string
 }
 
 const server = createServer(async (req, res) => {
-  cors(res)
+  cors(req, res)
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204)
@@ -106,7 +121,7 @@ const server = createServer(async (req, res) => {
 
     // Invoke agent
     if (url.pathname === '/invoke' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const {
         workspaceId,
         agentId,
@@ -163,7 +178,7 @@ const server = createServer(async (req, res) => {
 
     // Batch run — execute all agents in a workspace
     if (url.pathname === '/batch' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { workspaceId, taskDescription } = body
 
       if (!workspaceId) {
@@ -250,7 +265,7 @@ const server = createServer(async (req, res) => {
     const resumeMatch = url.pathname.match(/^\/resume\/(.+)$/)
     if (resumeMatch && req.method === 'POST') {
       const threadId = resumeMatch[1]
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { decision } = body // 'approve' or 'reject'
 
       if (!decision || !['approve', 'reject'].includes(decision)) {
@@ -295,7 +310,7 @@ const server = createServer(async (req, res) => {
 
     // Webhook trigger — Supabase/external events can trigger agent runs
     if (url.pathname === '/webhook/task-created' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { record } = body // Supabase webhook sends { type, table, record, ... }
 
       if (!record?.workspace_agent_id) {
@@ -361,7 +376,7 @@ const server = createServer(async (req, res) => {
 
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req)) as ChatRequest
+      const body = await parseBody(req) as ChatRequest
       const { workspaceId, agentId, agentName, agentRole, message, provider, model, sessionId, images } = body
 
       if (!workspaceId || !agentId || (!message && !images?.length)) {
@@ -423,7 +438,7 @@ const server = createServer(async (req, res) => {
 
     // Lark Bot webhook — receives messages from Lark bots
     if (url.pathname === '/webhook/lark' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const result = await handleLarkWebhook(body)
       json(res, 200, result)
       return
@@ -431,7 +446,7 @@ const server = createServer(async (req, res) => {
 
     // Lark card action callback (interactive cards)
     if (url.pathname === '/webhook/lark/card-action' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       // Handle URL verification challenge
       if (body.challenge) {
         json(res, 200, { challenge: body.challenge })
@@ -445,7 +460,7 @@ const server = createServer(async (req, res) => {
 
     // Support auto-reply webhook — called by pg_net trigger when consumer sends a message
     if (url.pathname === '/webhook/support-message' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { social_chat_id, text, message_id } = body
 
       if (!social_chat_id || !text) {
@@ -569,7 +584,7 @@ const server = createServer(async (req, res) => {
 
     // Register a new MCP server dynamically
     if (url.pathname === '/mcp/servers' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { name, url: serverUrl, type = 'sse' } = body
       if (!name || !serverUrl) {
         json(res, 400, { error: 'Missing name or url' })
@@ -584,7 +599,7 @@ const server = createServer(async (req, res) => {
 
     // Store MCP server credentials for a workspace
     if (url.pathname === '/mcp/credentials' && req.method === 'POST') {
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const { workspaceId, serverName, credentials } = body
       if (!workspaceId || !serverName || !credentials) {
         json(res, 400, { error: 'Missing workspaceId, serverName, or credentials' })
@@ -667,7 +682,7 @@ const server = createServer(async (req, res) => {
     const approveMatch = url.pathname.match(/^\/budgets\/(.+)\/approve$/)
     if (approveMatch && req.method === 'POST') {
       const budgetId = approveMatch[1]
-      const body = JSON.parse(await readBody(req))
+      const body = await parseBody(req)
       const approvedAmount = body.approved_amount as number
 
       if (!approvedAmount || approvedAmount <= 0) {
@@ -842,6 +857,11 @@ const server = createServer(async (req, res) => {
 
     json(res, 404, { error: 'not found' })
   } catch (err: unknown) {
+    const statusErr = err as { statusCode?: number; message?: string }
+    if (statusErr.statusCode) {
+      json(res, statusErr.statusCode, { error: statusErr.message })
+      return
+    }
     console.error('Request error:', err)
     const msg = err instanceof Error ? err.message : 'internal error'
     if (msg === 'vision-unsupported') {

@@ -4,10 +4,6 @@
   "installCommand": "npm install --prefer-offline && npm install @rollup/rollup-linux-x64-gnu --no-save",
   "framework": "vite",
   "rewrites": [
-    {
-      "source": "/api/agent-runtime/:path*",
-      "destination": "http://olu-agent-runtime-alb-316192720.us-west-2.elb.amazonaws.com/:path*"
-    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

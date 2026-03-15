@@ -4,13 +4,10 @@
  */
 
 const AGENT_RUNTIME_URL =
-  import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'
-const API_SECRET = import.meta.env.VITE_AGENT_RUNTIME_SECRET || ''
+  import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
 
 function authHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (API_SECRET) headers['Authorization'] = `Bearer ${API_SECRET}`
-  return headers
+  return { 'Content-Type': 'application/json' }
 }
 
 export type InvokeResult = {

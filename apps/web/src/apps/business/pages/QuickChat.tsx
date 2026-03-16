@@ -70,14 +70,23 @@ export default function QuickChat() {
 
   async function handleFirstSend() {
     if (!currentUser || !workspace || !input.trim() || creating) return
+    const message = input.trim()
     setCreating(true)
+    setInput('')
     try {
       const chat = await createQuickChat(workspace.id, currentUser.id)
       setChats((prev) => [chat, ...prev])
       setActiveChat(chat)
       navigate(`/business/chat/${chat.id}`, { replace: true })
-      // Note: the message will be sent by the user typing in ChatRoom
-      // We just created the chat — ChatRoom handles the rest
+
+      // Send the initial message
+      const sent = await sendMessage(chat.id, currentUser.id, 'user', message, {
+        senderName: currentUser.name,
+        senderAvatar: currentUser.avatar_img ?? undefined,
+      })
+
+      // Trigger AI reply
+      handleAfterSend(chat.id, message, sent)
     } catch (err) {
       console.error('Failed to create chat:', err)
     } finally {

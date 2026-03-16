@@ -250,10 +250,22 @@ export default function ChatRoom({
     const unsub = subscribeChatMessages(chatId, (msg) => {
       if (seenIds.current.has(msg.id)) return
       seenIds.current.add(msg.id)
-      setMessages((prev) => [...prev, msg])
+      setMessages((prev) => {
+        // If this is from the current user, replace any optimistic message
+        // with matching content (handles realtime firing before sendMessage returns)
+        if (msg.sender_id === currentUserId) {
+          const optIdx = prev.findIndex(
+            (m) => m.id.startsWith('opt-') && m.sender_id === currentUserId && m.content === msg.content
+          )
+          if (optIdx >= 0) {
+            return prev.map((m, i) => (i === optIdx ? msg : m))
+          }
+        }
+        return [...prev, msg]
+      })
     })
     return unsub
-  }, [chatId])
+  }, [chatId, currentUserId])
 
   // Auto-scroll
   useEffect(() => {

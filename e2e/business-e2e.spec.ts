@@ -70,26 +70,38 @@ test.describe('Business Chat', () => {
     expect(dbErrors(errors)).toEqual([])
   })
 
-  test('QuickChat — create and send message', async ({ page }) => {
+  test('QuickChat — create chat from empty state and verify message sent', async ({ page }) => {
     const errors = collectErrors(page)
     await nav(page, '/business/chat')
 
     // Empty state or existing chats
     const input = page.locator('input[placeholder]').first()
     if (await input.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await input.fill('E2E business chat test')
+      const testMsg = `E2E-${Date.now()}`
+      await input.fill(testMsg)
       await input.press('Enter')
-      await page.waitForTimeout(3000)
+      await page.waitForTimeout(4000)
+
+      // Message should appear in the ChatRoom (sent via handleFirstSend)
+      const msg = page.locator(`text=${testMsg}`).first()
+      await expect(msg).toBeVisible({ timeout: 5000 })
+      await page.screenshot({ path: `${ssDir}/quick-chat-first-msg.png`, fullPage: true })
     }
 
-    // ChatRoom textarea should appear
+    // ChatRoom textarea should appear — send a follow-up
     const textarea = page.locator('textarea').first()
     if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await textarea.fill('Second message in chat')
+      await textarea.fill('Follow-up message')
       await textarea.press('Enter')
-      await page.waitForTimeout(2000)
-      const msg = page.locator('text=Second message in chat').first()
-      await expect(msg).toBeVisible({ timeout: 5000 })
+      await page.waitForTimeout(3000)
+
+      // Verify no duplicates — count blue message bubbles containing the text
+      // (user messages have bg-sky-600 class)
+      const bubbles = page.locator('.bg-sky-600:has-text("Follow-up message")')
+      const count = await bubbles.count()
+      expect(count).toBe(1)
+
+      await page.screenshot({ path: `${ssDir}/quick-chat-no-dup.png`, fullPage: true })
     }
 
     await page.screenshot({ path: `${ssDir}/quick-chat-sent.png`, fullPage: true })

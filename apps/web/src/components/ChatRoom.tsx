@@ -201,6 +201,8 @@ export interface ChatRoomProps {
   headerSlot?: React.ReactNode
   /** Custom message renderer for special types */
   renderMessage?: (msg: ChatMessage, defaultRender: React.ReactNode) => React.ReactNode
+  /** Called after a message is successfully sent (e.g. to trigger AI reply) */
+  onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage) => void
   className?: string
 }
 
@@ -213,6 +215,7 @@ export default function ChatRoom({
   features: featureOverrides,
   headerSlot,
   renderMessage,
+  onAfterSend,
   className,
 }: ChatRoomProps) {
   const { t } = useTranslation()
@@ -299,12 +302,17 @@ export default function ChatRoom({
       seenIds.current.add(sent.id)
       // Replace optimistic message with real one
       setMessages((prev) => prev.map((m) => m.id === optimistic.id ? sent : m))
+
+      // Trigger AI reply if handler provided
+      if (onAfterSend && trimmed) {
+        onAfterSend(chatId, trimmed, sent)
+      }
     } catch (err) {
       console.error('Failed to send:', err)
     } finally {
       setSending(false)
     }
-  }, [text, imageFiles, chatId, currentUserId, currentUserName, currentUserAvatar])
+  }, [text, imageFiles, chatId, currentUserId, currentUserName, currentUserAvatar, onAfterSend])
 
   // Handle keyboard
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

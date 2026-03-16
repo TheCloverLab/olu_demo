@@ -122,7 +122,7 @@ export const SCOPE_FEATURES: Record<ChatScope, ChatFeatures> = {
   },
   quick: {
     markdown: true,
-    images: false,
+    images: true,
     files: false,
     toolCalls: true,
     reasoning: true,

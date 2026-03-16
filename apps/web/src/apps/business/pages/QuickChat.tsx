@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus, MessageSquare, Send } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listQuickChats, createQuickChat } from '../../../domain/project/api'
-import { getChat, getMessages, sendMessage, subscribeChatMessages, streamQuickChat } from '../../../domain/chat/api'
+import { getChat, sendMessage, streamQuickChat } from '../../../domain/chat/api'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
+import ChatRoom from '../../../components/ChatRoom'
 
 export default function QuickChat() {
   const { convId } = useParams<{ convId?: string }>()
@@ -15,12 +16,9 @@ export default function QuickChat() {
 
   const [chats, setChats] = useState<Chat[]>([])
   const [activeChat, setActiveChat] = useState<Chat | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
-  const [sending, setSending] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [streamingText, setStreamingText] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!workspace) return
@@ -31,25 +29,13 @@ export default function QuickChat() {
     if (!convId) return
     const found = chats.find((c) => c.id === convId)
     if (found) {
-      selectChat(found)
+      setActiveChat(found)
     } else if (!loading) {
       getChat(convId).then((chat) => {
-        if (chat) selectChat(chat)
+        if (chat) setActiveChat(chat)
       }).catch(() => {})
     }
   }, [convId, chats, loading])
-
-  useEffect(() => {
-    if (!activeChat) return
-    const unsub = subscribeChatMessages(activeChat.id, (msg) => {
-      setMessages((prev) => [...prev, msg])
-    })
-    return unsub
-  }, [activeChat?.id])
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
 
   async function loadChats() {
     if (!workspace) return
@@ -64,14 +50,8 @@ export default function QuickChat() {
     }
   }
 
-  async function selectChat(chat: Chat) {
+  function selectChat(chat: Chat) {
     setActiveChat(chat)
-    try {
-      const msgs = await getMessages(chat.id)
-      setMessages(msgs)
-    } catch (err) {
-      console.error('Failed to load messages:', err)
-    }
     if (chat.id !== convId) {
       navigate(`/business/chat/${chat.id}`, { replace: true })
     }
@@ -88,63 +68,45 @@ export default function QuickChat() {
     }
   }
 
-  async function handleSend() {
-    if (!currentUser || !input.trim() || sending) return
-    const text = input.trim()
-    setInput('')
-    setSending(true)
-    setStreamingText('')
-
+  async function handleFirstSend() {
+    if (!currentUser || !workspace || !input.trim() || creating) return
+    setCreating(true)
     try {
-      // Auto-create chat if none active
-      let chat = activeChat
-      if (!chat && workspace) {
-        chat = await createQuickChat(workspace.id, currentUser.id)
-        setChats((prev) => [chat!, ...prev])
-        setActiveChat(chat)
-        navigate(`/business/chat/${chat.id}`, { replace: true })
-      }
-      if (!chat || !workspace) return
-
-      await sendMessage(chat.id, currentUser.id, 'user', text, {
-        senderName: currentUser.name,
-        senderAvatar: currentUser.avatar_img ?? undefined,
-      })
-
-      // Stream AI reply (gracefully handle if agent runtime is unavailable)
-      try {
-        let fullResponse = ''
-        await streamQuickChat(
-          workspace.id,
-          text,
-          (event) => {
-            if (event.type === 'content') {
-              fullResponse += event.text
-              setStreamingText(fullResponse)
-            }
-          },
-          { sessionId: chat.id },
-        )
-
-        if (fullResponse) {
-          await sendMessage(chat.id, 'ai-assistant', 'agent', fullResponse, {
-            senderName: 'AI Assistant',
-          })
-        }
-      } catch {
-        // Agent runtime not available — message sent, no AI reply
-      }
-      setStreamingText('')
+      const chat = await createQuickChat(workspace.id, currentUser.id)
+      setChats((prev) => [chat, ...prev])
+      setActiveChat(chat)
+      navigate(`/business/chat/${chat.id}`, { replace: true })
+      // Note: the message will be sent by the user typing in ChatRoom
+      // We just created the chat — ChatRoom handles the rest
     } catch (err) {
-      console.error('Failed to send:', err)
-      setInput(text)
-      setStreamingText('')
+      console.error('Failed to create chat:', err)
     } finally {
-      setSending(false)
+      setCreating(false)
     }
   }
 
-  const showCenteredInput = !activeChat
+  // Trigger AI reply after user sends a message
+  const handleAfterSend = useCallback(async (chatId: string, message: string, _sentMsg: ChatMessage) => {
+    if (!workspace) return
+    try {
+      let aiContent = ''
+      await streamQuickChat(workspace.id, message, (event) => {
+        if (event.type === 'content') {
+          aiContent += event.text
+        }
+      }, { sessionId: chatId })
+
+      // Save AI reply to DB (realtime subscription will show it in ChatRoom)
+      if (aiContent) {
+        await sendMessage(chatId, 'ai-assistant', 'agent', aiContent, {
+          senderName: 'AI Assistant',
+          messageType: 'text',
+        })
+      }
+    } catch (err) {
+      console.error('AI reply failed:', err)
+    }
+  }, [workspace])
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
@@ -192,7 +154,7 @@ export default function QuickChat() {
 
       {/* Chat area */}
       <div className="flex-1 flex flex-col">
-        {showCenteredInput ? (
+        {!activeChat ? (
           /* Empty state: centered input */
           <div className="flex-1 flex items-center justify-center px-4">
             <div className="w-full max-w-2xl space-y-4">
@@ -206,14 +168,14 @@ export default function QuickChat() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleFirstSend()}
                   placeholder={t('quickChat.placeholder', 'Ask anything...')}
                   className="flex-1 px-4 py-3 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-sky-400/50"
                   autoFocus
                 />
                 <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending}
+                  onClick={handleFirstSend}
+                  disabled={!input.trim() || creating}
                   className="p-3 bg-sky-600 text-white rounded-2xl hover:bg-sky-700 disabled:opacity-50 transition-colors"
                 >
                   <Send className="w-5 h-5" />
@@ -221,69 +183,17 @@ export default function QuickChat() {
               </div>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
-                      msg.sender_type === 'user'
-                        ? 'bg-sky-600 text-white rounded-br-sm'
-                        : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-              ))}
-              {sending && streamingText && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] px-4 py-2 rounded-2xl rounded-bl-sm text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)]">
-                    <p className="whitespace-pre-wrap">{streamingText}</p>
-                  </div>
-                </div>
-              )}
-              {sending && !streamingText && (
-                <div className="flex justify-start">
-                  <div className="px-4 py-2 rounded-2xl rounded-bl-sm text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)]">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-[var(--olu-card-border)] p-4">
-              <div className="flex gap-2">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  placeholder={t('quickChat.placeholder', 'Ask anything...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-sky-400/50"
-                  autoFocus
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-sky-600 text-white rounded-2xl hover:bg-sky-700 disabled:opacity-50 transition-colors"
-                >
-                  {t('common.send', 'Send')}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+        ) : currentUser ? (
+          <ChatRoom
+            chatId={activeChat.id}
+            scope="quick"
+            currentUserId={currentUser.id}
+            currentUserName={currentUser.name}
+            currentUserAvatar={currentUser.avatar_img ?? undefined}
+            onAfterSend={handleAfterSend}
+            className="flex-1"
+          />
+        ) : null}
       </div>
     </div>
   )

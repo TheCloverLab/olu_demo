@@ -46,10 +46,11 @@ type NavGroup = { groupLabelKey: string; items: NavItem[] }
 
 const SIDEBAR_GROUPS: NavGroup[] = [
   {
-    groupLabelKey: 'nav.groupDashboard',
+    groupLabelKey: 'nav.groupGeneral',
     items: [
       { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
       { to: '/business/analytics', icon: BarChart3, labelKey: 'nav.analytics' },
+      { to: '/business/chat', icon: MessageSquare, labelKey: 'nav.chat' },
     ],
   },
   {
@@ -57,7 +58,6 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     items: [
       { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
       { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
-      { to: '/business/specialists', icon: Zap, labelKey: 'nav.specialists' },
       { to: '/business/members', icon: Users, labelKey: 'nav.members' },
       { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
       { to: '/business/support', icon: Headphones, labelKey: 'nav.support' },
@@ -66,9 +66,9 @@ const SIDEBAR_GROUPS: NavGroup[] = [
   {
     groupLabelKey: 'nav.groupOperations',
     items: [
-      { to: '/business/chat', icon: MessageSquare, labelKey: 'nav.chat' },
       { to: '/business/projects', icon: FolderKanban, labelKey: 'nav.projects' },
       { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
+      { to: '/business/specialists', icon: Zap, labelKey: 'nav.specialists' },
       { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
       { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },
     ],
@@ -81,10 +81,6 @@ const SIDEBAR_GROUPS: NavGroup[] = [
       { to: '/business/modules/supply', icon: Package, labelKey: 'nav.supplyChain', moduleKey: 'supply_chain' },
       { to: '/business/connectors', icon: Cable, labelKey: 'nav.connectors' },
     ],
-  },
-  {
-    groupLabelKey: 'nav.groupSystem',
-    items: [],
   },
 ]
 

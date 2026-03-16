@@ -10,6 +10,7 @@
   --olu-border: #d1d5db;
   --olu-text: #111111;
   --olu-muted: #4b5563;
+  --olu-primary: #0ea5e9;
   --olu-shell-bg: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   --olu-shell-accent1: rgba(34, 211, 238, 0.06);
   --olu-shell-accent2: rgba(59, 130, 246, 0.04);
@@ -63,6 +64,7 @@
   --olu-border: #2e2e2e;
   --olu-text: #ffffff;
   --olu-muted: #888888;
+  --olu-primary: #67e8f9;
   --olu-shell-bg: linear-gradient(180deg, #07111f 0%, #050b14 100%);
   --olu-shell-accent1: rgba(34, 211, 238, 0.12);
   --olu-shell-accent2: rgba(59, 130, 246, 0.09);

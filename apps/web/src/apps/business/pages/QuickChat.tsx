@@ -111,7 +111,7 @@ export default function QuickChat() {
         <div className="flex-1 overflow-y-auto">
           {loading && (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[var(--olu-primary)] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           {!loading && chats.length === 0 && (
@@ -152,7 +152,7 @@ export default function QuickChat() {
               </p>
               <button
                 onClick={handleNew}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:opacity-90"
               >
                 <Plus className="w-4 h-4" />
                 {t('quickChat.newChat', 'New Chat')}
@@ -176,7 +176,7 @@ export default function QuickChat() {
                   <div
                     className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
                       msg.sender_type === 'user'
-                        ? 'bg-[var(--olu-primary)] text-white rounded-br-sm'
+                        ? 'bg-cyan-500 text-white rounded-br-sm'
                         : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
                     }`}
                   >
@@ -194,13 +194,13 @@ export default function QuickChat() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('quickChat.placeholder', 'Ask anything...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
+                  className="flex-1 px-4 py-2 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-400/50"
                   autoFocus
                 />
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-2xl hover:opacity-90 disabled:opacity-50"
+                  className="px-4 py-2 bg-cyan-500 text-white rounded-2xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
                 >
                   {t('common.send', 'Send')}
                 </button>

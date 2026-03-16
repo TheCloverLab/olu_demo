@@ -97,7 +97,7 @@
     "members": "Customers",
     "projects": "Projects",
     "analytics": "Analytics",
-    "groupDashboard": "Dashboard",
+    "groupGeneral": "General",
     "groupApp": "App",
     "groupOperations": "Operations",
     "groupModules": "Modules",

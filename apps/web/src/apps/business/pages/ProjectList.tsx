@@ -106,10 +106,10 @@ export default function ProjectList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--olu-text)]">
+          <h1 className="text-xl font-black text-[var(--olu-text)]">
             {t('projects.title', 'Projects')}
           </h1>
-          <p className="text-sm text-[var(--olu-text-secondary)] mt-1">
+          <p className="text-sm text-[var(--olu-muted)] mt-1">
             {t('projects.subtitle', 'Manage your AI-powered projects')}
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function ProjectList() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-xl p-6 space-y-4"
+            className="bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-6 space-y-4"
           >
             <h2 className="text-lg font-semibold text-[var(--olu-text)]">
               {t('projects.createTitle', 'Create Project')}
@@ -138,7 +138,7 @@ export default function ProjectList() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder={t('projects.namePlaceholder', 'Project name...')}
-              className="w-full px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+              className="w-full px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
               autoFocus
             />
             <textarea
@@ -146,7 +146,7 @@ export default function ProjectList() {
               onChange={(e) => setNewDesc(e.target.value)}
               placeholder={t('projects.descPlaceholder', 'Describe what this project is about (optional)...')}
               rows={2}
-              className="w-full px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)] resize-none"
+              className="w-full px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] resize-none"
             />
             <div className="flex gap-3">
               <button
@@ -154,7 +154,7 @@ export default function ProjectList() {
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                   newType === 'short_term'
                     ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                    : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                    : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
                 }`}
               >
                 {t('projects.shortTerm', 'Short-term')}
@@ -164,21 +164,21 @@ export default function ProjectList() {
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                   newType === 'ongoing'
                     ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                    : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                    : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
                 }`}
               >
                 {t('projects.ongoing', 'Ongoing')}
               </button>
             </div>
             <div>
-              <p className="text-xs text-[var(--olu-text-secondary)] mb-2">{t('projects.runtime', 'AI Runtime')}</p>
+              <p className="text-xs text-[var(--olu-muted)] mb-2">{t('projects.runtime', 'AI Runtime')}</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setNewRuntime('langgraph')}
                   className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                     newRuntime === 'langgraph'
                       ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                      : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                      : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
                   }`}
                 >
                   LangGraph
@@ -188,7 +188,7 @@ export default function ProjectList() {
                   className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                     newRuntime === 'openclaw'
                       ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                      : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                      : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
                   }`}
                 >
                   OpenClaw
@@ -198,7 +198,7 @@ export default function ProjectList() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => { setShowCreate(false); setNewName(''); setNewDesc('') }}
-                className="px-4 py-2 text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]"
+                className="px-4 py-2 text-[var(--olu-muted)] hover:text-[var(--olu-text)]"
               >
                 {t('common.cancel', 'Cancel')}
               </button>
@@ -224,8 +224,8 @@ export default function ProjectList() {
       {/* Empty state */}
       {!loading && projects.length === 0 && (
         <div className="text-center py-16 space-y-4">
-          <FolderOpen className="w-16 h-16 mx-auto text-[var(--olu-text-secondary)] opacity-40" />
-          <p className="text-[var(--olu-text-secondary)]">
+          <FolderOpen className="w-16 h-16 mx-auto text-[var(--olu-muted)] opacity-40" />
+          <p className="text-[var(--olu-muted)]">
             {t('projects.empty', 'No projects yet. Create one to get started!')}
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function ProjectList() {
       {/* Active projects */}
       {activeProjects.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-[var(--olu-text-secondary)] uppercase tracking-wider">
+          <h2 className="text-sm font-medium text-[var(--olu-muted)] uppercase tracking-wider">
             {t('projects.active', 'Active')} ({activeProjects.length})
           </h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -253,7 +253,7 @@ export default function ProjectList() {
       {/* Other projects */}
       {otherProjects.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-[var(--olu-text-secondary)] uppercase tracking-wider">
+          <h2 className="text-sm font-medium text-[var(--olu-muted)] uppercase tracking-wider">
             {t('projects.other', 'Other')} ({otherProjects.length})
           </h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -291,24 +291,24 @@ function ProjectCard({
       onClick={onClick}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      className="text-left w-full bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-xl p-4 hover:border-[var(--olu-primary)]/30 transition-colors group"
+      className="text-left w-full bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-4 hover:bg-[var(--olu-card-hover)] transition-colors group"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-[var(--olu-text)] truncate">{project.name}</h3>
           {project.description && (
-            <p className="text-sm text-[var(--olu-text-secondary)] mt-1 line-clamp-2">{project.description}</p>
+            <p className="text-sm text-[var(--olu-muted)] mt-1 line-clamp-2">{project.description}</p>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-[var(--olu-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity ml-2 mt-1" />
+        <ChevronRight className="w-4 h-4 text-[var(--olu-muted)] opacity-0 group-hover:opacity-100 transition-opacity ml-2 mt-1" />
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-[var(--olu-text-secondary)]">
+      <div className="flex items-center gap-3 text-xs text-[var(--olu-muted)]">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${STATUS_COLOR[project.status]}`}>
           <StatusIcon className="w-3 h-3" />
           {t(`projects.status.${project.status}`, project.status)}
         </span>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--olu-bg)]">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--olu-accent-bg)]">
           {project.type === 'ongoing' ? '∞' : '📅'} {t(`projects.type.${project.type}`, project.type)}
         </span>
         {totalTasks > 0 && (

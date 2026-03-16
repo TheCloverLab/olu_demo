@@ -98,14 +98,14 @@ export default function QuickChat() {
   return (
     <div className="flex h-[calc(100vh-4rem)]">
       {/* Chat list sidebar */}
-      <div className="w-72 border-r border-[var(--olu-border)] bg-[var(--olu-surface)] flex flex-col">
-        <div className="p-3 border-b border-[var(--olu-border)] flex items-center justify-between">
+      <div className="w-72 border-r border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] flex flex-col">
+        <div className="p-3 border-b border-[var(--olu-card-border)] flex items-center justify-between">
           <h2 className="font-semibold text-[var(--olu-text)]">{t('quickChat.title', 'Chat')}</h2>
           <button
             onClick={handleNew}
-            className="p-1.5 hover:bg-[var(--olu-bg)] rounded-lg transition-colors"
+            className="p-1.5 hover:bg-[var(--olu-accent-bg)] rounded-lg transition-colors"
           >
-            <Plus className="w-4 h-4 text-[var(--olu-text-secondary)]" />
+            <Plus className="w-4 h-4 text-[var(--olu-muted)]" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -115,7 +115,7 @@ export default function QuickChat() {
             </div>
           )}
           {!loading && chats.length === 0 && (
-            <div className="text-center py-8 text-[var(--olu-text-secondary)] text-sm">
+            <div className="text-center py-8 text-[var(--olu-muted)] text-sm">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p>{t('quickChat.empty', 'No chats yet')}</p>
             </div>
@@ -124,15 +124,15 @@ export default function QuickChat() {
             <button
               key={chat.id}
               onClick={() => selectChat(chat)}
-              className={`w-full text-left px-3 py-2.5 border-b border-[var(--olu-border)]/50 hover:bg-[var(--olu-bg)] transition-colors ${
-                activeChat?.id === chat.id ? 'bg-[var(--olu-bg)]' : ''
+              className={`w-full text-left px-3 py-2.5 border-b border-[var(--olu-card-border)]/50 hover:bg-[var(--olu-accent-bg)] transition-colors ${
+                activeChat?.id === chat.id ? 'bg-[var(--olu-accent-bg)]' : ''
               }`}
             >
               <p className="text-sm font-medium text-[var(--olu-text)] truncate">
                 {chat.name || 'New Chat'}
               </p>
               {chat.last_message && (
-                <p className="text-xs text-[var(--olu-text-secondary)] truncate mt-0.5">
+                <p className="text-xs text-[var(--olu-muted)] truncate mt-0.5">
                   {chat.last_message}
                 </p>
               )}
@@ -146,8 +146,8 @@ export default function QuickChat() {
         {!activeChat ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-3">
-              <MessageSquare className="w-16 h-16 mx-auto text-[var(--olu-text-secondary)] opacity-30" />
-              <p className="text-[var(--olu-text-secondary)]">
+              <MessageSquare className="w-16 h-16 mx-auto text-[var(--olu-muted)] opacity-30" />
+              <p className="text-[var(--olu-muted)]">
                 {t('quickChat.selectOrNew', 'Select a chat or start a new one')}
               </p>
               <button
@@ -164,7 +164,7 @@ export default function QuickChat() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
               {messages.length === 0 && (
-                <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+                <div className="text-center py-12 text-[var(--olu-muted)]">
                   <p>{t('quickChat.startTyping', 'Start typing to chat with AI')}</p>
                 </div>
               )}
@@ -177,7 +177,7 @@ export default function QuickChat() {
                     className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
                       msg.sender_type === 'user'
                         ? 'bg-[var(--olu-primary)] text-white rounded-br-sm'
-                        : 'bg-[var(--olu-surface)] border border-[var(--olu-border)] text-[var(--olu-text)] rounded-bl-sm'
+                        : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -187,20 +187,20 @@ export default function QuickChat() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-[var(--olu-border)] p-4">
+            <div className="border-t border-[var(--olu-card-border)] p-4">
               <div className="flex gap-2">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('quickChat.placeholder', 'Ask anything...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-xl text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+                  className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
                   autoFocus
                 />
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-xl hover:opacity-90 disabled:opacity-50"
+                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-2xl hover:opacity-90 disabled:opacity-50"
                 >
                   {t('common.send', 'Send')}
                 </button>

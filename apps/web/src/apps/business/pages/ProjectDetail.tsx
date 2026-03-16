@@ -187,7 +187,7 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="text-center py-16">
-        <p className="text-[var(--olu-text-secondary)]">{t('projects.notFound', 'Project not found')}</p>
+        <p className="text-[var(--olu-muted)]">{t('projects.notFound', 'Project not found')}</p>
       </div>
     )
   }
@@ -202,18 +202,18 @@ export default function ProjectDetail() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Project header */}
-      <div className="border-b border-[var(--olu-border)] bg-[var(--olu-surface)] px-4 md:px-6 py-3">
+      <div className="border-b border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] px-4 md:px-6 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/business/projects')}
-            className="p-1.5 hover:bg-[var(--olu-bg)] rounded-lg transition-colors"
+            className="p-1.5 hover:bg-[var(--olu-accent-bg)] rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 text-[var(--olu-text-secondary)]" />
+            <ArrowLeft className="w-4 h-4 text-[var(--olu-muted)]" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="font-semibold text-[var(--olu-text)] truncate">{project.name}</h1>
             {project.description && (
-              <p className="text-xs text-[var(--olu-text-secondary)] truncate">{project.description}</p>
+              <p className="text-xs text-[var(--olu-muted)] truncate">{project.description}</p>
             )}
           </div>
         </div>
@@ -226,8 +226,8 @@ export default function ProjectDetail() {
               onClick={() => setTab(key)}
               className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg border-b-2 transition-colors ${
                 tab === key
-                  ? 'border-[var(--olu-primary)] text-[var(--olu-primary)] bg-[var(--olu-bg)]'
-                  : 'border-transparent text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
+                  ? 'border-[var(--olu-primary)] text-[var(--olu-primary)] bg-[var(--olu-accent-bg)]'
+                  : 'border-transparent text-[var(--olu-muted)] hover:text-[var(--olu-text)]'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -249,7 +249,7 @@ export default function ProjectDetail() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
               {messages.length === 0 && (
-                <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+                <div className="text-center py-12 text-[var(--olu-muted)]">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p>{t('projects.chatEmpty', 'Start a conversation with AI about this project')}</p>
                 </div>
@@ -263,11 +263,11 @@ export default function ProjectDetail() {
                     className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
                       msg.sender_type === 'user'
                         ? 'bg-[var(--olu-primary)] text-white rounded-br-sm'
-                        : 'bg-[var(--olu-surface)] border border-[var(--olu-border)] text-[var(--olu-text)] rounded-bl-sm'
+                        : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
                     }`}
                   >
                     {msg.sender_name && msg.sender_type !== 'user' && (
-                      <p className="text-xs font-medium text-[var(--olu-text-secondary)] mb-1">{msg.sender_name}</p>
+                      <p className="text-xs font-medium text-[var(--olu-muted)] mb-1">{msg.sender_name}</p>
                     )}
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
@@ -276,19 +276,19 @@ export default function ProjectDetail() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-[var(--olu-border)] p-4">
+            <div className="border-t border-[var(--olu-card-border)] p-4">
               <div className="flex gap-2">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('projects.chatPlaceholder', 'Type a message...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-xl text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+                  className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
                 />
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity"
                 >
                   {t('common.send', 'Send')}
                 </button>
@@ -306,7 +306,7 @@ export default function ProjectDetail() {
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
                 placeholder={t('projects.addTask', 'Add a task...')}
-                className="flex-1 px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+                className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
               />
               <button
                 onClick={handleCreateTask}
@@ -319,7 +319,7 @@ export default function ProjectDetail() {
 
             {/* Task list */}
             {tasks.length === 0 ? (
-              <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+              <div className="text-center py-12 text-[var(--olu-muted)]">
                 <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>{t('projects.noTasks', 'No tasks yet. AI will create tasks as you chat.')}</p>
               </div>
@@ -331,15 +331,15 @@ export default function ProjectDetail() {
                     <button
                       key={task.id}
                       onClick={() => handleToggleTask(task)}
-                      className="w-full flex items-center gap-3 p-3 bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-lg hover:border-[var(--olu-primary)]/30 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-3 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg hover:border-[var(--olu-primary)]/30 transition-colors text-left"
                     >
                       <StatusIcon className={`w-5 h-5 flex-shrink-0 ${TASK_STATUS_COLOR[task.status]}`} />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${task.status === 'done' ? 'line-through text-[var(--olu-text-secondary)]' : 'text-[var(--olu-text)]'}`}>
+                        <p className={`text-sm ${task.status === 'done' ? 'line-through text-[var(--olu-muted)]' : 'text-[var(--olu-text)]'}`}>
                           {task.title}
                         </p>
                         {task.description && (
-                          <p className="text-xs text-[var(--olu-text-secondary)] mt-0.5 truncate">{task.description}</p>
+                          <p className="text-xs text-[var(--olu-muted)] mt-0.5 truncate">{task.description}</p>
                         )}
                       </div>
                       {task.priority !== 'medium' && (
@@ -362,7 +362,7 @@ export default function ProjectDetail() {
         {tab === 'files' && (
           <div className="px-4 md:px-6 py-4 overflow-y-auto h-full">
             {files.length === 0 ? (
-              <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+              <div className="text-center py-12 text-[var(--olu-muted)]">
                 <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>{t('projects.noFiles', 'No files yet. AI will add deliverables here.')}</p>
               </div>
@@ -371,12 +371,12 @@ export default function ProjectDetail() {
                 {files.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center gap-3 p-3 bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg"
                   >
-                    <FileText className="w-5 h-5 text-[var(--olu-text-secondary)]" />
+                    <FileText className="w-5 h-5 text-[var(--olu-muted)]" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-[var(--olu-text)] truncate">{file.name}</p>
-                      <p className="text-xs text-[var(--olu-text-secondary)]">
+                      <p className="text-xs text-[var(--olu-muted)]">
                         {file.size_bytes ? `${(file.size_bytes / 1024).toFixed(1)} KB` : ''} · {file.created_by || 'unknown'}
                       </p>
                     </div>
@@ -389,19 +389,19 @@ export default function ProjectDetail() {
 
         {tab === 'settings' && (
           <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
-            <div className="bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-xl p-4 space-y-3">
+            <div className="bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-4 space-y-3">
               <h3 className="font-medium text-[var(--olu-text)]">{t('projects.config.general', 'General')}</h3>
               <div className="grid gap-3">
                 <div>
-                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.type', 'Type')}</label>
+                  <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.type', 'Type')}</label>
                   <p className="text-sm text-[var(--olu-text)]">{project.type === 'ongoing' ? 'Ongoing' : 'Short-term'}</p>
                 </div>
                 <div>
-                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.runtime', 'Runtime')}</label>
+                  <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.runtime', 'Runtime')}</label>
                   <p className="text-sm text-[var(--olu-text)]">{project.runtime_type}</p>
                 </div>
                 <div>
-                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.status', 'Status')}</label>
+                  <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.status', 'Status')}</label>
                   <p className="text-sm text-[var(--olu-text)]">{project.status}</p>
                 </div>
               </div>

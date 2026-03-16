@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus, MessageSquare, Send } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listQuickChats, createQuickChat } from '../../../domain/project/api'
-import { getChat, getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import { getChat, getMessages, sendMessage, subscribeChatMessages, streamQuickChat } from '../../../domain/chat/api'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
 
 export default function QuickChat() {
@@ -19,6 +19,7 @@ export default function QuickChat() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [streamingText, setStreamingText] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const autoCreated = useRef(false)
 
@@ -102,6 +103,7 @@ export default function QuickChat() {
     const text = input.trim()
     setInput('')
     setSending(true)
+    setStreamingText('')
 
     try {
       // Auto-create chat if none active
@@ -112,15 +114,38 @@ export default function QuickChat() {
         setActiveChat(chat)
         navigate(`/business/chat/${chat.id}`, { replace: true })
       }
-      if (!chat) return
+      if (!chat || !workspace) return
 
       await sendMessage(chat.id, currentUser.id, 'user', text, {
         senderName: currentUser.name,
         senderAvatar: currentUser.avatar_img ?? undefined,
       })
+
+      // Stream AI reply
+      let fullResponse = ''
+      await streamQuickChat(
+        workspace.id,
+        text,
+        (event) => {
+          if (event.type === 'content') {
+            fullResponse += event.text
+            setStreamingText(fullResponse)
+          }
+        },
+        { sessionId: chat.id },
+      )
+
+      // Save AI response to chat
+      if (fullResponse) {
+        await sendMessage(chat.id, 'ai-assistant', 'agent', fullResponse, {
+          senderName: 'AI Assistant',
+        })
+      }
+      setStreamingText('')
     } catch (err) {
       console.error('Failed to send:', err)
       setInput(text)
+      setStreamingText('')
     } finally {
       setSending(false)
     }
@@ -223,6 +248,24 @@ export default function QuickChat() {
                   </div>
                 </div>
               ))}
+              {sending && streamingText && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] px-4 py-2 rounded-2xl rounded-bl-sm text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)]">
+                    <p className="whitespace-pre-wrap">{streamingText}</p>
+                  </div>
+                </div>
+              )}
+              {sending && !streamingText && (
+                <div className="flex justify-start">
+                  <div className="px-4 py-2 rounded-2xl rounded-bl-sm text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)]">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 

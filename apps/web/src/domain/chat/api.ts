@@ -192,6 +192,66 @@ export async function sendMessage(
   return data
 }
 
+// ── Quick Chat AI ────────────────────────────────────────────
+
+const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'
+const API_SECRET = import.meta.env.VITE_API_SECRET || ''
+
+export type QuickChatEvent =
+  | { type: 'meta'; model: string; provider: string }
+  | { type: 'content'; text: string }
+  | { type: 'done' }
+  | { type: 'error'; error: string }
+
+export async function streamQuickChat(
+  workspaceId: string,
+  message: string,
+  onEvent: (event: QuickChatEvent) => void,
+  opts?: { sessionId?: string },
+): Promise<void> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/quick-chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(API_SECRET ? { 'x-api-key': API_SECRET } : {}),
+    },
+    body: JSON.stringify({
+      workspaceId,
+      message,
+      sessionId: opts?.sessionId,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || `Agent runtime error: ${res.status}`)
+  }
+
+  const reader = res.body?.getReader()
+  if (!reader) throw new Error('No response body')
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      try {
+        const event = JSON.parse(line.slice(6)) as QuickChatEvent
+        onEvent(event)
+      } catch {
+        // skip malformed
+      }
+    }
+  }
+}
+
 // ── Realtime ──────────────────────────────────────────────────
 
 export function subscribeChatMessages(

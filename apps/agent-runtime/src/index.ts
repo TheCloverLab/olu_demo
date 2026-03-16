@@ -468,6 +468,58 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    // Quick Chat stream — lightweight AI chat without project context
+    if (url.pathname === '/quick-chat/stream' && req.method === 'POST') {
+      const body = await parseBody<{
+        workspaceId: string; message?: string
+        provider?: string; model?: string; sessionId?: string; images?: string[]
+      }>(req)
+      const { workspaceId, message, provider: prov, model: mod, sessionId, images } = body
+
+      if (!workspaceId || (!message && !images?.length)) {
+        json(res, 400, { error: 'Missing required fields: workspaceId, message' })
+        return
+      }
+
+      const parsedModelSelection = parseModelSelection(
+        typeof prov === 'string' ? prov : undefined,
+        typeof mod === 'string' ? mod : undefined,
+      )
+
+      // Reuse project chat agent with minimal context (no project lookup)
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin') || '*',
+      })
+
+      try {
+        const result = await runChatAgent({
+          agentId: 'quick-chat',
+          agentName: 'AI Assistant',
+          agentRole: 'general-purpose assistant',
+          workspaceId,
+          userMessage: message || '',
+          modelProvider: parsedModelSelection.providerName,
+          modelOverride: parsedModelSelection.modelOverride,
+          sourceId: sessionId,
+          images,
+        })
+
+        // Emit as SSE events
+        res.write(`data: ${JSON.stringify({ type: 'meta', model: result.model || '', provider: result.provider || '' })}\n\n`)
+        res.write(`data: ${JSON.stringify({ type: 'content', text: result.response })}\n\n`)
+        res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`)
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : 'stream error'
+        res.write(`data: ${JSON.stringify({ type: 'error', error: errMsg })}\n\n`)
+      }
+
+      res.end()
+      return
+    }
+
     // List scheduled jobs
     if (url.pathname === '/scheduler/jobs' && req.method === 'GET') {
       json(res, 200, { activeJobs: getActiveJobIds() })

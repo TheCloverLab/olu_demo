@@ -67,6 +67,7 @@
     "supplyChain": "Supply Chain",
     "experiences": "Experiences",
     "products": "Products",
+    "specialists": "Specialists",
     "support": "Support",
     "supportChats": "Support Chats",
     "homeEditor": "Home Editor",
@@ -121,6 +122,15 @@
     "hideReasoning": "Hide reasoning",
     "noChats": "No chats yet.",
     "searchMessages": "Search messages..."
+  },
+  "specialists": {
+    "title": "Specialists",
+    "subtitle": "Pre-configured AI agent templates — install to create a project instantly",
+    "searchPlaceholder": "Search specialists...",
+    "empty": "No specialists found",
+    "install": "Install",
+    "installed": "Installed",
+    "installs": "installs"
   },
   "team": {
     "title": "Team",

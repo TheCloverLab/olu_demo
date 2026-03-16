@@ -67,6 +67,7 @@
     "supplyChain": "供应链",
     "experiences": "体验",
     "products": "产品",
+    "specialists": "专家模板",
     "support": "客服",
     "supportChats": "客服对话",
     "homeEditor": "首页编辑",
@@ -121,6 +122,15 @@
     "hideReasoning": "隐藏推理过程",
     "noChats": "暂无聊天。",
     "searchMessages": "搜索消息..."
+  },
+  "specialists": {
+    "title": "专家模板",
+    "subtitle": "预配置的 AI Agent 模板 — 一键安装创建项目",
+    "searchPlaceholder": "搜索专家模板...",
+    "empty": "未找到专家模板",
+    "install": "安装",
+    "installed": "已安装",
+    "installs": "次安装"
   },
   "team": {
     "title": "团队",

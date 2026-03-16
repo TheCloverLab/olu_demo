@@ -31,6 +31,7 @@ import {
   BarChart3,
   FolderKanban,
   MessageSquare,
+  Zap,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -56,6 +57,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     items: [
       { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
       { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
+      { to: '/business/specialists', icon: Zap, labelKey: 'nav.specialists' },
       { to: '/business/members', icon: Users, labelKey: 'nav.members' },
       { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
       { to: '/business/support', icon: Headphones, labelKey: 'nav.support' },

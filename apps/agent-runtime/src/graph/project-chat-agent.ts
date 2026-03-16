@@ -237,7 +237,7 @@ function loadProjectTools(skills: string[]): StructuredToolInterface[] {
 }
 
 /** Load project context for the system prompt */
-async function loadProjectContext(projectId: string): Promise<{ context: string; skills: string[] }> {
+async function loadProjectContext(projectId: string): Promise<{ context: string; skills: string[]; instructions: string | null }> {
   const [projectRes, participantsRes, tasksRes] = await Promise.all([
     supabase
       .from('projects')
@@ -256,13 +256,14 @@ async function loadProjectContext(projectId: string): Promise<{ context: string;
       .limit(20),
   ])
 
-  if (projectRes.error) return { context: `Project not found: ${projectRes.error.message}`, skills: DEFAULT_PROJECT_SKILLS }
+  if (projectRes.error) return { context: `Project not found: ${projectRes.error.message}`, skills: DEFAULT_PROJECT_SKILLS, instructions: null }
 
   const p = projectRes.data
   const tasks = tasksRes.data || []
   const participants = participantsRes.data || []
   const config = (p.config || {}) as Record<string, unknown>
   const skills = (Array.isArray(config.skills) ? config.skills : DEFAULT_PROJECT_SKILLS) as string[]
+  const instructions = (typeof config.instructions === 'string' ? config.instructions : null)
 
   const taskSummary = tasks.length > 0
     ? tasks.map(t => `- [${t.status}] ${t.title}${t.priority !== 'medium' ? ` (${t.priority})` : ''}`).join('\n')
@@ -277,6 +278,7 @@ Project ID: ${p.id}
 ### Current Tasks (${tasks.length})
 ${taskSummary}`,
     skills,
+    instructions,
   }
 }
 
@@ -303,8 +305,8 @@ export async function runProjectChatAgent(params: {
   const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
   console.log(`[projectChat] Using model: ${effectiveModel} (${provider.name})`)
 
-  // Load project context and skills
-  const { context: projectContext, skills } = await loadProjectContext(projectId)
+  // Load project context, skills, and custom instructions
+  const { context: projectContext, skills, instructions } = await loadProjectContext(projectId)
   console.log(`[projectChat] Loaded context for project ${projectId}, skills: [${skills.join(', ')}]`)
 
   // Load tools based on project skill configuration
@@ -323,7 +325,7 @@ export async function runProjectChatAgent(params: {
 Your role is to help the project owner accomplish their goals through conversation.
 
 ${projectContext}
-
+${instructions ? `\n## Specialist Instructions\n${instructions}\n` : ''}
 ## Your Capabilities
 - **Task Management**: Automatically create, update, and track tasks based on conversation.
 ${skillDescriptions}
@@ -460,7 +462,7 @@ export async function* streamProjectChatAgent(params: {
 
   const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
 
-  const { context: projectContext, skills } = await loadProjectContext(projectId)
+  const { context: projectContext, skills, instructions } = await loadProjectContext(projectId)
 
   const tools = loadProjectTools(skills)
   const toolMap = Object.fromEntries(tools.map((t) => [t.name, t]))
@@ -476,7 +478,7 @@ export async function* streamProjectChatAgent(params: {
 Your role is to help the project owner accomplish their goals through conversation.
 
 ${projectContext}
-
+${instructions ? `\n## Specialist Instructions\n${instructions}\n` : ''}
 ## Your Capabilities
 - **Task Management**: Automatically create, update, and track tasks based on conversation.
 ${skillDescriptions}

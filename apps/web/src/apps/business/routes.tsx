@@ -23,6 +23,7 @@ import ForumEditor from './pages/ForumEditor'
 import CourseExperienceEditor from './pages/CourseExperienceEditor'
 import ExperienceEditor from './pages/ExperienceEditor'
 import ProductManager from './pages/ProductManager'
+import SpecialistMarketplace from './pages/SpecialistMarketplace'
 import SupportCenter from './pages/SupportCenter'
 import HomeEditor from './pages/HomeEditor'
 import MembersPage from './pages/MembersPage'
@@ -54,6 +55,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'experiences/courses', element: <CourseExperienceEditor /> },
       { path: 'experiences/edit', element: <ExperienceEditor /> },
       { path: 'products', element: <ProductManager /> },
+      { path: 'specialists', element: <SpecialistMarketplace /> },
       { path: 'support', element: <SupportCenter /> },
       { path: 'home-editor', element: <HomeEditor /> },
       { path: 'members', element: <MembersPage /> },

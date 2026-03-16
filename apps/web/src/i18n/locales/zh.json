@@ -11,6 +11,7 @@
     "download": "下载",
     "remove": "移除",
     "uploading": "上传中...",
+    "saving": "保存中...",
     "settings": "设置",
     "done": "已完成",
     "pending": "待处理",
@@ -171,7 +172,9 @@
       "general": "基本信息",
       "type": "类型",
       "runtime": "运行时",
-      "status": "状态"
+      "status": "状态",
+      "skills": "Agent 技能",
+      "skillsDesc": "选择此项目中 Lead Agent 可使用的工具。"
     },
     "status": {
       "active": "进行中",

@@ -11,6 +11,7 @@
     "download": "Download",
     "remove": "Remove",
     "uploading": "Uploading...",
+    "saving": "Saving...",
     "settings": "Settings",
     "done": "Done",
     "pending": "Pending",
@@ -171,7 +172,9 @@
       "general": "General",
       "type": "Type",
       "runtime": "Runtime",
-      "status": "Status"
+      "status": "Status",
+      "skills": "Agent Skills",
+      "skillsDesc": "Choose which tools are available to the Lead Agent in this project."
     },
     "status": {
       "active": "Active",

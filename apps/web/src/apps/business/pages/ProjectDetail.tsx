@@ -32,6 +32,7 @@ import {
   UserPlus,
   X,
   Users,
+  Zap,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import ReactMarkdown from 'react-markdown'
@@ -43,6 +44,7 @@ import {
   listTasks,
   createTask,
   updateTask,
+  updateProject,
   listFiles,
   uploadProjectFile,
   getFileDownloadUrl,
@@ -88,6 +90,25 @@ const PRIORITY_BADGE: Record<TaskPriority, { color: string; label: string }> = {
   low: { color: 'bg-gray-50 text-gray-400 dark:bg-gray-900 dark:text-gray-500', label: 'Low' },
 }
 
+/** Available skills — mirrors backend SKILL_DEFINITIONS */
+const AVAILABLE_SKILLS: { id: string; name: string; description: string }[] = [
+  { id: 'workspace-core', name: 'Workspace Core', description: 'Task management, team overview, conversations' },
+  { id: 'web', name: 'Web Tools', description: 'Web search, webpage fetching, browser automation' },
+  { id: 'content', name: 'Content Generation', description: 'Image generation, file creation, charts' },
+  { id: 'code', name: 'Code Execution', description: 'Execute JavaScript code in sandbox' },
+  { id: 'communication', name: 'Communication', description: 'Send emails' },
+  { id: 'lark-suite', name: 'Lark Suite', description: 'Lark tasks, calendar, and Bitable' },
+  { id: 'marketing', name: 'Marketing', description: 'Facebook Ads, Google Play reviews' },
+  { id: 'memory', name: 'Memory', description: 'Remember and recall information' },
+  { id: 'automation', name: 'Automation', description: 'Cron job scheduling, event logging' },
+  { id: 'credentials', name: 'Credentials', description: 'Manage OAuth credentials and API keys' },
+  { id: 'social', name: 'Social Media', description: 'Post tweets, search, like on X/Twitter' },
+  { id: 'budget', name: 'Budget Management', description: 'Request budget approval, report spending' },
+  { id: 'support', name: 'Customer Support', description: 'Query products, courses, search content' },
+]
+
+const DEFAULT_PROJECT_SKILLS = ['web', 'content', 'code']
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -129,6 +150,10 @@ export default function ProjectDetail() {
   const [wsMembers, setWsMembers] = useState<{ id: string; name: string; avatar_url: string | null; email: string | null }[]>([])
   const [showAddMember, setShowAddMember] = useState(false)
 
+  // Skills state
+  const [enabledSkills, setEnabledSkills] = useState<string[]>(DEFAULT_PROJECT_SKILLS)
+  const [savingSkills, setSavingSkills] = useState(false)
+
   useEffect(() => {
     if (!id) return
     loadProject()
@@ -165,6 +190,9 @@ export default function ProjectDetail() {
       setTasks(taskList)
       setFiles(fileList)
       setParticipants(participantList)
+      if (proj?.config?.skills?.length) {
+        setEnabledSkills(proj.config.skills)
+      }
       if (defaultChat) {
         setChat(defaultChat)
         const msgs = await getMessages(defaultChat.id)
@@ -396,6 +424,28 @@ export default function ProjectDetail() {
       setParticipants((prev) => prev.filter((p) => p.user_id !== userId))
     } catch (err) {
       console.error('Failed to remove participant:', err)
+    }
+  }
+
+  // ── Skill handlers ──────────────────────────────────
+
+  async function handleToggleSkill(skillId: string) {
+    if (!project) return
+    const updated = enabledSkills.includes(skillId)
+      ? enabledSkills.filter((s) => s !== skillId)
+      : [...enabledSkills, skillId]
+    setEnabledSkills(updated)
+    setSavingSkills(true)
+    try {
+      const updatedProject = await updateProject(project.id, {
+        config: { ...project.config, skills: updated },
+      })
+      setProject(updatedProject)
+    } catch (err) {
+      console.error('Failed to update skills:', err)
+      setEnabledSkills(enabledSkills) // revert
+    } finally {
+      setSavingSkills(false)
     }
   }
 
@@ -723,6 +773,41 @@ export default function ProjectDetail() {
                   <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.status', 'Status')}</label>
                   <p className="text-sm text-[var(--olu-text)] capitalize">{project.status}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Agent Skills */}
+            <div className="bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-[var(--olu-text)]">
+                  <Zap className="w-4 h-4 inline mr-1.5" />
+                  {t('projects.config.skills', 'Agent Skills')}
+                </h3>
+                {savingSkills && (
+                  <span className="text-xs text-[var(--olu-muted)]">{t('common.saving', 'Saving...')}</span>
+                )}
+              </div>
+              <p className="text-xs text-[var(--olu-muted)]">
+                {t('projects.config.skillsDesc', 'Choose which tools are available to the Lead Agent in this project.')}
+              </p>
+              <div className="grid gap-2">
+                {AVAILABLE_SKILLS.map((skill) => (
+                  <label
+                    key={skill.id}
+                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[var(--olu-accent-bg)] transition-colors cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={enabledSkills.includes(skill.id)}
+                      onChange={() => handleToggleSkill(skill.id)}
+                      className="mt-0.5 w-4 h-4 rounded border-[var(--olu-card-border)] text-[var(--olu-primary)] focus:ring-[var(--olu-primary)]"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--olu-text)]">{skill.name}</p>
+                      <p className="text-xs text-[var(--olu-muted)]">{skill.description}</p>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
 

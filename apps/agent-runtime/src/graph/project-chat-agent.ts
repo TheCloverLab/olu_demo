@@ -12,6 +12,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 import type { StructuredToolInterface } from '@langchain/core/tools'
 import { projectTools } from '../tools/project-tools.js'
 import { webSearch, fetchWebpage, browseWebpage, generateImage, generateFile, generateChart, executeCode } from '../tools/workspace-tools.js'
+import { SKILL_DEFINITIONS } from '../lib/skill-registry.js'
 import { resolveProviderForChat, type ModelProvider } from '../lib/models.js'
 import {
   buildConversationKey,
@@ -214,8 +215,29 @@ async function* callLLMStream(
   yield { type: 'done', data: collectedContent }
 }
 
+/** Default skills for projects (backward compatible) */
+const DEFAULT_PROJECT_SKILLS = ['web', 'content', 'code']
+
+/** Load tools based on project skill configuration */
+function loadProjectTools(skills: string[]): StructuredToolInterface[] {
+  const tools: StructuredToolInterface[] = [...projectTools] // always include project tools
+  const seen = new Set<string>(projectTools.map(t => t.name))
+
+  for (const skillName of skills) {
+    const skill = SKILL_DEFINITIONS[skillName]
+    if (!skill) continue
+    for (const tool of skill.tools) {
+      if (!seen.has(tool.name)) {
+        seen.add(tool.name)
+        tools.push(tool)
+      }
+    }
+  }
+  return tools
+}
+
 /** Load project context for the system prompt */
-async function loadProjectContext(projectId: string): Promise<string> {
+async function loadProjectContext(projectId: string): Promise<{ context: string; skills: string[] }> {
   const [projectRes, participantsRes, tasksRes] = await Promise.all([
     supabase
       .from('projects')
@@ -234,23 +256,28 @@ async function loadProjectContext(projectId: string): Promise<string> {
       .limit(20),
   ])
 
-  if (projectRes.error) return `Project not found: ${projectRes.error.message}`
+  if (projectRes.error) return { context: `Project not found: ${projectRes.error.message}`, skills: DEFAULT_PROJECT_SKILLS }
 
   const p = projectRes.data
   const tasks = tasksRes.data || []
   const participants = participantsRes.data || []
+  const config = (p.config || {}) as Record<string, unknown>
+  const skills = (Array.isArray(config.skills) ? config.skills : DEFAULT_PROJECT_SKILLS) as string[]
 
   const taskSummary = tasks.length > 0
     ? tasks.map(t => `- [${t.status}] ${t.title}${t.priority !== 'medium' ? ` (${t.priority})` : ''}`).join('\n')
     : 'No tasks yet.'
 
-  return `## Project: ${p.name}
-${p.description ? `Description: ${p.description}\n` : ''}Type: ${p.type} | Status: ${p.status} | Runtime: ${p.runtime_type}
+  return {
+    context: `## Project: ${p.name}
+${p.description ? `Description: ${p.description}\n` : ''}Status: ${p.status} | Runtime: ${p.runtime_type}
 Participants: ${participants.length} members
 Project ID: ${p.id}
 
 ### Current Tasks (${tasks.length})
-${taskSummary}`
+${taskSummary}`,
+    skills,
+  }
 }
 
 export type ProjectChatResult = {
@@ -276,25 +303,21 @@ export async function runProjectChatAgent(params: {
   const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
   console.log(`[projectChat] Using model: ${effectiveModel} (${provider.name})`)
 
-  // Load project context
-  const projectContext = await loadProjectContext(projectId)
-  console.log(`[projectChat] Loaded context for project ${projectId}`)
+  // Load project context and skills
+  const { context: projectContext, skills } = await loadProjectContext(projectId)
+  console.log(`[projectChat] Loaded context for project ${projectId}, skills: [${skills.join(', ')}]`)
 
-  // Combine project tools with useful general tools
-  const tools: StructuredToolInterface[] = [
-    ...projectTools,
-    webSearch,
-    fetchWebpage,
-    browseWebpage,
-    generateImage,
-    generateFile,
-    generateChart,
-    executeCode,
-  ]
-
+  // Load tools based on project skill configuration
+  const tools = loadProjectTools(skills)
   const toolMap = Object.fromEntries(tools.map((t) => [t.name, t]))
   const toolDefs = buildToolDefs(tools)
-  console.log(`[projectChat] Loaded ${tools.length} tools`)
+  console.log(`[projectChat] Loaded ${tools.length} tools from ${skills.length} skills`)
+
+  const skillDescriptions = skills
+    .map(s => SKILL_DEFINITIONS[s])
+    .filter(Boolean)
+    .map(s => `- **${s.name}**: ${s.description}`)
+    .join('\n')
 
   const systemPrompt = `You are the Lead Agent for a project workspace (workspace_id: ${workspaceId}).
 Your role is to help the project owner accomplish their goals through conversation.
@@ -302,9 +325,8 @@ Your role is to help the project owner accomplish their goals through conversati
 ${projectContext}
 
 ## Your Capabilities
-- **Task Management**: Automatically create, update, and track tasks based on conversation. When the user mentions work items, deadlines, or action items, create tasks proactively.
-- **Research**: Search the web and fetch information to support project work.
-- **Content Creation**: Generate images, files, charts, and run code.
+- **Task Management**: Automatically create, update, and track tasks based on conversation.
+${skillDescriptions}
 
 ## Behavior Guidelines
 - When the user describes work to be done, create project tasks automatically using create_project_task.
@@ -438,15 +460,17 @@ export async function* streamProjectChatAgent(params: {
 
   const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
 
-  const projectContext = await loadProjectContext(projectId)
+  const { context: projectContext, skills } = await loadProjectContext(projectId)
 
-  const tools: StructuredToolInterface[] = [
-    ...projectTools,
-    webSearch, fetchWebpage, browseWebpage,
-    generateImage, generateFile, generateChart, executeCode,
-  ]
+  const tools = loadProjectTools(skills)
   const toolMap = Object.fromEntries(tools.map((t) => [t.name, t]))
   const toolDefs = buildToolDefs(tools)
+
+  const skillDescriptions = skills
+    .map(s => SKILL_DEFINITIONS[s])
+    .filter(Boolean)
+    .map(s => `- **${s.name}**: ${s.description}`)
+    .join('\n')
 
   const systemPrompt = `You are the Lead Agent for a project workspace (workspace_id: ${workspaceId}).
 Your role is to help the project owner accomplish their goals through conversation.
@@ -455,8 +479,7 @@ ${projectContext}
 
 ## Your Capabilities
 - **Task Management**: Automatically create, update, and track tasks based on conversation.
-- **Research**: Search the web and fetch information to support project work.
-- **Content Creation**: Generate images, files, charts, and run code.
+${skillDescriptions}
 
 ## Behavior Guidelines
 - When the user describes work to be done, create project tasks automatically.

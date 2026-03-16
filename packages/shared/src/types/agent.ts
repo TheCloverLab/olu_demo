@@ -19,32 +19,3 @@ export type WorkspaceAgentTask = Narrow<Tables<'workspace_agent_tasks'>, {
 export type WorkspaceAgentWithTasks = WorkspaceAgent & {
   tasks?: WorkspaceAgentTask[]
 }
-
-export type AIAgent = Narrow<Tables<'ai_agents'>, {
-  status: 'online' | 'offline' | 'busy' | null
-}>
-
-export type AgentTask = Narrow<Tables<'agent_tasks'>, {
-  status: 'pending' | 'in_progress' | 'done' | 'cancelled'
-  priority: 'low' | 'medium' | 'high'
-}>
-
-/** Conversation message in the UI (not the LangGraph agent_conversations table) */
-export type Conversation = {
-  id: string
-  agent_id: string
-  from_type: 'agent' | 'user'
-  text: string
-  attachments?: ChatAttachment[]
-  time: string
-  created_at?: string
-}
-
-export type ChatAttachment = {
-  type: 'image'
-  url: string
-  path?: string
-  mime_type?: string
-  name?: string
-  size_bytes?: number
-}

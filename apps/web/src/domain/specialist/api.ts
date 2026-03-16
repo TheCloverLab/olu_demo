@@ -102,8 +102,8 @@ export async function installSpecialist(
     .single()
   if (error) throw error
 
-  // Increment install count
-  await supabase.rpc('increment_specialist_installs', { tid: templateId }).catch(() => {})
+  // Increment install count (best-effort)
+  try { await supabase.rpc('increment_specialist_installs', { tid: templateId }) } catch {}
 
   return data
 }

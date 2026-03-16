@@ -21,21 +21,11 @@ export default function QuickChat() {
   const [loading, setLoading] = useState(true)
   const [streamingText, setStreamingText] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const autoCreated = useRef(false)
 
   useEffect(() => {
     if (!workspace) return
     loadChats()
   }, [workspace])
-
-  // Auto-create a new chat when landing on /business/chat with no convId
-  useEffect(() => {
-    if (convId || loading || autoCreated.current) return
-    if (chats.length === 0) {
-      autoCreated.current = true
-      handleNew()
-    }
-  }, [convId, loading, chats.length])
 
   useEffect(() => {
     if (!convId) return
@@ -151,7 +141,7 @@ export default function QuickChat() {
     }
   }
 
-  const isEmpty = !activeChat || messages.length === 0
+  const showCenteredInput = !activeChat
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
@@ -199,7 +189,7 @@ export default function QuickChat() {
 
       {/* Chat area */}
       <div className="flex-1 flex flex-col">
-        {isEmpty ? (
+        {showCenteredInput ? (
           /* Empty state: centered input */
           <div className="flex-1 flex items-center justify-center px-4">
             <div className="w-full max-w-2xl space-y-4">

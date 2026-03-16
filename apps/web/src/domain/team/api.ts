@@ -2,7 +2,7 @@ import { supabase } from '../../lib/supabase'
 import type { User, WorkspaceAgent, WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../lib/supabase'
 import { ensureWorkspaceForUser } from '../workspace/api'
 import { listChats, createChat, joinChat } from '../chat/api'
-import type { Employee, EmployeeWithTasks, TeamTaskSummary } from './types'
+import type { Employee, EmployeeWithTasks } from './types'
 
 // ---------- Employee adapter (WorkspaceAgent → Employee) ----------
 
@@ -88,26 +88,10 @@ export async function getWorkspaceAgentsWithTasksForUser(user: Pick<User, 'id' |
   return (data || []) as WorkspaceAgentWithTasks[]
 }
 
-export async function updateAgentModel(agentId: string, model: string | null) {
-  const { error } = await supabase
-    .from('workspace_agents')
-    .update({ model, updated_at: new Date().toISOString() })
-    .eq('id', agentId)
-  if (error) throw error
-}
-
 export async function updateAgentRuntimeType(agentId: string, runtimeType: 'langgraph' | 'openclaw') {
   const { error } = await supabase
     .from('workspace_agents')
     .update({ runtime_type: runtimeType, updated_at: new Date().toISOString() })
-    .eq('id', agentId)
-  if (error) throw error
-}
-
-export async function updateAgentEnabledSkills(agentId: string, skills: string[] | null) {
-  const { error } = await supabase
-    .from('workspace_agents')
-    .update({ enabled_skills: skills, updated_at: new Date().toISOString() })
     .eq('id', agentId)
   if (error) throw error
 }
@@ -118,16 +102,6 @@ export async function toggleAgentSupport(agentId: string, enabled: boolean) {
     .update({ support_enabled: enabled, updated_at: new Date().toISOString() })
     .eq('id', agentId)
   if (error) throw error
-}
-
-export async function getSupportAgents(workspaceId: string): Promise<WorkspaceAgent[]> {
-  const { data, error } = await supabase
-    .from('workspace_agents')
-    .select('*')
-    .eq('workspace_id', workspaceId)
-    .eq('support_enabled', true)
-  if (error) throw error
-  return (data || []) as WorkspaceAgent[]
 }
 
 // ---------- HR-model team queries ----------
@@ -225,6 +199,3 @@ export async function createNewGroupChat(
   return chat
 }
 
-export function getAgentTaskSummaries(tasks: Array<TeamTaskSummary> | undefined) {
-  return tasks || []
-}

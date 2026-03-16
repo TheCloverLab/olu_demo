@@ -39,7 +39,7 @@ export interface ProjectParticipant {
   user?: {
     id: string
     name: string
-    avatar_url: string | null
+    avatar_img: string | null
   }
 }
 

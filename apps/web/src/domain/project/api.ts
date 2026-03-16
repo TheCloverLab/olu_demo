@@ -121,7 +121,7 @@ export async function deleteProject(projectId: string): Promise<void> {
 export async function listParticipants(projectId: string): Promise<ProjectParticipant[]> {
   const { data, error } = await supabase
     .from('project_participants')
-    .select('*, user:users!project_participants_user_id_fkey(id, name, avatar_url)')
+    .select('*, user:users!project_participants_user_id_fkey(id, name, avatar_img)')
     .eq('project_id', projectId)
     .order('created_at')
   if (error) throw error
@@ -388,15 +388,15 @@ export async function deleteProjectFile(fileId: string, filePath: string): Promi
 export async function listWorkspaceMembers(workspaceId: string): Promise<{
   id: string
   name: string
-  avatar_url: string | null
+  avatar_img: string | null
   email: string | null
 }[]> {
   const { data, error } = await supabase
     .from('workspace_memberships')
-    .select('user:users(id, name, avatar_url, email)')
+    .select('user:users(id, name, avatar_img, email)')
     .eq('workspace_id', workspaceId)
   if (error) throw error
-  return (data || []).map((d) => (d as unknown as { user: { id: string; name: string; avatar_url: string | null; email: string | null } }).user).filter(Boolean)
+  return (data || []).map((d) => (d as unknown as { user: { id: string; name: string; avatar_img: string | null; email: string | null } }).user).filter(Boolean)
 }
 
 // ── Project Chat Agent ───────────────────────────────────────

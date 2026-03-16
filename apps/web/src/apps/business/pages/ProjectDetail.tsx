@@ -147,7 +147,7 @@ export default function ProjectDetail() {
 
   // Team state
   const [participants, setParticipants] = useState<ProjectParticipant[]>([])
-  const [wsMembers, setWsMembers] = useState<{ id: string; name: string; avatar_url: string | null; email: string | null }[]>([])
+  const [wsMembers, setWsMembers] = useState<{ id: string; name: string; avatar_img: string | null; email: string | null }[]>([])
   const [showAddMember, setShowAddMember] = useState(false)
 
   // Skills state
@@ -846,8 +846,8 @@ export default function ProjectDetail() {
                           onClick={() => handleAddMember(member.id)}
                           className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors text-left"
                         >
-                          {member.avatar_url ? (
-                            <img src={member.avatar_url} className="w-6 h-6 rounded-full" alt="" />
+                          {member.avatar_img ? (
+                            <img src={member.avatar_img} className="w-6 h-6 rounded-full" alt="" />
                           ) : (
                             <div className="w-6 h-6 rounded-full bg-[var(--olu-primary)]/20 flex items-center justify-center text-xs text-[var(--olu-primary)]">
                               {member.name?.[0] || '?'}
@@ -868,8 +868,8 @@ export default function ProjectDetail() {
               <div className="space-y-2">
                 {participants.map((p) => (
                   <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg">
-                    {p.user?.avatar_url ? (
-                      <img src={p.user.avatar_url} className="w-8 h-8 rounded-full" alt="" />
+                    {p.user?.avatar_img ? (
+                      <img src={p.user.avatar_img} className="w-8 h-8 rounded-full" alt="" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-[var(--olu-primary)]/20 flex items-center justify-center text-sm text-[var(--olu-primary)]">
                         {p.user?.name?.[0] || '?'}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star, Image, Minimize2, ShoppingBag, Layers, X } from 'lucide-react'
+import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List, Rows3, Star, Image, Minimize2, ShoppingBag, Layers, X, Fullscreen } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { supabase } from '../../../lib/supabase'
@@ -14,6 +14,7 @@ const DISPLAY_MODES: { value: WorkspaceHomeTab['display_mode']; icon: typeof Lis
   { value: 'tile', icon: LayoutGrid, label: 'Tile' },
   { value: 'grid', icon: Rows3, label: 'Grid' },
   { value: 'featured', icon: Star, label: 'Featured' },
+  { value: 'inline', icon: Fullscreen, label: 'Inline' },
 ]
 
 type TemplateKey = 'magazine' | 'storefront' | 'minimal' | 'community'

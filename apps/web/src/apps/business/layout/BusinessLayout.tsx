@@ -48,8 +48,8 @@ const SIDEBAR_GROUPS: NavGroup[] = [
   {
     groupLabelKey: 'nav.groupGeneral',
     items: [
-      { to: '/business/chat', icon: MessageSquare, labelKey: 'nav.chat' },
-      { to: '/business', icon: PanelsTopLeft, labelKey: 'nav.overview', exact: true },
+      { to: '/business', icon: MessageSquare, labelKey: 'nav.chat', exact: true },
+      { to: '/business/overview', icon: PanelsTopLeft, labelKey: 'nav.overview' },
       { to: '/business/analytics', icon: BarChart3, labelKey: 'nav.analytics' },
     ],
   },

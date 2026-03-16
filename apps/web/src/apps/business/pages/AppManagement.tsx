@@ -7,6 +7,7 @@ import type { ConsumerApp } from '../../../lib/supabase'
 import { supabase } from '../../../lib/supabase'
 import { getOwnedConsumerApps } from '../../../domain/consumer/apps'
 import { updateWorkspaceConsumerConfigForUser } from '../../../domain/workspace/api'
+import { updateConsumerCourse } from '../../../domain/product/api'
 
 const TYPE_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   community: { label: 'Community', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-400/10' },
@@ -69,15 +70,13 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
           },
         })
       } else if (app.linked_course_id) {
-        const updates: Record<string, any> = { title, subtitle: summary, hero: coverUrl || '' }
-        const { error } = await supabase.from('consumer_courses').update(updates).eq('id', app.linked_course_id)
-        if (error) throw error
+        await updateConsumerCourse(app.linked_course_id, { title, subtitle: summary, hero: coverUrl || '' })
       }
 
       setMessage('Saved!')
       setTimeout(() => { onSaved() }, 400)
-    } catch (err: any) {
-      setMessage(err.message || 'Failed to save')
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }

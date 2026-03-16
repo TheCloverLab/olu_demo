@@ -8,10 +8,10 @@ import type { WorkspaceExperience } from '../../../lib/supabase'
 import { supabase } from '../../../lib/supabase'
 import { getExperience, getForumPosts, createForumPost, getForumPostComments, createForumPostComment, toggleForumPostLike, type ForumPostWithAuthor } from '../../../domain/experience/api'
 
-function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
+function Avatar({ user, size = 'sm' }: { user: { name?: string | null; avatar_img?: string | null; avatar_color?: string | null; initials?: string | null } | null | undefined; size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
   if (user?.avatar_img) {
-    return <img src={user.avatar_img} alt={user.name} className={clsx('rounded-xl object-cover flex-shrink-0', sz)} />
+    return <img src={user.avatar_img} alt={user.name ?? ''} className={clsx('rounded-xl object-cover flex-shrink-0', sz)} />
   }
   return (
     <div className={clsx(`bg-gradient-to-br ${user?.avatar_color || 'from-gray-600 to-gray-500'} rounded-xl flex items-center justify-center font-bold text-white flex-shrink-0`, sz)}>
@@ -189,7 +189,7 @@ export default function ForumView() {
       .select('post_id')
       .eq('user_id', user.id)
       .then(({ data }) => {
-        if (data) setLikedPostIds(new Set(data.map((d: any) => d.post_id)))
+        if (data) setLikedPostIds(new Set(data.map((d: { post_id: string }) => d.post_id)))
       })
   }, [user?.id, experienceId])
 

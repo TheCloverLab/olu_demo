@@ -7,6 +7,7 @@ import { Briefcase, ChevronLeft, ChevronRight, LogOut, Sun, Moon, Monitor, Globe
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { supabase } from '../lib/supabase'
+import { updateProfile } from '../domain/profile/api'
 import clsx from 'clsx'
 
 export default function Settings() {
@@ -40,13 +41,12 @@ export default function Settings() {
       const normalizedHandle = handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '')
       if (!normalizedHandle) throw new Error('Handle is required')
 
-      const { error } = await supabase.from('users').update({ handle: `@${normalizedHandle}` }).eq('id', user.id)
-      if (error) throw error
+      await updateProfile(user.id, { handle: `@${normalizedHandle}` })
 
       setHandleMessage('Handle updated. Refreshing...')
       setTimeout(() => window.location.reload(), 700)
-    } catch (err: any) {
-      setHandleMessage(err.message || 'Failed to update handle')
+    } catch (err: unknown) {
+      setHandleMessage(err instanceof Error ? err.message : 'Failed to update handle')
     } finally {
       setSavingHandle(false)
     }
@@ -80,8 +80,8 @@ export default function Settings() {
       setNewPassword('')
       setConfirmPassword('')
       setPasswordMessage('Password updated successfully')
-    } catch (err: any) {
-      setPasswordMessage(err.message || 'Failed to update password')
+    } catch (err: unknown) {
+      setPasswordMessage(err instanceof Error ? err.message : 'Failed to update password')
     } finally {
       setSavingPassword(false)
     }

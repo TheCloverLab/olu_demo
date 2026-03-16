@@ -61,6 +61,26 @@ const DEMO_COMMENTS: (ForumPostComment & { author?: Pick<User, 'id' | 'name' | '
   { id: 'fc-10', post_id: 'fp-10', author_id: 'u4', content: 'The detail on the dragon scales is insane. What brushes did you use?', created_at: '2026-03-07T14:00:00Z', author: DEMO_AUTHORS.mia },
 ]
 
+// ── Batch Insert (onboarding presets) ───────────────────────────
+
+export async function insertPresetExperiences(
+  experiences: Array<{
+    workspace_id: string
+    name: string
+    type: string
+    description?: string
+    position: number
+    status: string
+    visibility: string
+  }>
+): Promise<void> {
+  if (experiences.length === 0) return
+  const { error } = await supabase
+    .from('workspace_experiences')
+    .insert(experiences)
+  if (error) throw error
+}
+
 // ── Experience CRUD ─────────────────────────────────────────────
 
 export async function listExperiences(workspaceId: string): Promise<WorkspaceExperience[]> {

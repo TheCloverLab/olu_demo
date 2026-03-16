@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { TrendingUp, Users, DollarSign, Eye, CheckSquare, ShoppingBag, Sparkles, CheckCircle2, XCircle, ArrowRight, RefreshCcw } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import {
@@ -28,7 +29,7 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
-function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
   return (
     <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
       <div className="flex items-center justify-between mb-2">

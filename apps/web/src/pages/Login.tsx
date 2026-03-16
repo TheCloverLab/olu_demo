@@ -42,8 +42,8 @@ export default function Login() {
 
     try {
       await signIn(formEmail, formPassword)
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally {
       setLoading(false)
     }

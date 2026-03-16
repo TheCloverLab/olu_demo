@@ -3,10 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Loader2, MessageSquare, BookOpen, Users, Lock, ChevronRight, ChevronDown, Check, Sparkles, UserPlus, ArrowLeft, BadgeCheck, Headphones, LogOut, Heart, Send, Play } from 'lucide-react'
 import clsx from 'clsx'
-import { supabase } from '../../../lib/supabase'
 import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLayout, WorkspaceExperience, WorkspaceProduct, WorkspaceProductPlan } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
-import { joinWorkspace, hasJoinedWorkspace, leaveWorkspace } from '../../../domain/workspace/api'
+import { joinWorkspace, hasJoinedWorkspace, leaveWorkspace, getWorkspaceBySlug, getWorkspaceMemberCount } from '../../../domain/workspace/api'
 
 const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences, getForumPosts, getVideoItems, extractYouTubeId, type ForumPostWithAuthor } from '../../../domain/experience/api'
@@ -557,7 +556,7 @@ function ProductCard({
 // Layout-specific headers
 // ────────────────────────────────────────────────────────────────
 
-function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace, t, navigate, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; onUnjoin: () => void; workspace: Workspace; t: any; navigate: ReturnType<typeof useNavigate>; size?: 'sm' | 'md' }) {
+function JoinAndSupportButtons({ hasJoined, joining, onJoin, onUnjoin, workspace, t, navigate, size = 'md' }: { hasJoined: boolean; joining: boolean; onJoin: () => void; onUnjoin: () => void; workspace: Workspace; t: ReturnType<typeof useTranslation>['t']; navigate: ReturnType<typeof useNavigate>; size?: 'sm' | 'md' }) {
   const [confirmLeave, setConfirmLeave] = useState(false)
 
   return (
@@ -643,7 +642,7 @@ function BackButton({ navigate }: { navigate: ReturnType<typeof useNavigate> }) 
   )
 }
 
-function MemberCount({ count, t }: { count: number; t: any }) {
+function MemberCount({ count, t }: { count: number; t: ReturnType<typeof useTranslation>['t'] }) {
   if (count === 0) return null
   return (
     <span className="flex items-center gap-1.5 text-sm text-[var(--olu-text-secondary)]">
@@ -653,7 +652,21 @@ function MemberCount({ count, t }: { count: number; t: any }) {
   )
 }
 
-function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
+interface HeaderProps {
+  workspace: Workspace & { verified?: boolean }
+  headline: string | null
+  cover?: string | null
+  userId: string | undefined
+  hasJoined: boolean
+  joining: boolean
+  onJoin: () => void
+  onUnjoin: () => void
+  t: ReturnType<typeof useTranslation>['t']
+  navigate: ReturnType<typeof useNavigate>
+  memberCount: number
+}
+
+function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: HeaderProps) {
   return (
     <>
       <div className="h-52 relative bg-gradient-to-br from-slate-900 to-slate-800">
@@ -681,7 +694,7 @@ function ClassicHeader({ workspace, headline, cover, userId, hasJoined, joining,
   )
 }
 
-function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
+function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: HeaderProps) {
   return (
     <div className="relative min-h-[300px] flex flex-col justify-end">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800">
@@ -712,7 +725,7 @@ function HeroHeader({ workspace, headline, cover, userId, hasJoined, joining, on
   )
 }
 
-function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
+function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: HeaderProps) {
   return (
     <div className="px-4 pt-4 pb-2 space-y-4">
       <button
@@ -742,7 +755,7 @@ function CompactHeader({ workspace, headline, userId, hasJoined, joining, onJoin
   )
 }
 
-function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: any) {
+function CatalogHeader({ workspace, headline, cover, userId, hasJoined, joining, onJoin, onUnjoin, t, navigate, memberCount }: HeaderProps) {
   return (
     <div className="relative overflow-hidden">
       <div className="h-36 bg-gradient-to-r from-cyan-600 to-blue-700">
@@ -887,23 +900,18 @@ export default function WorkspaceHome() {
         if (IS_DEMO) {
           ws = { id: 'ws-demo', owner_user_id: 'demo-user-001', name: 'Pixel Realm', slug: workspaceSlug!, icon: null, cover: null, headline: 'Where art meets community', status: 'active', created_at: '' } as Workspace
         } else {
-          const { data } = await supabase
-            .from('workspaces')
-            .select('*')
-            .eq('slug', workspaceSlug)
-            .single()
-          ws = data
+          ws = await getWorkspaceBySlug(workspaceSlug!)
         }
         if (!ws) { setLoading(false); return }
         setWorkspace(ws)
 
-        const [config, exps, prods, { count: joinCount }] = await Promise.all([
+        const [config, exps, prods, joinCount] = await Promise.all([
           getHomeConfig(ws.id),
           listExperiences(ws.id),
           listProducts(ws.id),
-          supabase.from('workspace_joins').select('*', { count: 'exact', head: true }).eq('workspace_id', ws.id),
+          getWorkspaceMemberCount(ws.id),
         ])
-        setMemberCount(joinCount || 0)
+        setMemberCount(joinCount)
         setHomeConfig(config)
         setExperiences(exps)
 

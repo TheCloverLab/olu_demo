@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, Pencil, Save, X } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getProfileById } from '../../../domain/profile/api'
+import { getProfileById, updateProfile } from '../../../domain/profile/api'
+import { getWorkspacesByOwner } from '../../../domain/workspace/api'
 import { supabase } from '../../../lib/supabase'
 import type { User, Workspace } from '../../../lib/supabase'
 
@@ -44,17 +45,16 @@ function ProfileEditor({ user, onClose, onSaved }: { user: User; onClose: () => 
       }
 
       const initials = name.trim().split(' ').filter(Boolean).map((p) => p[0]).join('').toUpperCase().slice(0, 2) || 'U'
-      const updates: any = { name: name.trim(), bio: bio.trim() || null, initials }
+      const updates: Record<string, unknown> = { name: name.trim(), bio: bio.trim() || null, initials }
       if (avatarUrl) updates.avatar_img = avatarUrl
       if (coverUrl) updates.cover_img = coverUrl
 
-      const { error } = await supabase.from('users').update(updates).eq('id', user.id)
-      if (error) throw error
+      await updateProfile(user.id, updates)
 
       setMessage(t('consumer.savedRefreshing'))
       setTimeout(() => { onSaved(); window.location.reload() }, 500)
-    } catch (err: any) {
-      setMessage(err.message || t('consumer.failedToSave'))
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : t('consumer.failedToSave'))
     } finally {
       setSaving(false)
     }
@@ -132,14 +132,9 @@ export default function PublicProfile() {
         setCreator(creatorData)
 
         // Load workspaces owned by this user
-        const { data: ws } = await supabase
-          .from('workspaces')
-          .select('*')
-          .eq('owner_user_id', profileId)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
+        const ws = await getWorkspacesByOwner(profileId)
         if (cancelled) return
-        setWorkspaces(ws || [])
+        setWorkspaces(ws)
       } catch (error) {
         console.error('Failed to load public profile', error)
       } finally {

@@ -379,6 +379,49 @@ export async function hasJoinedWorkspace(userId: string, workspaceId: string): P
   return !!data
 }
 
+// ---------- Workspace lookup ----------
+
+export async function getWorkspaceBySlug(slug: string): Promise<Workspace | null> {
+  const { data, error } = await supabase
+    .from('workspaces')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+
+  if (error) return null
+  return data as Workspace
+}
+
+export async function getWorkspacesByOwner(ownerUserId: string): Promise<Workspace[]> {
+  const { data, error } = await supabase
+    .from('workspaces')
+    .select('*')
+    .eq('owner_user_id', ownerUserId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as Workspace[]
+}
+
+export async function getWorkspaceMemberCount(workspaceId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('workspace_joins')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId)
+
+  if (error) return 0
+  return count || 0
+}
+
+export async function updateWorkspaceIcon(workspaceId: string, iconUrl: string): Promise<void> {
+  const { error } = await supabase
+    .from('workspaces')
+    .update({ icon: iconUrl })
+    .eq('id', workspaceId)
+  if (error) throw error
+}
+
 // ---------- Discover (public workspaces) ----------
 
 export async function getDiscoverWorkspaces(options?: { query?: string }): Promise<Workspace[]> {

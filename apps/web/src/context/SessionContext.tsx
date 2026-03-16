@@ -6,12 +6,13 @@ export interface SessionUser {
   name: string
   handle: string
   initials: string
+  avatar_img?: string | null
   avatar_color: string
   followers: number
   following: number
   posts: number
   verified: boolean
-  [key: string]: any
+  [key: string]: unknown
 }
 
 const GUEST_USER: SessionUser = {

@@ -222,7 +222,7 @@ export default function ProjectDetail() {
       // Save user message to chat
       await sendMessage(chat.id, currentUser.id, 'user', text, {
         senderName: currentUser.name,
-        senderAvatar: currentUser.avatar_url || undefined,
+        senderAvatar: currentUser.avatar_img ?? undefined,
       })
 
       // Stream from Lead Agent

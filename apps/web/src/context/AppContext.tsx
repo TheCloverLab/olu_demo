@@ -5,9 +5,10 @@ import { ConsumerProvider, useConsumer } from './ConsumerContext'
 import type { ConsumerTemplateKey } from '../apps/consumer/templateConfig'
 import type { ConsumerExperience } from '../domain/consumer/api'
 import type { BusinessModuleKey, ConsumerApp, ConsumerAppType, Workspace, WorkspaceConsumerConfig } from '../lib/supabase'
+import type { SessionUser } from './SessionContext'
 
 export interface AppContextType {
-  currentUser: any
+  currentUser: SessionUser
   workspace: Workspace | null
   enabledBusinessModules: BusinessModuleKey[]
   workspaceLoading: boolean

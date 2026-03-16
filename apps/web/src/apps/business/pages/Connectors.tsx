@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import { SiShopify, SiGoogleplay, SiAppstore, SiX, SiSlack, SiTelegram, SiWhatsapp, SiInstagram, SiZendesk, SiMixpanel } from 'react-icons/si'
 import { useAuth } from '../../../context/AuthContext'
+import type { User } from '../../../lib/supabase'
 import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
 import { getWorkspaceIntegrationSummariesForUser } from '../../../domain/integrations/api'
 import { updateWorkspaceIntegrationConfig } from '../../../domain/workspace/api'
@@ -376,8 +377,8 @@ function PlatformCard({ platform, t, onConnect, connecting }: {
 function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }: {
   provider: string
   meta: PlatformConnectionMeta
-  user: any
-  t: (key: string, opts?: any) => string
+  user: User | null
+  t: (key: string, opts?: Record<string, string>) => string
   onClose: () => void
   onConnected: () => void
 }) {
@@ -404,8 +405,8 @@ function ConnectorConfigModal({ provider, meta, user, t, onClose, onConnected }:
         ...formData,
       })
       onConnected()
-    } catch (err: any) {
-      setError(err.message || t('connectors.saveFailed'))
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('connectors.saveFailed'))
     } finally {
       setSaving(false)
     }

@@ -4,9 +4,10 @@ import { Plus, Loader2, Save, Trash2, GripVertical, ImagePlus, LayoutGrid, List,
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { supabase } from '../../../lib/supabase'
-import type { WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig, WorkspaceHomeLayout } from '../../../lib/supabase'
+import type { Workspace, WorkspaceExperience, WorkspaceHomeTab, WorkspaceHomeConfig, WorkspaceHomeLayout } from '../../../lib/supabase'
 import { listExperiences } from '../../../domain/experience/api'
 import { getHomeConfig, upsertHomeConfig } from '../../../domain/product/api'
+import { updateWorkspaceIcon } from '../../../domain/workspace/api'
 
 const DISPLAY_MODES: { value: WorkspaceHomeTab['display_mode']; icon: typeof List; label: string }[] = [
   { value: 'list', icon: List, label: 'List' },
@@ -164,7 +165,7 @@ function TabEditor({
   )
 }
 
-function WorkspaceIcon({ workspace, size = 'md' }: { workspace: any; size?: 'sm' | 'md' | 'lg' }) {
+function WorkspaceIcon({ workspace, size = 'md' }: { workspace: Workspace | null; size?: 'sm' | 'md' | 'lg' }) {
   const [imgError, setImgError] = useState(false)
   const sz = size === 'sm' ? 'w-10 h-10 text-sm' : size === 'lg' ? 'w-16 h-16 text-2xl' : 'w-12 h-12 text-lg'
   if (workspace?.icon && !imgError) {
@@ -361,7 +362,7 @@ export default function HomeEditor() {
         const { error } = await supabase.storage.from('avatars').upload(path, iconFile, { upsert: true, contentType: iconFile.type })
         if (error) throw error
         const iconUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
-        await supabase.from('workspaces').update({ icon: iconUrl }).eq('id', workspaceId)
+        await updateWorkspaceIcon(workspaceId, iconUrl)
         setIconFile(null)
       }
 
@@ -373,8 +374,8 @@ export default function HomeEditor() {
       })
       setMessage('Saved!')
       setTimeout(() => setMessage(''), 2000)
-    } catch (err: any) {
-      setMessage(err.message || 'Failed to save')
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }

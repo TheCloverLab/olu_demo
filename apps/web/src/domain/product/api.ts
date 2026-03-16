@@ -362,7 +362,7 @@ export async function getWorkspacePurchases(workspaceId: string): Promise<Purcha
   const plans = await Promise.all(products.map((p) => listPlans(p.id)))
   const planMap = Object.fromEntries(plans.flat().map((pl) => [pl.id, pl]))
 
-  return (purchases || []).map((p: any) => ({
+  return (purchases || []).map((p: ConsumerPurchase & { buyer?: { name: string; handle: string; avatar_color: string; initials: string } }) => ({
     ...p,
     product_name: productMap[p.product_id]?.name || 'Unknown',
     plan_label: p.plan_id && planMap[p.plan_id] ? `$${planMap[p.plan_id].price}/${planMap[p.plan_id].interval || 'once'}` : 'Free',
@@ -371,6 +371,19 @@ export async function getWorkspacePurchases(workspaceId: string): Promise<Purcha
     buyer_avatar_color: p.buyer?.avatar_color || 'from-gray-400 to-gray-500',
     buyer_initials: p.buyer?.initials || '??',
   }))
+}
+
+// ── Consumer Courses ────────────────────────────────────────────
+
+export async function updateConsumerCourse(
+  courseId: string,
+  updates: Record<string, unknown>
+): Promise<void> {
+  const { error } = await supabase
+    .from('consumer_courses')
+    .update(updates)
+    .eq('id', courseId)
+  if (error) throw error
 }
 
 // ── Home Config ─────────────────────────────────────────────────

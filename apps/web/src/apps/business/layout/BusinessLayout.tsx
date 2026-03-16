@@ -38,7 +38,8 @@ import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { getWorkspaceWalletForUser } from '../../../domain/workspace/api'
 import { APP_VERSION } from '../../../lib/version'
-import type { BusinessModuleKey, WorkspaceWallet } from '../../../lib/supabase'
+import type { BusinessModuleKey, Workspace, WorkspaceWallet } from '../../../lib/supabase'
+import type { LucideIcon } from 'lucide-react'
 
 type NavItem = { to: string; icon: typeof PanelsTopLeft; labelKey: string; exact?: boolean; moduleKey?: BusinessModuleKey }
 type NavGroup = { groupLabelKey: string; items: NavItem[] }
@@ -90,7 +91,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
 // Flat list for breadcrumb/label resolution
 const ALL_NAV_ITEMS: NavItem[] = SIDEBAR_GROUPS.flatMap((g) => g.items)
 
-function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
+function Avatar({ user, size = 'sm' }: { user: { name?: string; avatar_img?: string | null; avatarImg?: string; avatar_color?: string; avatarColor?: string; initials?: string }; size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
   const avatarSrc = user.avatar_img || user.avatarImg
   const avatarColor = user.avatar_color || user.avatarColor || 'from-gray-600 to-gray-500'
@@ -107,7 +108,7 @@ function Avatar({ user, size = 'sm' }: { user: any; size?: 'sm' | 'md' }) {
   )
 }
 
-function MenuItem({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+function MenuItem({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -163,7 +164,7 @@ function LanguageToggle() {
   )
 }
 
-function WorkspaceIconBadge({ workspace }: { workspace: any }) {
+function WorkspaceIconBadge({ workspace }: { workspace: Workspace | null }) {
   const [imgError, setImgError] = useState(false)
   if (workspace?.icon && !imgError) {
     return <img src={workspace.icon} alt={workspace.name} className="w-8 h-8 rounded-xl object-cover flex-shrink-0" onError={() => setImgError(true)} />

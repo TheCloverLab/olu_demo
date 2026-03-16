@@ -2,6 +2,9 @@ import { FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { updateProfile, completeOnboarding } from '../domain/profile/api'
+import { getWorkspaceMembershipForUser } from '../domain/workspace/api'
+import { insertPresetExperiences } from '../domain/experience/api'
 import { Users, BookOpen, Layers, Box, Check, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -75,7 +78,7 @@ export default function Onboarding() {
       avatarUrl = publicData.publicUrl
     }
 
-    const updates: any = {
+    const updates: Record<string, unknown> = {
       name: trimmedName,
       handle: `@${normalizedHandle}`,
       initials,
@@ -83,14 +86,15 @@ export default function Onboarding() {
 
     if (avatarUrl) updates.avatar_img = avatarUrl
 
-    const { error: updateError } = await supabase.from('users').update(updates).eq('id', user.id)
-
-    setSaving(false)
-
-    if (updateError) {
-      setError(updateError.message)
+    try {
+      await updateProfile(user.id, updates)
+    } catch (updateError: unknown) {
+      setSaving(false)
+      setError(updateError instanceof Error ? updateError.message : 'Failed to update profile')
       return
     }
+
+    setSaving(false)
 
     setStep(2)
   }
@@ -101,23 +105,17 @@ export default function Onboarding() {
 
     try {
       // Mark onboarding complete
-      await supabase.from('users').update({ onboarding_completed: true }).eq('id', user.id)
+      await completeOnboarding(user.id)
 
       if (!IS_DEMO && selectedPreset !== 'blank') {
         // Get user's workspace
-        const { data: membership } = await supabase
-          .from('workspace_memberships')
-          .select('workspace_id')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .limit(1)
-          .single()
+        const membership = await getWorkspaceMembershipForUser(user.id)
 
         if (membership) {
           const wsId = membership.workspace_id
           const presetExperiences = getPresetExperiences(selectedPreset, wsId)
           if (presetExperiences.length > 0) {
-            await supabase.from('workspace_experiences').insert(presetExperiences)
+            await insertPresetExperiences(presetExperiences)
           }
         }
       }

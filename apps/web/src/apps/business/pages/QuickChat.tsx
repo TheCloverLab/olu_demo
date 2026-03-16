@@ -85,7 +85,7 @@ export default function QuickChat() {
     try {
       await sendMessage(activeChat.id, currentUser.id, 'user', text, {
         senderName: currentUser.name,
-        senderAvatar: currentUser.avatar_url || undefined,
+        senderAvatar: currentUser.avatar_img ?? undefined,
       })
     } catch (err) {
       console.error('Failed to send:', err)

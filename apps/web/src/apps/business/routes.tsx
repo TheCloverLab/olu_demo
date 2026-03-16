@@ -1,36 +1,42 @@
+import { lazy, Suspense } from 'react'
 import type { RouteObject } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import BusinessLayout from './layout/BusinessLayout'
 import BusinessWorkspace from './pages/BusinessWorkspace'
-import Team from './pages/Team'
-// TeamChat removed — AI chat lives in Project Chat now
-import ProjectList from './pages/ProjectList'
-import ProjectDetail from './pages/ProjectDetail'
-import QuickChat from './pages/QuickChat'
-import BusinessAccount from './pages/BusinessAccount'
-import BusinessSettings from './pages/BusinessSettings'
-import WalletPage from './pages/WalletPage'
-import CreatorConsole from './pages/CreatorConsole'
-import AdvertiserConsole from './pages/AdvertiserConsole'
-import SupplierConsole from './pages/SupplierConsole'
-import TaskCenter from './pages/TaskCenter'
-import ApprovalCenter from './pages/ApprovalCenter'
-import { Navigate } from 'react-router-dom'
-import EmployeeProfile from './pages/EmployeeProfile'
-import AppManagement from './pages/AppManagement'
-import ExperienceManager from './pages/ExperienceManager'
-import ForumEditor from './pages/ForumEditor'
-import CourseExperienceEditor from './pages/CourseExperienceEditor'
-import ExperienceEditor from './pages/ExperienceEditor'
-import ProductManager from './pages/ProductManager'
-import SpecialistMarketplace from './pages/SpecialistMarketplace'
-import SupportCenter from './pages/SupportCenter'
-import HomeEditor from './pages/HomeEditor'
-import MembersPage from './pages/MembersPage'
-import Connectors from './pages/Connectors'
-import Analytics from './pages/Analytics'
-import CreatorStudio from './pages/CreatorStudio'
-import CourseEditor from './pages/CourseEditor'
 import RoleProtected from '../../components/auth/RoleProtected'
+
+// Lazy-loaded pages
+const Team = lazy(() => import('./pages/Team'))
+const ProjectList = lazy(() => import('./pages/ProjectList'))
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+const QuickChat = lazy(() => import('./pages/QuickChat'))
+const BusinessAccount = lazy(() => import('./pages/BusinessAccount'))
+const BusinessSettings = lazy(() => import('./pages/BusinessSettings'))
+const WalletPage = lazy(() => import('./pages/WalletPage'))
+const CreatorConsole = lazy(() => import('./pages/CreatorConsole'))
+const AdvertiserConsole = lazy(() => import('./pages/AdvertiserConsole'))
+const SupplierConsole = lazy(() => import('./pages/SupplierConsole'))
+const TaskCenter = lazy(() => import('./pages/TaskCenter'))
+const ApprovalCenter = lazy(() => import('./pages/ApprovalCenter'))
+const EmployeeProfile = lazy(() => import('./pages/EmployeeProfile'))
+const AppManagement = lazy(() => import('./pages/AppManagement'))
+const ExperienceManager = lazy(() => import('./pages/ExperienceManager'))
+const ForumEditor = lazy(() => import('./pages/ForumEditor'))
+const CourseExperienceEditor = lazy(() => import('./pages/CourseExperienceEditor'))
+const ExperienceEditor = lazy(() => import('./pages/ExperienceEditor'))
+const ProductManager = lazy(() => import('./pages/ProductManager'))
+const SpecialistMarketplace = lazy(() => import('./pages/SpecialistMarketplace'))
+const SupportCenter = lazy(() => import('./pages/SupportCenter'))
+const HomeEditor = lazy(() => import('./pages/HomeEditor'))
+const MembersPage = lazy(() => import('./pages/MembersPage'))
+const Connectors = lazy(() => import('./pages/Connectors'))
+const Analytics = lazy(() => import('./pages/Analytics'))
+const CreatorStudio = lazy(() => import('./pages/CreatorStudio'))
+const CourseEditor = lazy(() => import('./pages/CourseEditor'))
+
+function L({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" /></div>}>{children}</Suspense>
+}
 
 export const businessRoutes: RouteObject[] = [
   {
@@ -38,37 +44,37 @@ export const businessRoutes: RouteObject[] = [
     element: <RoleProtected><BusinessLayout /></RoleProtected>,
     children: [
       { index: true, element: <BusinessWorkspace /> },
-      { path: 'analytics', element: <Analytics /> },
-      { path: 'projects', element: <ProjectList /> },
-      { path: 'projects/:id', element: <ProjectDetail /> },
-      { path: 'chat', element: <QuickChat /> },
-      { path: 'chat/:convId', element: <QuickChat /> },
-      { path: 'team', element: <Team /> },
+      { path: 'analytics', element: <L><Analytics /></L> },
+      { path: 'projects', element: <L><ProjectList /></L> },
+      { path: 'projects/:id', element: <L><ProjectDetail /></L> },
+      { path: 'chat', element: <L><QuickChat /></L> },
+      { path: 'chat/:convId', element: <L><QuickChat /></L> },
+      { path: 'team', element: <L><Team /></L> },
       { path: 'team/:agentId', element: <Navigate to="/business/team" replace /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },
-      { path: 'team/person/:employeeId', element: <EmployeeProfile /> },
+      { path: 'team/person/:employeeId', element: <L><EmployeeProfile /></L> },
       { path: 'agents', element: <Navigate to="/business/specialists" replace /> },
-      { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
-      { path: 'experiences', element: <ExperienceManager /> },
-      { path: 'experiences/forum', element: <ForumEditor /> },
-      { path: 'experiences/courses', element: <CourseExperienceEditor /> },
-      { path: 'experiences/edit', element: <ExperienceEditor /> },
-      { path: 'products', element: <ProductManager /> },
-      { path: 'specialists', element: <SpecialistMarketplace /> },
-      { path: 'support', element: <SupportCenter /> },
-      { path: 'home-editor', element: <HomeEditor /> },
-      { path: 'members', element: <MembersPage /> },
-      { path: 'connectors', element: <Connectors /> },
-      { path: 'tasks', element: <TaskCenter /> },
-      { path: 'approvals', element: <ApprovalCenter /> },
-      { path: 'account', element: <BusinessAccount /> },
-      { path: 'settings', element: <BusinessSettings /> },
-      { path: 'wallet', element: <WalletPage /> },
-      { path: 'creator-studio', element: <RoleProtected requiredModule="creator_ops"><CreatorStudio /></RoleProtected> },
-      { path: 'course-editor', element: <RoleProtected requiredModule="creator_ops"><CourseEditor /></RoleProtected> },
-      { path: 'modules/creator', element: <RoleProtected requiredModule="creator_ops"><CreatorConsole /></RoleProtected> },
-      { path: 'modules/marketing', element: <RoleProtected requiredModule="marketing"><AdvertiserConsole /></RoleProtected> },
-      { path: 'modules/supply', element: <RoleProtected requiredModule="supply_chain"><SupplierConsole /></RoleProtected> },
+      { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><L><AppManagement /></L></RoleProtected> },
+      { path: 'experiences', element: <L><ExperienceManager /></L> },
+      { path: 'experiences/forum', element: <L><ForumEditor /></L> },
+      { path: 'experiences/courses', element: <L><CourseExperienceEditor /></L> },
+      { path: 'experiences/edit', element: <L><ExperienceEditor /></L> },
+      { path: 'products', element: <L><ProductManager /></L> },
+      { path: 'specialists', element: <L><SpecialistMarketplace /></L> },
+      { path: 'support', element: <L><SupportCenter /></L> },
+      { path: 'home-editor', element: <L><HomeEditor /></L> },
+      { path: 'members', element: <L><MembersPage /></L> },
+      { path: 'connectors', element: <L><Connectors /></L> },
+      { path: 'tasks', element: <L><TaskCenter /></L> },
+      { path: 'approvals', element: <L><ApprovalCenter /></L> },
+      { path: 'account', element: <L><BusinessAccount /></L> },
+      { path: 'settings', element: <L><BusinessSettings /></L> },
+      { path: 'wallet', element: <L><WalletPage /></L> },
+      { path: 'creator-studio', element: <RoleProtected requiredModule="creator_ops"><L><CreatorStudio /></L></RoleProtected> },
+      { path: 'course-editor', element: <RoleProtected requiredModule="creator_ops"><L><CourseEditor /></L></RoleProtected> },
+      { path: 'modules/creator', element: <RoleProtected requiredModule="creator_ops"><L><CreatorConsole /></L></RoleProtected> },
+      { path: 'modules/marketing', element: <RoleProtected requiredModule="marketing"><L><AdvertiserConsole /></L></RoleProtected> },
+      { path: 'modules/supply', element: <RoleProtected requiredModule="supply_chain"><L><SupplierConsole /></L></RoleProtected> },
     ],
   },
 ]

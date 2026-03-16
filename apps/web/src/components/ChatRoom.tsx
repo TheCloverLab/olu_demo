@@ -40,7 +40,7 @@ function MessageBubble({
   // Extract images from metadata
   const images: string[] = []
   if (msg.metadata && Array.isArray(msg.metadata)) {
-    for (const att of msg.metadata as any[]) {
+    for (const att of msg.metadata as ChatAttachment[]) {
       if (att?.type === 'image' && att?.url) images.push(att.url)
     }
   } else if (msg.metadata?.attachments && Array.isArray(msg.metadata.attachments)) {
@@ -265,7 +265,7 @@ export default function ChatRoom({
     setSending(true)
     try {
       // Upload images if any
-      let metadata: Record<string, any> = {}
+      let metadata: Record<string, unknown> = {}
       if (imageFiles.length > 0) {
         const attachments = await uploadChatImages(currentUserId, chatId, imageFiles)
         metadata = { attachments }

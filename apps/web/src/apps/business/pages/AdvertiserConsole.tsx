@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Megaphone, Target, DollarSign, TrendingUp, Users, Sparkles, ArrowRight, RefreshCcw, CheckCircle2, Clock3 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { getBusinessCreators, getMarketingCampaignsForAdvertiser } from '../../../domain/business/api'
@@ -33,7 +34,7 @@ function compactNumber(value: number) {
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
 }
 
-function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
   return (
     <div className="rounded-[24px] p-4 border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_12px_rgba(2,8,23,0.08)]">
       <div className="flex items-center justify-between mb-2">

@@ -35,7 +35,7 @@ export async function ensureDefaultGroupChat(
 ) {
   const ws = await ensureWorkspaceForUser(user)
   const groups = await listChats(ws.workspace_id, 'team').catch(() => [])
-  if (groups.some((g: any) => g.config?.chat_key === 'all-members')) return
+  if (groups.some((g) => g.config?.chat_key === 'all-members')) return
   const chat = await createChat(ws.workspace_id, 'team', 'All Members', {
     config: {
       chat_key: 'all-members',

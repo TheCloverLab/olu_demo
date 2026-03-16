@@ -1,6 +1,18 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
   MessageSquare,
   ListTodo,
@@ -12,7 +24,8 @@ import {
   Circle,
   Clock,
   AlertTriangle,
-  ChevronRight,
+  GripVertical,
+  Flag,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import {
@@ -27,7 +40,7 @@ import {
   sendProjectChatMessage,
 } from '../../../domain/project/api'
 import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
-import type { Project, ProjectTask, ProjectFile } from '../../../domain/project/types'
+import type { Project, ProjectTask, ProjectFile, TaskStatus, TaskPriority } from '../../../domain/project/types'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
 
 type Tab = 'chat' | 'tasks' | 'files' | 'settings'
@@ -45,6 +58,20 @@ const TASK_STATUS_COLOR = {
   done: 'text-green-500',
   blocked: 'text-red-500',
 } as const
+
+const KANBAN_COLUMNS: { key: TaskStatus; label: string; color: string; bgColor: string }[] = [
+  { key: 'pending', label: 'Pending', color: 'text-gray-400', bgColor: 'bg-gray-500/10' },
+  { key: 'in_progress', label: 'In Progress', color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
+  { key: 'done', label: 'Done', color: 'text-green-500', bgColor: 'bg-green-500/10' },
+  { key: 'blocked', label: 'Blocked', color: 'text-red-500', bgColor: 'bg-red-500/10' },
+]
+
+const PRIORITY_BADGE: Record<TaskPriority, { color: string; label: string }> = {
+  urgent: { color: 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400', label: 'Urgent' },
+  high: { color: 'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400', label: 'High' },
+  medium: { color: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400', label: 'Medium' },
+  low: { color: 'bg-gray-50 text-gray-400 dark:bg-gray-900 dark:text-gray-500', label: 'Low' },
+}
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -65,6 +92,10 @@ export default function ProjectDetail() {
   // Task state
   const [tasks, setTasks] = useState<ProjectTask[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('medium')
+  const [showCreateTask, setShowCreateTask] = useState(false)
+  const [newTaskDesc, setNewTaskDesc] = useState('')
+  const [draggedTask, setDraggedTask] = useState<ProjectTask | null>(null)
 
   // File state
   const [files, setFiles] = useState<ProjectFile[]>([])
@@ -155,11 +186,31 @@ export default function ProjectDetail() {
     }
   }
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
+
+  const tasksByStatus = useMemo(() => {
+    const grouped: Record<TaskStatus, ProjectTask[]> = {
+      pending: [], in_progress: [], done: [], blocked: [],
+    }
+    tasks.forEach((t) => {
+      if (grouped[t.status]) grouped[t.status].push(t)
+    })
+    return grouped
+  }, [tasks])
+
   async function handleCreateTask() {
     if (!id || !newTaskTitle.trim()) return
     try {
-      await createTask(id, newTaskTitle.trim())
+      await createTask(id, newTaskTitle.trim(), {
+        description: newTaskDesc.trim() || undefined,
+        priority: newTaskPriority,
+      })
       setNewTaskTitle('')
+      setNewTaskDesc('')
+      setNewTaskPriority('medium')
+      setShowCreateTask(false)
       await loadTasks()
     } catch (err) {
       console.error('Failed to create task:', err)
@@ -173,6 +224,54 @@ export default function ProjectDetail() {
       await loadTasks()
     } catch (err) {
       console.error('Failed to update task:', err)
+    }
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const task = tasks.find((t) => t.id === event.active.id)
+    if (task) setDraggedTask(task)
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    setDraggedTask(null)
+    const { active, over } = event
+    if (!over) return
+
+    const taskId = active.id as string
+    const targetStatus = over.id as TaskStatus
+
+    // Check if dropped on a column
+    if (['pending', 'in_progress', 'done', 'blocked'].includes(targetStatus)) {
+      const task = tasks.find((t) => t.id === taskId)
+      if (task && task.status !== targetStatus) {
+        // Optimistic update
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t))
+        )
+        try {
+          await updateTask(taskId, { status: targetStatus })
+        } catch (err) {
+          console.error('Failed to update task status:', err)
+          await loadTasks() // revert on error
+        }
+      }
+    } else {
+      // Dropped on another task — get that task's status
+      const targetTask = tasks.find((t) => t.id === over.id)
+      if (targetTask) {
+        const task = tasks.find((t) => t.id === taskId)
+        if (task && task.status !== targetTask.status) {
+          setTasks((prev) =>
+            prev.map((t) => (t.id === taskId ? { ...t, status: targetTask.status } : t))
+          )
+          try {
+            await updateTask(taskId, { status: targetTask.status })
+          } catch (err) {
+            console.error('Failed to update task status:', err)
+            await loadTasks()
+          }
+        }
+      }
     }
   }
 
@@ -299,62 +398,97 @@ export default function ProjectDetail() {
 
         {tab === 'tasks' && (
           <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
-            {/* Add task */}
-            <div className="flex gap-2">
-              <input
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
-                placeholder={t('projects.addTask', 'Add a task...')}
-                className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
-              />
-              <button
-                onClick={handleCreateTask}
-                disabled={!newTaskTitle.trim()}
-                className="p-2 bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
+            {/* Add task bar */}
+            <div className="flex items-center gap-2">
+              {!showCreateTask ? (
+                <button
+                  onClick={() => setShowCreateTask(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('projects.addTask', 'Add Task')}
+                </button>
+              ) : (
+                <div className="w-full bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-xl p-4 space-y-3">
+                  <input
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && newTaskTitle.trim() && handleCreateTask()}
+                    placeholder={t('projects.taskTitlePlaceholder', 'Task title...')}
+                    className="w-full px-3 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-sm text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
+                    autoFocus
+                  />
+                  <textarea
+                    value={newTaskDesc}
+                    onChange={(e) => setNewTaskDesc(e.target.value)}
+                    placeholder={t('projects.taskDescPlaceholder', 'Description (optional)...')}
+                    rows={2}
+                    className="w-full px-3 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-sm text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] resize-none"
+                  />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <Flag className="w-3.5 h-3.5 text-[var(--olu-muted)]" />
+                      {(['low', 'medium', 'high', 'urgent'] as TaskPriority[]).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setNewTaskPriority(p)}
+                          className={`px-2 py-1 rounded text-xs transition-colors ${
+                            newTaskPriority === p
+                              ? PRIORITY_BADGE[p].color
+                              : 'text-[var(--olu-muted)] hover:bg-[var(--olu-accent-bg)]'
+                          }`}
+                        >
+                          {PRIORITY_BADGE[p].label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setShowCreateTask(false); setNewTaskTitle(''); setNewTaskDesc('') }}
+                        className="px-3 py-1.5 text-xs text-[var(--olu-muted)] hover:text-[var(--olu-text)]"
+                      >
+                        {t('common.cancel', 'Cancel')}
+                      </button>
+                      <button
+                        onClick={handleCreateTask}
+                        disabled={!newTaskTitle.trim()}
+                        className="px-3 py-1.5 text-xs bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-50"
+                      >
+                        {t('common.create', 'Create')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Task list */}
+            {/* Kanban Board */}
             {tasks.length === 0 ? (
               <div className="text-center py-12 text-[var(--olu-muted)]">
                 <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>{t('projects.noTasks', 'No tasks yet. AI will create tasks as you chat.')}</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {tasks.map((task) => {
-                  const StatusIcon = TASK_STATUS_ICON[task.status]
-                  return (
-                    <button
-                      key={task.id}
-                      onClick={() => handleToggleTask(task)}
-                      className="w-full flex items-center gap-3 p-3 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg hover:border-[var(--olu-primary)]/30 transition-colors text-left"
-                    >
-                      <StatusIcon className={`w-5 h-5 flex-shrink-0 ${TASK_STATUS_COLOR[task.status]}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${task.status === 'done' ? 'line-through text-[var(--olu-muted)]' : 'text-[var(--olu-text)]'}`}>
-                          {task.title}
-                        </p>
-                        {task.description && (
-                          <p className="text-xs text-[var(--olu-muted)] mt-0.5 truncate">{task.description}</p>
-                        )}
-                      </div>
-                      {task.priority !== 'medium' && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          task.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400'
-                          : task.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400'
-                          : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-                        }`}>
-                          {task.priority}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {KANBAN_COLUMNS.map((col) => (
+                    <KanbanColumn
+                      key={col.key}
+                      column={col}
+                      tasks={tasksByStatus[col.key]}
+                      onToggle={handleToggleTask}
+                    />
+                  ))}
+                </div>
+                <DragOverlay>
+                  {draggedTask && <TaskCard task={draggedTask} isDragging />}
+                </DragOverlay>
+              </DndContext>
             )}
           </div>
         )}
@@ -393,21 +527,144 @@ export default function ProjectDetail() {
               <h3 className="font-medium text-[var(--olu-text)]">{t('projects.config.general', 'General')}</h3>
               <div className="grid gap-3">
                 <div>
-                  <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.type', 'Type')}</label>
-                  <p className="text-sm text-[var(--olu-text)]">{project.type === 'ongoing' ? 'Ongoing' : 'Short-term'}</p>
-                </div>
-                <div>
                   <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.runtime', 'Runtime')}</label>
-                  <p className="text-sm text-[var(--olu-text)]">{project.runtime_type}</p>
+                  <p className="text-sm text-[var(--olu-text)] capitalize">{project.runtime_type}</p>
                 </div>
                 <div>
                   <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.status', 'Status')}</label>
-                  <p className="text-sm text-[var(--olu-text)]">{project.status}</p>
+                  <p className="text-sm text-[var(--olu-text)] capitalize">{project.status}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ── Kanban Column ────────────────────────────────────────────
+
+function KanbanColumn({
+  column,
+  tasks,
+  onToggle,
+}: {
+  column: (typeof KANBAN_COLUMNS)[number]
+  tasks: ProjectTask[]
+  onToggle: (task: ProjectTask) => void
+}) {
+  const { setNodeRef, isOver } = useSortable({
+    id: column.key,
+    data: { type: 'column', status: column.key },
+  })
+
+  const StatusIcon = TASK_STATUS_ICON[column.key]
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`rounded-xl border transition-colors min-h-[200px] ${
+        isOver
+          ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/5'
+          : 'border-[var(--olu-card-border)] bg-[var(--olu-section-bg)]/50'
+      }`}
+    >
+      <div className="px-3 py-2 border-b border-[var(--olu-card-border)]">
+        <div className="flex items-center gap-2">
+          <StatusIcon className={`w-3.5 h-3.5 ${column.color}`} />
+          <span className="text-xs font-medium text-[var(--olu-text)]">{column.label}</span>
+          <span className={`text-xs px-1.5 py-0.5 rounded-full ${column.bgColor} ${column.color}`}>
+            {tasks.length}
+          </span>
+        </div>
+      </div>
+      <div className="p-2 space-y-2">
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.map((task) => (
+            <SortableTaskCard key={task.id} task={task} onToggle={onToggle} />
+          ))}
+        </SortableContext>
+      </div>
+    </div>
+  )
+}
+
+// ── Sortable Task Card (wrapped) ─────────────────────────────
+
+function SortableTaskCard({
+  task,
+  onToggle,
+}: {
+  task: ProjectTask
+  onToggle: (task: ProjectTask) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, data: { type: 'task', task } })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <TaskCard task={task} onToggle={onToggle} dragListeners={listeners} />
+    </div>
+  )
+}
+
+// ── Task Card ────────────────────────────────────────────────
+
+function TaskCard({
+  task,
+  onToggle,
+  isDragging,
+  dragListeners,
+}: {
+  task: ProjectTask
+  onToggle?: (task: ProjectTask) => void
+  isDragging?: boolean
+  dragListeners?: Record<string, unknown>
+}) {
+  return (
+    <div
+      className={`bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg p-2.5 text-left transition-shadow ${
+        isDragging ? 'shadow-lg ring-2 ring-[var(--olu-primary)]' : 'hover:shadow-sm'
+      }`}
+    >
+      <div className="flex items-start gap-1.5">
+        <button
+          className="mt-0.5 cursor-grab active:cursor-grabbing text-[var(--olu-muted)] hover:text-[var(--olu-text)]"
+          {...dragListeners}
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={() => onToggle?.(task)}
+            className={`text-xs font-medium text-left w-full ${
+              task.status === 'done' ? 'line-through text-[var(--olu-muted)]' : 'text-[var(--olu-text)]'
+            }`}
+          >
+            {task.title}
+          </button>
+          {task.description && (
+            <p className="text-[10px] text-[var(--olu-muted)] mt-0.5 line-clamp-2">{task.description}</p>
+          )}
+          {task.priority !== 'medium' && (
+            <span className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded ${PRIORITY_BADGE[task.priority].color}`}>
+              {PRIORITY_BADGE[task.priority].label}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

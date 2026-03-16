@@ -154,7 +154,9 @@
     },
     "chatEmpty": "Start a conversation with AI about this project",
     "chatPlaceholder": "Type a message...",
-    "addTask": "Add a task...",
+    "addTask": "Add Task",
+    "taskTitlePlaceholder": "Task title...",
+    "taskDescPlaceholder": "Description (optional)...",
     "noTasks": "No tasks yet. AI will create tasks as you chat.",
     "noFiles": "No files yet. AI will add deliverables here.",
     "config": {

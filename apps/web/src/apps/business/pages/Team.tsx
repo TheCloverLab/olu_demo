@@ -313,17 +313,17 @@ export default function Team() {
     return (
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center text-4xl mb-4">🤖</div>
-        <h2 className="font-bold text-xl mb-2">No AI Agents Yet</h2>
+        <h2 className="font-bold text-xl mb-2">No Specialists Yet</h2>
         <p className="text-[var(--olu-text-secondary)] text-sm max-w-xs mb-6">
-          You do not have AI agents configured yet. Open AI Config to start building your team.
+          Install a Specialist to add a team member to your workspace.
         </p>
         <button
           onClick={() => {
-            window.location.href = '/business/agents'
+            window.location.href = '/business/specialists'
           }}
           className="px-6 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] font-semibold text-sm hover:opacity-90 transition-opacity"
         >
-          Browse AI Agent Marketplace
+          Browse Specialists
         </button>
       </div>
     )

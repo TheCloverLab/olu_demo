@@ -127,3 +127,34 @@ export async function isInstalled(templateId: string, userId: string): Promise<b
     .eq('user_id', userId)
   return (count || 0) > 0
 }
+
+// ── Bridge: create workspace_agent from specialist template ──
+
+export async function hireSpecialistAsAgent(
+  workspaceId: string,
+  userId: string,
+  template: SpecialistTemplate,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('workspace_agents')
+    .insert({
+      workspace_id: workspaceId,
+      template_id: template.id,
+      hired_by_user_id: userId,
+      agent_key: template.name.toLowerCase().replace(/\s+/g, '_'),
+      name: template.name,
+      role: template.category,
+      avatar_img: null,
+      color: null,
+      status: 'online',
+      description: template.description,
+      last_message: `${template.name} is live in your workspace.`,
+      last_time: 'Just now',
+      runtime_type: 'langgraph',
+    })
+    .select('id')
+    .single()
+
+  if (error) throw error
+  return data.id
+}

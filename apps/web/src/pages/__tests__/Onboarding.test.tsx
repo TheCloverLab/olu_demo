@@ -100,7 +100,7 @@ describe('Onboarding', () => {
       )
     })
 
-    window.location = originalLocation
+    Object.defineProperty(window, 'location', { value: originalLocation, writable: true })
   })
 
   it('shows saving state during submission', async () => {

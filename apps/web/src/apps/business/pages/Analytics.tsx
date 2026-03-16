@@ -13,7 +13,7 @@ import {
 // ── Mock data ─────────────────────────────────────────────────
 
 function generateGrowthData() {
-  const data = []
+  const data: { date: string; customers: number; newCustomers: number }[] = []
   let total = 42
   for (let i = 29; i >= 0; i--) {
     const d = new Date()

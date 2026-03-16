@@ -56,7 +56,7 @@ describe('Settings', () => {
       currentUser: {},
       enabledBusinessModules: ['creator_ops', 'marketing', 'supply_chain'],
       hasModule: () => true,
-    })
+    } as unknown as ReturnType<typeof AppContext.useApp>)
   })
 
   it('renders account settings with email, handle, and password sections', () => {

@@ -85,7 +85,7 @@ export default function Wallet() {
             if (!membership?.tier_name) return null
 
             const tiers = await getCommunityMembershipTiers(creator.id).catch(() => [])
-            const tier = tiers.find((item) => item.key === membership.tier_key || item.name === membership.tier_name) || null
+            const tier = tiers.find((item) => item.tier_key === membership.tier_key || item.name === membership.tier_name) || null
 
             return {
               id: `membership-${creator.id}`,
@@ -98,7 +98,7 @@ export default function Wallet() {
           }),
         )
 
-        const purchasedSlugs = await getPurchasedCourseSlugs(user as any, courseSnapshot.courses).catch(() => [])
+        const purchasedSlugs = await getPurchasedCourseSlugs(user as any, courseSnapshot.courses).catch((): string[] => [])
         const purchasedCourses = courseSnapshot.courses
           .filter((course) => purchasedSlugs.includes(course.slug))
           .map((course) => ({

@@ -333,6 +333,71 @@ export async function listFiles(projectId: string): Promise<ProjectFile[]> {
   return data || []
 }
 
+export async function uploadProjectFile(
+  projectId: string,
+  file: File,
+  createdBy: string,
+): Promise<ProjectFile> {
+  const filePath = `${projectId}/${Date.now()}-${file.name}`
+
+  // Upload to storage
+  const { error: uploadError } = await supabase.storage
+    .from('project-files')
+    .upload(filePath, file)
+  if (uploadError) throw uploadError
+
+  // Create record
+  const { data, error } = await supabase
+    .from('project_files')
+    .insert({
+      project_id: projectId,
+      name: file.name,
+      file_path: filePath,
+      mime_type: file.type || null,
+      size_bytes: file.size,
+      created_by: createdBy,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function getFileDownloadUrl(filePath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('project-files')
+    .createSignedUrl(filePath, 3600) // 1 hour
+  if (error) throw error
+  return data.signedUrl
+}
+
+export async function deleteProjectFile(fileId: string, filePath: string): Promise<void> {
+  // Delete from storage
+  await supabase.storage.from('project-files').remove([filePath])
+  // Delete record
+  const { error } = await supabase
+    .from('project_files')
+    .delete()
+    .eq('id', fileId)
+  if (error) throw error
+}
+
+// ── Workspace Members (for team management) ──────────────────
+
+export async function listWorkspaceMembers(workspaceId: string): Promise<{
+  id: string
+  name: string
+  avatar_url: string | null
+  email: string | null
+}[]> {
+  const { data, error } = await supabase
+    .from('workspace_memberships')
+    .select('user:users(id, name, avatar_url, email)')
+    .eq('workspace_id', workspaceId)
+  if (error) throw error
+  return (data || []).map((d) => (d as unknown as { user: { id: string; name: string; avatar_url: string | null; email: string | null } }).user).filter(Boolean)
+}
+
 // ── Project Chat Agent ───────────────────────────────────────
 
 const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'

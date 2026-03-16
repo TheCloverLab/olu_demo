@@ -26,6 +26,12 @@ import {
   AlertTriangle,
   GripVertical,
   Flag,
+  Upload,
+  Download,
+  Trash2,
+  UserPlus,
+  X,
+  Users,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import {
@@ -36,11 +42,18 @@ import {
   createTask,
   updateTask,
   listFiles,
+  uploadProjectFile,
+  getFileDownloadUrl,
+  deleteProjectFile,
+  listParticipants,
+  addParticipant,
+  removeParticipant,
+  listWorkspaceMembers,
   subscribeProjectTasks,
   sendProjectChatMessage,
 } from '../../../domain/project/api'
 import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
-import type { Project, ProjectTask, ProjectFile, TaskStatus, TaskPriority } from '../../../domain/project/types'
+import type { Project, ProjectTask, ProjectFile, ProjectParticipant, TaskStatus, TaskPriority } from '../../../domain/project/types'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
 
 type Tab = 'chat' | 'tasks' | 'files' | 'settings'
@@ -73,6 +86,12 @@ const PRIORITY_BADGE: Record<TaskPriority, { color: string; label: string }> = {
   low: { color: 'bg-gray-50 text-gray-400 dark:bg-gray-900 dark:text-gray-500', label: 'Low' },
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -99,6 +118,12 @@ export default function ProjectDetail() {
 
   // File state
   const [files, setFiles] = useState<ProjectFile[]>([])
+  const [uploading, setUploading] = useState(false)
+
+  // Team state
+  const [participants, setParticipants] = useState<ProjectParticipant[]>([])
+  const [wsMembers, setWsMembers] = useState<{ id: string; name: string; avatar_url: string | null; email: string | null }[]>([])
+  const [showAddMember, setShowAddMember] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -125,15 +150,17 @@ export default function ProjectDetail() {
     if (!id) return
     setLoading(true)
     try {
-      const [proj, defaultChat, taskList, fileList] = await Promise.all([
+      const [proj, defaultChat, taskList, fileList, participantList] = await Promise.all([
         getProject(id),
         getDefaultChat(id),
         listTasks(id),
         listFiles(id),
+        listParticipants(id),
       ])
       setProject(proj)
       setTasks(taskList)
       setFiles(fileList)
+      setParticipants(participantList)
       if (defaultChat) {
         setChat(defaultChat)
         const msgs = await getMessages(defaultChat.id)
@@ -274,6 +301,86 @@ export default function ProjectDetail() {
       }
     }
   }
+
+  // ── File handlers ──────────────────────────────────
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const fileList = e.target.files
+    if (!fileList || !id || !currentUser) return
+    setUploading(true)
+    try {
+      for (const file of Array.from(fileList)) {
+        await uploadProjectFile(id, file, currentUser.id)
+      }
+      const updated = await listFiles(id)
+      setFiles(updated)
+    } catch (err) {
+      console.error('Failed to upload file:', err)
+    } finally {
+      setUploading(false)
+      e.target.value = '' // reset input
+    }
+  }
+
+  async function handleFileDownload(file: ProjectFile) {
+    try {
+      const url = await getFileDownloadUrl(file.file_path)
+      window.open(url, '_blank')
+    } catch (err) {
+      console.error('Failed to get download URL:', err)
+    }
+  }
+
+  async function handleFileDelete(file: ProjectFile) {
+    if (!id) return
+    try {
+      await deleteProjectFile(file.id, file.file_path)
+      setFiles((prev) => prev.filter((f) => f.id !== file.id))
+    } catch (err) {
+      console.error('Failed to delete file:', err)
+    }
+  }
+
+  // ── Team handlers ──────────────────────────────────
+
+  async function handleShowAddMember() {
+    if (!project) return
+    setShowAddMember(true)
+    if (wsMembers.length === 0) {
+      try {
+        const members = await listWorkspaceMembers(project.workspace_id)
+        setWsMembers(members)
+      } catch (err) {
+        console.error('Failed to load workspace members:', err)
+      }
+    }
+  }
+
+  async function handleAddMember(userId: string) {
+    if (!id || !currentUser) return
+    try {
+      await addParticipant(id, userId, currentUser.id)
+      const updated = await listParticipants(id)
+      setParticipants(updated)
+      setShowAddMember(false)
+    } catch (err) {
+      console.error('Failed to add participant:', err)
+    }
+  }
+
+  async function handleRemoveMember(userId: string) {
+    if (!id) return
+    try {
+      await removeParticipant(id, userId)
+      setParticipants((prev) => prev.filter((p) => p.user_id !== userId))
+    } catch (err) {
+      console.error('Failed to remove participant:', err)
+    }
+  }
+
+  const availableMembers = wsMembers.filter(
+    (m) => !participants.some((p) => p.user_id === m.id)
+  )
 
   if (loading) {
     return (
@@ -494,7 +601,22 @@ export default function ProjectDetail() {
         )}
 
         {tab === 'files' && (
-          <div className="px-4 md:px-6 py-4 overflow-y-auto h-full">
+          <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
+            {/* Upload button */}
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 px-4 py-2 bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm cursor-pointer">
+                <Upload className="w-4 h-4" />
+                {uploading ? t('common.uploading', 'Uploading...') : t('projects.uploadFile', 'Upload File')}
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+
             {files.length === 0 ? (
               <div className="text-center py-12 text-[var(--olu-muted)]">
                 <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -505,14 +627,30 @@ export default function ProjectDetail() {
                 {files.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center gap-3 p-3 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-lg group"
                   >
-                    <FileText className="w-5 h-5 text-[var(--olu-muted)]" />
+                    <FileText className="w-5 h-5 text-[var(--olu-muted)] flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-[var(--olu-text)] truncate">{file.name}</p>
                       <p className="text-xs text-[var(--olu-muted)]">
-                        {file.size_bytes ? `${(file.size_bytes / 1024).toFixed(1)} KB` : ''} · {file.created_by || 'unknown'}
+                        {file.size_bytes ? formatFileSize(file.size_bytes) : ''} · {file.created_by || 'unknown'} · {new Date(file.created_at).toLocaleDateString()}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleFileDownload(file)}
+                        className="p-1.5 hover:bg-[var(--olu-accent-bg)] rounded-lg transition-colors"
+                        title={t('common.download', 'Download')}
+                      >
+                        <Download className="w-4 h-4 text-[var(--olu-muted)]" />
+                      </button>
+                      <button
+                        onClick={() => handleFileDelete(file)}
+                        className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                        title={t('common.delete', 'Delete')}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -523,6 +661,7 @@ export default function ProjectDetail() {
 
         {tab === 'settings' && (
           <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
+            {/* General info */}
             <div className="bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-4 space-y-3">
               <h3 className="font-medium text-[var(--olu-text)]">{t('projects.config.general', 'General')}</h3>
               <div className="grid gap-3">
@@ -534,6 +673,88 @@ export default function ProjectDetail() {
                   <label className="text-xs text-[var(--olu-muted)]">{t('projects.config.status', 'Status')}</label>
                   <p className="text-sm text-[var(--olu-text)] capitalize">{project.status}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Team */}
+            <div className="bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-[var(--olu-text)]">
+                  <Users className="w-4 h-4 inline mr-1.5" />
+                  {t('projects.team', 'Team')} ({participants.length})
+                </h3>
+                <button
+                  onClick={handleShowAddMember}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  {t('projects.addMember', 'Add')}
+                </button>
+              </div>
+
+              {/* Add member dropdown */}
+              {showAddMember && (
+                <div className="border border-[var(--olu-card-border)] rounded-lg p-3 bg-[var(--olu-accent-bg)]">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-[var(--olu-muted)]">{t('projects.selectMember', 'Select workspace member')}</p>
+                    <button onClick={() => setShowAddMember(false)} className="p-1 text-[var(--olu-muted)]">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {availableMembers.length === 0 ? (
+                    <p className="text-xs text-[var(--olu-muted)]">{t('projects.noMembers', 'All workspace members are already in this project')}</p>
+                  ) : (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {availableMembers.map((member) => (
+                        <button
+                          key={member.id}
+                          onClick={() => handleAddMember(member.id)}
+                          className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--olu-card-hover)] transition-colors text-left"
+                        >
+                          {member.avatar_url ? (
+                            <img src={member.avatar_url} className="w-6 h-6 rounded-full" alt="" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-[var(--olu-primary)]/20 flex items-center justify-center text-xs text-[var(--olu-primary)]">
+                              {member.name?.[0] || '?'}
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs text-[var(--olu-text)]">{member.name}</p>
+                            {member.email && <p className="text-[10px] text-[var(--olu-muted)]">{member.email}</p>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Participant list */}
+              <div className="space-y-2">
+                {participants.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg">
+                    {p.user?.avatar_url ? (
+                      <img src={p.user.avatar_url} className="w-8 h-8 rounded-full" alt="" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[var(--olu-primary)]/20 flex items-center justify-center text-sm text-[var(--olu-primary)]">
+                        {p.user?.name?.[0] || '?'}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[var(--olu-text)]">{p.user?.name || 'Unknown'}</p>
+                      <p className="text-xs text-[var(--olu-muted)] capitalize">{p.role}</p>
+                    </div>
+                    {p.role !== 'owner' && project.owner_id === currentUser?.id && (
+                      <button
+                        onClick={() => handleRemoveMember(p.user_id)}
+                        className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        title={t('common.remove', 'Remove')}
+                      >
+                        <X className="w-3.5 h-3.5 text-red-400" />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

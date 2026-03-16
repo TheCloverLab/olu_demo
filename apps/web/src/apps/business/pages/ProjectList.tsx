@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listProjects, createProject, listTasks } from '../../../domain/project/api'
-import type { Project, ProjectTask, ProjectType, RuntimeType } from '../../../domain/project/types'
+import type { Project, ProjectTask, RuntimeType } from '../../../domain/project/types'
 
 const STATUS_ICON = {
   active: Clock,
@@ -42,7 +42,6 @@ export default function ProjectList() {
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [newType, setNewType] = useState<ProjectType>('short_term')
   const [newRuntime, setNewRuntime] = useState<RuntimeType>('langgraph')
   const [creating, setCreating] = useState(false)
 
@@ -84,7 +83,6 @@ export default function ProjectList() {
     try {
       const project = await createProject(workspace.id, currentUser.id, newName.trim(), {
         description: newDesc.trim() || undefined,
-        type: newType,
         runtime_type: newRuntime,
       })
       setShowCreate(false)
@@ -148,28 +146,6 @@ export default function ProjectList() {
               rows={2}
               className="w-full px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] resize-none"
             />
-            <div className="flex gap-3">
-              <button
-                onClick={() => setNewType('short_term')}
-                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                  newType === 'short_term'
-                    ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                    : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
-                }`}
-              >
-                {t('projects.shortTerm', 'Short-term')}
-              </button>
-              <button
-                onClick={() => setNewType('ongoing')}
-                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                  newType === 'ongoing'
-                    ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
-                    : 'border-[var(--olu-card-border)] text-[var(--olu-muted)]'
-                }`}
-              >
-                {t('projects.ongoing', 'Ongoing')}
-              </button>
-            </div>
             <div>
               <p className="text-xs text-[var(--olu-muted)] mb-2">{t('projects.runtime', 'AI Runtime')}</p>
               <div className="flex gap-3">
@@ -307,9 +283,6 @@ function ProjectCard({
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${STATUS_COLOR[project.status]}`}>
           <StatusIcon className="w-3 h-3" />
           {t(`projects.status.${project.status}`, project.status)}
-        </span>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--olu-accent-bg)]">
-          {project.type === 'ongoing' ? '∞' : '📅'} {t(`projects.type.${project.type}`, project.type)}
         </span>
         {totalTasks > 0 && (
           <span className="inline-flex items-center gap-1">

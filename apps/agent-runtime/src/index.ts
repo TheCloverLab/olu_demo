@@ -550,10 +550,10 @@ const server = createServer(async (req, res) => {
         return
       }
 
-      // Check AI support enabled
+      // Check AI support enabled + read model preference
       const { data: config } = await supabase
         .from('workspace_home_configs')
-        .select('ai_support_enabled')
+        .select('ai_support_enabled, ai_support_model')
         .eq('workspace_id', ws.id)
         .single()
 
@@ -562,8 +562,8 @@ const server = createServer(async (req, res) => {
         return
       }
 
-      // Run chat agent with default model (fire-and-forget)
-      const parsedModel = parseModelSelection(undefined, undefined)
+      // Use workspace model preference if configured
+      const parsedModel = parseModelSelection(config.ai_support_model ?? undefined, undefined)
 
       runChatAgent({
         workspaceId: ws.id,

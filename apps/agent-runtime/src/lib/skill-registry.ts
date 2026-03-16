@@ -128,12 +128,28 @@ interface AgentConfig {
 }
 
 /**
- * Load agent configuration. Now uses project config instead of workspace_agents.
+ * Load agent configuration from project → specialist install → template chain.
  * Falls back to defaults when no project-level config exists.
  */
-async function loadAgentConfig(_agentId: string): Promise<AgentConfig & { workspace_id: string | null }> {
-  // workspace_agents table removed — return defaults
-  // TODO: read from project config (specialist_installs → specialist_templates)
+async function loadAgentConfig(agentId: string): Promise<AgentConfig & { workspace_id: string | null }> {
+  // Try to load from specialist_installs joined with specialist_templates for the project
+  const { data } = await supabase
+    .from('specialist_installs')
+    .select('workspace_id, specialist_templates(skills, instructions)')
+    .eq('project_id', agentId)
+    .limit(1)
+    .maybeSingle()
+
+  if (data?.specialist_templates) {
+    const tmpl = data.specialist_templates as unknown as { skills: string[] | null; instructions: string | null }
+    return {
+      enabled_skills: tmpl.skills?.length ? tmpl.skills : null,
+      enabled_mcp_servers: null,
+      runtime_type: null,
+      workspace_id: data.workspace_id,
+    }
+  }
+
   return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null, workspace_id: null }
 }
 

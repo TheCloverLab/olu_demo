@@ -74,10 +74,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Check AI support enabled
+    // Check AI support enabled + read model preference
     const { data: config } = await supabase
       .from('workspace_home_configs')
-      .select('ai_support_enabled')
+      .select('ai_support_enabled, ai_support_model')
       .eq('workspace_id', ws.id)
       .single()
 
@@ -96,6 +96,7 @@ Deno.serve(async (req) => {
       agentRole: `Customer support assistant for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
       message: text,
       sessionId: social_chat_id,
+      ...(config.ai_support_model ? { model: config.ai_support_model } : {}),
     }
 
     const chatResp = await fetch(`${agentRuntimeUrl}/chat`, {
@@ -138,7 +139,7 @@ Deno.serve(async (req) => {
 
     console.log(`[support-auto-reply] replied: ${replyText.slice(0, 100)}`)
 
-    return new Response(JSON.stringify({ replied: true, agent: agent.name }), {
+    return new Response(JSON.stringify({ replied: true, agent: 'Support Assistant' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

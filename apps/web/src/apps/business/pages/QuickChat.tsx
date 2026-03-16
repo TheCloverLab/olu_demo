@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, MessageSquare, Clock } from 'lucide-react'
+import { Plus, MessageSquare, Send } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listQuickChats, createQuickChat } from '../../../domain/project/api'
 import { getChat, getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
@@ -19,11 +19,22 @@ export default function QuickChat() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const autoCreated = useRef(false)
 
   useEffect(() => {
     if (!workspace) return
     loadChats()
   }, [workspace])
+
+  // Auto-create a new chat when landing on /business/chat with no convId
+  useEffect(() => {
+    if (convId || loading || autoCreated.current) return
+    if (chats.length === 0) {
+      autoCreated.current = true
+      handleNew()
+    }
+  }, [convId, loading, chats.length])
 
   useEffect(() => {
     if (!convId) return
@@ -31,7 +42,6 @@ export default function QuickChat() {
     if (found) {
       selectChat(found)
     } else if (!loading) {
-      // Chat not in quick list — load directly (e.g. team group chat)
       getChat(convId).then((chat) => {
         if (chat) selectChat(chat)
       }).catch(() => {})
@@ -45,6 +55,10 @@ export default function QuickChat() {
     })
     return unsub
   }, [activeChat?.id])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   async function loadChats() {
     if (!workspace) return
@@ -84,12 +98,23 @@ export default function QuickChat() {
   }
 
   async function handleSend() {
-    if (!activeChat || !currentUser || !input.trim() || sending) return
+    if (!currentUser || !input.trim() || sending) return
     const text = input.trim()
     setInput('')
     setSending(true)
+
     try {
-      await sendMessage(activeChat.id, currentUser.id, 'user', text, {
+      // Auto-create chat if none active
+      let chat = activeChat
+      if (!chat && workspace) {
+        chat = await createQuickChat(workspace.id, currentUser.id)
+        setChats((prev) => [chat!, ...prev])
+        setActiveChat(chat)
+        navigate(`/business/chat/${chat.id}`, { replace: true })
+      }
+      if (!chat) return
+
+      await sendMessage(chat.id, currentUser.id, 'user', text, {
         senderName: currentUser.name,
         senderAvatar: currentUser.avatar_img ?? undefined,
       })
@@ -100,6 +125,8 @@ export default function QuickChat() {
       setSending(false)
     }
   }
+
+  const isEmpty = !activeChat || messages.length === 0
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
@@ -117,7 +144,7 @@ export default function QuickChat() {
         <div className="flex-1 overflow-y-auto">
           {loading && (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           {!loading && chats.length === 0 && (
@@ -149,31 +176,39 @@ export default function QuickChat() {
 
       {/* Chat area */}
       <div className="flex-1 flex flex-col">
-        {!activeChat ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <MessageSquare className="w-16 h-16 mx-auto text-[var(--olu-muted)] opacity-30" />
-              <p className="text-[var(--olu-muted)]">
-                {t('quickChat.selectOrNew', 'Select a chat or start a new one')}
-              </p>
-              <button
-                onClick={handleNew}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:opacity-90"
-              >
-                <Plus className="w-4 h-4" />
-                {t('quickChat.newChat', 'New Chat')}
-              </button>
+        {isEmpty ? (
+          /* Empty state: centered input */
+          <div className="flex-1 flex items-center justify-center px-4">
+            <div className="w-full max-w-2xl space-y-4">
+              <div className="text-center">
+                <MessageSquare className="w-12 h-12 mx-auto text-[var(--olu-muted)] opacity-20 mb-3" />
+                <p className="text-[var(--olu-muted)] text-sm">
+                  {t('quickChat.startTyping', 'Start typing to chat with AI')}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder={t('quickChat.placeholder', 'Ask anything...')}
+                  className="flex-1 px-4 py-3 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-sky-400/50"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || sending}
+                  className="p-3 bg-sky-600 text-white rounded-2xl hover:bg-sky-700 disabled:opacity-50 transition-colors"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         ) : (
           <>
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
-              {messages.length === 0 && (
-                <div className="text-center py-12 text-[var(--olu-muted)]">
-                  <p>{t('quickChat.startTyping', 'Start typing to chat with AI')}</p>
-                </div>
-              )}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -190,6 +225,7 @@ export default function QuickChat() {
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -200,13 +236,13 @@ export default function QuickChat() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('quickChat.placeholder', 'Ask anything...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-cyan-400/50"
+                  className="flex-1 px-4 py-2 bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-sky-400/50"
                   autoFocus
                 />
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-sky-600 text-white rounded-2xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-sky-600 text-white rounded-2xl hover:bg-sky-700 disabled:opacity-50 transition-colors"
                 >
                   {t('common.send', 'Send')}
                 </button>

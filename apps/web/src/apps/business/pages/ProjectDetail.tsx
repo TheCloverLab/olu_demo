@@ -1,0 +1,397 @@
+import { useEffect, useState, useCallback } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import {
+  MessageSquare,
+  ListTodo,
+  FileText,
+  Settings,
+  ArrowLeft,
+  Plus,
+  CheckCircle2,
+  Circle,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
+} from 'lucide-react'
+import { useApp } from '../../../context/AppContext'
+import {
+  getProject,
+  listProjectChats,
+  getDefaultChat,
+  listTasks,
+  createTask,
+  updateTask,
+  listFiles,
+  subscribeProjectTasks,
+} from '../../../domain/project/api'
+import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import type { Project, ProjectTask, ProjectFile } from '../../../domain/project/types'
+import type { Chat, ChatMessage } from '../../../domain/chat/types'
+
+type Tab = 'chat' | 'tasks' | 'files' | 'settings'
+
+const TASK_STATUS_ICON = {
+  pending: Circle,
+  in_progress: Clock,
+  done: CheckCircle2,
+  blocked: AlertTriangle,
+} as const
+
+const TASK_STATUS_COLOR = {
+  pending: 'text-gray-400',
+  in_progress: 'text-blue-500',
+  done: 'text-green-500',
+  blocked: 'text-red-500',
+} as const
+
+export default function ProjectDetail() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { currentUser } = useApp()
+
+  const [project, setProject] = useState<Project | null>(null)
+  const [tab, setTab] = useState<Tab>('chat')
+  const [loading, setLoading] = useState(true)
+
+  // Chat state
+  const [chat, setChat] = useState<Chat | null>(null)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+
+  // Task state
+  const [tasks, setTasks] = useState<ProjectTask[]>([])
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+
+  // File state
+  const [files, setFiles] = useState<ProjectFile[]>([])
+
+  useEffect(() => {
+    if (!id) return
+    loadProject()
+  }, [id])
+
+  useEffect(() => {
+    if (!chat) return
+    const unsub = subscribeChatMessages(chat.id, (msg) => {
+      setMessages((prev) => [...prev, msg])
+    })
+    return unsub
+  }, [chat?.id])
+
+  useEffect(() => {
+    if (!id) return
+    const unsub = subscribeProjectTasks(id, () => {
+      loadTasks()
+    })
+    return unsub
+  }, [id])
+
+  async function loadProject() {
+    if (!id) return
+    setLoading(true)
+    try {
+      const [proj, defaultChat, taskList, fileList] = await Promise.all([
+        getProject(id),
+        getDefaultChat(id),
+        listTasks(id),
+        listFiles(id),
+      ])
+      setProject(proj)
+      setTasks(taskList)
+      setFiles(fileList)
+      if (defaultChat) {
+        setChat(defaultChat)
+        const msgs = await getMessages(defaultChat.id)
+        setMessages(msgs)
+      }
+    } catch (err) {
+      console.error('Failed to load project:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function loadTasks() {
+    if (!id) return
+    const taskList = await listTasks(id)
+    setTasks(taskList)
+  }
+
+  async function handleSend() {
+    if (!chat || !currentUser || !input.trim() || sending) return
+    const text = input.trim()
+    setInput('')
+    setSending(true)
+    try {
+      await sendMessage(chat.id, currentUser.id, 'user', text, {
+        senderName: currentUser.name,
+        senderAvatar: currentUser.avatar_url || undefined,
+      })
+    } catch (err) {
+      console.error('Failed to send message:', err)
+      setInput(text) // restore on error
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function handleCreateTask() {
+    if (!id || !newTaskTitle.trim()) return
+    try {
+      await createTask(id, newTaskTitle.trim())
+      setNewTaskTitle('')
+      await loadTasks()
+    } catch (err) {
+      console.error('Failed to create task:', err)
+    }
+  }
+
+  async function handleToggleTask(task: ProjectTask) {
+    const newStatus = task.status === 'done' ? 'pending' : 'done'
+    try {
+      await updateTask(task.id, { status: newStatus })
+      await loadTasks()
+    } catch (err) {
+      console.error('Failed to update task:', err)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="w-8 h-8 border-2 border-[var(--olu-primary)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-[var(--olu-text-secondary)]">{t('projects.notFound', 'Project not found')}</p>
+      </div>
+    )
+  }
+
+  const tabs: { key: Tab; icon: typeof MessageSquare; label: string; count?: number }[] = [
+    { key: 'chat', icon: MessageSquare, label: t('projects.tabs.chat', 'Chat') },
+    { key: 'tasks', icon: ListTodo, label: t('projects.tabs.tasks', 'Tasks'), count: tasks.filter((t) => t.status !== 'done').length },
+    { key: 'files', icon: FileText, label: t('projects.tabs.files', 'Files'), count: files.length },
+    { key: 'settings', icon: Settings, label: t('projects.tabs.settings', 'Settings') },
+  ]
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {/* Project header */}
+      <div className="border-b border-[var(--olu-border)] bg-[var(--olu-surface)] px-4 md:px-6 py-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/business/projects')}
+            className="p-1.5 hover:bg-[var(--olu-bg)] rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 text-[var(--olu-text-secondary)]" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-semibold text-[var(--olu-text)] truncate">{project.name}</h1>
+            {project.description && (
+              <p className="text-xs text-[var(--olu-text-secondary)] truncate">{project.description}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mt-3 -mb-[1px]">
+          {tabs.map(({ key, icon: Icon, label, count }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg border-b-2 transition-colors ${
+                tab === key
+                  ? 'border-[var(--olu-primary)] text-[var(--olu-primary)] bg-[var(--olu-bg)]'
+                  : 'border-transparent text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              {count !== undefined && count > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs bg-[var(--olu-primary)]/10 text-[var(--olu-primary)] rounded-full">
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div className="flex-1 overflow-hidden">
+        {tab === 'chat' && (
+          <div className="flex flex-col h-full">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
+              {messages.length === 0 && (
+                <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>{t('projects.chatEmpty', 'Start a conversation with AI about this project')}</p>
+                </div>
+              )}
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
+                      msg.sender_type === 'user'
+                        ? 'bg-[var(--olu-primary)] text-white rounded-br-sm'
+                        : 'bg-[var(--olu-surface)] border border-[var(--olu-border)] text-[var(--olu-text)] rounded-bl-sm'
+                    }`}
+                  >
+                    {msg.sender_name && msg.sender_type !== 'user' && (
+                      <p className="text-xs font-medium text-[var(--olu-text-secondary)] mb-1">{msg.sender_name}</p>
+                    )}
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input */}
+            <div className="border-t border-[var(--olu-border)] p-4">
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder={t('projects.chatPlaceholder', 'Type a message...')}
+                  className="flex-1 px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-xl text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || sending}
+                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  {t('common.send', 'Send')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'tasks' && (
+          <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
+            {/* Add task */}
+            <div className="flex gap-2">
+              <input
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
+                placeholder={t('projects.addTask', 'Add a task...')}
+                className="flex-1 px-4 py-2 bg-[var(--olu-bg)] border border-[var(--olu-border)] rounded-lg text-[var(--olu-text)] placeholder:text-[var(--olu-text-secondary)]"
+              />
+              <button
+                onClick={handleCreateTask}
+                disabled={!newTaskTitle.trim()}
+                className="p-2 bg-[var(--olu-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-50"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Task list */}
+            {tasks.length === 0 ? (
+              <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+                <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>{t('projects.noTasks', 'No tasks yet. AI will create tasks as you chat.')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {tasks.map((task) => {
+                  const StatusIcon = TASK_STATUS_ICON[task.status]
+                  return (
+                    <button
+                      key={task.id}
+                      onClick={() => handleToggleTask(task)}
+                      className="w-full flex items-center gap-3 p-3 bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-lg hover:border-[var(--olu-primary)]/30 transition-colors text-left"
+                    >
+                      <StatusIcon className={`w-5 h-5 flex-shrink-0 ${TASK_STATUS_COLOR[task.status]}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${task.status === 'done' ? 'line-through text-[var(--olu-text-secondary)]' : 'text-[var(--olu-text)]'}`}>
+                          {task.title}
+                        </p>
+                        {task.description && (
+                          <p className="text-xs text-[var(--olu-text-secondary)] mt-0.5 truncate">{task.description}</p>
+                        )}
+                      </div>
+                      {task.priority !== 'medium' && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          task.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                          : task.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                        }`}>
+                          {task.priority}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'files' && (
+          <div className="px-4 md:px-6 py-4 overflow-y-auto h-full">
+            {files.length === 0 ? (
+              <div className="text-center py-12 text-[var(--olu-text-secondary)]">
+                <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>{t('projects.noFiles', 'No files yet. AI will add deliverables here.')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {files.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center gap-3 p-3 bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-lg"
+                  >
+                    <FileText className="w-5 h-5 text-[var(--olu-text-secondary)]" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[var(--olu-text)] truncate">{file.name}</p>
+                      <p className="text-xs text-[var(--olu-text-secondary)]">
+                        {file.size_bytes ? `${(file.size_bytes / 1024).toFixed(1)} KB` : ''} · {file.created_by || 'unknown'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'settings' && (
+          <div className="px-4 md:px-6 py-4 space-y-4 overflow-y-auto h-full">
+            <div className="bg-[var(--olu-surface)] border border-[var(--olu-border)] rounded-xl p-4 space-y-3">
+              <h3 className="font-medium text-[var(--olu-text)]">{t('projects.config.general', 'General')}</h3>
+              <div className="grid gap-3">
+                <div>
+                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.type', 'Type')}</label>
+                  <p className="text-sm text-[var(--olu-text)]">{project.type === 'ongoing' ? 'Ongoing' : 'Short-term'}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.runtime', 'Runtime')}</label>
+                  <p className="text-sm text-[var(--olu-text)]">{project.runtime_type}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-[var(--olu-text-secondary)]">{t('projects.config.status', 'Status')}</label>
+                  <p className="text-sm text-[var(--olu-text)]">{project.status}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

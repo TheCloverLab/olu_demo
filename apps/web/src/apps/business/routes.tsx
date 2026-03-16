@@ -3,6 +3,9 @@ import BusinessLayout from './layout/BusinessLayout'
 import BusinessWorkspace from './pages/BusinessWorkspace'
 import Team from './pages/Team'
 import TeamChat from './pages/TeamChat'
+import ProjectList from './pages/ProjectList'
+import ProjectDetail from './pages/ProjectDetail'
+import QuickChat from './pages/QuickChat'
 import AIAgentConfig from './pages/AIAgentConfig'
 import BusinessAccount from './pages/BusinessAccount'
 import BusinessSettings from './pages/BusinessSettings'
@@ -36,6 +39,10 @@ export const businessRoutes: RouteObject[] = [
     children: [
       { index: true, element: <BusinessWorkspace /> },
       { path: 'analytics', element: <Analytics /> },
+      { path: 'projects', element: <ProjectList /> },
+      { path: 'projects/:id', element: <ProjectDetail /> },
+      { path: 'chat', element: <QuickChat /> },
+      { path: 'chat/:convId', element: <QuickChat /> },
       { path: 'team', element: <Team /> },
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },

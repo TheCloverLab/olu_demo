@@ -43,7 +43,9 @@
     "all": "全部",
     "communities": "社区",
     "copy": "复制",
-    "regenerate": "重新生成"
+    "regenerate": "重新生成",
+    "create": "创建",
+    "creating": "创建中..."
   },
   "nav": {
     "home": "首页",
@@ -65,6 +67,7 @@
     "supportChats": "客服对话",
     "homeEditor": "首页编辑",
     "members": "客户",
+    "projects": "项目",
     "analytics": "数据分析",
     "aiAgentMarketplace": "AI 智能体市场",
     "groupDashboard": "仪表盘",
@@ -128,6 +131,55 @@
     "commandLayerDesc": "团队名册现在来自工作区后端的智能体和任务队列，不再使用前端模拟数据。",
     "humanEmployees": "人类员工",
     "aiAgentConfig": "AI 智能体配置"
+  },
+  "projects": {
+    "title": "项目",
+    "subtitle": "管理你的 AI 驱动项目",
+    "newProject": "新建项目",
+    "createTitle": "创建项目",
+    "namePlaceholder": "项目名称...",
+    "descPlaceholder": "描述这个项目（可选）...",
+    "shortTerm": "短期",
+    "ongoing": "持续",
+    "active": "进行中",
+    "other": "其他",
+    "empty": "暂无项目，创建一个开始吧！",
+    "notFound": "项目不存在",
+    "tabs": {
+      "chat": "对话",
+      "tasks": "任务",
+      "files": "文件",
+      "settings": "设置"
+    },
+    "chatEmpty": "开始与 AI 讨论此项目",
+    "chatPlaceholder": "输入消息...",
+    "addTask": "添加任务...",
+    "noTasks": "暂无任务。AI 会在对话中自动创建任务。",
+    "noFiles": "暂无文件。AI 会在此添加交付物。",
+    "config": {
+      "general": "基本信息",
+      "type": "类型",
+      "runtime": "运行时",
+      "status": "状态"
+    },
+    "status": {
+      "active": "进行中",
+      "paused": "已暂停",
+      "archived": "已归档",
+      "completed": "已完成"
+    },
+    "type": {
+      "short_term": "短期",
+      "ongoing": "持续"
+    }
+  },
+  "quickChat": {
+    "title": "聊天",
+    "empty": "暂无聊天",
+    "selectOrNew": "选择一个聊天或开始新对话",
+    "newChat": "新建聊天",
+    "startTyping": "开始输入与 AI 对话",
+    "placeholder": "问点什么..."
   },
   "priority": {
     "high": "高",

@@ -43,7 +43,9 @@
     "all": "All",
     "communities": "Communities",
     "copy": "Copy",
-    "regenerate": "Regenerate"
+    "regenerate": "Regenerate",
+    "create": "Create",
+    "creating": "Creating..."
   },
   "nav": {
     "home": "Home",
@@ -65,6 +67,7 @@
     "supportChats": "Support Chats",
     "homeEditor": "Home Editor",
     "members": "Customers",
+    "projects": "Projects",
     "analytics": "Analytics",
     "aiAgentMarketplace": "AI Agent Marketplace",
     "groupDashboard": "Dashboard",
@@ -128,6 +131,55 @@
     "commandLayerDesc": "Your team roster now comes from workspace-backed agents and task queues instead of front-end mock state.",
     "humanEmployees": "Human Employees",
     "aiAgentConfig": "AI Agent Configuration"
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Manage your AI-powered projects",
+    "newProject": "New Project",
+    "createTitle": "Create Project",
+    "namePlaceholder": "Project name...",
+    "descPlaceholder": "Describe what this project is about (optional)...",
+    "shortTerm": "Short-term",
+    "ongoing": "Ongoing",
+    "active": "Active",
+    "other": "Other",
+    "empty": "No projects yet. Create one to get started!",
+    "notFound": "Project not found",
+    "tabs": {
+      "chat": "Chat",
+      "tasks": "Tasks",
+      "files": "Files",
+      "settings": "Settings"
+    },
+    "chatEmpty": "Start a conversation with AI about this project",
+    "chatPlaceholder": "Type a message...",
+    "addTask": "Add a task...",
+    "noTasks": "No tasks yet. AI will create tasks as you chat.",
+    "noFiles": "No files yet. AI will add deliverables here.",
+    "config": {
+      "general": "General",
+      "type": "Type",
+      "runtime": "Runtime",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "archived": "Archived",
+      "completed": "Completed"
+    },
+    "type": {
+      "short_term": "Short-term",
+      "ongoing": "Ongoing"
+    }
+  },
+  "quickChat": {
+    "title": "Chat",
+    "empty": "No chats yet",
+    "selectOrNew": "Select a chat or start a new one",
+    "newChat": "New Chat",
+    "startTyping": "Start typing to chat with AI",
+    "placeholder": "Ask anything..."
   },
   "priority": {
     "high": "High",

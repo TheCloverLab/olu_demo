@@ -29,6 +29,8 @@ import {
   Headphones,
   Home,
   BarChart3,
+  FolderKanban,
+  MessageSquare,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
@@ -62,6 +64,8 @@ const SIDEBAR_GROUPS: NavGroup[] = [
   {
     groupLabelKey: 'nav.groupOperations',
     items: [
+      { to: '/business/chat', icon: MessageSquare, labelKey: 'nav.chat' },
+      { to: '/business/projects', icon: FolderKanban, labelKey: 'nav.projects' },
       { to: '/business/team', icon: Users, labelKey: 'nav.team', exact: true },
       { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
       { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },

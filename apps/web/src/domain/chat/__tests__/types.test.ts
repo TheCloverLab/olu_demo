@@ -66,6 +66,8 @@ describe('Chat types — compile-time checks', () => {
       name: 'Test Chat',
       experience_id: null,
       agent_id: 'agent-1',
+      project_id: null,
+      is_default: false,
       config: {},
       last_message: null,
       last_message_at: null,

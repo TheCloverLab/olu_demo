@@ -1,6 +1,6 @@
 // ── Unified Chat Types ────────────────────────────────────────
 
-export type ChatScope = 'experience' | 'support' | 'team' | 'agent'
+export type ChatScope = 'experience' | 'support' | 'team' | 'agent' | 'project' | 'quick'
 export type SenderType = 'user' | 'agent' | 'system'
 export type MessageType = 'text' | 'image' | 'file' | 'tool_call' | 'system'
 export type MemberRole = 'owner' | 'admin' | 'member' | 'guest'
@@ -12,6 +12,8 @@ export interface Chat {
   name: string | null
   experience_id: string | null
   agent_id: string | null
+  project_id: string | null
+  is_default: boolean
   config: Record<string, unknown>
   last_message: string | null
   last_message_at: string | null
@@ -100,6 +102,28 @@ export const SCOPE_FEATURES: Record<ChatScope, ChatFeatures> = {
     markdown: true,
     images: true,
     files: true,
+    toolCalls: true,
+    reasoning: true,
+    mentions: false,
+    modelSelector: true,
+    aiReply: false,
+    streaming: true,
+  },
+  project: {
+    markdown: true,
+    images: true,
+    files: true,
+    toolCalls: true,
+    reasoning: true,
+    mentions: true,
+    modelSelector: true,
+    aiReply: false,
+    streaming: true,
+  },
+  quick: {
+    markdown: true,
+    images: false,
+    files: false,
     toolCalls: true,
     reasoning: true,
     mentions: false,

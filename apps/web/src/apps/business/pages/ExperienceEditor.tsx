@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Loader2, Trash2, ImagePlus, X } from 'lucide-react'
 import { getExperience, updateExperience, deleteExperience } from '../../../domain/experience/api'
@@ -7,6 +8,7 @@ import type { WorkspaceExperience } from '../../../lib/supabase'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 
 export default function ExperienceEditor() {
+  const { t } = useTranslation()
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const experienceId = params.get('id')
@@ -109,7 +111,7 @@ export default function ExperienceEditor() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Name</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.name')}</label>
         <input
           type="text"
           value={name}
@@ -119,7 +121,7 @@ export default function ExperienceEditor() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Cover Image</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.coverImage')}</label>
         {(cover || coverFile) ? (
           <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
             <img
@@ -137,7 +139,7 @@ export default function ExperienceEditor() {
         ) : (
           <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
             <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
-            <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
+            <span className="text-xs text-[var(--olu-muted)]">{t('common.uploadCover')}</span>
             <input
               type="file"
               accept="image/*"

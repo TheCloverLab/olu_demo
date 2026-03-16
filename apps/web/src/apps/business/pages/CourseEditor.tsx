@@ -210,7 +210,7 @@ export default function CourseEditor() {
                 <input
                   value={course.title}
                   onChange={(e) => setCourse((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="e.g. Digital Art Masterclass"
+                  placeholder={t('business.courseEditorNamePlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-olu-border text-sm placeholder:text-olu-muted focus:outline-none focus:border-white/30 transition-colors"
                 />
               </div>
@@ -219,7 +219,7 @@ export default function CourseEditor() {
                 <textarea
                   value={course.description}
                   onChange={(e) => setCourse((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe what students will learn..."
+                  placeholder={t('business.courseEditorDescPlaceholder')}
                   rows={3}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-olu-border text-sm placeholder:text-olu-muted focus:outline-none focus:border-white/30 transition-colors resize-none"
                 />
@@ -235,19 +235,19 @@ export default function CourseEditor() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-olu-muted mb-1.5">Level</label>
+                  <label className="block text-xs text-olu-muted mb-1.5">{t('common.level')}</label>
                   <select
                     value={course.level}
                     onChange={(e) => setCourse((prev) => ({ ...prev, level: e.target.value as EditorCourse['level'] }))}
                     className="w-full px-4 py-2.5 rounded-xl bg-[var(--olu-card-bg)] border border-olu-border text-sm focus:outline-none appearance-none"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
+                    <option value="Beginner">{t('common.beginner')}</option>
+                    <option value="Intermediate">{t('common.intermediate')}</option>
+                    <option value="Advanced">{t('common.advanced')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-olu-muted mb-1.5">Hero</label>
+                  <label className="block text-xs text-olu-muted mb-1.5">{t('common.hero')}</label>
                   <div className="flex gap-1.5 flex-wrap">
                     {HERO_GRADIENTS.map((g) => (
                       <button
@@ -282,7 +282,7 @@ export default function CourseEditor() {
                   <input
                     value={mod.description}
                     onChange={(e) => updateModule(mod.id, { description: e.target.value })}
-                    placeholder="Module description..."
+                    placeholder={t('business.moduleDescPlaceholder')}
                     className="bg-transparent text-xs text-olu-muted focus:outline-none w-full mt-0.5"
                   />
                 </div>
@@ -328,7 +328,7 @@ export default function CourseEditor() {
                               <input
                                 value={lesson.summary}
                                 onChange={(e) => updateLesson(mod.id, lesson.id, { summary: e.target.value })}
-                                placeholder="Lesson summary..."
+                                placeholder={t('business.lessonSummaryPlaceholder')}
                                 className="bg-transparent text-xs text-olu-muted focus:outline-none w-full mt-0.5"
                               />
                             </div>

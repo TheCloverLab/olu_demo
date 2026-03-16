@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Loader2, BookOpen, ChevronRight,
@@ -114,6 +115,7 @@ function CourseListView({
   onDeleteExperience: () => void
   onCoverUpdated: () => void
 }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
@@ -176,7 +178,7 @@ function CourseListView({
 
       {/* Cover Image */}
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Cover Image</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.coverImage')}</label>
         {coverSrc ? (
           <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
             <img src={coverSrc} alt="Cover" className="w-full h-40 object-cover" />
@@ -189,7 +191,7 @@ function CourseListView({
         ) : (
           <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
             <ImagePlus size={24} className="text-[var(--olu-muted)] mb-2" />
-            <span className="text-xs text-[var(--olu-muted)]">Click to upload cover image</span>
+            <span className="text-xs text-[var(--olu-muted)]">{t('common.uploadCover')}</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f) }} />
           </label>
         )}
@@ -208,7 +210,7 @@ function CourseListView({
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Course name"
+                placeholder={t('consumer.courseTitle')}
                 autoFocus
                 className="w-full bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -219,7 +221,7 @@ function CourseListView({
                   disabled={creating || !newName.trim()}
                   className="flex-1 px-3 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold disabled:opacity-50"
                 >
-                  {creating ? 'Creating...' : 'Create'}
+                  {creating ? t('common.creating') : t('common.create')}
                 </button>
                 <button
                   onClick={() => setNewName('')}
@@ -369,6 +371,7 @@ function LessonDetailPanel({
   lesson: ExperienceCourseLesson
   onUpdate: (u: Partial<Pick<ExperienceCourseLesson, 'title' | 'content' | 'video_url'>>) => void
 }) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState(lesson.title)
   const [content, setContent] = useState(lesson.content || '')
   const [videoUrl, setVideoUrl] = useState(lesson.video_url || '')
@@ -404,7 +407,7 @@ function LessonDetailPanel({
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Title</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.title')}</label>
         <input
           type="text"
           value={title}
@@ -415,7 +418,7 @@ function LessonDetailPanel({
 
       {/* Video */}
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Video URL</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.videoUrl')}</label>
         {videoUrl ? (
           <div className="space-y-2">
             <div className="rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
@@ -437,7 +440,7 @@ function LessonDetailPanel({
             type="url"
             value={videoUrl}
             onChange={(e) => { setVideoUrl(e.target.value); setDirty(true) }}
-            placeholder="https://youtube.com/watch?v=..."
+            placeholder={t('business.videoUrlPlaceholder')}
             className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         )}
@@ -445,10 +448,10 @@ function LessonDetailPanel({
 
       {/* File Attachments (placeholder) */}
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">File attachments</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.fileAttachments')}</label>
         <div className="rounded-xl border border-dashed border-gray-400 dark:border-[var(--olu-card-border)] p-4 flex items-center justify-center">
           <label className="flex items-center gap-2 text-sm text-[var(--olu-muted)] cursor-pointer hover:text-[var(--olu-text)]">
-            <Upload size={14} /> Upload attachment
+            <Upload size={14} /> {t('common.uploadAttachment')}
             <input type="file" className="hidden" />
           </label>
         </div>
@@ -456,12 +459,12 @@ function LessonDetailPanel({
 
       {/* Content */}
       <div className="space-y-2">
-        <label className="text-xs text-[var(--olu-text-secondary)]">Content</label>
+        <label className="text-xs text-[var(--olu-text-secondary)]">{t('common.content')}</label>
         <textarea
           value={content}
           onChange={(e) => { setContent(e.target.value); setDirty(true) }}
           rows={12}
-          placeholder="Write lesson content here..."
+          placeholder={t('business.lessonContentPlaceholder')}
           className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[var(--olu-card-border)] resize-y"
         />
       </div>

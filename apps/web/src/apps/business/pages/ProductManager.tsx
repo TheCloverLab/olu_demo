@@ -198,7 +198,7 @@ function ProductCard({
 
         {/* Access Type — explicit selector */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--olu-text-secondary)]">Access Type</label>
+          <label className="text-xs font-medium text-[var(--olu-text-secondary)]">{t('common.accessType')}</label>
           <div className="flex gap-2">
             {(['free', 'paid'] as const).map((v) => (
               <button
@@ -223,7 +223,7 @@ function ProductCard({
         {/* Plans (only when paid) */}
         {product.access_type === 'paid' && (
           <div className="space-y-2">
-            <label className="text-xs font-medium text-[var(--olu-text-secondary)]">Pricing Plans</label>
+            <label className="text-xs font-medium text-[var(--olu-text-secondary)]">{t('common.pricingPlans')}</label>
             {product.plans.map((plan) => (
               <PlanRow key={plan.id} plan={plan} onDelete={async () => { await deletePlan(plan.id); onUpdated() }} />
             ))}
@@ -293,6 +293,7 @@ function ProductCard({
 }
 
 function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: string; onCreated: () => void; onClose: () => void }) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [accessType, setAccessType] = useState<'free' | 'paid'>('paid')
@@ -314,7 +315,7 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
   return (
     <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Create Product</h3>
+        <h3 className="font-semibold text-sm">{t('business.createProduct')}</h3>
         <button onClick={onClose} className="text-xs text-[var(--olu-muted)] hover:text-[var(--olu-text)]">Cancel</button>
       </div>
       <div className="space-y-3">
@@ -324,7 +325,7 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Pro Membership"
+            placeholder={t('business.productNamePlaceholder')}
             className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
@@ -334,12 +335,12 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Full access to all content"
+            placeholder={t('business.productDescPlaceholder')}
             className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
           />
         </div>
         <div>
-          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Access type</label>
+          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.accessType')}</label>
           <div className="flex gap-2">
             {(['free', 'paid'] as const).map((v) => (
               <button
@@ -364,7 +365,7 @@ function CreateProductPanel({ workspaceId, onCreated, onClose }: { workspaceId: 
           className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors disabled:opacity-50"
         >
           {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-          Create Product
+          {t('business.createProduct')}
         </button>
       </div>
     </div>
@@ -436,7 +437,7 @@ export default function ProductManager() {
         <div className="rounded-3xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-12 text-center space-y-3">
           <Tag size={32} className="text-[var(--olu-muted)] mx-auto" />
           <p className="text-[var(--olu-text-secondary)] text-sm">No products yet.</p>
-          <p className="text-[var(--olu-muted)] text-xs">Create a free or paid product to gate access to experiences.</p>
+          <p className="text-[var(--olu-muted)] text-xs">{t('business.createProductHint')}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">

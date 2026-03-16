@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppWindow, ChevronDown, Eye, EyeOff, Globe, ImagePlus, Loader2, Pencil, Plus, Save, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
@@ -26,6 +27,7 @@ const NEW_APP_TYPES = [
 ]
 
 function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [title, setTitle] = useState(app.title)
   const [summary, setSummary] = useState(app.summary || '')
@@ -94,7 +96,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
       </div>
       <div className="space-y-3">
         <div>
-          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Cover image</label>
+          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('business.appCoverImage')}</label>
           <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)] bg-[var(--olu-card-bg)]">
             {coverPreview ? (
               <img src={coverPreview} alt="Cover" className="w-full h-28 object-cover" />
@@ -110,7 +112,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
           </div>
         </div>
         <div>
-          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">App title</label>
+          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('business.appTitle')}</label>
           <input
             type="text"
             value={title}
@@ -119,7 +121,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
           />
         </div>
         <div>
-          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Description</label>
+          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.description')}</label>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
@@ -128,7 +130,7 @@ function AppConfigPanel({ app, onClose, onSaved }: { app: ConsumerApp; onClose: 
           />
         </div>
         <div>
-          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Visibility</label>
+          <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.visibility')}</label>
           <div className="flex gap-2">
             {(['public', 'private'] as const).map((v) => (
               <button

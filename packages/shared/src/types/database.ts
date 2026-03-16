@@ -2314,6 +2314,134 @@ export type Database = {
           },
         ]
       }
+      specialist_installs: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string | null
+          template_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          template_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          template_id?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialist_installs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialist_installs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "specialist_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialist_installs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialist_installs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      specialist_templates: {
+        Row: {
+          access_type: string
+          category: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          install_count: number | null
+          instructions: string | null
+          name: string
+          price: number | null
+          skills: string[]
+          status: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          access_type?: string
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          install_count?: number | null
+          instructions?: string | null
+          name: string
+          price?: number | null
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          access_type?: string
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          install_count?: number | null
+          instructions?: string | null
+          name?: string
+          price?: number | null
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialist_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialist_templates_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_creator_partnerships: {
         Row: {
           channel_manager: string | null
@@ -3427,6 +3555,10 @@ export type Database = {
       }
       increment_forum_like_count: {
         Args: { post_id_param: string }
+        Returns: undefined
+      }
+      increment_specialist_installs: {
+        Args: { tid: string }
         Returns: undefined
       }
       is_chat_member: {

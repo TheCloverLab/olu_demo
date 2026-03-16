@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, ArrowDownLeft, Clock3, Wallet, Coins, Landmark, ShieldCheck } from 'lucide-react'
 import clsx from 'clsx'
@@ -30,6 +31,7 @@ const TRANSACTIONS = [
 ]
 
 export default function WalletPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [tab, setTab] = useState<TabKey>('overview')
   const [withdrawAmount, setWithdrawAmount] = useState('')
@@ -133,7 +135,7 @@ export default function WalletPage() {
               <input
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder="Amount in USD"
+                placeholder={t('common.amountInUsd')}
                 className="w-full rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[var(--olu-card-border)]"
               />
               <div className="mt-2 grid grid-cols-2 gap-2">

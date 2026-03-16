@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-OLU is a multi-tenant SaaS platform: **consumer-facing native apps** + **AI-Agent Business OS**. HR metaphor — AI agents and human employees share one Employee model (position, JD, skills, salary/token cost).
+OLU is a multi-tenant SaaS platform: **consumer-facing native apps** + **AI-Agent Business OS**. Specialists are skill packs (not people) — creators install specialist templates to unlock AI capabilities. The team page shows only human employees.
 
 ## Tech Stack
 
@@ -107,14 +107,14 @@ Other SECURITY DEFINER helpers: `is_chat_member(chat_id, user_id)`, `is_workspac
 | `posts` | Creator posts (image/video/music/text) with engagement metrics |
 | `products` | Creator store items (price, stock, sales) |
 
-### Agent & Team
+### Specialists & Team
 | Table | Purpose |
 |-------|---------|
-| `agent_templates` | Pre-built agent blueprints (Creator/Advertiser/Supplier/Pro) |
-| `workspace_agents` | Hired agents in workspace (template_id, status, last_message) |
+| `specialist_templates` | Skill pack blueprints (skills, instructions, category) |
+| `specialist_installs` | Installed skill packs per workspace (template → project mapping) |
+| `workspace_employees` | Human staff (position, skills, salary, status) |
 | `workspace_agent_tasks` | Agent tasks (priority, progress, status) |
 | `workspace_agent_task_logs` | Audit trail for task lifecycle events |
-| `workspace_employees` | Human staff (position, skills, salary, status) |
 | `agent_scheduled_jobs` | Cron-like scheduled tasks for agents |
 | `agent_memories` | Long-term agent memory with pgvector embeddings |
 | `agent_events` | Event queue for agent processing |
@@ -122,7 +122,7 @@ Other SECURITY DEFINER helpers: `is_chat_member(chat_id, user_id)`, `is_workspac
 ### Unified Chat
 | Table | Purpose |
 |-------|---------|
-| `chats` | Chat rooms — scope: `experience`, `support`, `team`, `agent` |
+| `chats` | Chat rooms — scope: `experience`, `support`, `team`, `agent`, `project`, `quick` |
 | `chat_members` | Room membership (user_id, role, unread count) |
 | `chat_messages` | Messages (sender_id, sender_type, content, metadata) |
 
@@ -179,11 +179,11 @@ Each domain has `api.ts` (public functions) + optional `data.ts` (low-level quer
 - `getUserWallet(userId)` / `getWorkspaceWalletForUser(user)` — Stablecoin wallets
 
 ### team/api.ts
-- `getAgentTemplates()` — Active agent templates
-- `getWorkspaceAgentsForUser(user)` / `getWorkspaceAgentsWithTasksForUser(user)` — Agents list
-- `hireWorkspaceAgent(user, template, name?)` — Hire agent from template
+- `getSpecialistTemplates()` — Available skill packs
+- `getInstalledSpecialists(workspaceId)` — Installed skill packs for workspace
+- `installSpecialist(workspaceId, templateId)` — Install a skill pack
 - `getTeamEmployeesForUser(user)` — Human employees as EmployeeWithTasks
-- `getWorkspaceTeamSnapshotForUser(user)` — All agents + humans + task counts
+- `getWorkspaceTeamSnapshotForUser(user)` — Employees + task counts
 ### chat/api.ts
 - `getChat(chatId)` / `getChatByExperience(id)` / `getChatByAgent(id)` — Find chat rooms
 - `listChats(workspaceId, scope?)` / `listSupportChats(workspaceId)` — List chats

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Send, Image as ImageIcon, Paperclip, X, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
 import type { ChatMessage, ChatFeatures, ChatAttachment } from '../domain/chat/types'
@@ -214,6 +215,7 @@ export default function ChatRoom({
   renderMessage,
   className,
 }: ChatRoomProps) {
+  const { t } = useTranslation()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [text, setText] = useState('')
   const [imageFiles, setImageFiles] = useState<File[]>([])
@@ -412,7 +414,7 @@ export default function ChatRoom({
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder="Type a message..."
+          placeholder={t('business.typeMessage')}
           rows={1}
           className="flex-1 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm resize-none max-h-32 focus:outline-none focus:border-cyan-400/50"
           style={{ minHeight: '38px' }}

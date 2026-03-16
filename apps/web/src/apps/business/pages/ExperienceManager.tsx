@@ -22,6 +22,7 @@ const CREATABLE_TYPES: { type: ExperienceType; description: string }[] = [
 ]
 
 function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => void; onClose: () => void; workspaceId: string }) {
+  const { t } = useTranslation()
   const [selectedType, setSelectedType] = useState<ExperienceType | null>(null)
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
@@ -74,7 +75,7 @@ function CreatePanel({ onCreated, onClose, workspaceId }: { onCreated: () => voi
       {selectedType && (
         <div className="space-y-3 pt-2 border-t border-[var(--olu-card-border)]">
           <div>
-            <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Name</label>
+            <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.name')}</label>
             <input
               type="text"
               value={name}

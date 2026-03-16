@@ -234,16 +234,16 @@ export default function Team() {
           <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-3 space-y-4">
             <div className="grid sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-                <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
+                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.fullName')}</label>
+                <input type="text" placeholder={t('common.fullName')} className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
               </div>
               <div>
-                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-                <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
+                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">{t('common.email')}</label>
+                <input type="email" placeholder={t('common.email')} className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
               </div>
               <div className="flex items-end">
                 <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
-                  Send Invite
+                  {t('common.sendInvite')}
                 </button>
               </div>
             </div>

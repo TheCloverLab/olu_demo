@@ -31,6 +31,7 @@ function PostCard({
   isLiked?: boolean
   onLikeToggle: () => void
 }) {
+  const { t } = useTranslation()
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState<any[]>([])
   const [commentText, setCommentText] = useState('')
@@ -135,7 +136,7 @@ function PostCard({
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleComment()}
-                  placeholder="Add a comment..."
+                  placeholder={t('business.addComment')}
                   className="flex-1 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-[var(--olu-card-border)]"
                 />
                 <button

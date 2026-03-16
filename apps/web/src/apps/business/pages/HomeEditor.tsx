@@ -87,6 +87,7 @@ function TabEditor({
   onChange: (updated: WorkspaceHomeTab) => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   const linkedExps = allExperiences.filter((e) => tab.experience_ids.includes(e.id))
   const unlinkedExps = allExperiences.filter((e) => !tab.experience_ids.includes(e.id))
 
@@ -107,7 +108,7 @@ function TabEditor({
 
       {/* Display mode */}
       <div>
-        <p className="text-[10px] text-[var(--olu-muted)] mb-1">Display mode</p>
+        <p className="text-[10px] text-[var(--olu-muted)] mb-1">{t('business.displayMode')}</p>
         <div className="flex gap-1.5">
           {DISPLAY_MODES.map(({ value, icon: Icon, label }) => (
             <button
@@ -128,7 +129,7 @@ function TabEditor({
 
       {/* Experiences in tab */}
       <div>
-        <p className="text-[10px] text-[var(--olu-muted)] mb-1">Experiences</p>
+        <p className="text-[10px] text-[var(--olu-muted)] mb-1">{t('business.experiences')}</p>
         <div className="flex flex-wrap gap-1">
           {linkedExps.map((exp) => (
             <span key={exp.id} className="text-xs px-2 py-0.5 rounded-full bg-[var(--olu-accent-bg)] text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
@@ -420,7 +421,7 @@ export default function HomeEditor() {
 
             {/* Workspace icon */}
             <div>
-              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">Workspace Icon</label>
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">{t('business.workspaceIcon')}</label>
               <div className="flex items-center gap-3">
                 {iconFile ? (
                   <div className="relative">
@@ -435,7 +436,7 @@ export default function HomeEditor() {
                   </div>
                 )}
                 <label className="text-xs text-cyan-700 dark:text-cyan-300 cursor-pointer hover:underline">
-                  Upload icon
+                  {t('common.uploadIcon')}
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => setIconFile(e.target.files?.[0] || null)} />
                 </label>
               </div>
@@ -443,7 +444,7 @@ export default function HomeEditor() {
 
             {/* Cover image */}
             <div>
-              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">Cover Image</label>
+              <label className="text-xs text-[var(--olu-text-secondary)] block mb-1.5">{t('common.coverImage')}</label>
               {(cover || coverFile) ? (
                 <div className="relative rounded-xl overflow-hidden border border-[var(--olu-card-border)]">
                   <img
@@ -458,14 +459,14 @@ export default function HomeEditor() {
                     <X size={12} />
                   </button>
                   <label className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-black/50 hover:bg-black/70 text-white text-xs cursor-pointer transition-colors">
-                    Replace
+                    {t('common.replace')}
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />
                   </label>
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-gray-400 dark:border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] cursor-pointer hover:border-[var(--olu-card-border)] transition-colors">
                   <ImagePlus size={20} className="text-[var(--olu-muted)] mb-1" />
-                  <span className="text-xs text-[var(--olu-muted)]">Click to upload cover</span>
+                  <span className="text-xs text-[var(--olu-muted)]">{t('common.uploadCover')}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setCoverFile(e.target.files[0]) }} />
                 </label>
               )}
@@ -478,7 +479,7 @@ export default function HomeEditor() {
                 type="text"
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
-                placeholder="Short tagline for your workspace"
+                placeholder={t('business.headlinePlaceholder')}
                 className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[var(--olu-card-border)]"
               />
             </div>
@@ -486,14 +487,14 @@ export default function HomeEditor() {
 
           {/* Page Layout */}
           <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
-            <h3 className="font-semibold text-sm">Page Layout</h3>
+            <h3 className="font-semibold text-sm">{t('business.pageLayout')}</h3>
             <p className="text-xs text-[var(--olu-text-secondary)]">Choose how the workspace header appears to consumers.</p>
             <div className="grid grid-cols-2 gap-2">
               {([
                 { key: 'classic', label: 'Classic', description: 'Cover image with overlaid icon and name', icon: Layers },
-                { key: 'hero', label: 'Hero', description: 'Full-height hero banner with large branding', icon: Image },
-                { key: 'compact', label: 'Compact', description: 'No cover, clean icon + name header', icon: Minimize2 },
-                { key: 'catalog', label: 'Catalog', description: 'Banner with floating card overlay', icon: ShoppingBag },
+                { key: 'hero', label: t('business.heroLayout'), description: 'Full-height hero banner with large branding', icon: Image },
+                { key: 'compact', label: t('business.compactLayout'), description: 'No cover, clean icon + name header', icon: Minimize2 },
+                { key: 'catalog', label: t('business.catalogLayout'), description: 'Banner with floating card overlay', icon: ShoppingBag },
               ] as const).map(({ key, label, description, icon: Icon }) => (
                 <button
                   key={key}
@@ -517,7 +518,7 @@ export default function HomeEditor() {
 
           {/* Content Templates */}
           <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-4 space-y-3">
-            <h3 className="font-semibold text-sm">Content Template</h3>
+            <h3 className="font-semibold text-sm">{t('business.contentTemplate')}</h3>
             <p className="text-xs text-[var(--olu-text-secondary)]">Choose a starting template. You can customize tabs after selecting.</p>
             <div className="grid grid-cols-2 gap-2">
               {TEMPLATES.map((tmpl) => (

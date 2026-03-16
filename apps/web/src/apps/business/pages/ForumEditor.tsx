@@ -174,7 +174,7 @@ export default function ForumEditor() {
 
       {/* Name */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Forum Name</label>
+        <label className="text-sm font-medium">{t('business.forumName')}</label>
         <input
           type="text"
           value={name}

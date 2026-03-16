@@ -24,6 +24,7 @@ import {
   updateTask,
   listFiles,
   subscribeProjectTasks,
+  sendProjectChatMessage,
 } from '../../../domain/project/api'
 import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { Project, ProjectTask, ProjectFile } from '../../../domain/project/types'
@@ -121,18 +122,34 @@ export default function ProjectDetail() {
   }
 
   async function handleSend() {
-    if (!chat || !currentUser || !input.trim() || sending) return
+    if (!chat || !currentUser || !project || !input.trim() || sending) return
     const text = input.trim()
     setInput('')
     setSending(true)
     try {
+      // Save user message to chat
       await sendMessage(chat.id, currentUser.id, 'user', text, {
         senderName: currentUser.name,
         senderAvatar: currentUser.avatar_url || undefined,
       })
+
+      // Call the project Lead Agent
+      const agentResult = await sendProjectChatMessage(
+        project.id,
+        project.workspace_id,
+        text,
+        { sessionId: chat.id }
+      )
+
+      // Save agent response to chat
+      if (agentResult.response) {
+        await sendMessage(chat.id, 'lead-agent', 'agent', agentResult.response, {
+          senderName: 'Lead Agent',
+        })
+      }
     } catch (err) {
       console.error('Failed to send message:', err)
-      setInput(text) // restore on error
+      setInput(text)
     } finally {
       setSending(false)
     }

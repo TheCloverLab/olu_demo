@@ -330,6 +330,50 @@ export async function listFiles(projectId: string): Promise<ProjectFile[]> {
   return data || []
 }
 
+// ── Project Chat Agent ───────────────────────────────────────
+
+const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || 'http://localhost:8080'
+const API_SECRET = import.meta.env.VITE_API_SECRET || ''
+
+export async function sendProjectChatMessage(
+  projectId: string,
+  workspaceId: string,
+  message: string,
+  opts?: {
+    sessionId?: string
+    provider?: string
+    model?: string
+    images?: string[]
+  }
+): Promise<{
+  response: string
+  toolCalls: { name: string; args: Record<string, unknown>; result: string }[]
+  model?: string
+  provider?: string
+}> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/project/chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(API_SECRET ? { 'x-api-key': API_SECRET } : {}),
+    },
+    body: JSON.stringify({
+      projectId,
+      workspaceId,
+      message,
+      sessionId: opts?.sessionId,
+      provider: opts?.provider,
+      model: opts?.model,
+      images: opts?.images,
+    }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || `Agent runtime error: ${res.status}`)
+  }
+  return res.json()
+}
+
 // ── Realtime ──────────────────────────────────────────────────
 
 export function subscribeProjectTasks(

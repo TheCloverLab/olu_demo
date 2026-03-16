@@ -22,6 +22,7 @@ import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lar
 import { loadMCPFromEnv, initMCPServers, getMCPTools, getRegisteredServers, registerMCPServer } from './lib/mcp-client.js'
 import { listSkills, getAgentRuntimeType } from './lib/skill-registry.js'
 import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
+import { runProjectChatAgent } from './graph/project-chat-agent.js'
 import type { ChatRequest, ChatResponse } from '@olu/shared'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
@@ -498,6 +499,35 @@ const server = createServer(async (req, res) => {
         agentId,
         agentName: agentName || 'Agent',
         agentRole: agentRole || 'AI Agent',
+        userMessage: message || '',
+        modelProvider: parsedModelSelection.providerName,
+        modelOverride: parsedModelSelection.modelOverride,
+        sourceId: sessionId,
+        images,
+      })
+
+      json(res, 200, result)
+      return
+    }
+
+    // Project chat — chat with Lead Agent in a project context
+    if (url.pathname === '/project/chat' && req.method === 'POST') {
+      const body = await parseBody(req)
+      const { projectId, workspaceId, message, provider, model, sessionId, images } = body
+
+      if (!projectId || !workspaceId || (!message && !images?.length)) {
+        json(res, 400, { error: 'Missing required fields: projectId, workspaceId, message' })
+        return
+      }
+
+      const parsedModelSelection = parseModelSelection(
+        typeof provider === 'string' ? provider : undefined,
+        typeof model === 'string' ? model : undefined,
+      )
+
+      const result = await runProjectChatAgent({
+        projectId,
+        workspaceId,
         userMessage: message || '',
         modelProvider: parsedModelSelection.providerName,
         modelOverride: parsedModelSelection.modelOverride,

@@ -157,18 +157,16 @@ export default function QuickChat() {
             <button
               key={chat.id}
               onClick={() => selectChat(chat)}
-              className={`w-full text-left px-3 py-2.5 border-b border-[var(--olu-card-border)]/50 hover:bg-[var(--olu-accent-bg)] transition-colors ${
+              className={`w-full text-left px-3 py-3 hover:bg-[var(--olu-accent-bg)] transition-colors ${
                 activeChat?.id === chat.id ? 'bg-[var(--olu-accent-bg)]' : ''
               }`}
             >
               <p className="text-sm font-medium text-[var(--olu-text)] truncate">
                 {chat.name || 'New Chat'}
               </p>
-              {chat.last_message && (
-                <p className="text-xs text-[var(--olu-muted)] truncate mt-0.5">
-                  {chat.last_message}
-                </p>
-              )}
+              <p className="text-xs text-[var(--olu-muted)] truncate mt-0.5 h-4">
+                {chat.last_message || '\u00A0'}
+              </p>
             </button>
           ))}
         </div>

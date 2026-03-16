@@ -7,6 +7,7 @@ import RoleProtected from '../../components/auth/RoleProtected'
 
 // Lazy-loaded pages
 const Team = lazy(() => import('./pages/Team'))
+const GroupChatPage = lazy(() => import('./pages/GroupChatPage'))
 const ProjectList = lazy(() => import('./pages/ProjectList'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 const QuickChat = lazy(() => import('./pages/QuickChat'))
@@ -50,6 +51,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'chat', element: <L><QuickChat /></L> },
       { path: 'chat/:convId', element: <L><QuickChat /></L> },
       { path: 'team', element: <L><Team /></L> },
+      { path: 'team/group-chat/:chatId', element: <L><GroupChatPage /></L> },
       { path: 'team/:agentId', element: <Navigate to="/business/team" replace /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },
       { path: 'team/person/:employeeId', element: <L><EmployeeProfile /></L> },

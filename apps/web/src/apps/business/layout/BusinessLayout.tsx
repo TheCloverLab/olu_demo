@@ -54,16 +54,6 @@ const SIDEBAR_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabelKey: 'nav.groupApp',
-    items: [
-      { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
-      { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
-      { to: '/business/members', icon: Users, labelKey: 'nav.members' },
-      { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
-      { to: '/business/support', icon: Headphones, labelKey: 'nav.support' },
-    ],
-  },
-  {
     groupLabelKey: 'nav.groupOperations',
     items: [
       { to: '/business/projects', icon: FolderKanban, labelKey: 'nav.projects' },
@@ -71,6 +61,16 @@ const SIDEBAR_GROUPS: NavGroup[] = [
       { to: '/business/specialists', icon: Zap, labelKey: 'nav.specialists' },
       { to: '/business/tasks', icon: ListTodo, labelKey: 'nav.tasks' },
       { to: '/business/approvals', icon: ShieldCheck, labelKey: 'nav.approvals' },
+    ],
+  },
+  {
+    groupLabelKey: 'nav.groupApp',
+    items: [
+      { to: '/business/experiences', icon: Layers, labelKey: 'nav.experiences' },
+      { to: '/business/products', icon: Tag, labelKey: 'nav.products' },
+      { to: '/business/members', icon: Users, labelKey: 'nav.members' },
+      { to: '/business/home-editor', icon: Home, labelKey: 'nav.homeEditor' },
+      { to: '/business/support', icon: Headphones, labelKey: 'nav.support' },
     ],
   },
   {

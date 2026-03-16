@@ -121,7 +121,7 @@ export async function deleteProject(projectId: string): Promise<void> {
 export async function listParticipants(projectId: string): Promise<ProjectParticipant[]> {
   const { data, error } = await supabase
     .from('project_participants')
-    .select('*, user:users(id, name, avatar_url)')
+    .select('*, user:users!project_participants_user_id_fkey(id, name, avatar_url)')
     .eq('project_id', projectId)
     .order('created_at')
   if (error) throw error

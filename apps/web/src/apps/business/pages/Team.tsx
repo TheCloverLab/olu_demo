@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Play, Loader2, Plus } from 'lucide-react'
+import { ChevronRight, CheckSquare, Circle, ShieldCheck, UserPlus, Mail, Briefcase, Users, Plus } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { getWorkspaceTeamSnapshotForUser, ensureDefaultGroupChat, createNewGroupChat } from '../../../domain/team/api'
+import { getWorkspaceEmployeesForUser, ensureDefaultGroupChat, createNewGroupChat } from '../../../domain/team/api'
 import { ensureWorkspaceForUser } from '../../../domain/workspace/api'
-import { batchRunAgents, invokeAgent } from '../../../domain/team/runtime-api'
-import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
+import type { WorkspaceEmployee } from '../../../lib/supabase'
+import { listChats } from '../../../domain/chat/api'
 import clsx from 'clsx'
 
 type GroupChat = {
@@ -18,85 +18,10 @@ type GroupChat = {
   last_message_at?: string | null
 }
 
-type AgentWithTasks = WorkspaceAgentWithTasks
-
-const ROLE_COLORS: Record<string, string> = {
-  'IP Manager': 'bg-violet-500/15 text-violet-400',
-  'Legal Officer': 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  'Community Manager': 'bg-[var(--olu-accent-bg-strong)] text-cyan-600 dark:text-cyan-400',
-  'Growth Officer': 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-  'Data Analyst': 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
-  'Creativity Officer': 'bg-pink-500/15 text-pink-400',
-}
-
-function StatusDot({ status }: { status: 'online' | 'offline' | 'busy' }) {
-  return (
-    <span
-      className={clsx('w-2.5 h-2.5 rounded-full border-2 border-olu-card', {
-        'bg-emerald-400': status === 'online',
-        'bg-amber-400': status === 'busy',
-        'bg-gray-500': status === 'offline',
-      })}
-    />
-  )
-}
-
-function AgentRow({ agent, onRun, isRunning }: { agent: AgentWithTasks; onRun?: (agent: AgentWithTasks) => void; isRunning?: boolean }) {
-  const navigate = useNavigate()
-  const tasks = agent.tasks || []
-  const pendingTasks = tasks.filter((t) => t.status !== 'done').length
-
-  return (
-    <div className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_2px_8px_rgba(2,8,23,0.12)]">
-      <motion.button
-        whileHover={{ x: 4 }}
-        onClick={() => navigate(`/business/team/${agent.agent_key || agent.id}`)}
-        className="flex items-center gap-3 flex-1 min-w-0 text-left"
-      >
-        <div className="relative flex-shrink-0">
-          {agent.avatar_img ? (
-            <img src={agent.avatar_img} alt={agent.name} className="w-12 h-12 rounded-xl object-cover" />
-          ) : (
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color || 'from-gray-600 to-gray-500'} flex items-center justify-center text-xl font-bold text-white`}>
-              {agent.name[0]}
-            </div>
-          )}
-          <div className="absolute -bottom-0.5 -right-0.5">
-            <StatusDot status={agent.status} />
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-semibold text-sm">{agent.name}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-600 dark:text-sky-300 font-semibold uppercase tracking-wide">AI</span>
-            <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[agent.role] || 'text-[var(--olu-text-secondary)] bg-[var(--olu-accent-bg)]')}>
-              {agent.role}
-            </span>
-          </div>
-          <p className="text-[var(--olu-text-secondary)] text-xs line-clamp-1 mb-1">{agent.last_message || 'No messages yet'}</p>
-          <p className="text-[var(--olu-text-secondary)] text-xs">{agent.last_time || '—'}</p>
-        </div>
-      </motion.button>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {pendingTasks > 0 && (
-          <span className="text-xs bg-emerald-400 text-black rounded-full w-5 h-5 flex items-center justify-center font-bold">
-            {pendingTasks}
-          </span>
-        )}
-        {onRun && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onRun(agent) }}
-            disabled={isRunning}
-            className="p-2 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40"
-            title="Run agent"
-          >
-            {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-          </button>
-        )}
-        <ChevronRight size={16} className="text-[var(--olu-text-secondary)]" />
-      </div>
-    </div>
-  )
+const STATUS_DOT_COLOR: Record<string, string> = {
+  online: 'bg-emerald-400',
+  busy: 'bg-amber-400',
+  offline: 'bg-gray-500',
 }
 
 function GroupRow({ group }: { group: GroupChat }) {
@@ -126,12 +51,6 @@ function GroupRow({ group }: { group: GroupChat }) {
   )
 }
 
-const STATUS_DOT_COLOR: Record<string, string> = {
-  online: 'bg-emerald-400',
-  busy: 'bg-amber-400',
-  offline: 'bg-gray-500',
-}
-
 function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
   const navigate = useNavigate()
   return (
@@ -153,7 +72,6 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap mb-0.5">
           <span className="font-semibold text-sm">{emp.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-300 font-semibold uppercase tracking-wide">Human</span>
           <span className="text-xs text-[var(--olu-text-secondary)] capitalize flex items-center gap-1">
             <Circle size={6} className={STATUS_DOT_COLOR[emp.status]} fill="currentColor" />
             {emp.status}
@@ -190,20 +108,14 @@ function PersonRow({ emp }: { emp: WorkspaceEmployee }) {
 export default function Team() {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [agents, setAgents] = useState<AgentWithTasks[]>([])
   const [groups, setGroups] = useState<GroupChat[]>([])
   const [humans, setHumans] = useState<WorkspaceEmployee[]>([])
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
-  const [runningAll, setRunningAll] = useState(false)
-  const [runningAgent, setRunningAgent] = useState<string | null>(null)
-  const [lastRunResult, setLastRunResult] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
       if (!user?.id) {
-        setAgents([])
         setGroups([])
         setHumans([])
         setLoading(false)
@@ -211,19 +123,16 @@ export default function Team() {
       }
 
       try {
-        // Ensure default "All Members" group chat exists (non-blocking)
         ensureDefaultGroupChat(user).catch(() => {})
-        const [team, membership] = await Promise.all([
-          getWorkspaceTeamSnapshotForUser(user),
+        const [membership, empData] = await Promise.all([
           ensureWorkspaceForUser(user),
+          getWorkspaceEmployeesForUser(user).catch(() => [] as WorkspaceEmployee[]),
         ])
-        setAgents(team.agents)
-        setGroups((team.groups || []) as GroupChat[])
-        setHumans(team.humans || [])
-        setWorkspaceId(membership.workspace_id)
+        const groupData = await listChats(membership.workspace_id, 'team').catch(() => [])
+        setGroups((groupData || []) as GroupChat[])
+        setHumans(empData)
       } catch (error) {
         console.error('Failed to load team data', error)
-        setAgents([])
         setGroups([])
         setHumans([])
       } finally {
@@ -234,97 +143,26 @@ export default function Team() {
     load()
   }, [user?.id])
 
-  async function reload() {
-    if (!user?.id) return
-    const team = await getWorkspaceTeamSnapshotForUser(user)
-    setAgents(team.agents)
-    setGroups((team.groups || []) as GroupChat[])
-  }
-
   async function handleCreateGroup() {
     if (!user?.id) return
     const name = prompt('Group name:')
     if (!name?.trim()) return
-    const participants = agents.map((a) => a.name)
-    const icons = agents.slice(0, 3).map(() => '🤖')
-    if (icons.length === 0) icons.push('👥')
+    const participants = humans.map((h) => h.name)
+    const icons = ['👥']
     try {
       await createNewGroupChat(user.id, name.trim(), participants, icons)
-      const team = await getWorkspaceTeamSnapshotForUser(user)
-      setGroups((team.groups || []) as GroupChat[])
+      const membership = await ensureWorkspaceForUser(user)
+      const groupData = await listChats(membership.workspace_id, 'team').catch(() => [])
+      setGroups((groupData || []) as GroupChat[])
     } catch (err) {
       console.error('Failed to create group', err)
     }
   }
 
-  async function handleRunAll() {
-    if (!workspaceId || runningAll) return
-    setRunningAll(true)
-    setLastRunResult(null)
-    try {
-      const result = await batchRunAgents(workspaceId)
-      const summaries = result.results
-        .filter((r) => r.summary)
-        .map((r) => `${r.agentName}: ${r.summary}`)
-      setLastRunResult(summaries.length > 0 ? summaries.join('\n') : 'All agents ran — no actions taken.')
-      await reload()
-    } catch (err: any) {
-      setLastRunResult(`Error: ${err.message}`)
-    } finally {
-      setRunningAll(false)
-    }
-  }
-
-  async function handleRunAgent(agent: AgentWithTasks) {
-    if (!workspaceId || runningAgent) return
-    setRunningAgent(agent.id)
-    setLastRunResult(null)
-    try {
-      const result = await invokeAgent({
-        workspaceId,
-        agentId: agent.id,
-        agentName: agent.name,
-        agentPosition: agent.role,
-        taskDescription: 'Review your pending tasks and take action on the highest priority items.',
-      })
-      setLastRunResult(`${agent.name}: ${result.summary || result.plan || 'No actions taken.'}`)
-      await reload()
-    } catch (err: any) {
-      setLastRunResult(`Error: ${err.message}`)
-    } finally {
-      setRunningAgent(null)
-    }
-  }
-
-  const totalTasks = useMemo(
-    () => agents.reduce((acc, a) => acc + ((a.tasks || []).filter((t) => t.status !== 'done').length || 0), 0),
-    [agents]
-  )
-
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex items-center justify-center">
         <p className="text-[var(--olu-text-secondary)] text-sm">Loading team...</p>
-      </div>
-    )
-  }
-
-  if (agents.length === 0) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 pb-24 md:pb-8 flex flex-col items-center text-center">
-        <div className="w-20 h-20 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] flex items-center justify-center text-4xl mb-4">🤖</div>
-        <h2 className="font-bold text-xl mb-2">No Specialists Yet</h2>
-        <p className="text-[var(--olu-text-secondary)] text-sm max-w-xs mb-6">
-          Install a Specialist to add a team member to your workspace.
-        </p>
-        <button
-          onClick={() => {
-            window.location.href = '/business/specialists'
-          }}
-          className="px-6 py-2.5 rounded-xl bg-cyan-300 text-[#04111f] font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          Browse Specialists
-        </button>
       </div>
     )
   }
@@ -335,26 +173,10 @@ export default function Team() {
         <div>
           <h1 className="font-black text-2xl">{t('team.title')}</h1>
           <p className="text-[var(--olu-text-secondary)] text-sm mt-0.5">
-            {t('team.subtitle', { agents: agents.length, people: humans.length, tasks: totalTasks })}
+            {humans.length} {t('team.people').toLowerCase()} · {groups.length} {t('team.groups').toLowerCase()}
           </p>
         </div>
-        <button
-          onClick={handleRunAll}
-          disabled={runningAll || !!runningAgent}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {runningAll ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-          {runningAll ? t('common.loading') : t('common.runAllAgents')}
-        </button>
       </div>
-
-      {lastRunResult && (
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-4">
-          <p className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold uppercase tracking-wider mb-1">Agent Execution Result</p>
-          <p className="text-sm text-[var(--olu-text-secondary)] whitespace-pre-line">{lastRunResult}</p>
-          <button onClick={() => setLastRunResult(null)} className="text-xs text-[var(--olu-muted)] mt-2 hover:text-[var(--olu-text)]">{t('common.dismiss')}</button>
-        </div>
-      )}
 
       <div className="rounded-[28px] border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-6">
         <div className="flex items-center gap-3">
@@ -368,41 +190,11 @@ export default function Team() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { label: t('team.agents'), value: agents.length, icon: Bot, iconClass: 'text-sky-600 dark:text-sky-300', iconBg: 'bg-sky-500/15', fillIcon: false },
-          { label: t('chat.activeTasks'), value: totalTasks, icon: Zap, iconClass: 'text-amber-600 dark:text-amber-300', iconBg: 'bg-amber-500/15', fillIcon: false },
-          { label: t('common.online'), value: agents.filter((a) => a.status === 'online').length, icon: Circle, iconClass: 'text-emerald-600 dark:text-emerald-300', iconBg: 'bg-emerald-500/15', fillIcon: true },
-        ].map((card) => (
-          <div key={card.label} className="rounded-[24px] p-4 text-center border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] shadow-[0_2px_8px_rgba(2,8,23,0.12)]">
-            <div className="flex justify-center mb-2">
-              <span className={clsx('w-8 h-8 rounded-lg flex items-center justify-center', card.iconBg)}>
-                <card.icon size={15} className={card.iconClass} fill={card.fillIcon ? 'currentColor' : 'none'} />
-              </span>
-            </div>
-            <div className="font-black text-xl">{card.value}</div>
-            <div className="text-[var(--olu-text-secondary)] text-xs">{card.label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <MessageCircle size={14} className="text-[var(--olu-text-secondary)]" />
-          <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.direct')}</p>
-        </div>
-        <div className="space-y-2">
-          {agents.map((agent) => (
-            <AgentRow key={agent.id} agent={agent} onRun={handleRunAgent} isRunning={runningAgent === agent.id} />
-          ))}
-        </div>
-      </div>
-
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <CheckSquare size={14} className="text-[var(--olu-text-secondary)]" />
-            <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">Group Chats</p>
+            <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.groups')}</p>
           </div>
           <button
             onClick={handleCreateGroup}
@@ -414,7 +206,7 @@ export default function Team() {
         </div>
         <div className="space-y-2">
           {groups.length === 0 && (
-            <p className="text-[var(--olu-muted)] text-xs text-center py-4">No group chats yet</p>
+            <p className="text-[var(--olu-muted)] text-xs text-center py-4">{t('team.noGroups')}</p>
           )}
           {groups.map((group) => (
             <GroupRow key={group.id} group={group} />
@@ -422,50 +214,55 @@ export default function Team() {
         </div>
       </div>
 
-      {humans.length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Users size={14} className="text-[var(--olu-text-secondary)]" />
-              <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.people')}</p>
-              <span className="text-[var(--olu-muted)] text-xs">{humans.filter((h) => h.status === 'online').length} online</span>
-            </div>
-            <button
-              onClick={() => setShowInvite(!showInvite)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors"
-            >
-              <UserPlus size={12} />
-              {t('common.invite')}
-            </button>
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-[var(--olu-text-secondary)]" />
+            <p className="text-[var(--olu-text-secondary)] text-xs font-semibold uppercase tracking-wider">{t('team.people')}</p>
+            <span className="text-[var(--olu-muted)] text-xs">{humans.filter((h) => h.status === 'online').length} online</span>
           </div>
+          <button
+            onClick={() => setShowInvite(!showInvite)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text-secondary)] text-xs font-medium hover:bg-[var(--olu-card-hover)] transition-colors"
+          >
+            <UserPlus size={12} />
+            {t('common.invite')}
+          </button>
+        </div>
 
-          {showInvite && (
-            <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-3 space-y-4">
-              <div className="grid sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
-                  <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
-                  <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
-                </div>
-                <div className="flex items-end">
-                  <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
-                    Send Invite
-                  </button>
-                </div>
+        {showInvite && (
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-5 mb-3 space-y-4">
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Full name</label>
+                <input type="text" placeholder="Jane Doe" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
+              </div>
+              <div>
+                <label className="text-xs text-[var(--olu-text-secondary)] block mb-1">Email</label>
+                <input type="email" placeholder="jane@company.com" className="w-full bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl px-3 py-2 text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)]" />
+              </div>
+              <div className="flex items-end">
+                <button className="w-full px-4 py-2 rounded-xl bg-cyan-300 text-[#04111f] text-sm font-semibold hover:bg-cyan-200 transition-colors">
+                  Send Invite
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
+        {humans.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] p-8 text-center">
+            <Users size={32} className="mx-auto text-[var(--olu-muted)] mb-3" />
+            <p className="text-[var(--olu-muted)] text-sm">No team members yet. Invite people to get started.</p>
+          </div>
+        ) : (
           <div className="space-y-2">
             {humans.map((emp) => (
               <PersonRow key={emp.id} emp={emp} />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

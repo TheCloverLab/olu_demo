@@ -10,9 +10,6 @@ import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { ensureSupportChat, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { ChatMessage as UnifiedMessage } from '../../../domain/chat/types'
-import type { ChatRequest } from '@olu/shared'
-
-const AGENT_RUNTIME_URL = import.meta.env.VITE_AGENT_RUNTIME_URL || '/api/agent-runtime'
 
 type ViewMessage = {
   id: string
@@ -153,7 +150,6 @@ export default function SupportChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const seenIds = useRef(new Set<string>())
   const wsRef = useRef<{ id: string; name: string } | null>(null)
-  const agentRef = useRef<{ id: string; name: string; role?: string; avatarImg?: string } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -190,17 +186,6 @@ export default function SupportChat() {
         if (staffUser) setStaffName(staffUser.name || 'Support')
 
         wsRef.current = { id: ws.id, name: ws.name }
-
-        // Find support agent for this workspace
-        const { data: agents } = await supabase
-          .from('workspace_agents')
-          .select('id, name, role, avatar_img')
-          .eq('workspace_id', ws.id)
-          .eq('support_enabled', true)
-          .limit(1)
-        if (agents?.[0]) {
-          agentRef.current = { id: agents[0].id, name: agents[0].name, role: agents[0].role, avatarImg: agents[0].avatar_img }
-        }
 
         // Ensure support chat exists (unified)
         const chat = await ensureSupportChat(ws.id, userId, staffUserId)
@@ -273,42 +258,7 @@ export default function SupportChat() {
         })
         seenIds.current.add(sent.id)
 
-        // Trigger AI auto-reply via agent runtime
-        const agent = agentRef.current
-        const ws = wsRef.current
-        if (agent && ws) {
-          setAiTyping(true)
-          try {
-            const res = await fetch(`${AGENT_RUNTIME_URL}/chat`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                workspaceId: ws.id,
-                agentId: agent.id,
-                agentName: agent.name,
-                agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
-                message: text,
-                sessionId: chatId,
-              } satisfies ChatRequest),
-            })
-            if (res.ok) {
-              const result = await res.json()
-              const replyText = result.response || result.text || ''
-              if (replyText.trim()) {
-                const saved = await sendChatMessage(chatId, agent.id, 'agent', replyText, {
-                  senderName: agent.name,
-                  senderAvatar: agent.avatarImg,
-                })
-                seenIds.current.add(saved.id)
-                setMessages((prev) => [...prev, toViewMessage(saved, user.id)])
-              }
-            }
-          } catch (err) {
-            console.error('AI auto-reply failed', err)
-          } finally {
-            setAiTyping(false)
-          }
-        }
+        // TODO: AI auto-reply will be re-added via project specialist configuration
       } catch (err) {
         console.error('Failed to send message', err)
       }

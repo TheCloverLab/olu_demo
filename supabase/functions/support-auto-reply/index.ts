@@ -88,45 +88,14 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Get first support-enabled agent
-    const { data: agents } = await supabase
-      .from('workspace_agents')
-      .select('id, name, role, model')
-      .eq('workspace_id', ws.id)
-      .eq('support_enabled', true)
-      .limit(1)
-
-    const agent = agents?.[0]
-    if (!agent) {
-      return new Response(JSON.stringify({ skipped: true, reason: 'no support agent' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Parse agent model
-    let provider: string | undefined
-    let model: string | undefined
-    if (agent.model) {
-      if (agent.model.includes('::')) {
-        const [p, m] = agent.model.split('::')
-        provider = p
-        model = m
-      } else {
-        model = agent.model
-      }
-    }
-
-    // Call agent-runtime /chat
+    // Call agent-runtime /chat with default support agent
     const chatPayload: Record<string, unknown> = {
       workspaceId: ws.id,
-      agentId: agent.id,
-      agentName: agent.name,
-      agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
+      agentId: 'support',
+      agentName: 'Support Assistant',
+      agentRole: `Customer support assistant for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
       message: text,
       sessionId: social_chat_id,
-      ...(provider && { provider }),
-      ...(model && { model }),
     }
 
     const chatResp = await fetch(`${agentRuntimeUrl}/chat`, {

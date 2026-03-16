@@ -1,7 +1,6 @@
 /**
- * Cron Scheduler — Manages scheduled tasks for agents
+ * Cron Scheduler — Manages scheduled tasks
  *
- * Agents can register cron jobs (e.g., "check social media every hour").
  * Jobs are stored in Supabase and loaded on startup.
  * Uses node-cron for scheduling.
  */
@@ -43,12 +42,6 @@ function startJob(job: ScheduledJob) {
       .update({ last_run_at: new Date().toISOString() })
       .eq('id', job.id)
 
-    // Set agent status to busy
-    await supabase
-      .from('workspace_agents')
-      .update({ status: 'busy', updated_at: new Date().toISOString() })
-      .eq('id', job.agentId)
-
     try {
       const result = await runChatAgent({
         workspaceId: job.workspaceId,
@@ -68,14 +61,9 @@ function startJob(job: ScheduledJob) {
           last_result: result.response.slice(0, 500),
         })
         .eq('id', job.id)
-    } catch (err: any) {
-      console.error(`[cron] Job ${job.id} error:`, err.message)
-    } finally {
-      // Set agent back to online
-      await supabase
-        .from('workspace_agents')
-        .update({ status: 'online', updated_at: new Date().toISOString() })
-        .eq('id', job.agentId)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'unknown'
+      console.error(`[cron] Job ${job.id} error:`, msg)
     }
   })
 
@@ -97,10 +85,7 @@ export function stopJob(jobId: string) {
 export async function loadScheduledJobs() {
   const { data: jobs, error } = await supabase
     .from('agent_scheduled_jobs')
-    .select(`
-      id, cron_expression, task_description, enabled,
-      workspace_agents!inner(id, name, role, workspace_id)
-    `)
+    .select('id, cron_expression, task_description, enabled, workspace_agent_id')
     .eq('enabled', true)
 
   if (error) {
@@ -111,13 +96,12 @@ export async function loadScheduledJobs() {
   console.log(`[cron] Loading ${jobs?.length || 0} scheduled jobs`)
 
   for (const row of jobs || []) {
-    const agent = (row as any).workspace_agents
     startJob({
       id: row.id,
-      agentId: agent.id,
-      agentName: agent.name,
-      agentRole: agent.role,
-      workspaceId: agent.workspace_id,
+      agentId: row.workspace_agent_id || 'scheduler',
+      agentName: 'Scheduler',
+      agentRole: 'Scheduled Task Runner',
+      workspaceId: '',
       cronExpression: row.cron_expression,
       taskDescription: row.task_description,
       enabled: row.enabled,
@@ -136,15 +120,6 @@ export async function registerJob(params: {
     return { error: `Invalid cron expression: ${params.cronExpression}` }
   }
 
-  // Look up agent info
-  const { data: agent } = await supabase
-    .from('workspace_agents')
-    .select('id, name, role, workspace_id')
-    .eq('id', params.agentId)
-    .single()
-
-  if (!agent) return { error: 'Agent not found' }
-
   const { data, error } = await supabase
     .from('agent_scheduled_jobs')
     .insert({
@@ -159,13 +134,12 @@ export async function registerJob(params: {
 
   if (error) return { error: error.message }
 
-  // Start the job immediately
   startJob({
     id: data.id,
-    agentId: agent.id,
-    agentName: agent.name,
-    agentRole: agent.role,
-    workspaceId: agent.workspace_id,
+    agentId: params.agentId,
+    agentName: 'Agent',
+    agentRole: 'Agent',
+    workspaceId: '',
     cronExpression: params.cronExpression,
     taskDescription: params.taskDescription,
     enabled: true,

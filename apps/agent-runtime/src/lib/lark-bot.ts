@@ -56,26 +56,33 @@ export function registerBot(params: {
 
 /** Load bot registrations from Supabase */
 export async function loadBotRegistry() {
+  // workspace_agents table removed — bots now load from workspace_integrations
   const { data, error } = await supabase
-    .from('workspace_agents')
-    .select('id, name, role, workspace_id, lark_app_id, lark_app_secret')
-    .not('lark_app_id', 'is', null)
+    .from('workspace_integrations')
+    .select('workspace_id, config_json')
+    .eq('provider', 'lark_bot')
+    .eq('status', 'connected')
 
   if (error || !data?.length) {
     console.log('[lark-bot] No bots configured in database')
     return
   }
 
-  for (const agent of data) {
-    if (agent.lark_app_id && agent.lark_app_secret) {
-      registerBot({
-        agentId: agent.id,
-        agentName: agent.name,
-        agentRole: agent.role,
-        workspaceId: agent.workspace_id,
-        appId: agent.lark_app_id,
-        appSecret: agent.lark_app_secret,
-      })
+  for (const row of data) {
+    try {
+      const config = typeof row.config_json === 'string' ? JSON.parse(row.config_json) : row.config_json
+      if (config?.app_id && config?.app_secret) {
+        registerBot({
+          agentId: config.agent_id || 'lark-bot',
+          agentName: config.agent_name || 'Lark Bot',
+          agentRole: config.agent_role || 'Assistant',
+          workspaceId: row.workspace_id,
+          appId: config.app_id,
+          appSecret: config.app_secret,
+        })
+      }
+    } catch {
+      // skip invalid config
     }
   }
   console.log(`[lark-bot] Loaded ${botRegistry.size} bots`)

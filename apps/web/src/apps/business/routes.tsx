@@ -2,7 +2,7 @@ import type { RouteObject } from 'react-router-dom'
 import BusinessLayout from './layout/BusinessLayout'
 import BusinessWorkspace from './pages/BusinessWorkspace'
 import Team from './pages/Team'
-import TeamChat from './pages/TeamChat'
+// TeamChat removed — AI chat lives in Project Chat now
 import ProjectList from './pages/ProjectList'
 import ProjectDetail from './pages/ProjectDetail'
 import QuickChat from './pages/QuickChat'
@@ -44,7 +44,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'chat', element: <QuickChat /> },
       { path: 'chat/:convId', element: <QuickChat /> },
       { path: 'team', element: <Team /> },
-      { path: 'team/:agentId', element: <TeamChat /> },
+      { path: 'team/:agentId', element: <Navigate to="/business/team" replace /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },
       { path: 'team/person/:employeeId', element: <EmployeeProfile /> },
       { path: 'agents', element: <Navigate to="/business/specialists" replace /> },

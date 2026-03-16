@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Download, Zap, Crown, Loader2 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
-import { listSpecialists, getUserInstalls, installSpecialist, hireSpecialistAsAgent } from '../../../domain/specialist/api'
+import { listSpecialists, getUserInstalls, installSpecialist } from '../../../domain/specialist/api'
 import { createProject } from '../../../domain/project/api'
 import type { SpecialistTemplate, SpecialistInstall } from '../../../domain/specialist/types'
 
@@ -67,9 +67,8 @@ export default function SpecialistMarketplace() {
         },
       })
 
-      // Record the install + create workspace_agent for Team page
+      // Record the install
       await installSpecialist(template.id, currentUser.id, workspace.id, project.id)
-      await hireSpecialistAsAgent(workspace.id, currentUser.id, template).catch(() => {})
 
       // Update local state
       setInstalls((prev) => [...prev, {

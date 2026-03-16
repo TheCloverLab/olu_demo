@@ -125,31 +125,18 @@ export const createTask = tool(
 export const getTeamOverview = tool(
   async ({ workspaceId }) => {
     const { data, error } = await supabase
-      .from('workspace_agents')
-      .select(
-        'id, name, role, status, workspace_agent_tasks(id, status)',
-      )
+      .from('workspace_employees')
+      .select('id, name, position, status, email')
       .eq('workspace_id', workspaceId)
 
     if (error) return JSON.stringify({ error: error.message })
 
-    const overview = (data || []).map((agent: any) => ({
-      id: agent.id,
-      name: agent.name,
-      role: agent.role,
-      status: agent.status,
-      taskCounts: {
-        total: agent.workspace_agent_tasks?.length || 0,
-        pending: agent.workspace_agent_tasks?.filter(
-          (t: any) => t.status === 'pending',
-        ).length || 0,
-        in_progress: agent.workspace_agent_tasks?.filter(
-          (t: any) => t.status === 'in_progress',
-        ).length || 0,
-        done: agent.workspace_agent_tasks?.filter(
-          (t: any) => t.status === 'done',
-        ).length || 0,
-      },
+    const overview = (data || []).map((emp: Record<string, unknown>) => ({
+      id: emp.id,
+      name: emp.name,
+      position: emp.position,
+      status: emp.status,
+      email: emp.email,
     }))
 
     return JSON.stringify(overview)
@@ -157,7 +144,7 @@ export const getTeamOverview = tool(
   {
     name: 'get_team_overview',
     description:
-      'Get an overview of all agents in the workspace with their task counts.',
+      'Get an overview of all team members in the workspace.',
     schema: z.object({
       workspaceId: z.string().describe('The workspace id'),
     }),

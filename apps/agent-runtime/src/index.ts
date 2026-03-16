@@ -269,91 +269,6 @@ const server = createServer(async (req, res) => {
       return
     }
 
-    // Batch run — execute all agents in a workspace
-    if (url.pathname === '/batch' && req.method === 'POST') {
-      const body = await parseBody(req)
-      const { workspaceId, taskDescription } = body
-
-      if (!workspaceId) {
-        json(res, 400, { error: 'Missing required field: workspaceId' })
-        return
-      }
-
-      const { data: agents, error: agentsError } = await supabase
-        .from('workspace_agents')
-        .select('id, name, role')
-        .eq('workspace_id', workspaceId)
-
-      if (agentsError || !agents?.length) {
-        json(res, 404, { error: agentsError?.message || 'No agents found' })
-        return
-      }
-
-      const description =
-        taskDescription || 'Review your pending tasks and take appropriate action on the highest priority items.'
-
-      // Run all agents in parallel
-      const runs = await Promise.allSettled(
-        agents.map(async (agent) => {
-          const threadId = `batch-${agent.id}-${Date.now()}`
-          const config = { configurable: { thread_id: threadId } }
-
-          // Set agent status to busy
-          await supabase
-            .from('workspace_agents')
-            .update({ status: 'busy', updated_at: new Date().toISOString() })
-            .eq('id', agent.id)
-
-          try {
-            const result = await taskAgent.invoke(
-              {
-                workspaceId,
-                agentId: agent.id,
-                agentName: agent.name,
-                agentPosition: agent.role,
-                taskDescription: description,
-                requiresApproval: false,
-              },
-              config,
-            )
-
-            // Set agent back to online
-            await supabase
-              .from('workspace_agents')
-              .update({ status: 'online', updated_at: new Date().toISOString() })
-              .eq('id', agent.id)
-
-            return {
-              agentId: agent.id,
-              agentName: agent.name,
-              threadId,
-              summary: result.summary,
-              actions: result.actions,
-            }
-          } catch (err: unknown) {
-            // Set agent back to online on error
-            await supabase
-              .from('workspace_agents')
-              .update({ status: 'online', updated_at: new Date().toISOString() })
-              .eq('id', agent.id)
-            throw err
-          }
-        }),
-      )
-
-      const results = runs.map((r, i) => {
-        if (r.status === 'fulfilled') return r.value
-        return {
-          agentId: agents[i].id,
-          agentName: agents[i].name,
-          error: (r.reason as Error).message,
-        }
-      })
-
-      json(res, 200, { workspaceId, results })
-      return
-    }
-
     // Resume interrupted graph (approval)
     const resumeMatch = url.pathname.match(/^\/resume\/(.+)$/)
     if (resumeMatch && req.method === 'POST') {
@@ -380,78 +295,6 @@ const server = createServer(async (req, res) => {
         summary: result.summary,
         actions: result.actions,
       })
-      return
-    }
-
-    // List agents for a workspace
-    const agentsMatch = url.pathname.match(/^\/agents\/(.+)$/)
-    if (agentsMatch && req.method === 'GET') {
-      const workspaceId = agentsMatch[1]
-      const { data, error } = await supabase
-        .from('workspace_agents')
-        .select('id, name, role, status, agent_key, workspace_agent_tasks(id, title, status, priority, progress)')
-        .eq('workspace_id', workspaceId)
-
-      if (error) {
-        json(res, 500, { error: error.message })
-        return
-      }
-
-      json(res, 200, { agents: data || [] })
-      return
-    }
-
-    // Webhook trigger — Supabase/external events can trigger agent runs
-    if (url.pathname === '/webhook/task-created' && req.method === 'POST') {
-      const rawBody = await readBody(req)
-      if (!verifySupabaseWebhook(req, rawBody)) {
-        json(res, 403, { error: 'Invalid webhook signature' })
-        return
-      }
-      const body = JSON.parse(rawBody)
-      const { record } = body // Supabase webhook sends { type, table, record, ... }
-
-      if (!record?.workspace_agent_id) {
-        json(res, 400, { error: 'Missing workspace_agent_id in record' })
-        return
-      }
-
-      // Look up the agent
-      const { data: agent } = await supabase
-        .from('workspace_agents')
-        .select('id, name, role, workspace_id')
-        .eq('id', record.workspace_agent_id)
-        .single()
-
-      if (!agent) {
-        json(res, 404, { error: 'Agent not found' })
-        return
-      }
-
-      const threadId = `webhook-${agent.id}-${Date.now()}`
-      const config = { configurable: { thread_id: threadId } }
-
-      // Fire-and-forget: invoke the agent with the new task context
-      taskAgent
-        .invoke(
-          {
-            workspaceId: agent.workspace_id,
-            agentId: agent.id,
-            agentName: agent.name,
-            agentPosition: agent.role,
-            taskDescription: `New task assigned: "${record.title}". Review your current tasks and take appropriate action.`,
-            requiresApproval: false,
-          },
-          config,
-        )
-        .then((result) => {
-          console.log(`[webhook] Agent ${agent.name} completed:`, result.summary)
-        })
-        .catch((err) => {
-          console.error(`[webhook] Agent ${agent.name} error:`, err.message)
-        })
-
-      json(res, 202, { threadId, message: 'Agent triggered' })
       return
     }
 
@@ -719,32 +562,14 @@ const server = createServer(async (req, res) => {
         return
       }
 
-      // Get first support-enabled agent
-      const { data: agents } = await supabase
-        .from('workspace_agents')
-        .select('id, name, role, model')
-        .eq('workspace_id', ws.id)
-        .eq('support_enabled', true)
-        .limit(1)
+      // Run chat agent with default model (fire-and-forget)
+      const parsedModel = parseModelSelection(undefined, undefined)
 
-      const agent = agents?.[0]
-      if (!agent) {
-        json(res, 200, { skipped: true, reason: 'no support agent' })
-        return
-      }
-
-      // Parse agent model
-      const parsedModel = parseModelSelection(
-        agent.model?.includes('::') ? agent.model.split('::')[0] : undefined,
-        agent.model?.includes('::') ? agent.model.split('::')[1] : agent.model || undefined,
-      )
-
-      // Run chat agent (fire-and-forget to avoid blocking the trigger)
       runChatAgent({
         workspaceId: ws.id,
-        agentId: agent.id,
-        agentName: agent.name,
-        agentRole: `${agent.role || 'Customer support assistant'} for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
+        agentId: 'support',
+        agentName: 'Support Assistant',
+        agentRole: `Customer support assistant for ${ws.name}. Reply in the same language as the user. Be concise and helpful.\nYou have tools to query the database in real-time: list_products, list_experiences, get_course_content, search_workspace_content. Use them to answer detailed questions about products, courses, pricing, etc.`,
         userMessage: text,
         modelProvider: parsedModel.providerName,
         modelOverride: parsedModel.modelOverride,
@@ -766,7 +591,7 @@ const server = createServer(async (req, res) => {
         console.error('[support-auto-reply] chat error:', err.message)
       })
 
-      json(res, 202, { accepted: true, agent: agent.name })
+      json(res, 202, { accepted: true, agent: 'Support Assistant' })
       return
     }
 

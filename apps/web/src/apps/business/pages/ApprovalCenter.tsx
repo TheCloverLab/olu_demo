@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
-import { CheckCircle2, XCircle, Clock, Loader2, Shield } from 'lucide-react'
+import { useState } from 'react'
+import { CheckCircle2, XCircle, Clock, Shield } from 'lucide-react'
 import clsx from 'clsx'
-import { useAuth } from '../../../context/AuthContext'
-import { getTeamEmployeesForUser } from '../../../domain/team/api'
-import type { ApprovalStatus } from '../../../domain/team/types'
+
+type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 
 type ApprovalItem = {
   id: string
@@ -19,61 +18,22 @@ const STATUS_CFG: Record<ApprovalStatus, { icon: typeof Clock; color: string; bg
   rejected: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Rejected' },
 }
 
-// Demo approval records derived from employee tasks that need sign-off
-function deriveApprovals(employees: Awaited<ReturnType<typeof getTeamEmployeesForUser>>): ApprovalItem[] {
-  const approvals: ApprovalItem[] = []
-  for (const emp of employees) {
-    for (const task of emp.tasks || []) {
-      if (task.priority === 'high') {
-        approvals.push({
-          id: `approval-${task.id}`,
-          title: `Approve: ${task.title}`,
-          status: task.status === 'done' ? 'approved' : task.status === 'cancelled' ? 'rejected' : 'pending',
-          requestedBy: emp.name,
-          createdAt: emp.hired_at || 'Recently',
-        })
-      }
-    }
-  }
-  if (approvals.length === 0) {
-    approvals.push(
-      { id: 'demo-1', title: 'Publish holiday campaign to Instagram', status: 'pending', requestedBy: 'Marketing Agent', createdAt: '2 hours ago' },
-      { id: 'demo-2', title: 'Budget increase for TikTok ads ($200 → $500)', status: 'pending', requestedBy: 'Ad Optimizer', createdAt: '4 hours ago' },
-      { id: 'demo-3', title: 'New product listing: Summer Collection', status: 'approved', requestedBy: 'Product Agent', createdAt: 'Yesterday' },
-      { id: 'demo-4', title: 'Refund request #4821 — damaged item', status: 'rejected', requestedBy: 'Support Agent', createdAt: '2 days ago' },
-    )
-  }
-  return approvals
-}
+const DEMO_APPROVALS: ApprovalItem[] = [
+  { id: 'demo-1', title: 'Publish holiday campaign to Instagram', status: 'pending', requestedBy: 'Marketing Team', createdAt: '2 hours ago' },
+  { id: 'demo-2', title: 'Budget increase for TikTok ads ($200 → $500)', status: 'pending', requestedBy: 'Ad Manager', createdAt: '4 hours ago' },
+  { id: 'demo-3', title: 'New product listing: Summer Collection', status: 'approved', requestedBy: 'Product Team', createdAt: 'Yesterday' },
+  { id: 'demo-4', title: 'Refund request #4821 — damaged item', status: 'rejected', requestedBy: 'Support Team', createdAt: '2 days ago' },
+]
 
 export default function ApprovalCenter() {
-  const { user } = useAuth()
-  const [approvals, setApprovals] = useState<ApprovalItem[]>([])
-  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | ApprovalStatus>('all')
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return }
-    getTeamEmployeesForUser(user)
-      .then((emps) => setApprovals(deriveApprovals(emps)))
-      .catch(() => setApprovals(deriveApprovals([])))
-      .finally(() => setLoading(false))
-  }, [user?.id])
-
-  const filtered = filter === 'all' ? approvals : approvals.filter((a) => a.status === filter)
+  const filtered = filter === 'all' ? DEMO_APPROVALS : DEMO_APPROVALS.filter((a) => a.status === filter)
   const counts = {
-    all: approvals.length,
-    pending: approvals.filter((a) => a.status === 'pending').length,
-    approved: approvals.filter((a) => a.status === 'approved').length,
-    rejected: approvals.filter((a) => a.status === 'rejected').length,
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-[var(--olu-text-secondary)]" size={24} />
-      </div>
-    )
+    all: DEMO_APPROVALS.length,
+    pending: DEMO_APPROVALS.filter((a) => a.status === 'pending').length,
+    approved: DEMO_APPROVALS.filter((a) => a.status === 'approved').length,
+    rejected: DEMO_APPROVALS.filter((a) => a.status === 'rejected').length,
   }
 
   return (

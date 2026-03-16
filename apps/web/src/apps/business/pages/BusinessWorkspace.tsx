@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  AppWindow, Bot, Briefcase, Cable, CheckCircle2, Clock, LayoutDashboard,
+  AppWindow, Briefcase, Cable, CheckCircle2, Clock, LayoutDashboard,
   Loader2, Megaphone, Package, ShieldCheck, UserRound, Users, Zap,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../../context/AppContext'
 import { useAuth } from '../../../context/AuthContext'
-import { getTeamEmployeesForUser } from '../../../domain/team/api'
+import { getWorkspaceEmployeesForUser } from '../../../domain/team/api'
 import { getOwnedConsumerApps } from '../../../domain/consumer/apps'
 import { getWorkspaceConnectorSummariesForUser } from '../../../domain/connectors/api'
-import type { EmployeeWithTasks } from '../../../domain/team/types'
+import type { WorkspaceEmployee } from '../../../lib/supabase'
 import type { ConsumerApp } from '../../../lib/supabase'
 import type { ConnectorSummary } from '../../../domain/connectors/types'
 
@@ -20,7 +20,7 @@ export default function BusinessWorkspace() {
   const { currentUser, enabledBusinessModules } = useApp()
   const { user } = useAuth()
 
-  const [employees, setEmployees] = useState<EmployeeWithTasks[]>([])
+  const [employees, setEmployees] = useState<WorkspaceEmployee[]>([])
   const [apps, setApps] = useState<ConsumerApp[]>([])
   const [connectors, setConnectors] = useState<ConnectorSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,7 +28,7 @@ export default function BusinessWorkspace() {
   useEffect(() => {
     if (!user) { setLoading(false); return }
     Promise.all([
-      getTeamEmployeesForUser(user).catch(() => []),
+      getWorkspaceEmployeesForUser(user).catch(() => [] as WorkspaceEmployee[]),
       getOwnedConsumerApps(user).catch(() => []),
       getWorkspaceConnectorSummariesForUser(user).catch(() => []),
     ]).then(([emps, ownedApps, conns]) => {
@@ -38,12 +38,11 @@ export default function BusinessWorkspace() {
     }).finally(() => setLoading(false))
   }, [user?.id])
 
-  const allTasks = useMemo(() => employees.flatMap((e) => e.tasks || []), [employees])
-  const pendingTasks = allTasks.filter((t) => t.status === 'pending').length
-  const inProgressTasks = allTasks.filter((t) => t.status === 'in_progress').length
-  const doneTasks = allTasks.filter((t) => t.status === 'done').length
-  const highPriorityApprovals = allTasks.filter((t) => t.priority === 'high' && t.status !== 'done').length
-  const onlineAgents = employees.filter((e) => e.status === 'online').length
+  const pendingTasks = 0
+  const inProgressTasks = 0
+  const doneTasks = 0
+  const highPriorityApprovals = 0
+  const onlineMembers = employees.filter((e) => e.status === 'online').length
   const publishedApps = apps.filter((a) => a.status === 'published').length
   const connectedPlatforms = connectors.filter((c) => c.status === 'connected').length
 
@@ -125,9 +124,9 @@ export default function BusinessWorkspace() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{emp.name}</p>
-                  <p className="text-xs text-[var(--olu-text-secondary)] truncate">{emp.last_message || emp.position}</p>
+                  <p className="text-xs text-[var(--olu-text-secondary)] truncate">{emp.position}</p>
                 </div>
-                <span className="text-xs text-[var(--olu-muted)] flex-shrink-0">{emp.last_time || '—'}</span>
+                <span className="text-xs text-[var(--olu-muted)] flex-shrink-0">{emp.status}</span>
               </div>
             ))}
           </div>
@@ -136,26 +135,19 @@ export default function BusinessWorkspace() {
         <div className="rounded-3xl p-6 border border-[var(--olu-section-border)] bg-[var(--olu-section-bg)] space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <Bot size={18} />
+              <Users size={18} />
             </div>
             <div>
               <p className="font-bold">{t('workspace.workforce')}</p>
-              <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.onlineTotal', { online: onlineAgents, total: employees.length })}</p>
+              <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.onlineTotal', { online: onlineMembers, total: employees.length })}</p>
             </div>
           </div>
           <div className="space-y-2">
             <Link to="/business/team" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
-              <Bot size={16} className="text-cyan-500" />
+              <UserRound size={16} className="text-cyan-500" />
               <div>
-                <p className="font-semibold text-sm">{t('workspace.aiAgents', { count: employees.length })}</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.onlineActiveTasks', { online: onlineAgents, tasks: allTasks.filter((t) => t.status !== 'done').length })}</p>
-              </div>
-            </Link>
-            <Link to="/business/team/humans" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">
-              <UserRound size={16} className="text-purple-600 dark:text-purple-400" />
-              <div>
-                <p className="font-semibold text-sm">{t('workspace.humanTeam')}</p>
-                <p className="text-[var(--olu-text-secondary)] text-xs">{t('workspace.humanTeamDesc')}</p>
+                <p className="font-semibold text-sm">{t('workspace.teamMembers')} ({employees.length})</p>
+                <p className="text-[var(--olu-text-secondary)] text-xs">{onlineMembers} online</p>
               </div>
             </Link>
             <Link to="/business/approvals" className="rounded-2xl bg-[var(--olu-card-bg)] p-4 border border-[var(--olu-card-border)] flex items-center gap-3 hover:bg-[var(--olu-card-hover)] transition-colors">

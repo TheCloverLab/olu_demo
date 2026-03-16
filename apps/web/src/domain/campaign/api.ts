@@ -2,18 +2,6 @@ import { supabase } from '../../lib/supabase'
 import type { BusinessCampaign, BusinessCampaignEvent, BusinessCampaignTarget, BusinessCampaignWorkflow } from '../../lib/supabase'
 import { ensureWorkspaceForUser } from '../workspace/api'
 
-async function getWorkspaceAgentIdByKey(workspaceId: string, agentKey: string) {
-  const { data, error } = await supabase
-    .from('workspace_agents')
-    .select('id')
-    .eq('workspace_id', workspaceId)
-    .eq('agent_key', agentKey)
-    .maybeSingle()
-
-  if (error) throw error
-  return data?.id ?? null
-}
-
 async function getCampaignTargets(campaignId: string) {
   const { data, error } = await supabase
     .from('business_campaign_targets')
@@ -115,7 +103,7 @@ export async function startBusinessCampaignDemo(advertiserId: string, creatorId:
     email: '',
   } as any)
 
-  const advertiserAgentId = await getWorkspaceAgentIdByKey(advertiserMembership.workspace_id, 'max')
+  const advertiserAgentId = null // workspace_agents removed
 
   const { data: creatorRow, error: creatorError } = await supabase
     .from('users')
@@ -134,7 +122,7 @@ export async function startBusinessCampaignDemo(advertiserId: string, creatorId:
     email: '',
   } as any)
 
-  const creatorAgentId = await getWorkspaceAgentIdByKey(creatorMembership.workspace_id, 'lisa')
+  const creatorAgentId = null // workspace_agents removed
 
   const { data: campaign, error: campaignError } = await supabase
     .from('business_campaigns')

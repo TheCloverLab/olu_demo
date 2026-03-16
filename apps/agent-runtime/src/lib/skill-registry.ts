@@ -128,26 +128,13 @@ interface AgentConfig {
 }
 
 /**
- * Load agent configuration from the database.
- * Returns skills, MCP servers, and runtime type.
+ * Load agent configuration. Now uses project config instead of workspace_agents.
+ * Falls back to defaults when no project-level config exists.
  */
-async function loadAgentConfig(agentId: string): Promise<AgentConfig & { workspace_id: string | null }> {
-  const { data, error } = await supabase
-    .from('workspace_agents')
-    .select('enabled_skills, enabled_mcp_servers, runtime_type, workspace_id')
-    .eq('id', agentId)
-    .single()
-
-  if (error || !data) {
-    return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null, workspace_id: null }
-  }
-
-  return {
-    enabled_skills: data.enabled_skills as string[] | null,
-    enabled_mcp_servers: data.enabled_mcp_servers as string[] | null,
-    runtime_type: data.runtime_type as AgentConfig['runtime_type'],
-    workspace_id: (data as { workspace_id: string | null }).workspace_id,
-  }
+async function loadAgentConfig(_agentId: string): Promise<AgentConfig & { workspace_id: string | null }> {
+  // workspace_agents table removed — return defaults
+  // TODO: read from project config (specialist_installs → specialist_templates)
+  return { enabled_skills: null, enabled_mcp_servers: null, runtime_type: null, workspace_id: null }
 }
 
 /**

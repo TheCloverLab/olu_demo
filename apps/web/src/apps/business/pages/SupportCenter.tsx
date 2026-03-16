@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, Send, Headphones, ArrowLeft, MessageSquare, Bot } from 'lucide-react'
+import { Loader2, Send, Headphones, ArrowLeft, MessageSquare, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
@@ -9,8 +9,6 @@ import { supabase } from '../../../lib/supabase'
 import { listSupportChats, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { Chat, ChatMessage as UnifiedMessage, ChatMember } from '../../../domain/chat/types'
 import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
-import { getWorkspaceAgentsForUser, toggleAgentSupport } from '../../../domain/team/api'
-import type { WorkspaceAgent } from '../../../lib/supabase'
 
 type SupportChatView = Chat & {
   members?: ChatMember[]
@@ -223,21 +221,15 @@ export default function SupportCenter() {
   const [chats, setChats] = useState<SupportChatView[]>([])
   const [loading, setLoading] = useState(true)
   const [activeChat, setActiveChat] = useState<SupportChatView | null>(null)
-  const [allAgents, setAllAgents] = useState<WorkspaceAgent[]>([])
   const [masterToggle, setMasterToggle] = useState(false)
 
   useEffect(() => {
     if (!user?.id || !workspace?.id) return
 
-    Promise.all([
-      listSupportChats(workspace.id),
-      getWorkspaceAgentsForUser(user),
-    ])
-      .then(async ([chatData, agentData]) => {
-        // Resolve customer info for each support chat
+    listSupportChats(workspace.id)
+      .then(async (chatData) => {
         const enriched: SupportChatView[] = await Promise.all(
           chatData.map(async (chat) => {
-            // Find the non-owner member (the customer)
             const customerMember = (chat.members || []).find((m: ChatMember) => m.role === 'member')
             let customer: SupportChatView['customer'] = null
 
@@ -254,7 +246,6 @@ export default function SupportCenter() {
           })
         )
         setChats(enriched)
-        setAllAgents(agentData)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -265,26 +256,16 @@ export default function SupportCenter() {
     getAiSupportEnabled(workspace.id).then(setMasterToggle).catch(() => {})
   }, [workspace?.id])
 
-  const anyAgentEnabled = allAgents.some((a) => a.support_enabled)
-  const aiEnabled = anyAgentEnabled && masterToggle
+  const aiEnabled = masterToggle
 
   async function toggleMaster() {
-    if (!workspace?.id || !anyAgentEnabled) return
+    if (!workspace?.id) return
     const next = !masterToggle
     setMasterToggle(next)
     try {
       await setAiSupportEnabled(workspace.id, next)
     } catch {
       setMasterToggle(!next)
-    }
-  }
-
-  async function toggleAgentForSupport(agentId: string, enabled: boolean) {
-    setAllAgents((prev) => prev.map((a) => a.id === agentId ? { ...a, support_enabled: enabled } : a))
-    try {
-      await toggleAgentSupport(agentId, enabled)
-    } catch {
-      setAllAgents((prev) => prev.map((a) => a.id === agentId ? { ...a, support_enabled: !enabled } : a))
     }
   }
 
@@ -314,7 +295,6 @@ export default function SupportCenter() {
           </div>
           <button
             onClick={toggleMaster}
-            disabled={!anyAgentEnabled}
             className={clsx(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
               aiEnabled
@@ -322,7 +302,7 @@ export default function SupportCenter() {
                 : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
             )}
           >
-            <Bot size={16} className={aiEnabled ? 'text-cyan-500' : 'text-[var(--olu-muted)]'} />
+            <Sparkles size={16} className={aiEnabled ? 'text-cyan-500' : 'text-[var(--olu-muted)]'} />
             <div className="flex-1 text-left">
               <p className="text-xs font-medium">AI Support</p>
               <p className="text-[10px] text-[var(--olu-muted)]">
@@ -339,42 +319,6 @@ export default function SupportCenter() {
               )} />
             </div>
           </button>
-          {allAgents.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-[10px] text-[var(--olu-muted)] font-medium px-1">Assign agents</p>
-              {allAgents.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => toggleAgentForSupport(a.id, !a.support_enabled)}
-                  className={clsx(
-                    'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border transition-colors text-left',
-                    a.support_enabled
-                      ? 'border-[var(--olu-card-border)] bg-[var(--olu-accent-bg)]'
-                      : 'border-[var(--olu-card-border)] bg-[var(--olu-card-bg)] hover:bg-[var(--olu-card-hover)]'
-                  )}
-                >
-                  {a.avatar_img ? (
-                    <img src={a.avatar_img} alt="" className="w-6 h-6 rounded-lg object-cover flex-shrink-0" />
-                  ) : (
-                    <Bot size={14} className={a.support_enabled ? 'text-cyan-500' : 'text-[var(--olu-muted)]'} />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{a.name}</p>
-                    <p className="text-[10px] text-[var(--olu-muted)] truncate">{a.role}</p>
-                  </div>
-                  <div className={clsx(
-                    'w-9 h-5 rounded-full transition-colors relative flex-shrink-0',
-                    a.support_enabled ? 'bg-cyan-500' : 'bg-gray-500/40'
-                  )}>
-                    <div className={clsx(
-                      'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
-                      a.support_enabled ? 'translate-x-4' : 'translate-x-0.5'
-                    )} />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5 scrollbar-hide">
           {chats.length === 0 ? (

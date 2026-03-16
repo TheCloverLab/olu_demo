@@ -22,7 +22,7 @@ import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lar
 import { loadMCPFromEnv, initMCPServers, getMCPTools, getRegisteredServers, registerMCPServer } from './lib/mcp-client.js'
 import { listSkills, getAgentRuntimeType } from './lib/skill-registry.js'
 import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
-import { runProjectChatAgent } from './graph/project-chat-agent.js'
+import { runProjectChatAgent, streamProjectChatAgent } from './graph/project-chat-agent.js'
 import type { ChatRequest, ChatResponse } from '@olu/shared'
 
 const PORT = parseInt(process.env.PORT || '8080', 10)
@@ -548,6 +548,64 @@ const server = createServer(async (req, res) => {
       })
 
       json(res, 200, result)
+      return
+    }
+
+    // Project chat stream — SSE endpoint for streaming responses
+    if (url.pathname === '/project/chat/stream' && req.method === 'POST') {
+      const body = await parseBody(req)
+      const { projectId, workspaceId, message, provider: prov, model: mod, sessionId, images } = body
+
+      if (!projectId || !workspaceId || (!message && !images?.length)) {
+        json(res, 400, { error: 'Missing required fields: projectId, workspaceId, message' })
+        return
+      }
+
+      // Runtime-aware routing
+      const { data: proj } = await supabase
+        .from('projects')
+        .select('runtime_type')
+        .eq('id', projectId)
+        .single()
+
+      if (proj?.runtime_type === 'openclaw') {
+        proxyToOpenClaw(req, res, '/project/chat/stream')
+        return
+      }
+
+      const parsedModelSelection = parseModelSelection(
+        typeof prov === 'string' ? prov : undefined,
+        typeof mod === 'string' ? mod : undefined,
+      )
+
+      // Set SSE headers
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin') || '*',
+      })
+
+      try {
+        const stream = streamProjectChatAgent({
+          projectId,
+          workspaceId,
+          userMessage: message || '',
+          modelProvider: parsedModelSelection.providerName,
+          modelOverride: parsedModelSelection.modelOverride,
+          sourceId: sessionId,
+          images,
+        })
+
+        for await (const chunk of stream) {
+          res.write(chunk)
+        }
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : 'stream error'
+        res.write(`data: ${JSON.stringify({ type: 'error', error: errMsg })}\n\n`)
+      }
+
+      res.end()
       return
     }
 

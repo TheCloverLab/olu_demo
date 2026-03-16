@@ -106,6 +106,114 @@ async function callLLM(
   return data.choices[0]
 }
 
+/** Streaming version of callLLM — yields SSE data chunks */
+async function* callLLMStream(
+  messages: Message[],
+  provider: ModelProvider,
+  toolDefs: ReturnType<typeof buildToolDefs>,
+  modelOverride?: string,
+): AsyncGenerator<{ type: 'content' | 'tool_calls' | 'done'; data: string }> {
+  const modelName = modelOverride || provider.model
+  const body: Record<string, unknown> = {
+    model: modelName,
+    messages,
+    tools: provider.supportsTools && toolDefs.length ? toolDefs : undefined,
+    temperature: 0.3,
+    stream: true,
+  }
+
+  if (usesMaxCompletionTokens(modelName)) {
+    body.max_completion_tokens = 4096
+  } else {
+    body.max_tokens = 4096
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 90_000)
+  let res: Response
+  try {
+    res = await fetch(`${provider.baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${provider.apiKey}`,
+        ...(provider.headers || {}),
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (err: any) {
+    clearTimeout(timeout)
+    if (err.name === 'AbortError') throw new Error('LLM request timed out after 90s')
+    throw err
+  }
+  clearTimeout(timeout)
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`LLM error ${res.status}: ${text.slice(0, 200)}`)
+  }
+
+  const reader = res.body?.getReader()
+  if (!reader) throw new Error('No response body')
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let collectedContent = ''
+  let collectedToolCalls: ToolCall[] = []
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const data = line.slice(6).trim()
+      if (data === '[DONE]') {
+        if (collectedToolCalls.length) {
+          yield { type: 'tool_calls', data: JSON.stringify(collectedToolCalls) }
+        }
+        yield { type: 'done', data: collectedContent }
+        return
+      }
+      try {
+        const chunk = JSON.parse(data)
+        const delta = chunk.choices?.[0]?.delta
+        if (!delta) continue
+
+        if (delta.content) {
+          collectedContent += delta.content
+          yield { type: 'content', data: delta.content }
+        }
+
+        if (delta.tool_calls) {
+          for (const tc of delta.tool_calls) {
+            if (tc.index !== undefined) {
+              while (collectedToolCalls.length <= tc.index) {
+                collectedToolCalls.push({ id: '', type: 'function', function: { name: '', arguments: '' } })
+              }
+              const target = collectedToolCalls[tc.index]
+              if (tc.id) target.id = tc.id
+              if (tc.function?.name) target.function.name += tc.function.name
+              if (tc.function?.arguments) target.function.arguments += tc.function.arguments
+            }
+          }
+        }
+      } catch {
+        // skip malformed chunks
+      }
+    }
+  }
+
+  if (collectedToolCalls.length) {
+    yield { type: 'tool_calls', data: JSON.stringify(collectedToolCalls) }
+  }
+  yield { type: 'done', data: collectedContent }
+}
+
 /** Load project context for the system prompt */
 async function loadProjectContext(projectId: string): Promise<string> {
   const [projectRes, participantsRes, tasksRes] = await Promise.all([
@@ -314,4 +422,133 @@ ${projectContext}
     provider: provider.name,
     notice: fallbackFrom ? `Images were processed with ${provider.name} because ${fallbackFrom} does not support vision.` : undefined,
   }
+}
+
+/** Streaming version — yields SSE events */
+export async function* streamProjectChatAgent(params: {
+  projectId: string
+  workspaceId: string
+  userMessage: string
+  modelProvider?: string
+  modelOverride?: string
+  sourceId?: string
+  images?: string[]
+}): AsyncGenerator<string> {
+  const { projectId, workspaceId, userMessage, modelProvider, modelOverride, sourceId, images } = params
+
+  const { provider, fallbackFrom, effectiveModel } = resolveProviderForChat(modelProvider, Boolean(images?.length), modelOverride)
+
+  const projectContext = await loadProjectContext(projectId)
+
+  const tools: StructuredToolInterface[] = [
+    ...projectTools,
+    webSearch, fetchWebpage, browseWebpage,
+    generateImage, generateFile, generateChart, executeCode,
+  ]
+  const toolMap = Object.fromEntries(tools.map((t) => [t.name, t]))
+  const toolDefs = buildToolDefs(tools)
+
+  const systemPrompt = `You are the Lead Agent for a project workspace (workspace_id: ${workspaceId}).
+Your role is to help the project owner accomplish their goals through conversation.
+
+${projectContext}
+
+## Your Capabilities
+- **Task Management**: Automatically create, update, and track tasks based on conversation.
+- **Research**: Search the web and fetch information to support project work.
+- **Content Creation**: Generate images, files, charts, and run code.
+
+## Behavior Guidelines
+- When the user describes work to be done, create project tasks automatically.
+- When discussing completed work, update task status to "done".
+- Always use project_id "${projectId}" when calling project tools.
+- Be proactive: suggest next steps, identify blockers, and keep the project moving.
+- Be concise and actionable. Reply in the same language as the user.`
+
+  const conversationKey = sourceId ? buildConversationKey(`project:${projectId}`, sourceId) : null
+  let history: ConversationMessage[] = []
+  if (conversationKey) {
+    history = await loadConversationHistory(conversationKey)
+  }
+
+  let userContent: string | unknown[] = userMessage
+  if (images?.length) {
+    const parts: unknown[] = [{ type: 'text', text: userMessage || 'Please analyze the attached image(s).' }]
+    for (const img of images) {
+      parts.push({ type: 'image_url', image_url: { url: img } })
+    }
+    userContent = parts
+  }
+
+  const messages: Message[] = [
+    { role: 'system', content: systemPrompt },
+    ...history.filter(m => m.role !== 'system'),
+    { role: 'user', content: userContent },
+  ]
+
+  // Send metadata event
+  yield `data: ${JSON.stringify({ type: 'meta', model: effectiveModel, provider: provider.name })}\n\n`
+
+  const MAX_ITERATIONS = 10
+  let fullResponse = ''
+
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
+    let hasToolCalls = false
+    let toolCallsData: ToolCall[] = []
+    let iterContent = ''
+
+    for await (const chunk of callLLMStream(messages, provider, toolDefs, effectiveModel)) {
+      if (chunk.type === 'content') {
+        iterContent += chunk.data
+        yield `data: ${JSON.stringify({ type: 'content', text: chunk.data })}\n\n`
+      } else if (chunk.type === 'tool_calls') {
+        hasToolCalls = true
+        toolCallsData = JSON.parse(chunk.data)
+      }
+    }
+
+    if (hasToolCalls && toolCallsData.length) {
+      messages.push({
+        role: 'assistant',
+        content: iterContent || null,
+        tool_calls: toolCallsData,
+      })
+
+      for (const tc of toolCallsData) {
+        const toolName = tc.function.name
+        const toolArgs = JSON.parse(tc.function.arguments)
+        yield `data: ${JSON.stringify({ type: 'tool', name: toolName })}\n\n`
+
+        let result: string
+        const toolFn = toolMap[toolName]
+        if (toolFn) {
+          try {
+            result = await (toolFn as any).invoke(toolArgs)
+          } catch (err: any) {
+            result = JSON.stringify({ error: err.message })
+          }
+        } else {
+          result = JSON.stringify({ error: `Unknown tool: ${toolName}` })
+        }
+
+        messages.push({ role: 'tool', tool_call_id: tc.id, content: result })
+      }
+    } else {
+      fullResponse = iterContent || 'Done.'
+
+      if (conversationKey) {
+        saveConversationMessages(conversationKey, [
+          { role: 'user', content: userMessage },
+          { role: 'assistant', content: fullResponse },
+        ]).catch(() => {})
+        trimConversationHistory(conversationKey).catch(() => {})
+      }
+
+      yield `data: ${JSON.stringify({ type: 'done' })}\n\n`
+      return
+    }
+  }
+
+  yield `data: ${JSON.stringify({ type: 'content', text: '\n\nReached maximum tool call iterations.' })}\n\n`
+  yield `data: ${JSON.stringify({ type: 'done' })}\n\n`
 }

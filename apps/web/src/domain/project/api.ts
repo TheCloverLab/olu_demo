@@ -442,6 +442,72 @@ export async function sendProjectChatMessage(
   return res.json()
 }
 
+export type StreamEvent =
+  | { type: 'meta'; model: string; provider: string }
+  | { type: 'content'; text: string }
+  | { type: 'tool'; name: string }
+  | { type: 'done' }
+  | { type: 'error'; error: string }
+
+export async function streamProjectChatMessage(
+  projectId: string,
+  workspaceId: string,
+  message: string,
+  onEvent: (event: StreamEvent) => void,
+  opts?: {
+    sessionId?: string
+    provider?: string
+    model?: string
+    images?: string[]
+  }
+): Promise<void> {
+  const res = await fetch(`${AGENT_RUNTIME_URL}/project/chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(API_SECRET ? { 'x-api-key': API_SECRET } : {}),
+    },
+    body: JSON.stringify({
+      projectId,
+      workspaceId,
+      message,
+      sessionId: opts?.sessionId,
+      provider: opts?.provider,
+      model: opts?.model,
+      images: opts?.images,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || `Agent runtime error: ${res.status}`)
+  }
+
+  const reader = res.body?.getReader()
+  if (!reader) throw new Error('No response body')
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      try {
+        const event = JSON.parse(line.slice(6)) as StreamEvent
+        onEvent(event)
+      } catch {
+        // skip malformed
+      }
+    }
+  }
+}
+
 // ── Realtime ──────────────────────────────────────────────────
 
 export function subscribeProjectTasks(

@@ -34,6 +34,8 @@ import {
   Users,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   getProject,
   listProjectChats,
@@ -50,7 +52,7 @@ import {
   removeParticipant,
   listWorkspaceMembers,
   subscribeProjectTasks,
-  sendProjectChatMessage,
+  streamProjectChatMessage,
 } from '../../../domain/project/api'
 import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { Project, ProjectTask, ProjectFile, ProjectParticipant, TaskStatus, TaskPriority } from '../../../domain/project/types'
@@ -107,6 +109,8 @@ export default function ProjectDetail() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [streamingText, setStreamingText] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
 
   // Task state
   const [tasks, setTasks] = useState<ProjectTask[]>([])
@@ -184,6 +188,8 @@ export default function ProjectDetail() {
     const text = input.trim()
     setInput('')
     setSending(true)
+    setIsStreaming(true)
+    setStreamingText('')
     try {
       // Save user message to chat
       await sendMessage(chat.id, currentUser.id, 'user', text, {
@@ -191,23 +197,38 @@ export default function ProjectDetail() {
         senderAvatar: currentUser.avatar_url || undefined,
       })
 
-      // Call the project Lead Agent
-      const agentResult = await sendProjectChatMessage(
+      // Stream from Lead Agent
+      let fullResponse = ''
+      await streamProjectChatMessage(
         project.id,
         project.workspace_id,
         text,
+        (event) => {
+          if (event.type === 'content') {
+            fullResponse += event.text
+            setStreamingText(fullResponse)
+          } else if (event.type === 'tool') {
+            // Show tool usage indicator
+            setStreamingText((prev) => prev + `\n*Using ${event.name}...*\n`)
+          } else if (event.type === 'done') {
+            setIsStreaming(false)
+          }
+        },
         { sessionId: chat.id }
       )
 
-      // Save agent response to chat
-      if (agentResult.response) {
-        await sendMessage(chat.id, 'lead-agent', 'agent', agentResult.response, {
+      // Save full agent response to chat
+      if (fullResponse) {
+        await sendMessage(chat.id, 'lead-agent', 'agent', fullResponse, {
           senderName: 'Lead Agent',
         })
       }
+      setStreamingText('')
     } catch (err) {
       console.error('Failed to send message:', err)
       setInput(text)
+      setStreamingText('')
+      setIsStreaming(false)
     } finally {
       setSending(false)
     }
@@ -475,10 +496,39 @@ export default function ProjectDetail() {
                     {msg.sender_name && msg.sender_type !== 'user' && (
                       <p className="text-xs font-medium text-[var(--olu-muted)] mb-1">{msg.sender_name}</p>
                     )}
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {msg.sender_type === 'user' ? (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    ) : (
+                      <div className="prose prose-sm dark:prose-invert max-w-none [&_pre]:bg-black/10 [&_pre]:p-2 [&_pre]:rounded-lg [&_code]:text-xs [&_p]:my-1">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+              {/* Streaming response */}
+              {isStreaming && streamingText && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] px-4 py-2 rounded-2xl text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm">
+                    <p className="text-xs font-medium text-[var(--olu-muted)] mb-1">Lead Agent</p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&_pre]:bg-black/10 [&_pre]:p-2 [&_pre]:rounded-lg [&_code]:text-xs [&_p]:my-1">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Typing indicator */}
+              {sending && !streamingText && (
+                <div className="flex justify-start">
+                  <div className="px-4 py-3 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-bl-sm">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:0ms]" />
+                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Input */}

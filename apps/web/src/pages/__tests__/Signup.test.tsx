@@ -51,9 +51,8 @@ describe('Signup', () => {
 
   it('renders signup form', () => {
     renderSignup()
-    expect(screen.getByText('Join OLU')).toBeInTheDocument()
-    expect(screen.getByText('Sign up')).toBeInTheDocument()
-    expect(screen.getByText(/access to all consumer and business features/)).toBeInTheDocument()
+    expect(screen.getByText('Create your OLU account')).toBeInTheDocument()
+    expect(screen.getByText('Create account')).toBeInTheDocument()
   })
 
   it('calls signUp and navigates on success', async () => {
@@ -61,8 +60,8 @@ describe('Signup', () => {
     renderSignup()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'new@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign up'))
+    await userEvent.type(screen.getByPlaceholderText('Password (min 6 characters)'), 'password123')
+    await userEvent.click(screen.getByText('Create account'))
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('new@example.com', 'password123')
@@ -75,8 +74,8 @@ describe('Signup', () => {
     renderSignup()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'new@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign up'))
+    await userEvent.type(screen.getByPlaceholderText('Password (min 6 characters)'), 'password123')
+    await userEvent.click(screen.getByText('Create account'))
 
     await waitFor(() => {
       expect(screen.getByText(/Please verify your email/)).toBeInTheDocument()
@@ -89,8 +88,8 @@ describe('Signup', () => {
     renderSignup()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'existing@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign up'))
+    await userEvent.type(screen.getByPlaceholderText('Password (min 6 characters)'), 'password123')
+    await userEvent.click(screen.getByText('Create account'))
 
     await waitFor(() => {
       expect(screen.getByText('Email already registered')).toBeInTheDocument()
@@ -103,8 +102,8 @@ describe('Signup', () => {
     renderSignup()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'new@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign up'))
+    await userEvent.type(screen.getByPlaceholderText('Password (min 6 characters)'), 'password123')
+    await userEvent.click(screen.getByText('Create account'))
 
     await waitFor(() => {
       expect(screen.getByText('Creating account...')).toBeInTheDocument()

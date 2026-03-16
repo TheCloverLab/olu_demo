@@ -3,8 +3,8 @@ import { SCOPE_FEATURES } from '../types'
 import type { ChatScope, ChatFeatures, Chat, ChatMessage, ChatMember, ChatAttachment } from '../types'
 
 describe('SCOPE_FEATURES', () => {
-  it('covers all four scopes', () => {
-    const scopes: ChatScope[] = ['experience', 'support', 'team', 'agent']
+  it('covers all scopes', () => {
+    const scopes: ChatScope[] = ['experience', 'support', 'team', 'agent', 'project', 'quick']
     expect(Object.keys(SCOPE_FEATURES).sort()).toEqual(scopes.sort())
   })
 

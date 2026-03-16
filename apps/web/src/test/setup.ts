@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Initialize i18n with EN translations so tests render real English text
+import '../i18n'
+
 // Mock Supabase client
 vi.mock('../lib/supabase', () => {
   const mockFrom = vi.fn(() => ({

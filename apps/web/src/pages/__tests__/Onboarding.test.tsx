@@ -37,16 +37,16 @@ describe('Onboarding', () => {
 
   it('renders onboarding form', () => {
     render(<MemoryRouter><Onboarding /></MemoryRouter>)
-    expect(screen.getByText('Complete your profile')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('your_handle')).toBeInTheDocument()
+    expect(screen.getByText('Set up your profile')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Display name')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Choose a handle')).toBeInTheDocument()
     expect(screen.getByText('Continue')).toBeInTheDocument()
   })
 
   it('pre-fills name and handle from user', () => {
     render(<MemoryRouter><Onboarding /></MemoryRouter>)
-    expect(screen.getByPlaceholderText('Your name')).toHaveValue('Test')
-    expect(screen.getByPlaceholderText('your_handle')).toHaveValue('test')
+    expect(screen.getByPlaceholderText('Display name')).toHaveValue('Test')
+    expect(screen.getByPlaceholderText('Choose a handle')).toHaveValue('test')
   })
 
   it('shows error when user session is missing', async () => {
@@ -82,10 +82,10 @@ describe('Onboarding', () => {
 
     render(<MemoryRouter><Onboarding /></MemoryRouter>)
 
-    await userEvent.clear(screen.getByPlaceholderText('Your name'))
-    await userEvent.type(screen.getByPlaceholderText('Your name'), 'Luna Chen')
-    await userEvent.clear(screen.getByPlaceholderText('your_handle'))
-    await userEvent.type(screen.getByPlaceholderText('your_handle'), 'lunachen')
+    await userEvent.clear(screen.getByPlaceholderText('Display name'))
+    await userEvent.type(screen.getByPlaceholderText('Display name'), 'Luna Chen')
+    await userEvent.clear(screen.getByPlaceholderText('Choose a handle'))
+    await userEvent.type(screen.getByPlaceholderText('Choose a handle'), 'lunachen')
 
     await userEvent.click(screen.getByText('Continue'))
 
@@ -95,7 +95,7 @@ describe('Onboarding', () => {
         expect.objectContaining({
           name: 'Luna Chen',
           handle: '@lunachen',
-          onboarding_completed: true,
+          initials: 'LC',
         })
       )
     })

@@ -51,14 +51,14 @@ describe('Login', () => {
 
   it('renders login form', () => {
     renderLogin()
-    expect(screen.getByText('Welcome back')).toBeInTheDocument()
+    expect(screen.getByText('Sign in to OLU')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Sign in')).toBeInTheDocument()
+    expect(screen.getByText('Sign in', { selector: 'button' })).toBeInTheDocument()
   })
 
   it('shows error for empty fields', async () => {
     renderLogin()
-    const form = screen.getByText('Sign in').closest('form')!
+    const form = screen.getByText('Sign in', { selector: 'button' }).closest('form')!
     // The HTML5 required attribute will prevent submission with empty fields
     // But the handleSubmit also checks — let's test with values then clear
     expect(screen.queryByText('Please enter email and password.')).not.toBeInTheDocument()
@@ -69,8 +69,8 @@ describe('Login', () => {
     renderLogin()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign in'))
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'password123')
+    await userEvent.click(screen.getByText('Sign in', { selector: 'button' }))
 
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123')
@@ -82,8 +82,8 @@ describe('Login', () => {
     renderLogin()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'bad@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'wrongpass')
-    await userEvent.click(screen.getByText('Sign in'))
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'wrongpass')
+    await userEvent.click(screen.getByText('Sign in', { selector: 'button' }))
 
     await waitFor(() => {
       expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
@@ -96,8 +96,8 @@ describe('Login', () => {
     renderLogin()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
-    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'password123')
-    await userEvent.click(screen.getByText('Sign in'))
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'password123')
+    await userEvent.click(screen.getByText('Sign in', { selector: 'button' }))
 
     await waitFor(() => {
       expect(screen.getByText('Signing in...')).toBeInTheDocument()
@@ -123,6 +123,6 @@ describe('Login', () => {
     })
 
     renderLogin()
-    expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith(expect.any(String), { replace: true })
   })
 })

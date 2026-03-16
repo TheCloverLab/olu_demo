@@ -5,12 +5,15 @@ import { AppProvider, useApp } from '../AppContext'
 import * as AuthContext from '../AuthContext'
 import * as WorkspaceApi from '../../domain/workspace/api'
 import * as ConsumerApps from '../../domain/consumer/apps'
+import * as ConsumerApi from '../../domain/consumer/api'
 
 vi.mock('../AuthContext', () => ({
   useAuth: vi.fn(),
 }))
 
 vi.mock('../../domain/workspace/api', () => ({
+  ensureWorkspaceForUser: vi.fn(),
+  getWorkspaceById: vi.fn(),
   getEnabledBusinessModulesForUser: vi.fn(),
   getConsumerTemplateForUser: vi.fn(),
   getWorkspaceConsumerConfigForUser: vi.fn(),
@@ -21,6 +24,15 @@ vi.mock('../../domain/workspace/api', () => ({
 vi.mock('../../domain/consumer/apps', () => ({
   getOwnedConsumerApps: vi.fn(),
   getPrimaryConsumerApp: vi.fn(),
+}))
+
+vi.mock('../../domain/consumer/api', () => ({
+  getConsumerExperience: vi.fn().mockResolvedValue({
+    feed: [],
+    courses: [],
+    memberships: [],
+    gallery: [],
+  }),
 }))
 
 function TestConsumer() {
@@ -51,6 +63,20 @@ describe('AppContext', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+
+    // Default: workspace api returns modules
+    vi.mocked(WorkspaceApi.ensureWorkspaceForUser).mockResolvedValue({
+      workspace_id: 'ws-1',
+      user_id: '1',
+      role: 'owner',
+    } as any)
+    vi.mocked(WorkspaceApi.getWorkspaceById).mockResolvedValue({
+      id: 'ws-1',
+      name: 'Test Workspace',
+      slug: 'test',
+      owner_user_id: '1',
+      status: 'active',
+    } as any)
     vi.mocked(WorkspaceApi.getEnabledBusinessModulesForUser).mockResolvedValue(['creator_ops', 'marketing', 'supply_chain'])
     vi.mocked(WorkspaceApi.getConsumerTemplateForUser).mockResolvedValue('fan_community')
     vi.mocked(WorkspaceApi.getWorkspaceConsumerConfigForUser).mockResolvedValue({
@@ -127,7 +153,7 @@ describe('AppContext', () => {
     )
 
     await act(async () => {
-      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 50))
     })
 
     expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops,marketing')
@@ -153,7 +179,7 @@ describe('AppContext', () => {
     )
 
     await act(async () => {
-      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 50))
     })
 
     expect(screen.getByTestId('has-creator')).toHaveTextContent('yes')
@@ -210,13 +236,15 @@ describe('AppContext', () => {
     )
 
     await act(async () => {
-      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 50))
     })
     expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops')
 
     await userEvent.click(screen.getByText('Reload Modules'))
 
-    await screen.findByText('Reload Modules')
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50))
+    })
     expect(screen.getByTestId('modules')).toHaveTextContent('creator_ops,marketing')
   })
 
@@ -260,7 +288,7 @@ describe('AppContext', () => {
     )
 
     await act(async () => {
-      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 50))
     })
 
     expect(screen.getByTestId('template')).toHaveTextContent('sell_courses')
@@ -283,7 +311,7 @@ describe('AppContext', () => {
     )
 
     await act(async () => {
-      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 50))
     })
 
     expect(screen.getByTestId('consumer-apps')).toHaveTextContent('community')

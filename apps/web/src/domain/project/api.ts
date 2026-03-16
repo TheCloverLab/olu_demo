@@ -7,6 +7,7 @@ import type {
   ProjectFile,
   ProjectType,
   ProjectStatus,
+  RuntimeType,
   TaskStatus,
   TaskPriority,
 } from './types'
@@ -40,6 +41,7 @@ export async function createProject(
   opts?: {
     description?: string
     type?: ProjectType
+    runtime_type?: RuntimeType
     config?: ProjectConfig
   }
 ): Promise<Project> {
@@ -51,6 +53,7 @@ export async function createProject(
       name,
       description: opts?.description,
       type: opts?.type || 'short_term',
+      runtime_type: opts?.runtime_type || 'langgraph',
       config: opts?.config || {},
     })
     .select()

@@ -141,6 +141,7 @@
     "descPlaceholder": "Describe what this project is about (optional)...",
     "shortTerm": "Short-term",
     "ongoing": "Ongoing",
+    "runtime": "AI Runtime",
     "active": "Active",
     "other": "Other",
     "empty": "No projects yet. Create one to get started!",

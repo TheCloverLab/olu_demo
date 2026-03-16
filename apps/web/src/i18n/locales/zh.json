@@ -141,6 +141,7 @@
     "descPlaceholder": "描述这个项目（可选）...",
     "shortTerm": "短期",
     "ongoing": "持续",
+    "runtime": "AI 运行时",
     "active": "进行中",
     "other": "其他",
     "empty": "暂无项目，创建一个开始吧！",

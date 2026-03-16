@@ -520,6 +520,18 @@ const server = createServer(async (req, res) => {
         return
       }
 
+      // Runtime-aware routing: check project's runtime_type
+      const { data: proj } = await supabase
+        .from('projects')
+        .select('runtime_type')
+        .eq('id', projectId)
+        .single()
+
+      if (proj?.runtime_type === 'openclaw') {
+        proxyToOpenClaw(req, res, '/project/chat')
+        return
+      }
+
       const parsedModelSelection = parseModelSelection(
         typeof provider === 'string' ? provider : undefined,
         typeof model === 'string' ? model : undefined,

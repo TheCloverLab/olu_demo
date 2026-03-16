@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listProjects, createProject, listTasks } from '../../../domain/project/api'
-import type { Project, ProjectTask, ProjectType } from '../../../domain/project/types'
+import type { Project, ProjectTask, ProjectType, RuntimeType } from '../../../domain/project/types'
 
 const STATUS_ICON = {
   active: Clock,
@@ -43,6 +43,7 @@ export default function ProjectList() {
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newType, setNewType] = useState<ProjectType>('short_term')
+  const [newRuntime, setNewRuntime] = useState<RuntimeType>('langgraph')
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export default function ProjectList() {
       const project = await createProject(workspace.id, currentUser.id, newName.trim(), {
         description: newDesc.trim() || undefined,
         type: newType,
+        runtime_type: newRuntime,
       })
       setShowCreate(false)
       setNewName('')
@@ -167,6 +169,31 @@ export default function ProjectList() {
               >
                 {t('projects.ongoing', 'Ongoing')}
               </button>
+            </div>
+            <div>
+              <p className="text-xs text-[var(--olu-text-secondary)] mb-2">{t('projects.runtime', 'AI Runtime')}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setNewRuntime('langgraph')}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                    newRuntime === 'langgraph'
+                      ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
+                      : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                  }`}
+                >
+                  LangGraph
+                </button>
+                <button
+                  onClick={() => setNewRuntime('openclaw')}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                    newRuntime === 'openclaw'
+                      ? 'border-[var(--olu-primary)] bg-[var(--olu-primary)]/10 text-[var(--olu-primary)]'
+                      : 'border-[var(--olu-border)] text-[var(--olu-text-secondary)]'
+                  }`}
+                >
+                  OpenClaw
+                </button>
+              </div>
             </div>
             <div className="flex gap-3 justify-end">
               <button

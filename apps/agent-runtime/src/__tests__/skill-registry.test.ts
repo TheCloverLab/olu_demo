@@ -10,7 +10,7 @@ describe('Skill Registry', () => {
     expect(ALL_SKILL_NAMES).toContain('memory')
     expect(ALL_SKILL_NAMES).toContain('marketing')
     expect(ALL_SKILL_NAMES).toContain('automation')
-    expect(ALL_SKILL_NAMES.length).toBe(10)
+    expect(ALL_SKILL_NAMES.length).toBe(13)
   })
 
   it('each skill has name, description, and tools', () => {
@@ -52,7 +52,7 @@ describe('Skill Registry', () => {
 
   it('listSkills returns correct format', () => {
     const skills = listSkills()
-    expect(skills.length).toBe(10)
+    expect(skills.length).toBe(13)
     for (const skill of skills) {
       expect(skill).toHaveProperty('id')
       expect(skill).toHaveProperty('name')
@@ -67,6 +67,6 @@ describe('Skill Registry', () => {
     for (const skill of Object.values(SKILL_DEFINITIONS)) {
       totalTools += skill.tools.length
     }
-    expect(totalTools).toBe(23)
+    expect(totalTools).toBe(34)
   })
 })

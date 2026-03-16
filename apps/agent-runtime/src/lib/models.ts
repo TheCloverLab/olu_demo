@@ -357,7 +357,7 @@ async function fetchProviderModelIds(provider: ModelProvider): Promise<string[]>
         : []
 
   return rows
-    .map((row: any) => row?.id || row?.name)
+    .map((row: Record<string, unknown>) => (row?.id || row?.name) as unknown)
     .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0)
 }
 

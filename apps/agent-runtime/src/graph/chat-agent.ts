@@ -19,12 +19,17 @@ import {
   type ConversationMessage,
 } from '../lib/conversation.js'
 
+type MessageContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
 type Message = {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string | null | any[]
+  content: string | null | MessageContentPart[]
   tool_calls?: ToolCall[]
   tool_call_id?: string
   name?: string
+  reasoning_content?: string
 }
 
 type ToolCall = {
@@ -34,7 +39,7 @@ type ToolCall = {
 }
 
 function cleanSchema(schema: Record<string, unknown>): Record<string, unknown> {
-  const { $schema, additionalProperties, ...rest } = schema as any
+  const { $schema: _schema, additionalProperties: _addl, ...rest } = schema
   return rest
 }
 
@@ -44,7 +49,7 @@ function buildToolDefs(tools: StructuredToolInterface[]) {
     function: {
       name: t.name,
       description: t.description,
-      parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema as any) as Record<string, unknown>) : { type: 'object', properties: {} },
+      parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema as Parameters<typeof zodToJsonSchema>[0]) as Record<string, unknown>) : { type: 'object', properties: {} },
     },
   }))
 }
@@ -87,9 +92,9 @@ async function callLLMWithTools(
       body: JSON.stringify(body),
       signal: controller.signal,
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeout)
-    if (err.name === 'AbortError') throw new Error('LLM request timed out after 60s')
+    if (err instanceof Error && err.name === 'AbortError') throw new Error('LLM request timed out after 60s')
     throw err
   }
   clearTimeout(timeout)
@@ -156,9 +161,9 @@ Be concise and professional. Use your tools silently — never tell the user whi
   }
 
   // Build user message with optional images (vision)
-  let userContent: any = userMessage
+  let userContent: string | MessageContentPart[] = userMessage
   if (images?.length) {
-    const parts: any[] = []
+    const parts: MessageContentPart[] = []
     parts.push({ type: 'text', text: userMessage || 'Please analyze the attached image(s).' })
     for (const img of images) {
       // img can be a public URL or a data URL like "data:image/png;base64,..."
@@ -187,13 +192,11 @@ Be concise and professional. Use your tools silently — never tell the user whi
 
     if (msg.tool_calls?.length) {
       // LLM wants to call tools — preserve reasoning_content for Kimi compatibility
-      const assistantMsg: any = {
+      const assistantMsg: Message = {
         role: 'assistant',
         content: msg.content || null,
         tool_calls: msg.tool_calls,
-      }
-      if (msg.reasoning_content) {
-        assistantMsg.reasoning_content = msg.reasoning_content
+        reasoning_content: msg.reasoning_content || undefined,
       }
       messages.push(assistantMsg)
 
@@ -206,9 +209,9 @@ Be concise and professional. Use your tools silently — never tell the user whi
         const toolFn = toolMap[toolName]
         if (toolFn) {
           try {
-            result = await (toolFn as any).invoke(toolArgs)
-          } catch (err: any) {
-            result = JSON.stringify({ error: err.message })
+            result = await toolFn.invoke(toolArgs)
+          } catch (err: unknown) {
+            result = JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
           }
         } else {
           result = JSON.stringify({ error: `Unknown tool: ${toolName}` })
@@ -234,7 +237,7 @@ Be concise and professional. Use your tools silently — never tell the user whi
         ]).catch(err => console.error('[chatAgent] Failed to save conversation:', err.message))
 
         // Trim old messages in background
-        trimConversationHistory(conversationKey).catch(() => {})
+        trimConversationHistory(conversationKey).catch(err => console.warn('[trim] Failed to trim conversation:', err.message))
       }
 
       return {
@@ -253,7 +256,7 @@ Be concise and professional. Use your tools silently — never tell the user whi
     saveConversationMessages(conversationKey, [
       { role: 'user', content: userMessage },
       { role: 'assistant', content: fallbackResponse },
-    ]).catch(() => {})
+    ]).catch(err => console.warn('[chatAgent] Failed to save fallback conversation:', err.message))
   }
 
   return {

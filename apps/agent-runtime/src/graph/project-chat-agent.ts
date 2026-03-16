@@ -23,12 +23,17 @@ import {
 } from '../lib/conversation.js'
 import { supabase } from '../lib/supabase.js'
 
+type MessageContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
 type Message = {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string | null | any[]
+  content: string | null | MessageContentPart[]
   tool_calls?: ToolCall[]
   tool_call_id?: string
   name?: string
+  reasoning_content?: string
 }
 
 type ToolCall = {
@@ -38,7 +43,7 @@ type ToolCall = {
 }
 
 function cleanSchema(schema: Record<string, unknown>): Record<string, unknown> {
-  const { $schema, additionalProperties, ...rest } = schema as any
+  const { $schema: _schema, additionalProperties: _addl, ...rest } = schema
   return rest
 }
 
@@ -48,7 +53,7 @@ function buildToolDefs(tools: StructuredToolInterface[]) {
     function: {
       name: t.name,
       description: t.description,
-      parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema as any) as Record<string, unknown>) : { type: 'object', properties: {} },
+      parameters: t.schema ? cleanSchema(zodToJsonSchema(t.schema as Parameters<typeof zodToJsonSchema>[0]) as Record<string, unknown>) : { type: 'object', properties: {} },
     },
   }))
 }
@@ -91,9 +96,9 @@ async function callLLM(
       body: JSON.stringify(body),
       signal: controller.signal,
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeout)
-    if (err.name === 'AbortError') throw new Error('LLM request timed out after 90s')
+    if (err instanceof Error && err.name === 'AbortError') throw new Error('LLM request timed out after 90s')
     throw err
   }
   clearTimeout(timeout)
@@ -143,9 +148,9 @@ async function* callLLMStream(
       body: JSON.stringify(body),
       signal: controller.signal,
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeout)
-    if (err.name === 'AbortError') throw new Error('LLM request timed out after 90s')
+    if (err instanceof Error && err.name === 'AbortError') throw new Error('LLM request timed out after 90s')
     throw err
   }
   clearTimeout(timeout)
@@ -349,9 +354,9 @@ ${skillDescriptions}
   }
 
   // Build user message with optional images
-  let userContent: any = userMessage
+  let userContent: string | MessageContentPart[] = userMessage
   if (images?.length) {
-    const parts: any[] = [{ type: 'text', text: userMessage || 'Please analyze the attached image(s).' }]
+    const parts: MessageContentPart[] = [{ type: 'text', text: userMessage || 'Please analyze the attached image(s).' }]
     for (const img of images) {
       parts.push({ type: 'image_url', image_url: { url: img } })
     }
@@ -373,13 +378,11 @@ ${skillDescriptions}
     console.log(`[projectChat] finish_reason=${choice.finish_reason} tool_calls=${msg.tool_calls?.length || 0}`)
 
     if (msg.tool_calls?.length) {
-      const assistantMsg: any = {
+      const assistantMsg: Message = {
         role: 'assistant',
         content: msg.content || null,
         tool_calls: msg.tool_calls,
-      }
-      if (msg.reasoning_content) {
-        assistantMsg.reasoning_content = msg.reasoning_content
+        reasoning_content: msg.reasoning_content || undefined,
       }
       messages.push(assistantMsg)
 
@@ -392,9 +395,9 @@ ${skillDescriptions}
         const toolFn = toolMap[toolName]
         if (toolFn) {
           try {
-            result = await (toolFn as any).invoke(toolArgs)
-          } catch (err: any) {
-            result = JSON.stringify({ error: err.message })
+            result = await toolFn.invoke(toolArgs)
+          } catch (err: unknown) {
+            result = JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
           }
         } else {
           result = JSON.stringify({ error: `Unknown tool: ${toolName}` })
@@ -417,7 +420,7 @@ ${skillDescriptions}
           { role: 'assistant', content: response },
         ]).catch(err => console.error('[projectChat] Failed to save conversation:', err.message))
 
-        trimConversationHistory(conversationKey).catch(() => {})
+        trimConversationHistory(conversationKey).catch(err => console.warn('[trim] Failed to trim conversation:', err.message))
       }
 
       return {
@@ -436,7 +439,7 @@ ${skillDescriptions}
     saveConversationMessages(conversationKey, [
       { role: 'user', content: userMessage },
       { role: 'assistant', content: fallbackResponse },
-    ]).catch(() => {})
+    ]).catch(err => console.warn('[projectChat] Failed to save fallback conversation:', err.message))
   }
 
   return {
@@ -496,9 +499,9 @@ ${skillDescriptions}
     history = await loadConversationHistory(conversationKey)
   }
 
-  let userContent: string | unknown[] = userMessage
+  let userContent: string | MessageContentPart[] = userMessage
   if (images?.length) {
-    const parts: unknown[] = [{ type: 'text', text: userMessage || 'Please analyze the attached image(s).' }]
+    const parts: MessageContentPart[] = [{ type: 'text', text: userMessage || 'Please analyze the attached image(s).' }]
     for (const img of images) {
       parts.push({ type: 'image_url', image_url: { url: img } })
     }
@@ -507,7 +510,7 @@ ${skillDescriptions}
 
   const messages: Message[] = [
     { role: 'system', content: systemPrompt },
-    ...history.filter(m => m.role !== 'system'),
+    ...history.filter(m => m.role !== 'system') as Message[],
     { role: 'user', content: userContent },
   ]
 
@@ -548,9 +551,9 @@ ${skillDescriptions}
         const toolFn = toolMap[toolName]
         if (toolFn) {
           try {
-            result = await (toolFn as any).invoke(toolArgs)
-          } catch (err: any) {
-            result = JSON.stringify({ error: err.message })
+            result = await toolFn.invoke(toolArgs)
+          } catch (err: unknown) {
+            result = JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
           }
         } else {
           result = JSON.stringify({ error: `Unknown tool: ${toolName}` })
@@ -565,8 +568,8 @@ ${skillDescriptions}
         saveConversationMessages(conversationKey, [
           { role: 'user', content: userMessage },
           { role: 'assistant', content: fullResponse },
-        ]).catch(() => {})
-        trimConversationHistory(conversationKey).catch(() => {})
+        ]).catch(err => console.warn('[projectChat] Failed to save stream conversation:', err.message))
+        trimConversationHistory(conversationKey).catch(err => console.warn('[trim] Failed to trim conversation:', err.message))
       }
 
       yield `data: ${JSON.stringify({ type: 'done' })}\n\n`

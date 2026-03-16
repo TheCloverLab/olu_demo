@@ -6,7 +6,38 @@
  */
 
 import { StateGraph, Annotation, interrupt, MemorySaver } from '@langchain/langgraph'
+import { z } from 'zod'
 import { supabase } from '../lib/supabase.js'
+
+// --- Type definitions ---
+
+interface TaskItem {
+  id: string
+  task_key: string
+  title: string
+  status: string
+  priority: string
+  due: string | null
+  progress: number
+}
+
+interface ActionItem {
+  type: 'update_status' | 'create_task' | 'send_message' | 'none'
+  task_id?: string
+  new_status?: string
+  progress?: number
+  task_key?: string
+  title?: string
+  priority?: string
+  text?: string
+  reason?: string
+}
+
+interface ActionResult {
+  action: ActionItem
+  result?: Record<string, unknown>
+  error?: string
+}
 
 // --- State definition ---
 
@@ -24,7 +55,7 @@ const AgentState = Annotation.Root({
     reducer: (_prev, next) => next,
     default: () => null,
   }),
-  tasks: Annotation<any[]>({
+  tasks: Annotation<TaskItem[]>({
     reducer: (_prev, next) => next,
     default: () => [],
   }),
@@ -32,7 +63,7 @@ const AgentState = Annotation.Root({
     reducer: (_prev, next) => next,
     default: () => '',
   }),
-  actions: Annotation<any[]>({
+  actions: Annotation<(ActionItem | ActionResult)[]>({
     reducer: (_prev, next) => next,
     default: () => [],
   }),
@@ -86,7 +117,12 @@ async function callLLM(prompt: string, options?: { json?: boolean }): Promise<st
 
   const text = await res.text()
   console.log('[callLLM] Raw response:', text.slice(0, 500))
-  const data = JSON.parse(text)
+  let data: { choices?: { message?: { content?: string; reasoning_content?: string } }[] }
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error(`LLM returned invalid JSON: ${text.slice(0, 200)}`)
+  }
   const msg = data.choices?.[0]?.message
   return msg?.content || msg?.reasoning_content || ''
 }
@@ -105,6 +141,36 @@ async function fetchTasks(state: typeof AgentState.State) {
   }
   return { tasks: data || [] }
 }
+
+// --- Zod schema for LLM plan response ---
+
+const LLMActionSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('update_status'),
+    task_id: z.string(),
+    new_status: z.enum(['in_progress', 'done']).optional(),
+    progress: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal('create_task'),
+    task_key: z.string(),
+    title: z.string(),
+    priority: z.enum(['low', 'medium', 'high']).optional(),
+  }),
+  z.object({
+    type: z.literal('send_message'),
+    text: z.string(),
+  }),
+  z.object({
+    type: z.literal('none'),
+    reason: z.string().optional(),
+  }),
+])
+
+const LLMPlanResponseSchema = z.object({
+  plan: z.string().default(''),
+  actions: z.array(LLMActionSchema).default([]),
+})
 
 // --- Node: Plan actions using LLM ---
 
@@ -143,14 +209,21 @@ When completing or starting tasks, always include a send_message action to notif
     const response = await callLLM(prompt, { json: true })
     console.log('[planActions] LLM response:', response.slice(0, 500))
     const cleaned = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim()
-    const parsed = JSON.parse(cleaned)
-    return {
-      plan: parsed.plan || '',
-      actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+    let raw: unknown
+    try {
+      raw = JSON.parse(cleaned)
+    } catch {
+      throw new Error(`LLM returned invalid JSON: ${cleaned.slice(0, 200)}`)
     }
-  } catch (err: any) {
-    console.error('[planActions] Error:', err.message)
-    return { plan: 'Failed to plan', actions: [], error: err.message }
+    const parsed = LLMPlanResponseSchema.parse(raw)
+    return {
+      plan: parsed.plan,
+      actions: parsed.actions,
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[planActions] Error:', msg)
+    return { plan: 'Failed to plan', actions: [], error: msg }
   }
 }
 
@@ -160,7 +233,10 @@ function checkApproval(state: typeof AgentState.State) {
   if (state.error) return '__end__'
 
   const hasStatusChange = state.actions.some(
-    (a: any) => a.type === 'update_status' && a.new_status === 'done',
+    (a) => {
+      const item = 'action' in a ? a.action : a
+      return item.type === 'update_status' && item.new_status === 'done'
+    },
   )
 
   if (hasStatusChange && state.requiresApproval && state.approved === null) {
@@ -199,17 +275,17 @@ async function logActivity(
       action,
       detail,
     })
-  } catch (err: any) {
-    console.warn('[logActivity] Failed:', err.message)
+  } catch (err: unknown) {
+    console.warn('[logActivity] Failed:', err instanceof Error ? err.message : String(err))
   }
 }
 
 // --- Node: Execute planned actions ---
 
 async function executeActions(state: typeof AgentState.State) {
-  const results: any[] = []
+  const results: ActionResult[] = []
 
-  for (const action of state.actions) {
+  for (const action of state.actions as ActionItem[]) {
     try {
       if (action.type === 'update_status') {
         const updates: Record<string, unknown> = {
@@ -227,7 +303,7 @@ async function executeActions(state: typeof AgentState.State) {
 
         if (!error && data) {
           const logAction = action.new_status === 'done' ? 'completed' : 'started'
-          await logActivity(state.agentId, action.task_id, logAction, `Status → ${action.new_status}, progress: ${action.progress ?? data.progress}%`)
+          await logActivity(state.agentId, action.task_id!, logAction, `Status → ${action.new_status}, progress: ${action.progress ?? data.progress}%`)
         }
         results.push(
           error
@@ -275,10 +351,10 @@ async function executeActions(state: typeof AgentState.State) {
             : { action, result: data },
         )
       } else {
-        results.push({ action, result: 'no-op' })
+        results.push({ action, result: { status: 'no-op' } })
       }
-    } catch (err: any) {
-      results.push({ action, error: err.message })
+    } catch (err: unknown) {
+      results.push({ action, error: err instanceof Error ? err.message : String(err) })
     }
   }
 
@@ -296,10 +372,10 @@ async function summarize(state: typeof AgentState.State) {
     return { summary: 'Action was rejected by the reviewer.' }
   }
 
-  const actionsDesc = state.actions
-    .map((a: any) => {
+  const actionsDesc = (state.actions as ActionResult[])
+    .map((a) => {
       if (a.error) return `- FAILED: ${JSON.stringify(a.action)} — ${a.error}`
-      if (a.result === 'no-op') return `- Skipped: ${a.action?.reason || 'no action needed'}`
+      if (a.result && 'status' in a.result && a.result.status === 'no-op') return `- Skipped: ${a.action?.reason || 'no action needed'}`
       return `- Done: ${JSON.stringify(a.result)}`
     })
     .join('\n')

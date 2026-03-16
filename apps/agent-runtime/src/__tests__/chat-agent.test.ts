@@ -4,6 +4,7 @@ const ORIGINAL_ENV = { ...process.env }
 
 vi.mock('../lib/skill-registry.js', () => ({
   getAgentTools: vi.fn(async () => []),
+  getAgentSkillPrompts: vi.fn(async () => ''),
 }))
 
 vi.mock('../lib/conversation.js', () => ({

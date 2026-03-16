@@ -38,7 +38,7 @@ interface MCPServer {
   args?: string[]   // for stdio
   url?: string      // for sse
   tools: MCPTool[]
-  process?: any     // child process for stdio
+  process?: unknown  // child process for stdio
 }
 
 const servers = new Map<string, MCPServer>()
@@ -72,14 +72,15 @@ async function discoverSSETools(server: MCPServer): Promise<MCPTool[]> {
     if (!res.ok) return []
     const data = await res.json()
 
-    return (data.result?.tools || []).map((t: any) => ({
+    interface MCPRawTool { name: string; description?: string; inputSchema?: Record<string, unknown> }
+    return ((data.result?.tools || []) as MCPRawTool[]).map((t) => ({
       name: `${server.name}__${t.name}`,
       description: t.description || '',
       inputSchema: t.inputSchema || { type: 'object', properties: {} },
       serverName: server.name,
     }))
-  } catch (err: any) {
-    console.error(`[mcp] Failed to discover tools from ${server.name}:`, err.message)
+  } catch (err: unknown) {
+    console.error(`[mcp] Failed to discover tools from ${server.name}:`, err instanceof Error ? err.message : String(err))
     return []
   }
 }
@@ -148,14 +149,15 @@ async function callSSETool(server: MCPServer, toolName: string, args: Record<str
     if (data.error) return JSON.stringify({ error: data.error.message })
 
     // MCP returns content array
-    const content = data.result?.content || []
+    interface MCPContentPart { type: string; text?: string }
+    const content = (data.result?.content || []) as MCPContentPart[]
     const textParts = content
-      .filter((c: any) => c.type === 'text')
-      .map((c: any) => c.text)
+      .filter((c) => c.type === 'text')
+      .map((c) => c.text ?? '')
 
     return textParts.join('\n') || JSON.stringify(data.result)
-  } catch (err: any) {
-    return JSON.stringify({ error: err.message })
+  } catch (err: unknown) {
+    return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
   }
 }
 
@@ -215,7 +217,7 @@ export function getMCPTools(): MCPTool[] {
  * Handles basic types — complex schemas fall back to z.record.
  */
 function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodTypeAny {
-  const properties = schema.properties as Record<string, any> | undefined
+  const properties = schema.properties as Record<string, Record<string, unknown>> | undefined
   if (!properties || Object.keys(properties).length === 0) {
     return z.object({}).passthrough()
   }
@@ -228,7 +230,7 @@ function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodTypeAny {
 
     switch (prop.type) {
       case 'string':
-        field = prop.enum ? z.enum(prop.enum) : z.string()
+        field = prop.enum ? z.enum(prop.enum as [string, ...string[]]) : z.string()
         break
       case 'number':
       case 'integer':
@@ -238,16 +240,16 @@ function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodTypeAny {
         field = z.boolean()
         break
       case 'array':
-        field = z.array(z.any())
+        field = z.array(z.unknown())
         break
       case 'object':
-        field = z.record(z.any())
+        field = z.record(z.unknown())
         break
       default:
-        field = z.any()
+        field = z.unknown()
     }
 
-    if (prop.description) {
+    if (typeof prop.description === 'string') {
       field = field.describe(prop.description)
     }
 

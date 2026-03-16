@@ -107,7 +107,19 @@ async function sendBotReply(bot: LarkBot, chatId: string, text: string) {
 }
 
 /** Handle incoming Lark webhook event */
-export async function handleLarkWebhook(body: any): Promise<{ challenge?: string; message?: string }> {
+interface LarkWebhookBody {
+  challenge?: string
+  header?: { app_id?: string; [key: string]: unknown }
+  event?: {
+    type?: string
+    message?: { message_type?: string; chat_id?: string; content?: string; [key: string]: unknown }
+    sender?: { sender_id?: { open_id?: string }; [key: string]: unknown }
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+export async function handleLarkWebhook(body: LarkWebhookBody): Promise<{ challenge?: string; message?: string }> {
   // Handle URL verification challenge
   if (body.challenge) {
     return { challenge: body.challenge }
@@ -135,10 +147,10 @@ export async function handleLarkWebhook(body: any): Promise<{ challenge?: string
   let userMessage = ''
   if (msgType === 'text') {
     try {
-      const content = JSON.parse(event.message.content)
+      const content = JSON.parse(event.message.content || '{}')
       userMessage = content.text || ''
     } catch {
-      userMessage = event.message.content || ''
+      userMessage = event.message.content ?? ''
     }
   } else {
     return { message: 'unsupported message type' }
@@ -148,7 +160,7 @@ export async function handleLarkWebhook(body: any): Promise<{ challenge?: string
   userMessage = userMessage.replace(/@_user_\d+\s*/g, '').trim()
   if (!userMessage) return { message: 'empty message' }
 
-  const chatId = event.message.chat_id
+  const chatId = event.message.chat_id || ""
 
   console.log(`[lark-bot] Agent "${bot.agentName}" received: "${userMessage.slice(0, 100)}"`)
 

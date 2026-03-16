@@ -219,8 +219,8 @@ export const webSearch = tool(
         return JSON.stringify({ query, results: [], note: 'No results found' })
       }
       return JSON.stringify({ query, results })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message, query })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err), query })
     }
   },
   {
@@ -260,8 +260,8 @@ export const fetchWebpage = tool(
         text: text.slice(0, limit),
         truncated: text.length > limit,
       })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message, url })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err), url })
     }
   },
   {
@@ -310,8 +310,8 @@ export const generateImage = tool(
       if (!imageUrl) return JSON.stringify({ error: 'No image URL in response', raw: JSON.stringify(data).slice(0, 300) })
 
       return JSON.stringify({ success: true, imageUrl, prompt })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -337,16 +337,16 @@ export const executeCode = tool(
       // Capture console output
       const logs: string[] = []
       const mockConsole = {
-        log: (...args: any[]) => logs.push(args.map(String).join(' ')),
-        error: (...args: any[]) => logs.push('[ERROR] ' + args.map(String).join(' ')),
-        warn: (...args: any[]) => logs.push('[WARN] ' + args.map(String).join(' ')),
+        log: (...args: unknown[]) => logs.push(args.map(String).join(' ')),
+        error: (...args: unknown[]) => logs.push('[ERROR] ' + args.map(String).join(' ')),
+        warn: (...args: unknown[]) => logs.push('[WARN] ' + args.map(String).join(' ')),
       }
 
       // Override console temporarily
       const origConsole = globalThis.console
-      globalThis.console = mockConsole as any
+      globalThis.console = mockConsole as unknown as Console
 
-      let result: any
+      let result: unknown
       try {
         result = await Promise.race([
           fn(fetch),
@@ -360,8 +360,8 @@ export const executeCode = tool(
         result: result !== undefined ? String(result) : undefined,
         logs: logs.length > 0 ? logs : undefined,
       })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -434,7 +434,7 @@ export const browseWebpage = tool(
           const page = await browser.newPage()
           await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 })
 
-          let result: any = { action, url }
+          let result: Record<string, unknown> = { action, url }
 
           if (action === 'screenshot') {
             const screenshot = await page.screenshot({ type: 'png', fullPage: false })
@@ -464,10 +464,10 @@ export const browseWebpage = tool(
 
           await browser.close()
           return JSON.stringify(result)
-        } catch (pwErr: any) {
+        } catch (pwErr: unknown) {
           return JSON.stringify({
             note: 'Playwright browser action failed, falling back to fetch.',
-            error: pwErr.message,
+            error: pwErr instanceof Error ? pwErr.message : String(pwErr),
             action,
             url,
           })
@@ -534,8 +534,8 @@ export const browseWebpage = tool(
         selectedText: selectedText || undefined,
         bodyText,
       })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message, url })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err), url })
     }
   },
   {
@@ -601,8 +601,8 @@ export const facebookAds = tool(
       }
 
       return JSON.stringify({ error: `Unknown action: ${action}` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -640,7 +640,12 @@ export const googlePlayReviews = tool(
 
     try {
       // Parse service account key and get access token
-      const keyData = JSON.parse(Buffer.from(serviceAccountKey, 'base64').toString())
+      let keyData: { client_email?: string; private_key?: string }
+      try {
+        keyData = JSON.parse(Buffer.from(serviceAccountKey, 'base64').toString())
+      } catch {
+        return JSON.stringify({ error: 'GOOGLE_PLAY_SERVICE_ACCOUNT_KEY is not valid base64-encoded JSON' })
+      }
 
       // Create JWT for Google OAuth
       const now = Math.floor(Date.now() / 1000)
@@ -680,7 +685,8 @@ export const googlePlayReviews = tool(
         })
         const data = await res.json()
 
-        const reviews = (data.reviews || []).map((r: any) => ({
+        interface GPReview { reviewId: string; authorName: string; comments?: { userComment?: { starRating?: number; text?: string; lastModified?: { seconds?: number } } }[] }
+        const reviews = ((data.reviews || []) as GPReview[]).map((r) => ({
           reviewId: r.reviewId,
           author: r.authorName,
           rating: r.comments?.[0]?.userComment?.starRating,
@@ -717,21 +723,22 @@ export const googlePlayReviews = tool(
         })
         const data = await res.json()
 
-        const reviews = data.reviews || []
-        const ratings = reviews.map((r: any) => r.comments?.[0]?.userComment?.starRating || 0)
+        interface GPReviewAnalyze { comments?: { userComment?: { starRating?: number; text?: string } }[] }
+        const reviews = (data.reviews || []) as GPReviewAnalyze[]
+        const ratings = reviews.map((r) => r.comments?.[0]?.userComment?.starRating || 0)
         const avgRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
         const distribution = { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 }
         for (const r of ratings) distribution[String(r) as keyof typeof distribution]++
 
         // Extract common themes from review text
-        const texts = reviews.map((r: any) => r.comments?.[0]?.userComment?.text || '').join(' ')
+        const _texts = reviews.map((r) => r.comments?.[0]?.userComment?.text || '').join(' ')
 
         return JSON.stringify({
           packageName: defaultPackage,
           totalReviews: reviews.length,
           averageRating: avgRating.toFixed(2),
           distribution,
-          recentReviewTexts: reviews.slice(0, 5).map((r: any) => ({
+          recentReviewTexts: reviews.slice(0, 5).map((r) => ({
             rating: r.comments?.[0]?.userComment?.starRating,
             text: (r.comments?.[0]?.userComment?.text || '').slice(0, 200),
           })),
@@ -739,8 +746,8 @@ export const googlePlayReviews = tool(
       }
 
       return JSON.stringify({ error: `Unknown action: ${action}` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -815,7 +822,7 @@ export const generateFile = tool(
         mimeType = 'application/pdf'
       } else if (format === 'docx') {
         const docx = await import('docx')
-        const paragraphs: any[] = []
+        const paragraphs: (InstanceType<typeof docx.Paragraph> | InstanceType<typeof docx.Table>)[] = []
 
         if (title) {
           paragraphs.push(new docx.Paragraph({ text: title, heading: docx.HeadingLevel.HEADING_1 }))
@@ -903,8 +910,8 @@ export const generateFile = tool(
         size: fileBuffer ? fileBuffer.length : fileContent.length,
         url: urlData?.publicUrl,
       })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -1059,7 +1066,7 @@ export const logEvent = tool(
         workspace_id: workspaceId,
         event_type: eventType,
         source,
-        payload: payload ? JSON.parse(payload) : {},
+        payload: payload ? (() => { try { return JSON.parse(payload) } catch { return { raw: payload } } })() : {},
       })
       .select('id, event_type, source')
       .single()
@@ -1107,8 +1114,8 @@ async function runLarkSuite(args: string[]): Promise<string> {
     })
     if (stderr) console.error(`[lark-suite] ${stderr.trim()}`)
     return stdout.trim() || JSON.stringify({ ok: true })
-  } catch (err: any) {
-    return JSON.stringify({ error: err.message || 'lark-suite subprocess failed' })
+  } catch (err: unknown) {
+    return JSON.stringify({ error: err instanceof Error ? err.message : 'lark-suite subprocess failed' })
   }
 }
 
@@ -1229,8 +1236,8 @@ export const generateChart = tool(
         svg += `<text x="15" y="${height / 2}" text-anchor="middle" font-size="12" fill="#666" transform="rotate(-90,15,${height / 2})">${yLabel}</text>`
       }
 
-      const labels = chartData.labels || chartData.map((_: any, i: number) => String(i))
-      const values = chartData.values || chartData.map((d: any) => typeof d === 'number' ? d : d.value)
+      const labels: string[] = chartData.labels || (Array.isArray(chartData) ? chartData.map((_: unknown, i: number) => String(i)) : [])
+      const values: number[] = chartData.values || (Array.isArray(chartData) ? chartData.map((d: unknown) => typeof d === 'number' ? d : (d as Record<string, number>).value) : [])
       const maxVal = Math.max(...values)
       const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
 
@@ -1297,8 +1304,8 @@ export const generateChart = tool(
         html,
         dataPoints: values.length,
       })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {
@@ -1366,8 +1373,8 @@ export const manageCredentials = tool(
       }
 
       return JSON.stringify({ error: `Unknown action: ${action}` })
-    } catch (err: any) {
-      return JSON.stringify({ error: err.message })
+    } catch (err: unknown) {
+      return JSON.stringify({ error: err instanceof Error ? err.message : String(err) })
     }
   },
   {

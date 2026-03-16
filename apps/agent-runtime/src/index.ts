@@ -11,11 +11,12 @@
  */
 
 import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { Command } from '@langchain/langgraph'
 import { taskAgent } from './graph/task-agent.js'
 import { runChatAgent } from './graph/chat-agent.js'
 import { supabase } from './lib/supabase.js'
+import { config } from './lib/config.js'
 import { listAvailableModelOptions, listAvailableProviders, parseModelSelection } from './lib/models.js'
 import { loadScheduledJobs, getActiveJobIds } from './scheduler/cron-scheduler.js'
 import { handleLarkWebhook, loadBotRegistry, getRegisteredBots } from './lib/lark-bot.js'
@@ -25,8 +26,8 @@ import { getAuthorizationUrl, handleCallback } from './lib/twitter-oauth.js'
 import { runProjectChatAgent, streamProjectChatAgent } from './graph/project-chat-agent.js'
 import type { ChatRequest, ChatResponse } from '@olu/shared'
 
-const PORT = parseInt(process.env.PORT || '8080', 10)
-const API_SECRET = process.env.API_SECRET || ''
+const PORT = parseInt(config.PORT, 10)
+const API_SECRET = config.API_SECRET
 
 /** Check Authorization header: Bearer <API_SECRET> or x-api-key header */
 function isAuthorized(req: IncomingMessage): boolean {
@@ -39,8 +40,8 @@ function isAuthorized(req: IncomingMessage): boolean {
 }
 
 // --- Webhook signature verification ---
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ''
-const LARK_ENCRYPT_KEY = process.env.LARK_ENCRYPT_KEY || ''
+const WEBHOOK_SECRET = config.WEBHOOK_SECRET
+const LARK_ENCRYPT_KEY = config.LARK_ENCRYPT_KEY
 
 function verifySupabaseWebhook(req: IncomingMessage, body: string): boolean {
   if (!WEBHOOK_SECRET) return true // Skip in dev
@@ -71,7 +72,7 @@ function verifyLarkWebhook(req: IncomingMessage, body: string): boolean {
 
 // --- In-memory rate limiter (sliding window) ---
 const RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
-const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '120', 10)
+const RATE_LIMIT_MAX = parseInt(config.RATE_LIMIT_MAX, 10)
 const rateBuckets = new Map<string, number[]>()
 
 function isRateLimited(key: string): boolean {
@@ -97,11 +98,11 @@ setInterval(() => {
 }, 300_000)
 
 // --- MCP credential encryption ---
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '' // 32+ char key for AES-256
+const ENCRYPTION_KEY = config.ENCRYPTION_KEY // 32+ char key for AES-256
 
 function encryptCredentials(data: unknown): string {
   if (!ENCRYPTION_KEY) return JSON.stringify(data) // Plaintext fallback in dev
-  const { createCipheriv, randomBytes } = require('node:crypto')
+  // createCipheriv and randomBytes imported at top of file
   const iv = randomBytes(16)
   const key = createHmac('sha256', ENCRYPTION_KEY).update('mcp-credentials').digest()
   const cipher = createCipheriv('aes-256-cbc', key, iv)
@@ -113,7 +114,7 @@ function encryptCredentials(data: unknown): string {
 function decryptCredentials(stored: string): unknown {
   if (!stored.startsWith('enc:')) return JSON.parse(stored) // Legacy plaintext
   if (!ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY required to decrypt credentials')
-  const { createDecipheriv } = require('node:crypto')
+  // createDecipheriv imported at top of file
   const [, ivHex, dataHex] = stored.split(':')
   const iv = Buffer.from(ivHex, 'hex')
   const key = createHmac('sha256', ENCRYPTION_KEY).update('mcp-credentials').digest()
@@ -122,9 +123,16 @@ function decryptCredentials(stored: string): unknown {
   return JSON.parse(decrypted.toString('utf8'))
 }
 
+const MAX_BODY_SIZE = 1_048_576 // 1MB
+
 async function readBody(req: IncomingMessage): Promise<string> {
   const chunks: Buffer[] = []
+  let totalSize = 0
   for await (const chunk of req) {
+    totalSize += (chunk as Buffer).length
+    if (totalSize > MAX_BODY_SIZE) {
+      throw { statusCode: 413, error: 'Request body too large' }
+    }
     chunks.push(chunk as Buffer)
   }
   return Buffer.concat(chunks).toString()
@@ -135,17 +143,16 @@ function json(res: ServerResponse, status: number, data: unknown) {
   res.end(JSON.stringify(data))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function parseBody(req: IncomingMessage): Promise<any> {
+async function parseBody<T = Record<string, unknown>>(req: IncomingMessage): Promise<T> {
   const text = await readBody(req)
   try {
-    return JSON.parse(text)
+    return JSON.parse(text) as T
   } catch {
     throw { statusCode: 400, message: 'Invalid JSON body' }
   }
 }
 
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean)
+const ALLOWED_ORIGINS = config.ALLOWED_ORIGINS.split(',').filter(Boolean)
 
 function cors(req: IncomingMessage, res: ServerResponse) {
   const origin = req.headers['origin'] || ''
@@ -157,7 +164,7 @@ function cors(req: IncomingMessage, res: ServerResponse) {
 }
 
 // OpenClaw proxy — forward /openclaw/* requests to the OpenClaw gateway
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://localhost:3100'
+const OPENCLAW_URL = config.OPENCLAW_URL
 
 function proxyToOpenClaw(req: IncomingMessage, res: ServerResponse, path: string) {
   const target = new URL(path, OPENCLAW_URL)
@@ -195,7 +202,7 @@ const server = createServer(async (req, res) => {
   try {
     // Health check (unauthenticated)
     if (url.pathname === '/health' && req.method === 'GET') {
-      json(res, 200, { status: 'ok', version: '0.1.0', buildTime: process.env.BUILD_TIME || null })
+      json(res, 200, { status: 'ok', version: '0.1.0', buildTime: config.BUILD_TIME || null })
       return
     }
 
@@ -214,7 +221,10 @@ const server = createServer(async (req, res) => {
 
     // Invoke agent
     if (url.pathname === '/invoke' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const body = await parseBody<{
+        workspaceId: string; agentId: string; agentName?: string
+        agentPosition?: string; taskDescription: string; requiresApproval?: boolean
+      }>(req)
       const {
         workspaceId,
         agentId,
@@ -273,8 +283,8 @@ const server = createServer(async (req, res) => {
     const resumeMatch = url.pathname.match(/^\/resume\/(.+)$/)
     if (resumeMatch && req.method === 'POST') {
       const threadId = resumeMatch[1]
-      const body = await parseBody(req)
-      const { decision } = body // 'approve' or 'reject'
+      const body = await parseBody<{ decision: string }>(req)
+      const { decision } = body
 
       if (!decision || !['approve', 'reject'].includes(decision)) {
         json(res, 400, { error: "decision must be 'approve' or 'reject'" })
@@ -317,7 +327,7 @@ const server = createServer(async (req, res) => {
 
     // Chat with an agent (tool-calling mode)
     if (url.pathname === '/chat' && req.method === 'POST') {
-      const body = await parseBody(req) as ChatRequest
+      const body = await parseBody<ChatRequest>(req)
       const { workspaceId, agentId, agentName, agentRole, message, provider, model, sessionId, images } = body
 
       if (!workspaceId || !agentId || (!message && !images?.length)) {
@@ -355,7 +365,10 @@ const server = createServer(async (req, res) => {
 
     // Project chat — chat with Lead Agent in a project context
     if (url.pathname === '/project/chat' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const body = await parseBody<{
+        projectId: string; workspaceId: string; message?: string
+        provider?: string; model?: string; sessionId?: string; images?: string[]
+      }>(req)
       const { projectId, workspaceId, message, provider, model, sessionId, images } = body
 
       if (!projectId || !workspaceId || (!message && !images?.length)) {
@@ -396,7 +409,10 @@ const server = createServer(async (req, res) => {
 
     // Project chat stream — SSE endpoint for streaming responses
     if (url.pathname === '/project/chat/stream' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const body = await parseBody<{
+        projectId: string; workspaceId: string; message?: string
+        provider?: string; model?: string; sessionId?: string; images?: string[]
+      }>(req)
       const { projectId, workspaceId, message, provider: prov, model: mod, sessionId, images } = body
 
       if (!projectId || !workspaceId || (!message && !images?.length)) {
@@ -483,7 +499,8 @@ const server = createServer(async (req, res) => {
         json(res, 403, { error: 'Invalid Lark webhook signature' })
         return
       }
-      const body = JSON.parse(rawBody)
+      let body: Record<string, unknown>
+      try { body = JSON.parse(rawBody) } catch { json(res, 400, { error: "Invalid JSON body" }); return }
       const result = await handleLarkWebhook(body)
       json(res, 200, result)
       return
@@ -496,7 +513,8 @@ const server = createServer(async (req, res) => {
         json(res, 403, { error: 'Invalid Lark webhook signature' })
         return
       }
-      const body = JSON.parse(rawBody)
+      let body: Record<string, unknown>
+      try { body = JSON.parse(rawBody) } catch { json(res, 400, { error: "Invalid JSON body" }); return }
       // Handle URL verification challenge
       if (body.challenge) {
         json(res, 200, { challenge: body.challenge })
@@ -515,8 +533,11 @@ const server = createServer(async (req, res) => {
         json(res, 403, { error: 'Invalid webhook signature' })
         return
       }
-      const body = JSON.parse(rawBody)
-      const { social_chat_id, text, message_id } = body
+      let body: Record<string, unknown>
+      try { body = JSON.parse(rawBody) } catch { json(res, 400, { error: "Invalid JSON body" }); return }
+      const social_chat_id = body.social_chat_id as string | undefined
+      const text = body.text as string | undefined
+      const message_id = body.message_id as string | undefined
 
       if (!social_chat_id || !text) {
         json(res, 200, { skipped: true, reason: 'missing fields' })
@@ -621,7 +642,7 @@ const server = createServer(async (req, res) => {
 
     // Register a new MCP server dynamically
     if (url.pathname === '/mcp/servers' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const body = await parseBody<{ name: string; url: string; type?: 'stdio' | 'sse' }>(req)
       const { name, url: serverUrl, type = 'sse' } = body
       if (!name || !serverUrl) {
         json(res, 400, { error: 'Missing name or url' })
@@ -636,7 +657,7 @@ const server = createServer(async (req, res) => {
 
     // Store MCP server credentials for a workspace
     if (url.pathname === '/mcp/credentials' && req.method === 'POST') {
-      const body = await parseBody(req)
+      const body = await parseBody<{ workspaceId: string; serverName: string; credentials: unknown }>(req)
       const { workspaceId, serverName, credentials } = body
       if (!workspaceId || !serverName || !credentials) {
         json(res, 400, { error: 'Missing workspaceId, serverName, or credentials' })
@@ -673,13 +694,16 @@ const server = createServer(async (req, res) => {
     // Twitter OAuth — initiate
     if (url.pathname === '/oauth/twitter' && req.method === 'GET') {
       const workspaceId = url.searchParams.get('workspace_id')
-      const clientId = process.env.TWITTER_CLIENT_ID
+      const clientId = config.TWITTER_CLIENT_ID
       if (!workspaceId || !clientId) {
         json(res, 400, { error: 'Missing workspace_id or TWITTER_CLIENT_ID not configured' })
         return
       }
-      const origin = url.searchParams.get('origin') || `http://localhost:${PORT}`
-      const redirectUri = `${origin}/oauth/twitter/callback`
+      const requestedOrigin = url.searchParams.get('origin') || ''
+      const safeOrigin = ALLOWED_ORIGINS.length > 0 && ALLOWED_ORIGINS.includes(requestedOrigin)
+        ? requestedOrigin
+        : `http://localhost:${PORT}`
+      const redirectUri = `${safeOrigin}/oauth/twitter/callback`
       const auth = getAuthorizationUrl(workspaceId, redirectUri, clientId)
       // Redirect browser to Twitter authorization page
       res.writeHead(302, { Location: auth.url })
@@ -691,8 +715,8 @@ const server = createServer(async (req, res) => {
     if (url.pathname === '/oauth/twitter/callback' && req.method === 'GET') {
       const code = url.searchParams.get('code')
       const state = url.searchParams.get('state')
-      const clientId = process.env.TWITTER_CLIENT_ID || ''
-      const clientSecret = process.env.TWITTER_CLIENT_SECRET
+      const clientId = config.TWITTER_CLIENT_ID
+      const clientSecret = config.TWITTER_CLIENT_SECRET
 
       if (!code || !state) {
         json(res, 400, { error: 'Missing code or state' })
@@ -702,7 +726,7 @@ const server = createServer(async (req, res) => {
       try {
         const result = await handleCallback(code, state, clientId, clientSecret)
         // Redirect back to the app's connectors page with success
-        const appUrl = process.env.APP_URL || 'http://localhost:5173'
+        const appUrl = config.APP_URL
         res.writeHead(302, {
           Location: `${appUrl}/business/connectors?twitter=connected&username=${result.username || ''}`,
         })
@@ -719,8 +743,8 @@ const server = createServer(async (req, res) => {
     const approveMatch = url.pathname.match(/^\/budgets\/(.+)\/approve$/)
     if (approveMatch && req.method === 'POST') {
       const budgetId = approveMatch[1]
-      const body = await parseBody(req)
-      const approvedAmount = body.approved_amount as number
+      const body = await parseBody<{ approved_amount: number }>(req)
+      const approvedAmount = body.approved_amount
 
       if (!approvedAmount || approvedAmount <= 0) {
         json(res, 400, { error: 'approved_amount is required and must be positive' })
@@ -894,9 +918,9 @@ const server = createServer(async (req, res) => {
 
     json(res, 404, { error: 'not found' })
   } catch (err: unknown) {
-    const statusErr = err as { statusCode?: number; message?: string }
+    const statusErr = err as { statusCode?: number; error?: string; message?: string }
     if (statusErr.statusCode) {
-      json(res, statusErr.statusCode, { error: statusErr.message })
+      json(res, statusErr.statusCode, { error: statusErr.error || statusErr.message })
       return
     }
     console.error('Request error:', err)

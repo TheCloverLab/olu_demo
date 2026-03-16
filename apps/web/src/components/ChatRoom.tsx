@@ -297,6 +297,8 @@ export default function ChatRoom({
         metadata,
       })
       seenIds.current.add(sent.id)
+      // Replace optimistic message with real one
+      setMessages((prev) => prev.map((m) => m.id === optimistic.id ? sent : m))
     } catch (err) {
       console.error('Failed to send:', err)
     } finally {

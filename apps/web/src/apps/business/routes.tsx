@@ -44,7 +44,7 @@ export const businessRoutes: RouteObject[] = [
     path: '/business',
     element: <RoleProtected><BusinessLayout /></RoleProtected>,
     children: [
-      { index: true, element: <Navigate to="/business/chat" replace /> },
+      { index: true, element: <BusinessWorkspace /> },
       { path: 'analytics', element: <L><Analytics /></L> },
       { path: 'projects', element: <L><ProjectList /></L> },
       { path: 'projects/:id', element: <L><ProjectDetail /></L> },

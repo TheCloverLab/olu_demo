@@ -104,7 +104,7 @@ export default function Analytics() {
               onClick={() => setRange(r)}
               className={clsx(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                range === r ? 'bg-cyan-500 text-white' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
+                range === r ? 'bg-sky-600 text-white' : 'text-[var(--olu-text-secondary)] hover:text-[var(--olu-text)]'
               )}
             >
               {r}

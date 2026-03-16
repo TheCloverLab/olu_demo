@@ -100,7 +100,7 @@ function MessageBubble({
           className={clsx(
             'rounded-2xl px-3.5 py-2 text-sm leading-relaxed break-words',
             isOwn
-              ? 'bg-cyan-500 text-white rounded-br-md'
+              ? 'bg-sky-600 text-white rounded-br-md'
               : 'bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-bl-md'
           )}
         >
@@ -422,7 +422,7 @@ export default function ChatRoom({
         <button
           onClick={handleSend}
           disabled={sending || (!text.trim() && imageFiles.length === 0)}
-          className="p-2 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 transition-colors disabled:opacity-40 flex-shrink-0"
+          className="p-2 rounded-xl bg-sky-600 text-white hover:bg-cyan-400 transition-colors disabled:opacity-40 flex-shrink-0"
         >
           {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
         </button>

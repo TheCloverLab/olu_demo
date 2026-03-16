@@ -182,7 +182,7 @@ function ConversationView({ chat, currentUserId, onBack }: { chat: SupportChatVi
                   'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
                   msg.isCustomer
                     ? 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
-                    : 'bg-cyan-500 text-white rounded-tr-sm'
+                    : 'bg-sky-600 text-white rounded-tr-sm'
                 )}>
                   {msg.text}
                 </div>

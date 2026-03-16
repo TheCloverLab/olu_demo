@@ -10,7 +10,7 @@
   --olu-border: #d1d5db;
   --olu-text: #111111;
   --olu-muted: #4b5563;
-  --olu-primary: #0ea5e9;
+  --olu-primary: #0284c7;
   --olu-shell-bg: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   --olu-shell-accent1: rgba(34, 211, 238, 0.06);
   --olu-shell-accent2: rgba(59, 130, 246, 0.04);
@@ -21,9 +21,9 @@
   --olu-sidebar-text: #1f2937;
   --olu-sidebar-muted: #4b5563;
   --olu-header-bg: rgba(255, 255, 255, 0.95);
-  --olu-chat-user-bg: #0ea5e9;
+  --olu-chat-user-bg: #0284c7;
   --olu-chat-user-text: #ffffff;
-  --olu-chat-user-border: rgba(14, 165, 233, 0.4);
+  --olu-chat-user-border: rgba(2, 132, 199, 0.4);
   --olu-chat-agent-bg: #f3f4f6;
   --olu-chat-agent-text: #111827;
   --olu-chat-agent-border: #d1d5db;

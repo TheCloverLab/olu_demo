@@ -71,7 +71,7 @@ function MessageBubble({ msg }: { msg: ViewMessage }) {
         <div className={clsx(
           'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
           isUser
-            ? 'bg-cyan-500 text-white rounded-tr-sm whitespace-pre-wrap'
+            ? 'bg-sky-600 text-white rounded-tr-sm whitespace-pre-wrap'
             : 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
         )}>
           {isUser ? msg.text : (

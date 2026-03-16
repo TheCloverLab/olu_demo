@@ -158,7 +158,7 @@ export default function QuickChat() {
               </p>
               <button
                 onClick={handleNew}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:opacity-90"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:opacity-90"
               >
                 <Plus className="w-4 h-4" />
                 {t('quickChat.newChat', 'New Chat')}
@@ -182,7 +182,7 @@ export default function QuickChat() {
                   <div
                     className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
                       msg.sender_type === 'user'
-                        ? 'bg-cyan-500 text-white rounded-br-sm'
+                        ? 'bg-sky-600 text-white rounded-br-sm'
                         : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
                     }`}
                   >
@@ -206,7 +206,7 @@ export default function QuickChat() {
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-cyan-500 text-white rounded-2xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-sky-600 text-white rounded-2xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
                 >
                   {t('common.send', 'Send')}
                 </button>

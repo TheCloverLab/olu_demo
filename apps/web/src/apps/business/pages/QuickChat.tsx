@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus, MessageSquare, Clock } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { listQuickChats, createQuickChat } from '../../../domain/project/api'
-import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import { getChat, getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
 
 export default function QuickChat() {
@@ -26,11 +26,17 @@ export default function QuickChat() {
   }, [workspace])
 
   useEffect(() => {
-    if (convId && chats.length > 0) {
-      const found = chats.find((c) => c.id === convId)
-      if (found) selectChat(found)
+    if (!convId) return
+    const found = chats.find((c) => c.id === convId)
+    if (found) {
+      selectChat(found)
+    } else if (!loading) {
+      // Chat not in quick list — load directly (e.g. team group chat)
+      getChat(convId).then((chat) => {
+        if (chat) selectChat(chat)
+      }).catch(() => {})
     }
-  }, [convId, chats])
+  }, [convId, chats, loading])
 
   useEffect(() => {
     if (!activeChat) return

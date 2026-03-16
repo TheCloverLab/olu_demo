@@ -29,7 +29,7 @@ function GroupRow({ group }: { group: GroupChat }) {
   return (
     <motion.button
       whileHover={{ x: 4 }}
-      onClick={() => navigate(`/business/team/grp-${group.config?.chat_key || group.id}`)}
+      onClick={() => navigate(`/business/chat/${group.id}`)}
       className="w-full flex items-center gap-3 p-4 rounded-[24px] text-left border border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] hover:bg-[var(--olu-card-bg)] transition-colors shadow-[0_2px_8px_rgba(2,8,23,0.12)]"
     >
       <div className="relative flex-shrink-0">

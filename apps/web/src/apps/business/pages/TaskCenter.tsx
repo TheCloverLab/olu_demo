@@ -4,7 +4,7 @@ import { CheckCircle2, Circle, Clock, Filter, Loader2, Play, ThumbsUp, ThumbsDow
 import clsx from 'clsx'
 import { useAuth } from '../../../context/AuthContext'
 import { getTeamEmployeesForUser } from '../../../domain/team/api'
-import { invokeAgent, resumeAgent, type InvokeResult } from '../../../domain/agent/runtime-api'
+import { invokeAgent, resumeAgent, type InvokeResult } from '../../../domain/team/runtime-api'
 import type { EmployeeWithTasks, TeamTaskStatus } from '../../../domain/team/types'
 
 const STATUS_CONFIG: Record<TeamTaskStatus, { icon: typeof Circle; color: string; bg: string; label: string }> = {

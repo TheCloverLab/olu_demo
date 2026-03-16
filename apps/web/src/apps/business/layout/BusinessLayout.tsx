@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Briefcase,
-  Bot,
   Users,
   LayoutDashboard,
   Megaphone,
@@ -84,9 +83,7 @@ const SIDEBAR_GROUPS: NavGroup[] = [
   },
   {
     groupLabelKey: 'nav.groupSystem',
-    items: [
-      { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
-    ],
+    items: [],
   },
 ]
 
@@ -293,7 +290,7 @@ export default function BusinessLayout() {
   const allNav = [
     ...ALL_NAV_ITEMS,
     { to: '/business/wallet', icon: Wallet, labelKey: 'common.wallet' },
-    { to: '/business/agents', icon: Bot, labelKey: 'nav.aiAgentMarketplace' },
+    { to: '/business/specialists', icon: Zap, labelKey: 'nav.specialists' },
   ]
   const activeModuleLabel = (() => {
     const item = allNav.find((item) =>

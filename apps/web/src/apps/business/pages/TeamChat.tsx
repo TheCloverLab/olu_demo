@@ -7,9 +7,8 @@ import { ArrowLeft, Send, Clock, Circle, CheckCircle2, Loader2, AtSign, AlertTri
 import { Highlight, themes } from 'prism-react-renderer'
 import { useAuth } from '../../../context/AuthContext'
 import { useWorkspace } from '../../../context/WorkspaceContext'
-import { getWorkspaceAgentsWithTasksForUser } from '../../../domain/agent/api'
-import { approveBudgetAPI, pauseBudget } from '../../../domain/agent/runtime-api'
-import { updateAgentRuntimeType } from '../../../domain/team/api'
+import { getWorkspaceAgentsWithTasksForUser, updateAgentRuntimeType } from '../../../domain/team/api'
+import { approveBudgetAPI, pauseBudget } from '../../../domain/team/runtime-api'
 import {
   getChatByAgent,
   listChats,

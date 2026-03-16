@@ -23,7 +23,7 @@ const router = createBrowserRouter([
   ...businessRoutes,
   { path: '/team', element: <Navigate to="/business/team" replace /> },
   { path: '/team/:agentId', element: <Navigate to="/business/team" replace /> },
-  { path: '/ai-config', element: <Navigate to="/business/agents" replace /> },
+  { path: '/ai-config', element: <Navigate to="/business/specialists" replace /> },
   { path: '/console/creator', element: <Navigate to="/business/modules/creator" replace /> },
   { path: '/console/advertiser', element: <Navigate to="/business/modules/marketing" replace /> },
   { path: '/console/supplier', element: <Navigate to="/business/modules/supply" replace /> },

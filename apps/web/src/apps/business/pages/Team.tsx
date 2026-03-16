@@ -6,7 +6,7 @@ import { ChevronRight, CheckSquare, MessageCircle, Bot, Zap, Circle, ShieldCheck
 import { useAuth } from '../../../context/AuthContext'
 import { getWorkspaceTeamSnapshotForUser, ensureDefaultGroupChat, createNewGroupChat } from '../../../domain/team/api'
 import { ensureWorkspaceForUser } from '../../../domain/workspace/api'
-import { batchRunAgents, invokeAgent } from '../../../domain/agent/runtime-api'
+import { batchRunAgents, invokeAgent } from '../../../domain/team/runtime-api'
 import type { WorkspaceAgentWithTasks, WorkspaceEmployee } from '../../../lib/supabase'
 import clsx from 'clsx'
 

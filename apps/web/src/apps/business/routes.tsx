@@ -6,7 +6,6 @@ import TeamChat from './pages/TeamChat'
 import ProjectList from './pages/ProjectList'
 import ProjectDetail from './pages/ProjectDetail'
 import QuickChat from './pages/QuickChat'
-import AIAgentConfig from './pages/AIAgentConfig'
 import BusinessAccount from './pages/BusinessAccount'
 import BusinessSettings from './pages/BusinessSettings'
 import WalletPage from './pages/WalletPage'
@@ -48,7 +47,7 @@ export const businessRoutes: RouteObject[] = [
       { path: 'team/:agentId', element: <TeamChat /> },
       { path: 'team/humans', element: <Navigate to="/business/team" replace /> },
       { path: 'team/person/:employeeId', element: <EmployeeProfile /> },
-      { path: 'agents', element: <AIAgentConfig /> },
+      { path: 'agents', element: <Navigate to="/business/specialists" replace /> },
       { path: 'apps', element: <RoleProtected requiredModule="creator_ops"><AppManagement /></RoleProtected> },
       { path: 'experiences', element: <ExperienceManager /> },
       { path: 'experiences/forum', element: <ForumEditor /> },

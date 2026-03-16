@@ -111,25 +111,28 @@ export default function QuickChat() {
         senderAvatar: currentUser.avatar_img ?? undefined,
       })
 
-      // Stream AI reply
-      let fullResponse = ''
-      await streamQuickChat(
-        workspace.id,
-        text,
-        (event) => {
-          if (event.type === 'content') {
-            fullResponse += event.text
-            setStreamingText(fullResponse)
-          }
-        },
-        { sessionId: chat.id },
-      )
+      // Stream AI reply (gracefully handle if agent runtime is unavailable)
+      try {
+        let fullResponse = ''
+        await streamQuickChat(
+          workspace.id,
+          text,
+          (event) => {
+            if (event.type === 'content') {
+              fullResponse += event.text
+              setStreamingText(fullResponse)
+            }
+          },
+          { sessionId: chat.id },
+        )
 
-      // Save AI response to chat
-      if (fullResponse) {
-        await sendMessage(chat.id, 'ai-assistant', 'agent', fullResponse, {
-          senderName: 'AI Assistant',
-        })
+        if (fullResponse) {
+          await sendMessage(chat.id, 'ai-assistant', 'agent', fullResponse, {
+            senderName: 'AI Assistant',
+          })
+        }
+      } catch {
+        // Agent runtime not available — message sent, no AI reply
       }
       setStreamingText('')
     } catch (err) {

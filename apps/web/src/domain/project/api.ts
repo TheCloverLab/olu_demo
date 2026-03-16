@@ -61,12 +61,13 @@ export async function createProject(
   if (error) throw error
 
   // Add owner as participant
-  await supabase.from('project_participants').insert({
+  const { error: partErr } = await supabase.from('project_participants').insert({
     project_id: project.id,
     user_id: ownerId,
     role: 'owner',
     added_by: ownerId,
   })
+  if (partErr) console.error('Failed to add owner as participant:', partErr)
 
   // Create default conversation (chat with scope='project')
   const { data: chat, error: chatErr } = await supabase

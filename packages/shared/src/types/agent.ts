@@ -2,11 +2,6 @@ import type { Tables } from './database'
 
 import type { Narrow } from './helpers'
 
-export type AgentTemplate = Narrow<Tables<'agent_templates'>, {
-  category: 'Creator' | 'Advertiser' | 'Supplier' | 'Pro'
-  status: 'active' | 'retired'
-}>
-
 export type AgentRuntimeType = 'langgraph' | 'openclaw'
 
 export type WorkspaceAgent = Narrow<Tables<'workspace_agents'>, {

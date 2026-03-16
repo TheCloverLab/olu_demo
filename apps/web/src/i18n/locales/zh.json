@@ -107,7 +107,7 @@
     "changePassword": "修改密码",
     "signOutDevice": "从此设备退出登录。",
     "businessOS": "企业管理",
-    "businessOSDesc": "模块、审批、操作员和 AI 智能体"
+    "businessOSDesc": "模块、审批、操作员和 AI 专家"
   },
   "chat": {
     "messageAgent": "发送消息给 {{name}}...",
@@ -223,7 +223,7 @@
     "aiAgents": "{{count}} 个专家",
     "onlineActiveTasks": "{{online}} 在线，{{tasks}} 个活跃任务",
     "humanTeam": "人类团队",
-    "humanTeamDesc": "与 AI 员工一起管理团队成员",
+    "humanTeamDesc": "与 AI 专家一起管理团队成员",
     "approvalCenter": "审批中心",
     "approvalCenterDesc": "{{count}} 项需要你审核",
     "sandboxMode": "沙盒模式",
@@ -245,7 +245,7 @@
     "workspaceBoundaryDesc": "企业账户页面不应将用户引导至内容/动态页面。消费端界面只能通过显式的消费端应用入口访问。",
     "operatorControls": "操作员控制",
     "operatorControlsShort": "人员和权限",
-    "operatorControlsDesc": "人类员工、AI 员工和模块切换都属于工作区层。",
+    "operatorControlsDesc": "人类员工、AI 专家和模块切换都属于工作区层。",
     "connectedSystems": "连接的系统",
     "connectedSystemsShort": "Shopify、Temu、Zendesk、Mixpanel",
     "connectedSystemsDesc": "未来的连接器和沙盒权限也应从企业账户和设置界面管理。",

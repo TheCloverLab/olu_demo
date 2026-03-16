@@ -107,7 +107,7 @@
     "changePassword": "Change Password",
     "signOutDevice": "Sign out from this device.",
     "businessOS": "Business OS",
-    "businessOSDesc": "Modules, approvals, operators, and AI agents"
+    "businessOSDesc": "Modules, approvals, operators, and AI specialists"
   },
   "chat": {
     "messageAgent": "Message {{name}}...",
@@ -223,7 +223,7 @@
     "aiAgents": "{{count}} Specialists",
     "onlineActiveTasks": "{{online}} online, {{tasks}} active tasks",
     "humanTeam": "Human team",
-    "humanTeamDesc": "Manage people alongside AI employees",
+    "humanTeamDesc": "Manage people alongside AI specialists",
     "approvalCenter": "Approval center",
     "approvalCenterDesc": "{{count}} items need your review",
     "sandboxMode": "Sandbox mode",
@@ -245,7 +245,7 @@
     "workspaceBoundaryDesc": "Business account pages should never drop users into content profile/feed pages. Consumer surfaces are only reachable via the explicit consumer app entry.",
     "operatorControls": "Operator controls",
     "operatorControlsShort": "People and permissions",
-    "operatorControlsDesc": "Human employees, AI employees, and module switching all belong to the workspace layer.",
+    "operatorControlsDesc": "Human employees, AI specialists, and module switching all belong to the workspace layer.",
     "connectedSystems": "Connected systems",
     "connectedSystemsShort": "Shopify, Temu, Zendesk, Mixpanel",
     "connectedSystemsDesc": "Future connectors and sandbox permissions should also be managed from business account and settings surfaces.",

@@ -14,7 +14,7 @@ export type {
   // user
   User, UserWallet,
   // agent
-  AgentTemplate, WorkspaceAgent, WorkspaceAgentTask, WorkspaceAgentWithTasks,
+  WorkspaceAgent, WorkspaceAgentTask, WorkspaceAgentWithTasks,
   AIAgent, AgentTask, AgentRuntimeType, Conversation, ChatAttachment,
   // workspace
   BusinessModuleKey, Workspace, WorkspaceMembership, WorkspaceModule,

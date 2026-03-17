@@ -292,8 +292,7 @@ export default function ChatRoom({
   const [showModelMenu, setShowModelMenu] = useState(false)
   const [modelSearch, setModelSearch] = useState('')
 
-  // Reasoning toggle
-  const [reasoningEnabled, setReasoningEnabled] = useState(true)
+  // Reasoning is always enabled — displayed collapsed when returned by model
 
   const features: ChatFeatures = { ...SCOPE_FEATURES[scope], ...featureOverrides }
 
@@ -458,7 +457,7 @@ export default function ChatRoom({
         setAiGenerating(true)
         const abort = onAfterSend(chatId, trimmed, sent, {
           model: selectedModelOption?.id || undefined,
-          reasoning: reasoningEnabled,
+          reasoning: true,
         })
         abortRef.current = abort || null
       }
@@ -605,21 +604,7 @@ export default function ChatRoom({
                 <Paperclip size={16} />
               </button>
             )}
-            {features.reasoning && (
-              <button
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setReasoningEnabled(!reasoningEnabled)}
-                title={reasoningEnabled ? 'Reasoning on' : 'Reasoning off'}
-                className={clsx(
-                  'p-2 rounded-lg transition-all',
-                  reasoningEnabled
-                    ? 'text-purple-600 dark:text-purple-300 bg-purple-500/10'
-                    : 'text-[var(--olu-muted)] hover:text-[var(--olu-text-secondary)]',
-                )}
-              >
-                <Brain size={16} />
-              </button>
-            )}
+            {/* Reasoning toggle removed — always show reasoning if model supports it */}
           </div>
 
           {/* Right: model selector + send */}

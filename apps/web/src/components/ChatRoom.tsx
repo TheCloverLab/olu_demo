@@ -210,9 +210,9 @@ function formatTime(ts: string): string {
 
 function ImagePreview({ files, onRemove }: { files: File[]; onRemove: (i: number) => void }) {
   return (
-    <div className="flex gap-2 px-3 pb-2 overflow-x-auto">
+    <div className="flex gap-3 px-3 pt-2 pb-2 overflow-x-auto">
       {files.map((f, i) => (
-        <div key={i} className="relative flex-shrink-0">
+        <div key={i} className="relative flex-shrink-0 p-1">
           <img
             src={URL.createObjectURL(f)}
             alt=""
@@ -220,7 +220,7 @@ function ImagePreview({ files, onRemove }: { files: File[]; onRemove: (i: number
           />
           <button
             onClick={() => onRemove(i)}
-            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center"
+            className="absolute top-0 right-0 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow-sm"
           >
             <X size={10} />
           </button>

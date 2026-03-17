@@ -109,7 +109,12 @@ function MessageBubble({
           {msg.content ? (
             features.markdown ? (
               <div
-                className="prose prose-sm max-w-none prose-p:my-1 prose-pre:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded dark:prose-invert prose-headings:text-[var(--olu-text)] prose-code:bg-black/5 dark:prose-code:bg-white/10"
+                className={clsx(
+                  'prose prose-sm max-w-none prose-p:my-1 prose-pre:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded',
+                  isOwn
+                    ? 'prose-p:text-[var(--olu-chat-user-text)] prose-headings:text-[var(--olu-chat-user-text)] prose-strong:text-[var(--olu-chat-user-text)] prose-code:text-[var(--olu-chat-user-text)] prose-code:bg-black/10'
+                    : 'dark:prose-invert prose-headings:text-[var(--olu-text)] prose-code:bg-black/5 dark:prose-code:bg-white/10',
+                )}
                 dangerouslySetInnerHTML={{ __html: simpleMarkdown(msg.content) }}
               />
             ) : (

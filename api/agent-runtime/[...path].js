@@ -3,11 +3,12 @@
  * Adds API_SECRET auth header server-side so the frontend never sees the secret.
  */
 
-const AGENT_RUNTIME_ORIGIN =
+const AGENT_RUNTIME_ORIGIN = (
   process.env.AGENT_RUNTIME_URL ||
   'http://olu-agent-runtime-alb-316192720.us-west-2.elb.amazonaws.com'
+).trim()
 
-const API_SECRET = process.env.AGENT_RUNTIME_SECRET || ''
+const API_SECRET = (process.env.AGENT_RUNTIME_SECRET || '').trim()
 
 export default async function handler(req, res) {
   // Build target URL from the catch-all path segments

@@ -509,6 +509,9 @@ const server = createServer(async (req, res) => {
 
         // Emit as SSE events
         res.write(`data: ${JSON.stringify({ type: 'meta', model: result.model || '', provider: result.provider || '' })}\n\n`)
+        if (result.reasoning) {
+          res.write(`data: ${JSON.stringify({ type: 'reasoning', text: result.reasoning })}\n\n`)
+        }
         res.write(`data: ${JSON.stringify({ type: 'content', text: result.response })}\n\n`)
         res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`)
       } catch (err: unknown) {

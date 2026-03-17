@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, Image as ImageIcon, Paperclip, X, Loader2, Brain } from 'lucide-react'
+import { Send, Image as ImageIcon, Paperclip, X, Loader2, Brain, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import type { ChatMessage, ChatFeatures, ChatAttachment } from '../domain/chat/types'
@@ -38,6 +38,13 @@ function MessageBubble({
 }) {
   const gradient = avatarColor(msg.sender_id)
   const initials = (msg.sender_name || '?').slice(0, 2).toUpperCase()
+
+  const [showReasoning, setShowReasoning] = useState(false)
+
+  // Extract reasoning from metadata
+  const reasoning = !isOwn && msg.metadata && !Array.isArray(msg.metadata)
+    ? (msg.metadata as Record<string, unknown>).reasoning as string | undefined
+    : undefined
 
   // Extract images from metadata
   const images: string[] = []
@@ -107,6 +114,24 @@ function MessageBubble({
               : 'bg-[var(--olu-chat-agent-bg)] text-[var(--olu-chat-agent-text)] border-[var(--olu-chat-agent-border)] rounded-tl-[10px]'
           )}
         >
+          {/* Reasoning (collapsible) */}
+          {reasoning && (
+            <div className="mb-2">
+              <button
+                onClick={() => setShowReasoning(!showReasoning)}
+                className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                <Brain size={12} />
+                <span>Thinking</span>
+                <ChevronDown size={12} className={clsx('transition-transform', showReasoning && 'rotate-180')} />
+              </button>
+              {showReasoning && (
+                <div className="mt-1.5 text-xs opacity-70 whitespace-pre-wrap border-l-2 border-purple-500/30 pl-3">
+                  {reasoning}
+                </div>
+              )}
+            </div>
+          )}
           {msg.content ? (
             features.markdown ? (
               <div
@@ -220,7 +245,7 @@ export interface ChatRoomProps {
   /** Custom message renderer for special types */
   renderMessage?: (msg: ChatMessage, defaultRender: React.ReactNode) => React.ReactNode
   /** Called after a message is successfully sent (e.g. to trigger AI reply) */
-  onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage) => void
+  onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage, opts?: { model?: string; provider?: string; reasoning?: boolean }) => void
   /** Called when model selection changes (parent can use for AI calls) */
   onModelChange?: (model: ModelOption | null) => void
   className?: string
@@ -387,7 +412,10 @@ export default function ChatRoom({
 
       // Trigger AI reply if handler provided
       if (onAfterSend && trimmed) {
-        onAfterSend(chatId, trimmed, sent)
+        onAfterSend(chatId, trimmed, sent, {
+          model: selectedModelOption?.id || undefined,
+          reasoning: reasoningEnabled,
+        })
       }
     } catch (err) {
       console.error('Failed to send:', err)

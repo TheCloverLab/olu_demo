@@ -95,21 +95,30 @@ export default function QuickChat() {
   }
 
   // Trigger AI reply after user sends a message
-  const handleAfterSend = useCallback(async (chatId: string, message: string, _sentMsg: ChatMessage) => {
+  const handleAfterSend = useCallback(async (
+    chatId: string,
+    message: string,
+    _sentMsg: ChatMessage,
+    opts?: { model?: string; provider?: string; reasoning?: boolean },
+  ) => {
     if (!workspace) return
     try {
       let aiContent = ''
+      let aiReasoning = ''
       await streamQuickChat(workspace.id, message, (event) => {
         if (event.type === 'content') {
           aiContent += event.text
+        } else if (event.type === 'reasoning') {
+          aiReasoning += event.text
         }
-      }, { sessionId: chatId })
+      }, { sessionId: chatId, model: opts?.model, provider: opts?.provider })
 
       // Save AI reply to DB (realtime subscription will show it in ChatRoom)
       if (aiContent) {
         await sendMessage(chatId, 'ai-assistant', 'agent', aiContent, {
           senderName: 'AI Assistant',
           messageType: 'text',
+          metadata: aiReasoning ? { reasoning: aiReasoning } : undefined,
         })
       }
     } catch (err) {

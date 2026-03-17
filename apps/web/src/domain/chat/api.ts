@@ -199,6 +199,7 @@ const API_SECRET = import.meta.env.VITE_API_SECRET || ''
 
 export type QuickChatEvent =
   | { type: 'meta'; model: string; provider: string }
+  | { type: 'reasoning'; text: string }
   | { type: 'content'; text: string }
   | { type: 'done' }
   | { type: 'error'; error: string }
@@ -207,7 +208,7 @@ export async function streamQuickChat(
   workspaceId: string,
   message: string,
   onEvent: (event: QuickChatEvent) => void,
-  opts?: { sessionId?: string },
+  opts?: { sessionId?: string; model?: string; provider?: string },
 ): Promise<void> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/quick-chat/stream`, {
     method: 'POST',
@@ -219,6 +220,8 @@ export async function streamQuickChat(
       workspaceId,
       message,
       sessionId: opts?.sessionId,
+      model: opts?.model,
+      provider: opts?.provider,
     }),
   })
 

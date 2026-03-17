@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, Image as ImageIcon, Paperclip, X, Loader2, Brain, ChevronDown } from 'lucide-react'
+import { Send, Image as ImageIcon, Paperclip, X, Loader2, Brain, ChevronDown, Square } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import type { ChatMessage, ChatFeatures, ChatAttachment } from '../domain/chat/types'
@@ -31,10 +31,12 @@ function MessageBubble({
   msg,
   isOwn,
   features,
+  onImageClick,
 }: {
   msg: ChatMessage
   isOwn: boolean
   features: ChatFeatures
+  onImageClick?: (url: string) => void
 }) {
   const gradient = avatarColor(msg.sender_id)
   const initials = (msg.sender_name || '?').slice(0, 2).toUpperCase()
@@ -163,8 +165,8 @@ function MessageBubble({
                   key={i}
                   src={url}
                   alt=""
-                  className="rounded-lg max-h-48 max-w-full object-cover cursor-pointer hover:opacity-90"
-                  onClick={() => window.open(url, '_blank')}
+                  className="rounded-lg max-h-48 max-w-full object-cover cursor-zoom-in hover:opacity-90"
+                  onClick={() => onImageClick?.(url)}
                 />
               ))}
             </div>
@@ -244,8 +246,8 @@ export interface ChatRoomProps {
   headerSlot?: React.ReactNode
   /** Custom message renderer for special types */
   renderMessage?: (msg: ChatMessage, defaultRender: React.ReactNode) => React.ReactNode
-  /** Called after a message is successfully sent (e.g. to trigger AI reply) */
-  onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage, opts?: { model?: string; provider?: string; reasoning?: boolean }) => void
+  /** Called after a message is successfully sent (e.g. to trigger AI reply). Returns an abort function. */
+  onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage, opts?: { model?: string; provider?: string; reasoning?: boolean }) => (() => void) | void
   /** Called when model selection changes (parent can use for AI calls) */
   onModelChange?: (model: ModelOption | null) => void
   className?: string
@@ -270,6 +272,9 @@ export default function ChatRoom({
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const abortRef = useRef<(() => void) | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const seenIds = useRef(new Set<string>())
@@ -358,6 +363,8 @@ export default function ChatRoom({
         }
         // If agent message arrives, replace any pending-ai placeholder
         if (msg.sender_type === 'agent') {
+          setAiGenerating(false)
+          abortRef.current = null
           const pendingIdx = prev.findIndex((m) => m.id.startsWith('pending-ai-'))
           if (pendingIdx >= 0) {
             return [...prev.slice(0, pendingIdx), ...prev.slice(pendingIdx + 1), msg]
@@ -420,9 +427,8 @@ export default function ChatRoom({
       // Trigger AI reply if handler provided
       if (onAfterSend && trimmed) {
         // Show loading dots while AI responds
-        const pendingId = `pending-ai-${Date.now()}`
         setMessages((prev) => [...prev, {
-          id: pendingId,
+          id: `pending-ai-${Date.now()}`,
           chat_id: chatId,
           sender_id: 'ai-assistant',
           sender_type: 'agent',
@@ -434,10 +440,12 @@ export default function ChatRoom({
           created_at: new Date().toISOString(),
         }])
 
-        onAfterSend(chatId, trimmed, sent, {
+        setAiGenerating(true)
+        const abort = onAfterSend(chatId, trimmed, sent, {
           model: selectedModelOption?.id || undefined,
           reasoning: reasoningEnabled,
         })
+        abortRef.current = abort || null
       }
     } catch (err) {
       console.error('Failed to send:', err)
@@ -445,6 +453,15 @@ export default function ChatRoom({
       setSending(false)
     }
   }, [text, imageFiles, chatId, currentUserId, currentUserName, currentUserAvatar, onAfterSend])
+
+  // Stop AI generation
+  const handleStop = useCallback(() => {
+    abortRef.current?.()
+    abortRef.current = null
+    setAiGenerating(false)
+    // Remove pending AI message
+    setMessages((prev) => prev.filter((m) => !m.id.startsWith('pending-ai-')))
+  }, [])
 
   // Handle keyboard
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -502,7 +519,7 @@ export default function ChatRoom({
         {messages.map((msg) => {
           const isOwn = msg.sender_id === currentUserId
           const defaultBubble = (
-            <MessageBubble key={msg.id} msg={msg} isOwn={isOwn} features={features} />
+            <MessageBubble key={msg.id} msg={msg} isOwn={isOwn} features={features} onImageClick={setExpandedImage} />
           )
           return renderMessage ? (
             <div key={msg.id}>{renderMessage(msg, defaultBubble)}</div>
@@ -673,16 +690,52 @@ export default function ChatRoom({
                 </AnimatePresence>
               </div>
             )}
-            <button
-              onClick={handleSend}
-              disabled={sending || (!text.trim() && imageFiles.length === 0)}
-              className="p-2 rounded-lg bg-sky-600 text-white hover:bg-cyan-400 transition-colors disabled:opacity-40 flex-shrink-0"
-            >
-              {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            </button>
+            {aiGenerating ? (
+              <button
+                onClick={handleStop}
+                className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex-shrink-0"
+                title="Stop generation"
+              >
+                <Square size={14} />
+              </button>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={sending || (!text.trim() && imageFiles.length === 0)}
+                className="p-2 rounded-lg bg-sky-600 text-white hover:bg-cyan-400 transition-colors disabled:opacity-40 flex-shrink-0"
+              >
+                {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Image lightbox */}
+      <AnimatePresence>
+        {expandedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+            onClick={() => setExpandedImage(null)}
+          >
+            <button
+              onClick={() => setExpandedImage(null)}
+              className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            >
+              <X size={18} />
+            </button>
+            <img
+              src={expandedImage}
+              alt=""
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-full max-w-full rounded-2xl shadow-2xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

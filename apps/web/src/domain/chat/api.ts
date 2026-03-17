@@ -208,7 +208,7 @@ export async function streamQuickChat(
   workspaceId: string,
   message: string,
   onEvent: (event: QuickChatEvent) => void,
-  opts?: { sessionId?: string; model?: string; provider?: string },
+  opts?: { sessionId?: string; model?: string; provider?: string; signal?: AbortSignal },
 ): Promise<void> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/quick-chat/stream`, {
     method: 'POST',
@@ -223,6 +223,7 @@ export async function streamQuickChat(
       model: opts?.model,
       provider: opts?.provider,
     }),
+    signal: opts?.signal,
   })
 
   if (!res.ok) {

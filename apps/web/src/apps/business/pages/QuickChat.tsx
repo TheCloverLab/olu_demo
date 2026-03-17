@@ -95,35 +95,42 @@ export default function QuickChat() {
   }
 
   // Trigger AI reply after user sends a message
-  const handleAfterSend = useCallback(async (
+  const handleAfterSend = useCallback((
     chatId: string,
     message: string,
     _sentMsg: ChatMessage,
     opts?: { model?: string; provider?: string; reasoning?: boolean },
-  ) => {
+  ): (() => void) | void => {
     if (!workspace) return
-    try {
-      let aiContent = ''
-      let aiReasoning = ''
-      await streamQuickChat(workspace.id, message, (event) => {
-        if (event.type === 'content') {
-          aiContent += event.text
-        } else if (event.type === 'reasoning') {
-          aiReasoning += event.text
-        }
-      }, { sessionId: chatId, model: opts?.model, provider: opts?.provider })
+    const controller = new AbortController()
 
-      // Save AI reply to DB (realtime subscription will show it in ChatRoom)
-      if (aiContent) {
-        await sendMessage(chatId, 'ai-assistant', 'agent', aiContent, {
-          senderName: 'AI Assistant',
-          messageType: 'text',
-          metadata: aiReasoning ? { reasoning: aiReasoning } : undefined,
-        })
+    ;(async () => {
+      try {
+        let aiContent = ''
+        let aiReasoning = ''
+        await streamQuickChat(workspace.id, message, (event) => {
+          if (event.type === 'content') {
+            aiContent += event.text
+          } else if (event.type === 'reasoning') {
+            aiReasoning += event.text
+          }
+        }, { sessionId: chatId, model: opts?.model, provider: opts?.provider, signal: controller.signal })
+
+        // Save AI reply to DB (realtime subscription will show it in ChatRoom)
+        if (aiContent) {
+          await sendMessage(chatId, 'ai-assistant', 'agent', aiContent, {
+            senderName: 'AI Assistant',
+            messageType: 'text',
+            metadata: aiReasoning ? { reasoning: aiReasoning } : undefined,
+          })
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        console.error('AI reply failed:', err)
       }
-    } catch (err) {
-      console.error('AI reply failed:', err)
-    }
+    })()
+
+    return () => controller.abort()
   }, [workspace])
 
   return (

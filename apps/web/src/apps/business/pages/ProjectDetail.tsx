@@ -35,8 +35,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import {
   getProject,
   listProjectChats,
@@ -56,7 +54,8 @@ import {
   subscribeProjectTasks,
   streamProjectChatMessage,
 } from '../../../domain/project/api'
-import { getMessages, sendMessage, subscribeChatMessages } from '../../../domain/chat/api'
+import { sendMessage } from '../../../domain/chat/api'
+import ChatRoom from '../../../components/ChatRoom'
 import type { Project, ProjectTask, ProjectFile, ProjectParticipant, TaskStatus, TaskPriority } from '../../../domain/project/types'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
 
@@ -127,11 +126,6 @@ export default function ProjectDetail() {
 
   // Chat state
   const [chat, setChat] = useState<Chat | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [input, setInput] = useState('')
-  const [sending, setSending] = useState(false)
-  const [streamingText, setStreamingText] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
 
   // Task state
   const [tasks, setTasks] = useState<ProjectTask[]>([])
@@ -159,13 +153,44 @@ export default function ProjectDetail() {
     loadProject()
   }, [id])
 
-  useEffect(() => {
-    if (!chat) return
-    const unsub = subscribeChatMessages(chat.id, (msg) => {
-      setMessages((prev) => [...prev, msg])
-    })
-    return unsub
-  }, [chat?.id])
+  // Project chat AI reply handler
+  const handleAfterSend = useCallback((
+    chatId: string,
+    message: string,
+    _sentMsg: ChatMessage,
+    opts?: { model?: string },
+  ): (() => void) | void => {
+    if (!project) return
+    const controller = new AbortController()
+
+    ;(async () => {
+      try {
+        let fullResponse = ''
+        await streamProjectChatMessage(
+          project.id,
+          project.workspace_id,
+          message,
+          (event) => {
+            if (event.type === 'content') {
+              fullResponse += event.text
+            }
+          },
+          { sessionId: chatId, model: opts?.model, signal: controller.signal },
+        )
+
+        if (fullResponse) {
+          await sendMessage(chatId, 'lead-agent', 'agent', fullResponse, {
+            senderName: 'Lead Agent',
+          })
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        console.error('AI reply failed:', err)
+      }
+    })()
+
+    return () => controller.abort()
+  }, [project])
 
   useEffect(() => {
     if (!id) return
@@ -195,8 +220,6 @@ export default function ProjectDetail() {
       }
       if (defaultChat) {
         setChat(defaultChat)
-        const msgs = await getMessages(defaultChat.id)
-        setMessages(msgs)
       }
     } catch (err) {
       console.error('Failed to load project:', err)
@@ -211,56 +234,6 @@ export default function ProjectDetail() {
     setTasks(taskList)
   }
 
-  async function handleSend() {
-    if (!chat || !currentUser || !project || !input.trim() || sending) return
-    const text = input.trim()
-    setInput('')
-    setSending(true)
-    setIsStreaming(true)
-    setStreamingText('')
-    try {
-      // Save user message to chat
-      await sendMessage(chat.id, currentUser.id, 'user', text, {
-        senderName: currentUser.name,
-        senderAvatar: currentUser.avatar_img ?? undefined,
-      })
-
-      // Stream from Lead Agent
-      let fullResponse = ''
-      await streamProjectChatMessage(
-        project.id,
-        project.workspace_id,
-        text,
-        (event) => {
-          if (event.type === 'content') {
-            fullResponse += event.text
-            setStreamingText(fullResponse)
-          } else if (event.type === 'tool') {
-            // Show tool usage indicator
-            setStreamingText((prev) => prev + `\n*Using ${event.name}...*\n`)
-          } else if (event.type === 'done') {
-            setIsStreaming(false)
-          }
-        },
-        { sessionId: chat.id }
-      )
-
-      // Save full agent response to chat
-      if (fullResponse) {
-        await sendMessage(chat.id, 'lead-agent', 'agent', fullResponse, {
-          senderName: 'Lead Agent',
-        })
-      }
-      setStreamingText('')
-    } catch (err) {
-      console.error('Failed to send message:', err)
-      setInput(text)
-      setStreamingText('')
-      setIsStreaming(false)
-    } finally {
-      setSending(false)
-    }
-  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -521,85 +494,20 @@ export default function ProjectDetail() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
-        {tab === 'chat' && (
-          <div className="flex flex-col h-full">
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3">
-              {messages.length === 0 && (
-                <div className="text-center py-12 text-[var(--olu-muted)]">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>{t('projects.chatEmpty', 'Start a conversation with AI about this project')}</p>
-                </div>
-              )}
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
-                      msg.sender_type === 'user'
-                        ? 'bg-[var(--olu-primary)] text-white rounded-br-sm'
-                        : 'bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm'
-                    }`}
-                  >
-                    {msg.sender_name && msg.sender_type !== 'user' && (
-                      <p className="text-xs font-medium text-[var(--olu-muted)] mb-1">{msg.sender_name}</p>
-                    )}
-                    {msg.sender_type === 'user' ? (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    ) : (
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&_pre]:bg-black/10 [&_pre]:p-2 [&_pre]:rounded-lg [&_code]:text-xs [&_p]:my-1">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {/* Streaming response */}
-              {isStreaming && streamingText && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] px-4 py-2 rounded-2xl text-sm bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] text-[var(--olu-text)] rounded-bl-sm">
-                    <p className="text-xs font-medium text-[var(--olu-muted)] mb-1">Lead Agent</p>
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&_pre]:bg-black/10 [&_pre]:p-2 [&_pre]:rounded-lg [&_code]:text-xs [&_p]:my-1">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Typing indicator */}
-              {sending && !streamingText && (
-                <div className="flex justify-start">
-                  <div className="px-4 py-3 rounded-2xl bg-[var(--olu-section-bg)] border border-[var(--olu-card-border)] rounded-bl-sm">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-2 h-2 bg-[var(--olu-muted)] rounded-full animate-bounce [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-[var(--olu-card-border)] p-4">
-              <div className="flex gap-2">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  placeholder={t('projects.chatPlaceholder', 'Type a message...')}
-                  className="flex-1 px-4 py-2 bg-[var(--olu-accent-bg)] border border-[var(--olu-card-border)] rounded-2xl text-[var(--olu-text)] placeholder:text-[var(--olu-muted)]"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending}
-                  className="px-4 py-2 bg-[var(--olu-primary)] text-white rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-                >
-                  {t('common.send', 'Send')}
-                </button>
-              </div>
-            </div>
+        {tab === 'chat' && chat && currentUser && (
+          <ChatRoom
+            chatId={chat.id}
+            scope="project"
+            currentUserId={currentUser.id}
+            currentUserName={currentUser.name}
+            currentUserAvatar={currentUser.avatar_img ?? undefined}
+            onAfterSend={handleAfterSend}
+            className="h-full"
+          />
+        )}
+        {tab === 'chat' && (!chat || !currentUser) && (
+          <div className="flex items-center justify-center h-full text-[var(--olu-muted)]">
+            <MessageSquare className="w-12 h-12 opacity-30" />
           </div>
         )}
 

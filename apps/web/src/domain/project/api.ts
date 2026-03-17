@@ -460,6 +460,7 @@ export async function streamProjectChatMessage(
     provider?: string
     model?: string
     images?: string[]
+    signal?: AbortSignal
   }
 ): Promise<void> {
   const res = await fetch(`${AGENT_RUNTIME_URL}/project/chat/stream`, {
@@ -468,6 +469,7 @@ export async function streamProjectChatMessage(
       'Content-Type': 'application/json',
       ...(API_SECRET ? { 'x-api-key': API_SECRET } : {}),
     },
+    signal: opts?.signal,
     body: JSON.stringify({
       projectId,
       workspaceId,

@@ -253,6 +253,8 @@ export interface ChatRoomProps {
   onAfterSend?: (chatId: string, message: string, sentMsg: ChatMessage, opts?: { model?: string; provider?: string; reasoning?: boolean }) => (() => void) | void
   /** Called when model selection changes (parent can use for AI calls) */
   onModelChange?: (model: ModelOption | null) => void
+  /** Hide the input bar (e.g. for archived chats) */
+  readOnly?: boolean
   className?: string
 }
 
@@ -267,6 +269,7 @@ export default function ChatRoom({
   renderMessage,
   onAfterSend,
   onModelChange,
+  readOnly,
   className,
 }: ChatRoomProps) {
   const { t } = useTranslation()
@@ -542,6 +545,8 @@ export default function ChatRoom({
         <div ref={bottomRef} />
       </div>
 
+      {/* Input (hidden in readOnly mode) */}
+      {readOnly ? null : <>
       {/* Image preview */}
       {imageFiles.length > 0 && (
         <ImagePreview
@@ -722,6 +727,7 @@ export default function ChatRoom({
           </div>
         </div>
       </div>
+      </>}
 
       {/* Image lightbox */}
       <AnimatePresence>

@@ -359,6 +359,7 @@ export default function QuickChat() {
               chatId={activeChat.id}
               scope="quick"
               currentUserId={currentUser?.id || ''}
+              readOnly
               className="flex-1"
             />
             <div className="border-t border-[var(--olu-card-border)] px-4 py-3 text-center">

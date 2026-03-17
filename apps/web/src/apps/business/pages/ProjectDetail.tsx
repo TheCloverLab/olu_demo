@@ -689,6 +689,7 @@ export default function ProjectDetail() {
                       chatId={activeChat.id}
                       scope="project"
                       currentUserId={currentUser.id}
+                      readOnly
                       className="flex-1"
                     />
                     <div className="border-t border-[var(--olu-card-border)] px-4 py-2 text-center">

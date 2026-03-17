@@ -11,6 +11,10 @@ const AGENT_RUNTIME_ORIGIN = (
 const API_SECRET = (process.env.AGENT_RUNTIME_SECRET || '').trim()
 
 export default async function handler(req, res) {
+  // Debug: check if function is hit
+  if (req.query.path?.[0] === '_debug') {
+    return res.status(200).json({ ok: true, origin: AGENT_RUNTIME_ORIGIN, hasSecret: !!API_SECRET })
+  }
   // Build target URL from the catch-all path segments
   const pathSegments = req.query.path || []
   const target = `${AGENT_RUNTIME_ORIGIN}/${Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments}`

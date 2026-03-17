@@ -32,11 +32,13 @@ function MessageBubble({
   isOwn,
   features,
   onImageClick,
+  onImageLoad,
 }: {
   msg: ChatMessage
   isOwn: boolean
   features: ChatFeatures
   onImageClick?: (url: string) => void
+  onImageLoad?: () => void
 }) {
   const gradient = avatarColor(msg.sender_id)
   const initials = (msg.sender_name || '?').slice(0, 2).toUpperCase()
@@ -140,7 +142,7 @@ function MessageBubble({
                 className={clsx(
                   'prose prose-sm max-w-none prose-p:my-1 prose-pre:my-1 prose-pre:px-3 prose-pre:py-2 prose-code:px-1 prose-code:rounded',
                   isOwn
-                    ? 'prose-p:text-[var(--olu-chat-user-text)] prose-headings:text-[var(--olu-chat-user-text)] prose-strong:text-[var(--olu-chat-user-text)] prose-code:text-[var(--olu-chat-user-text)] prose-code:bg-black/10'
+                    ? '[--tw-prose-body:var(--olu-chat-user-text)] [--tw-prose-headings:var(--olu-chat-user-text)] [--tw-prose-bold:var(--olu-chat-user-text)] [--tw-prose-code:var(--olu-chat-user-text)] prose-code:bg-black/10'
                     : 'dark:prose-invert prose-headings:text-[var(--olu-text)] prose-code:bg-black/5 dark:prose-code:bg-white/10',
                 )}
                 dangerouslySetInnerHTML={{ __html: simpleMarkdown(msg.content) }}
@@ -166,6 +168,7 @@ function MessageBubble({
                   src={url}
                   alt=""
                   className="rounded-lg max-h-48 max-w-full object-cover cursor-zoom-in hover:opacity-90"
+                  onLoad={onImageLoad}
                   onClick={() => onImageClick?.(url)}
                 />
               ))}
@@ -376,10 +379,19 @@ export default function ChatRoom({
     return unsub
   }, [chatId, currentUserId])
 
-  // Auto-scroll
+  // Auto-scroll — instant on initial load, smooth for new messages
+  const initialScrollDone = useRef(false)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (!messages.length) return
+    const behavior = initialScrollDone.current ? 'smooth' : 'instant'
+    initialScrollDone.current = true
+    bottomRef.current?.scrollIntoView({ behavior })
   }, [messages])
+
+  // Re-scroll when images load (they change container height)
+  const handleImageLoad = useCallback(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'instant' })
+  }, [])
 
   // Send message
   const handleSend = useCallback(async () => {
@@ -519,7 +531,7 @@ export default function ChatRoom({
         {messages.map((msg) => {
           const isOwn = msg.sender_id === currentUserId
           const defaultBubble = (
-            <MessageBubble key={msg.id} msg={msg} isOwn={isOwn} features={features} onImageClick={setExpandedImage} />
+            <MessageBubble key={msg.id} msg={msg} isOwn={isOwn} features={features} onImageClick={setExpandedImage} onImageLoad={handleImageLoad} />
           )
           return renderMessage ? (
             <div key={msg.id}>{renderMessage(msg, defaultBubble)}</div>

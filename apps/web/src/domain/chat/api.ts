@@ -111,6 +111,18 @@ export async function ensureSupportChat(
   return chat
 }
 
+export async function updateChatName(chatId: string, name: string): Promise<void> {
+  await supabase.from('chats').update({ name }).eq('id', chatId)
+}
+
+export async function archiveChat(chatId: string): Promise<void> {
+  await supabase.from('chats').update({ is_archived: true }).eq('id', chatId)
+}
+
+export async function unarchiveChat(chatId: string): Promise<void> {
+  await supabase.from('chats').update({ is_archived: false }).eq('id', chatId)
+}
+
 // ── Members ───────────────────────────────────────────────────
 
 export async function getChatMembers(chatId: string): Promise<ChatMember[]> {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -33,12 +33,16 @@ import {
   X,
   Users,
   Zap,
+  Archive,
+  ArchiveRestore,
+  Pencil,
+  Check,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import {
   getProject,
   listProjectChats,
-  getDefaultChat,
+  createProjectChat,
   listTasks,
   createTask,
   updateTask,
@@ -54,7 +58,7 @@ import {
   subscribeProjectTasks,
   streamProjectChatMessage,
 } from '../../../domain/project/api'
-import { sendMessage } from '../../../domain/chat/api'
+import { sendMessage, updateChatName, archiveChat, unarchiveChat } from '../../../domain/chat/api'
 import ChatRoom from '../../../components/ChatRoom'
 import type { Project, ProjectTask, ProjectFile, ProjectParticipant, TaskStatus, TaskPriority } from '../../../domain/project/types'
 import type { Chat, ChatMessage } from '../../../domain/chat/types'
@@ -125,7 +129,13 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true)
 
   // Chat state
-  const [chat, setChat] = useState<Chat | null>(null)
+  const [chats, setChats] = useState<Chat[]>([])
+  const [activeChat, setActiveChat] = useState<Chat | null>(null)
+  const [showArchived, setShowArchived] = useState(false)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const renameRef = useRef<HTMLInputElement>(null)
+  const [contextMenu, setContextMenu] = useState<{ chatId: string; x: number; y: number } | null>(null)
 
   // Task state
   const [tasks, setTasks] = useState<ProjectTask[]>([])
@@ -153,6 +163,59 @@ export default function ProjectDetail() {
     loadProject()
   }, [id])
 
+  // Focus rename input
+  useEffect(() => { if (renamingId) renameRef.current?.focus() }, [renamingId])
+
+  // Close context menu on click
+  useEffect(() => {
+    if (!contextMenu) return
+    const close = () => setContextMenu(null)
+    window.addEventListener('click', close)
+    return () => window.removeEventListener('click', close)
+  }, [contextMenu])
+
+  const activeChats = chats.filter((c) => !c.is_archived)
+  const archivedChats = chats.filter((c) => c.is_archived)
+
+  async function handleNewChat() {
+    if (!project || !currentUser) return
+    const chatName = `Chat ${chats.length + 1}`
+    const newChat = await createProjectChat(project.id, project.workspace_id, currentUser.id, chatName)
+    setChats((prev) => [newChat, ...prev])
+    setActiveChat(newChat)
+  }
+
+  async function handleChatRename(chatId: string) {
+    const name = renameValue.trim()
+    if (!name) { setRenamingId(null); return }
+    try {
+      await updateChatName(chatId, name)
+      setChats((prev) => prev.map((c) => c.id === chatId ? { ...c, name } : c))
+    } catch (err) {
+      console.error('Failed to rename:', err)
+    }
+    setRenamingId(null)
+  }
+
+  async function handleChatArchive(chatId: string) {
+    try {
+      await archiveChat(chatId)
+      setChats((prev) => prev.map((c) => c.id === chatId ? { ...c, is_archived: true } : c))
+      if (activeChat?.id === chatId) setActiveChat(null)
+    } catch (err) {
+      console.error('Failed to archive:', err)
+    }
+  }
+
+  async function handleChatUnarchive(chatId: string) {
+    try {
+      await unarchiveChat(chatId)
+      setChats((prev) => prev.map((c) => c.id === chatId ? { ...c, is_archived: false } : c))
+    } catch (err) {
+      console.error('Failed to unarchive:', err)
+    }
+  }
+
   // Project chat AI reply handler
   const handleAfterSend = useCallback((
     chatId: string,
@@ -161,6 +224,16 @@ export default function ProjectDetail() {
     opts?: { model?: string },
   ): (() => void) | void => {
     if (!project) return
+
+    // Rename generic chat names to first message
+    const chat = chats.find((c) => c.id === chatId)
+    if (chat && /^(Chat \d+|New Chat)$/.test(chat.name || '')) {
+      const newName = message.length > 40 ? message.slice(0, 40) + '…' : message
+      updateChatName(chatId, newName).then(() => {
+        setChats((prev) => prev.map((c) => c.id === chatId ? { ...c, name: newName } : c))
+      }).catch(() => {})
+    }
+
     const controller = new AbortController()
 
     ;(async () => {
@@ -190,7 +263,7 @@ export default function ProjectDetail() {
     })()
 
     return () => controller.abort()
-  }, [project])
+  }, [project, chats])
 
   useEffect(() => {
     if (!id) return
@@ -204,9 +277,9 @@ export default function ProjectDetail() {
     if (!id) return
     setLoading(true)
     try {
-      const [proj, defaultChat, taskList, fileList, participantList] = await Promise.all([
+      const [proj, chatList, taskList, fileList, participantList] = await Promise.all([
         getProject(id),
-        getDefaultChat(id),
+        listProjectChats(id),
         listTasks(id),
         listFiles(id),
         listParticipants(id),
@@ -218,8 +291,9 @@ export default function ProjectDetail() {
       if (proj?.config?.skills?.length) {
         setEnabledSkills(proj.config.skills)
       }
-      if (defaultChat) {
-        setChat(defaultChat)
+      setChats(chatList)
+      if (chatList.length > 0) {
+        setActiveChat(chatList[0])
       }
     } catch (err) {
       console.error('Failed to load project:', err)
@@ -494,20 +568,156 @@ export default function ProjectDetail() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
-        {tab === 'chat' && chat && currentUser && (
-          <ChatRoom
-            chatId={chat.id}
-            scope="project"
-            currentUserId={currentUser.id}
-            currentUserName={currentUser.name}
-            currentUserAvatar={currentUser.avatar_img ?? undefined}
-            onAfterSend={handleAfterSend}
-            className="h-full"
-          />
-        )}
-        {tab === 'chat' && (!chat || !currentUser) && (
-          <div className="flex items-center justify-center h-full text-[var(--olu-muted)]">
-            <MessageSquare className="w-12 h-12 opacity-30" />
+        {tab === 'chat' && (
+          <div className="flex h-full">
+            {/* Chat list sidebar */}
+            <div className="w-56 border-r border-[var(--olu-card-border)] bg-[var(--olu-section-bg)] flex flex-col flex-shrink-0">
+              <div className="p-2 border-b border-[var(--olu-card-border)] flex items-center justify-between">
+                <span className="text-xs font-medium text-[var(--olu-muted)] px-1">{t('projects.sessions', 'Sessions')}</span>
+                <button
+                  onClick={handleNewChat}
+                  className="p-1 hover:bg-[var(--olu-accent-bg)] rounded-lg transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[var(--olu-muted)]" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {activeChats.map((c) => (
+                  renamingId === c.id ? (
+                    <div key={c.id} className="flex items-center gap-1 px-2 py-2">
+                      <input
+                        ref={renameRef}
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleChatRename(c.id)
+                          if (e.key === 'Escape') setRenamingId(null)
+                        }}
+                        className="flex-1 px-2 py-1 text-xs bg-[var(--olu-input-bg)] border border-[var(--olu-input-border)] rounded text-[var(--olu-text)] focus:outline-none focus:border-sky-400"
+                      />
+                      <button onClick={() => handleChatRename(c.id)} className="p-0.5 text-green-500"><Check className="w-3 h-3" /></button>
+                      <button onClick={() => setRenamingId(null)} className="p-0.5 text-[var(--olu-muted)]"><X className="w-3 h-3" /></button>
+                    </div>
+                  ) : (
+                    <button
+                      key={c.id}
+                      onClick={() => setActiveChat(c)}
+                      onContextMenu={(e) => { e.preventDefault(); setContextMenu({ chatId: c.id, x: e.clientX, y: e.clientY }) }}
+                      className={`w-full text-left px-3 py-2.5 hover:bg-[var(--olu-accent-bg)] transition-colors ${
+                        activeChat?.id === c.id ? 'bg-[var(--olu-accent-bg)]' : ''
+                      }`}
+                    >
+                      <p className="text-xs font-medium text-[var(--olu-text)] truncate">
+                        {c.name || 'New Chat'}
+                      </p>
+                      <p className="text-[10px] text-[var(--olu-muted)] truncate mt-0.5">
+                        {c.last_message || '\u00A0'}
+                      </p>
+                    </button>
+                  )
+                ))}
+
+                {/* Archived */}
+                {archivedChats.length > 0 && (
+                  <>
+                    <button
+                      onClick={() => setShowArchived(!showArchived)}
+                      className="w-full flex items-center gap-1.5 px-3 py-2 text-[10px] text-[var(--olu-muted)] hover:text-[var(--olu-text)] hover:bg-[var(--olu-accent-bg)] transition-colors"
+                    >
+                      <Archive className="w-3 h-3" />
+                      Archived ({archivedChats.length})
+                    </button>
+                    {showArchived && archivedChats.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => setActiveChat(c)}
+                        onContextMenu={(e) => { e.preventDefault(); setContextMenu({ chatId: c.id, x: e.clientX, y: e.clientY }) }}
+                        className={`w-full text-left px-3 py-2.5 hover:bg-[var(--olu-accent-bg)] transition-colors opacity-60 ${
+                          activeChat?.id === c.id ? 'bg-[var(--olu-accent-bg)]' : ''
+                        }`}
+                      >
+                        <p className="text-xs font-medium text-[var(--olu-text)] truncate">{c.name || 'Chat'}</p>
+                        <p className="text-[10px] text-[var(--olu-muted)] truncate mt-0.5">{c.last_message || '\u00A0'}</p>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Context menu */}
+            {contextMenu && (
+              <div
+                className="fixed z-50 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-lg shadow-xl py-1 min-w-[130px]"
+                style={{ left: contextMenu.x, top: contextMenu.y }}
+              >
+                <button
+                  onClick={() => {
+                    const c = chats.find((ch) => ch.id === contextMenu.chatId)
+                    setRenameValue(c?.name || '')
+                    setRenamingId(contextMenu.chatId)
+                    setContextMenu(null)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--olu-text)] hover:bg-[var(--olu-accent-bg)]"
+                >
+                  <Pencil className="w-3 h-3" /> Rename
+                </button>
+                {chats.find((c) => c.id === contextMenu.chatId)?.is_archived ? (
+                  <button
+                    onClick={() => { handleChatUnarchive(contextMenu.chatId); setContextMenu(null) }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--olu-text)] hover:bg-[var(--olu-accent-bg)]"
+                  >
+                    <ArchiveRestore className="w-3 h-3" /> Unarchive
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { handleChatArchive(contextMenu.chatId); setContextMenu(null) }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--olu-text)] hover:bg-[var(--olu-accent-bg)]"
+                  >
+                    <Archive className="w-3 h-3" /> Archive
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Active chat */}
+            <div className="flex-1 min-w-0">
+              {activeChat && currentUser ? (
+                activeChat.is_archived ? (
+                  <div className="flex flex-col h-full">
+                    <ChatRoom
+                      chatId={activeChat.id}
+                      scope="project"
+                      currentUserId={currentUser.id}
+                      className="flex-1"
+                    />
+                    <div className="border-t border-[var(--olu-card-border)] px-4 py-2 text-center">
+                      <span className="text-xs text-[var(--olu-muted)] mr-2">Archived</span>
+                      <button
+                        onClick={() => handleChatUnarchive(activeChat.id)}
+                        className="text-xs text-sky-600 hover:underline"
+                      >
+                        Unarchive
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <ChatRoom
+                    chatId={activeChat.id}
+                    scope="project"
+                    currentUserId={currentUser.id}
+                    currentUserName={currentUser.name}
+                    currentUserAvatar={currentUser.avatar_img ?? undefined}
+                    onAfterSend={handleAfterSend}
+                    className="h-full"
+                  />
+                )
+              ) : (
+                <div className="flex items-center justify-center h-full text-[var(--olu-muted)]">
+                  <MessageSquare className="w-12 h-12 opacity-30" />
+                </div>
+              )}
+            </div>
           </div>
         )}
 

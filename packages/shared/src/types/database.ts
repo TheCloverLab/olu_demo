@@ -39,79 +39,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      agent_budgets: {
-        Row: {
-          agent_id: string
-          approved_amount: number | null
-          breakdown: Json | null
-          created_at: string | null
-          currency: string
-          description: string | null
-          id: string
-          requested_amount: number
-          spent_amount: number
-          status: string
-          task_id: string | null
-          thread_id: string | null
-          updated_at: string | null
-          workspace_id: string
-        }
-        Insert: {
-          agent_id: string
-          approved_amount?: number | null
-          breakdown?: Json | null
-          created_at?: string | null
-          currency?: string
-          description?: string | null
-          id?: string
-          requested_amount: number
-          spent_amount?: number
-          status?: string
-          task_id?: string | null
-          thread_id?: string | null
-          updated_at?: string | null
-          workspace_id: string
-        }
-        Update: {
-          agent_id?: string
-          approved_amount?: number | null
-          breakdown?: Json | null
-          created_at?: string | null
-          currency?: string
-          description?: string | null
-          id?: string
-          requested_amount?: number
-          spent_amount?: number
-          status?: string
-          task_id?: string | null
-          thread_id?: string | null
-          updated_at?: string | null
-          workspace_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_budgets_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_budgets_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agent_tasks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_budgets_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       agent_conversations: {
         Row: {
           content: string | null
@@ -181,13 +108,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "agent_events_processed_by_fkey"
-            columns: ["processed_by"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "agent_events_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -247,67 +167,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "agent_memories_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "agent_memories_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_scheduled_jobs: {
-        Row: {
-          created_at: string
-          cron_expression: string
-          enabled: boolean
-          id: string
-          job_key: string
-          last_result: string | null
-          last_run_at: string | null
-          run_count: number
-          task_description: string
-          updated_at: string
-          workspace_agent_id: string
-        }
-        Insert: {
-          created_at?: string
-          cron_expression: string
-          enabled?: boolean
-          id?: string
-          job_key: string
-          last_result?: string | null
-          last_run_at?: string | null
-          run_count?: number
-          task_description: string
-          updated_at?: string
-          workspace_agent_id: string
-        }
-        Update: {
-          created_at?: string
-          cron_expression?: string
-          enabled?: boolean
-          id?: string
-          job_key?: string
-          last_result?: string | null
-          last_run_at?: string | null
-          run_count?: number
-          task_description?: string
-          updated_at?: string
-          workspace_agent_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_scheduled_jobs_workspace_agent_id_fkey"
-            columns: ["workspace_agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
             referencedColumns: ["id"]
           },
         ]
@@ -358,66 +221,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      agent_templates: {
-        Row: {
-          avatar_img: string | null
-          category: string
-          color: string | null
-          cost_per_1k: number
-          created_at: string | null
-          description: string
-          id: string
-          model: string
-          name: string
-          price_label: string
-          pricing_model: string
-          rating: number
-          reviews: number
-          role: string
-          status: string
-          template_key: string
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_img?: string | null
-          category: string
-          color?: string | null
-          cost_per_1k?: number
-          created_at?: string | null
-          description: string
-          id?: string
-          model: string
-          name: string
-          price_label: string
-          pricing_model: string
-          rating?: number
-          reviews?: number
-          role: string
-          status?: string
-          template_key: string
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_img?: string | null
-          category?: string
-          color?: string | null
-          cost_per_1k?: number
-          created_at?: string | null
-          description?: string
-          id?: string
-          model?: string
-          name?: string
-          price_label?: string
-          pricing_model?: string
-          rating?: number
-          reviews?: number
-          role?: string
-          status?: string
-          template_key?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       ai_agents: {
         Row: {
@@ -557,44 +360,6 @@ export type Database = {
           },
         ]
       }
-      budget_transactions: {
-        Row: {
-          amount: number
-          budget_id: string
-          created_at: string | null
-          description: string | null
-          id: string
-          metadata: Json | null
-          type: string
-        }
-        Insert: {
-          amount: number
-          budget_id: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          type: string
-        }
-        Update: {
-          amount?: number
-          budget_id?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "budget_transactions_budget_id_fkey"
-            columns: ["budget_id"]
-            isOneToOne: false
-            referencedRelation: "agent_budgets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       business_campaign_events: {
         Row: {
           actor_type: string
@@ -720,13 +485,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "business_campaign_targets_creator_agent_id_fkey"
-            columns: ["creator_agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "business_campaign_targets_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
@@ -790,13 +548,6 @@ export type Database = {
             columns: ["advertiser_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "business_campaigns_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
             referencedColumns: ["id"]
           },
         ]
@@ -1050,13 +801,6 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "chats_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "chats_experience_id_fkey"
             columns: ["experience_id"]
@@ -2691,163 +2435,7 @@ export type Database = {
           id?: string
           task_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "workspace_agent_task_logs_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_agent_task_logs_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agent_tasks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      workspace_agent_tasks: {
-        Row: {
-          created_at: string | null
-          due: string | null
-          id: string
-          priority: string
-          progress: number
-          status: string
-          task_key: string
-          title: string
-          updated_at: string | null
-          workspace_agent_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          due?: string | null
-          id?: string
-          priority?: string
-          progress?: number
-          status?: string
-          task_key: string
-          title: string
-          updated_at?: string | null
-          workspace_agent_id: string
-        }
-        Update: {
-          created_at?: string | null
-          due?: string | null
-          id?: string
-          priority?: string
-          progress?: number
-          status?: string
-          task_key?: string
-          title?: string
-          updated_at?: string | null
-          workspace_agent_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workspace_agent_tasks_workspace_agent_id_fkey"
-            columns: ["workspace_agent_id"]
-            isOneToOne: false
-            referencedRelation: "workspace_agents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      workspace_agents: {
-        Row: {
-          agent_key: string
-          avatar_img: string | null
-          color: string | null
-          created_at: string | null
-          description: string | null
-          enabled_skills: string[] | null
-          hired_at: string | null
-          hired_by_user_id: string | null
-          id: string
-          lark_app_id: string | null
-          lark_app_secret: string | null
-          last_message: string | null
-          last_time: string | null
-          model: string | null
-          name: string
-          role: string
-          status: string
-          support_enabled: boolean | null
-          template_id: string | null
-          updated_at: string | null
-          workspace_id: string
-        }
-        Insert: {
-          agent_key: string
-          avatar_img?: string | null
-          color?: string | null
-          created_at?: string | null
-          description?: string | null
-          enabled_skills?: string[] | null
-          hired_at?: string | null
-          hired_by_user_id?: string | null
-          id?: string
-          lark_app_id?: string | null
-          lark_app_secret?: string | null
-          last_message?: string | null
-          last_time?: string | null
-          model?: string | null
-          name: string
-          role: string
-          status?: string
-          support_enabled?: boolean | null
-          template_id?: string | null
-          updated_at?: string | null
-          workspace_id: string
-        }
-        Update: {
-          agent_key?: string
-          avatar_img?: string | null
-          color?: string | null
-          created_at?: string | null
-          description?: string | null
-          enabled_skills?: string[] | null
-          hired_at?: string | null
-          hired_by_user_id?: string | null
-          id?: string
-          lark_app_id?: string | null
-          lark_app_secret?: string | null
-          last_message?: string | null
-          last_time?: string | null
-          model?: string | null
-          name?: string
-          role?: string
-          status?: string
-          support_enabled?: boolean | null
-          template_id?: string | null
-          updated_at?: string | null
-          workspace_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workspace_agents_hired_by_user_id_fkey"
-            columns: ["hired_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_agents_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "agent_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_agents_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       workspace_billing: {
         Row: {

@@ -14,6 +14,7 @@ export interface Chat {
   agent_id: string | null
   project_id: string | null
   is_default: boolean
+  is_archived: boolean
   config: Record<string, unknown>
   last_message: string | null
   last_message_at: string | null

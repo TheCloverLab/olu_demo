@@ -95,9 +95,8 @@ test.describe('Business Chat', () => {
       await textarea.press('Enter')
       await page.waitForTimeout(3000)
 
-      // Verify no duplicates — count blue message bubbles containing the text
-      // (user messages have bg-sky-600 class)
-      const bubbles = page.locator('.bg-sky-600:has-text("Follow-up message")')
+      // Verify no duplicates — count user message bubbles containing the text
+      const bubbles = page.locator('[data-testid="msg-user"]:has-text("Follow-up message")')
       const count = await bubbles.count()
       expect(count).toBe(1)
 
@@ -105,6 +104,45 @@ test.describe('Business Chat', () => {
     }
 
     await page.screenshot({ path: `${ssDir}/quick-chat-sent.png`, fullPage: true })
+    expect(dbErrors(errors)).toEqual([])
+  })
+
+  test('QuickChat — send message and receive AI reply', async ({ page }) => {
+    const errors = collectErrors(page)
+    await nav(page, '/business/chat')
+
+    const testMsg = `E2E-AI-${Date.now()}`
+
+    // Start from empty state input or existing ChatRoom textarea
+    const emptyInput = page.locator('input[placeholder]').first()
+    if (await emptyInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await emptyInput.fill(testMsg)
+      await emptyInput.press('Enter')
+      await page.waitForTimeout(4000)
+    } else {
+      // Already in a ChatRoom — send via textarea
+      const textarea = page.locator('textarea').first()
+      await expect(textarea).toBeVisible({ timeout: 5000 })
+      await textarea.fill(testMsg)
+      await textarea.press('Enter')
+      await page.waitForTimeout(2000)
+    }
+
+    // User message should appear
+    await expect(page.locator(`text=${testMsg}`).first()).toBeVisible({ timeout: 5000 })
+
+    // Wait for AI reply — agent bubbles have data-testid="msg-agent"
+    // AI may take up to 30 seconds to respond
+    const agentBubble = page.locator('[data-testid="msg-agent"]').last()
+    await expect(agentBubble).toBeVisible({ timeout: 30000 })
+
+    // Verify the agent reply has real text content (not just loading dots)
+    await expect(async () => {
+      const text = await agentBubble.innerText()
+      expect(text.trim().length).toBeGreaterThan(3)
+    }).toPass({ timeout: 15000 })
+
+    await page.screenshot({ path: `${ssDir}/quick-chat-ai-reply.png`, fullPage: true })
     expect(dbErrors(errors)).toEqual([])
   })
 

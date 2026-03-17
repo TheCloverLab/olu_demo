@@ -99,6 +99,7 @@ function MessageBubble({
 
         {/* Message content */}
         <div
+          data-testid={isOwn ? 'msg-user' : 'msg-agent'}
           className={clsx(
             'rounded-[24px] px-5 py-3.5 text-[15px] leading-7 break-words border shadow-[0_2px_12px_rgba(2,8,23,0.08)]',
             isOwn

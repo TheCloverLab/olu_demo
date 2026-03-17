@@ -27,23 +27,16 @@ type Task = {
   owner: string
 }
 
-const DEMO_TASKS: Task[] = [
-  { id: '1', title: 'Review Q1 marketing campaign performance', status: 'in_progress', priority: 'high', owner: 'Marketing Team', progress: 65 },
-  { id: '2', title: 'Update product catalog for spring collection', status: 'pending', priority: 'medium', owner: 'Product Team', due: 'Mar 20', progress: 0 },
-  { id: '3', title: 'Onboard new supplier for packaging', status: 'done', priority: 'medium', owner: 'Supply Chain', progress: 100 },
-  { id: '4', title: 'Publish holiday campaign to Instagram', status: 'pending', priority: 'high', owner: 'Content Team', due: 'Mar 18', progress: 0 },
-  { id: '5', title: 'Finalize creator partnership agreement', status: 'in_progress', priority: 'low', owner: 'Legal', progress: 40 },
-]
-
 export default function TaskCenter() {
   const [filter, setFilter] = useState<'all' | TaskStatus>('all')
+  const [tasks] = useState<Task[]>([])
 
-  const filteredTasks = filter === 'all' ? DEMO_TASKS : DEMO_TASKS.filter((t) => t.status === filter)
+  const filteredTasks = filter === 'all' ? tasks : tasks.filter((t) => t.status === filter)
   const counts = {
-    all: DEMO_TASKS.length,
-    pending: DEMO_TASKS.filter((t) => t.status === 'pending').length,
-    in_progress: DEMO_TASKS.filter((t) => t.status === 'in_progress').length,
-    done: DEMO_TASKS.filter((t) => t.status === 'done').length,
+    all: tasks.length,
+    pending: tasks.filter((t) => t.status === 'pending').length,
+    in_progress: tasks.filter((t) => t.status === 'in_progress').length,
+    done: tasks.filter((t) => t.status === 'done').length,
   }
 
   return (

@@ -33,18 +33,6 @@ function fallbackPriceFromCourse(course: Course) {
   return 'Paid'
 }
 
-
-const DEMO_TRANSACTIONS: TxnItem[] = [
-  { id: 'txn-1', label: 'Top-up via Apple Pay', detail: 'Mar 8, 2026', amount: '+$50.00', direction: 'in', date: '2026-03-08' },
-  { id: 'txn-2', label: 'Pixel Realm membership', detail: 'Mar 7, 2026 · Monthly renewal', amount: '-$9.99', direction: 'out', date: '2026-03-07' },
-  { id: 'txn-3', label: 'Lo-fi Production 101', detail: 'Mar 3, 2026 · Course purchase', amount: '-$39.00', direction: 'out', date: '2026-03-03' },
-  { id: 'txn-4', label: 'Referral bonus', detail: 'Feb 28, 2026 · Invited Jordan Lee', amount: '+$5.00', direction: 'in', date: '2026-02-28' },
-  { id: 'txn-5', label: 'Top-up via card', detail: 'Feb 25, 2026', amount: '+$100.00', direction: 'in', date: '2026-02-25' },
-  { id: 'txn-6', label: 'The Listening Room membership', detail: 'Feb 20, 2026 · Monthly renewal', amount: '-$4.99', direction: 'out', date: '2026-02-20' },
-  { id: 'txn-7', label: 'Digital Art Masterclass', detail: 'Feb 15, 2026 · Course purchase', amount: '-$49.00', direction: 'out', date: '2026-02-15' },
-  { id: 'txn-8', label: 'Welcome bonus', detail: 'Feb 10, 2026 · New account', amount: '+$10.00', direction: 'in', date: '2026-02-10' },
-]
-
 export default function Wallet() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -53,6 +41,7 @@ export default function Wallet() {
   const [courseCharges, setCourseCharges] = useState<ChargeItem[]>([])
   const [balanceUsdc, setBalanceUsdc] = useState(0)
   const [points, setPoints] = useState(0)
+  const [transactions] = useState<TxnItem[]>([])
   const [walletReady, setWalletReady] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -192,7 +181,7 @@ export default function Wallet() {
         </div>
 
         <div className="space-y-2">
-          {DEMO_TRANSACTIONS.map((txn) => (
+          {transactions.map((txn) => (
             <div
               key={txn.id}
               className="flex items-center gap-3 rounded-2xl border border-olu-border bg-[var(--olu-card-bg)] p-3.5"

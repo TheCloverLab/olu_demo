@@ -8,8 +8,6 @@ import { insertPresetExperiences } from '../domain/experience/api'
 import { Users, BookOpen, Layers, Box, Check, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
-
 type PresetKey = 'community' | 'academy' | 'hybrid' | 'blank'
 
 const PRESETS: { key: PresetKey; icon: typeof Users; labelKey: string; descKey: string; gradient: string }[] = [
@@ -107,7 +105,7 @@ export default function Onboarding() {
       // Mark onboarding complete
       await completeOnboarding(user.id)
 
-      if (!IS_DEMO && selectedPreset !== 'blank') {
+      if (selectedPreset !== 'blank') {
         // Get user's workspace
         const membership = await getWorkspaceMembershipForUser(user.id)
 

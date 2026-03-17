@@ -1,8 +1,6 @@
 import { supabase } from '../../lib/supabase'
 import type { Chat, ChatMessage, ChatMember, ChatScope, ChatAttachment } from './types'
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
-
 // ── Chat CRUD ─────────────────────────────────────────────────
 
 export async function getChat(chatId: string): Promise<Chat | null> {

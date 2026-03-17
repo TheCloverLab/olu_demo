@@ -18,22 +18,16 @@ const STATUS_CFG: Record<ApprovalStatus, { icon: typeof Clock; color: string; bg
   rejected: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Rejected' },
 }
 
-const DEMO_APPROVALS: ApprovalItem[] = [
-  { id: 'demo-1', title: 'Publish holiday campaign to Instagram', status: 'pending', requestedBy: 'Marketing Team', createdAt: '2 hours ago' },
-  { id: 'demo-2', title: 'Budget increase for TikTok ads ($200 → $500)', status: 'pending', requestedBy: 'Ad Manager', createdAt: '4 hours ago' },
-  { id: 'demo-3', title: 'New product listing: Summer Collection', status: 'approved', requestedBy: 'Product Team', createdAt: 'Yesterday' },
-  { id: 'demo-4', title: 'Refund request #4821 — damaged item', status: 'rejected', requestedBy: 'Support Team', createdAt: '2 days ago' },
-]
-
 export default function ApprovalCenter() {
   const [filter, setFilter] = useState<'all' | ApprovalStatus>('all')
+  const [approvals] = useState<ApprovalItem[]>([])
 
-  const filtered = filter === 'all' ? DEMO_APPROVALS : DEMO_APPROVALS.filter((a) => a.status === filter)
+  const filtered = filter === 'all' ? approvals : approvals.filter((a) => a.status === filter)
   const counts = {
-    all: DEMO_APPROVALS.length,
-    pending: DEMO_APPROVALS.filter((a) => a.status === 'pending').length,
-    approved: DEMO_APPROVALS.filter((a) => a.status === 'approved').length,
-    rejected: DEMO_APPROVALS.filter((a) => a.status === 'rejected').length,
+    all: approvals.length,
+    pending: approvals.filter((a) => a.status === 'pending').length,
+    approved: approvals.filter((a) => a.status === 'approved').length,
+    rejected: approvals.filter((a) => a.status === 'rejected').length,
   }
 
   return (

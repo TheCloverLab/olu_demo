@@ -28,13 +28,6 @@ OLU is a multi-tenant SaaS platform: **consumer-facing native apps** + **AI-Agen
 Pages → useApp() context → domain/*/api.ts → lib/supabase.ts → Supabase (with RLS)
 ```
 
-### Demo Mode
-
-When `VITE_SUPABASE_URL` contains `demo-placeholder`, all Supabase calls are bypassed:
-- AuthContext provides a mock `DEMO_USER` (verified, onboarding complete)
-- WorkspaceContext enables all modules
-- ConsumerContext uses `DEFAULT_TEMPLATE` without API calls
-
 ## RLS Critical Pattern: auth.uid() vs users.id
 
 **NEVER use `auth.uid()` directly in RLS policies that compare against `users.id` or any FK referencing `users(id)`.**
@@ -327,5 +320,4 @@ npx playwright test  # Run E2E screenshot tests (port 5199)
   - Alex Park (`alex.demo@olu.app`) — Consumer
   - GameVerse Studios (`gameverse.demo@olu.app`) — Marketing
   - ArtisanCraft Co. (`artisancraft.demo@olu.app`) — Supply chain
-- **Demo mode**: When `VITE_SUPABASE_URL` contains `demo-placeholder`, all auth/API calls are bypassed with mock data
 - **Onboarding**: Two-step flow — (1) profile setup (name, handle, avatar), (2) workspace preset selection (Community/Academy/Hybrid/Blank) which seeds starter experiences

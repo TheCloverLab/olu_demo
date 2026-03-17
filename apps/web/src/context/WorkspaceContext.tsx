@@ -3,21 +3,7 @@ import { useAuth } from './AuthContext'
 import { ensureWorkspaceForUser, getEnabledBusinessModulesForUser, getWorkspaceById } from '../domain/workspace/api'
 import type { BusinessModuleKey, Workspace } from '../lib/supabase'
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 const ALL_MODULES: BusinessModuleKey[] = ['creator_ops', 'marketing', 'supply_chain']
-
-const DEMO_WORKSPACE: Workspace = {
-  id: 'ws-demo',
-  owner_user_id: 'demo-user-001',
-  name: 'Demo Workspace',
-  slug: 'demo',
-  icon: null,
-  cover: null,
-  headline: null,
-  status: 'active',
-  created_at: null,
-  updated_at: null,
-}
 
 interface WorkspaceContextType {
   workspace: Workspace | null
@@ -60,13 +46,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    if (IS_DEMO) {
-      setWorkspace(DEMO_WORKSPACE)
-      setEnabledBusinessModules(ALL_MODULES)
-      setWorkspaceLoading(false)
-      return
-    }
-
     let cancelled = false
     setWorkspaceLoading(true)
 

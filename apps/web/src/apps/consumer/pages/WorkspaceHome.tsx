@@ -7,7 +7,6 @@ import type { Workspace, WorkspaceHomeConfig, WorkspaceHomeTab, WorkspaceHomeLay
 import { useAuth } from '../../../context/AuthContext'
 import { joinWorkspace, hasJoinedWorkspace, leaveWorkspace, getWorkspaceBySlug, getWorkspaceMemberCount } from '../../../domain/workspace/api'
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
 import { listExperiences, getForumPosts, getVideoItems, extractYouTubeId, type ForumPostWithAuthor } from '../../../domain/experience/api'
 import type { ExperienceVideoItem } from '../../../lib/supabase'
 import { getCourseTree, type CourseTree } from '../../../domain/experience/course-api'
@@ -847,7 +846,7 @@ export default function WorkspaceHome() {
   const [memberCount, setMemberCount] = useState(0)
   const navigate = useNavigate()
 
-  const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
+  const userId = authUser?.id
 
   async function handleJoinWorkspace() {
     if (!userId || !workspace) return
@@ -896,12 +895,7 @@ export default function WorkspaceHome() {
     async function load() {
       setLoading(true)
       try {
-        let ws: Workspace | null = null
-        if (IS_DEMO) {
-          ws = { id: 'ws-demo', owner_user_id: 'demo-user-001', name: 'Pixel Realm', slug: workspaceSlug!, icon: null, cover: null, headline: 'Where art meets community', status: 'active', created_at: '' } as Workspace
-        } else {
-          ws = await getWorkspaceBySlug(workspaceSlug!)
-        }
+        const ws = await getWorkspaceBySlug(workspaceSlug!)
         if (!ws) { setLoading(false); return }
         setWorkspace(ws)
 

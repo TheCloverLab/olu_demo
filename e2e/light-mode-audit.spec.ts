@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
 
 async function mockAuth(page) {
-  await page.route('**/demo-placeholder.supabase.co/**', (route) => {
+  await page.route('**/*.supabase.co/**', (route) => {
     const url = route.request().url()
     if (url.includes('/rest/v1/')) {
       return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
@@ -20,7 +20,7 @@ async function mockAuth(page) {
         app_metadata: { provider: 'email' }, created_at: '2025-01-01',
       },
     }
-    localStorage.setItem('sb-demo-placeholder-auth-token', JSON.stringify(session))
+    localStorage.setItem('sb-indiwmqxvnkzapsuvhyh-auth-token', JSON.stringify(session))
   })
 }
 

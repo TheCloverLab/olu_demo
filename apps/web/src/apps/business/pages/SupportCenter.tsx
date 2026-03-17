@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, Send, Headphones, ArrowLeft, MessageSquare, Sparkles } from 'lucide-react'
+import { Loader2, Headphones, ArrowLeft, MessageSquare, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
-import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
 import { useApp } from '../../../context/AppContext'
 import { supabase } from '../../../lib/supabase'
-import { listSupportChats, getMessages, sendMessage as sendChatMessage, subscribeChatMessages } from '../../../domain/chat/api'
-import type { Chat, ChatMessage as UnifiedMessage, ChatMember } from '../../../domain/chat/types'
+import { listSupportChats } from '../../../domain/chat/api'
+import type { Chat, ChatMember } from '../../../domain/chat/types'
 import { setAiSupportEnabled, getAiSupportEnabled } from '../../../domain/product/api'
+import ChatRoom from '../../../components/ChatRoom'
 
 type SupportChatView = Chat & {
   members?: ChatMember[]
@@ -20,13 +20,6 @@ type SupportChatView = Chat & {
     avatar_color: string | null
     initials: string | null
   } | null
-}
-
-type ViewMessage = {
-  id: string
-  isCustomer: boolean
-  text: string
-  time: string
 }
 
 function CustomerAvatar({ customer, size = 'md' }: { customer: SupportChatView['customer']; size?: 'sm' | 'md' }) {
@@ -73,144 +66,29 @@ function ChatListItem({ chat, active, onClick }: { chat: SupportChatView; active
 }
 
 function ConversationView({ chat, currentUserId, onBack }: { chat: SupportChatView; currentUserId: string; onBack: () => void }) {
-  const { t } = useTranslation()
-  const [messages, setMessages] = useState<ViewMessage[]>([])
-  const [loading, setLoading] = useState(true)
-  const [input, setInput] = useState('')
-  const [sending, setSending] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const seenIds = useRef(new Set<string>())
   const name = chat.customer?.name || chat.customer?.handle || 'Customer'
 
-  useEffect(() => {
-    setLoading(true)
-    getMessages(chat.id)
-      .then((msgs) => {
-        const viewMsgs = msgs.map((m): ViewMessage => ({
-          id: m.id,
-          isCustomer: m.sender_id !== currentUserId,
-          text: m.content || '',
-          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        }))
-        viewMsgs.forEach((m) => seenIds.current.add(m.id))
-        setMessages(viewMsgs)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [chat.id, currentUserId])
-
-  // Realtime
-  useEffect(() => {
-    const unsub = subscribeChatMessages(chat.id, (raw) => {
-      if (raw.sender_id === currentUserId) return
-      if (seenIds.current.has(raw.id)) return
-      seenIds.current.add(raw.id)
-      setMessages((prev) => [...prev, {
-        id: raw.id,
-        isCustomer: true,
-        text: raw.content || '',
-        time: new Date(raw.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }])
-    })
-    return unsub
-  }, [chat.id, currentUserId])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  async function sendReply() {
-    if (!input.trim() || sending) return
-    const text = input.trim()
-    setInput('')
-    setSending(true)
-
-    const optimistic: ViewMessage = {
-      id: `m-${Date.now()}`,
-      isCustomer: false,
-      text,
-      time: 'Just now',
-    }
-    setMessages((prev) => [...prev, optimistic])
-
-    try {
-      const sent = await sendChatMessage(chat.id, currentUserId, 'user', text)
-      seenIds.current.add(sent.id)
-    } catch (err) {
-      console.error('Failed to send reply', err)
-    } finally {
-      setSending(false)
-    }
-  }
-
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--olu-border)] flex-shrink-0">
-        <button onClick={onBack} className="md:hidden p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors">
-          <ArrowLeft size={18} />
-        </button>
-        <CustomerAvatar customer={chat.customer} size="sm" />
-        <div className="min-w-0 flex-1">
-          <h2 className="font-semibold text-sm truncate">{name}</h2>
-          <p className="text-[var(--olu-muted)] text-xs">
-            {chat.customer?.handle ? `@${chat.customer.handle}` : 'Customer'}
-          </p>
+    <ChatRoom
+      chatId={chat.id}
+      scope="support"
+      currentUserId={currentUserId}
+      headerSlot={
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--olu-border)] flex-shrink-0">
+          <button onClick={onBack} className="md:hidden p-2 rounded-xl hover:bg-[var(--olu-card-hover)] transition-colors">
+            <ArrowLeft size={18} />
+          </button>
+          <CustomerAvatar customer={chat.customer} size="sm" />
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold text-sm truncate">{name}</h2>
+            <p className="text-[var(--olu-muted)] text-xs">
+              {chat.customer?.handle ? `@${chat.customer.handle}` : 'Customer'}
+            </p>
+          </div>
         </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 scrollbar-hide">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-[var(--olu-text-secondary)]" size={20} />
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="text-center py-12 space-y-2">
-            <MessageSquare size={32} className="mx-auto text-[var(--olu-muted)]" />
-            <p className="text-sm text-[var(--olu-muted)]">No messages yet</p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={clsx('flex gap-2.5', msg.isCustomer ? '' : 'flex-row-reverse')}
-            >
-              {msg.isCustomer && <CustomerAvatar customer={chat.customer} size="sm" />}
-              <div className={clsx('max-w-[80%] flex flex-col gap-0.5', msg.isCustomer ? 'items-start' : 'items-end')}>
-                <div className={clsx(
-                  'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
-                  msg.isCustomer
-                    ? 'bg-gray-100 dark:bg-[var(--olu-card-bg)] border border-gray-200 dark:border-[var(--olu-card-border)] rounded-tl-sm'
-                    : 'bg-sky-600 text-white rounded-tr-sm'
-                )}>
-                  {msg.text}
-                </div>
-                <p className="text-[10px] text-[var(--olu-muted)] px-1">{msg.time}</p>
-              </div>
-            </motion.div>
-          ))
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      <div className="p-4 border-t border-[var(--olu-border)] flex gap-3 flex-shrink-0">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && sendReply()}
-          placeholder={t('business.supportReplyPlaceholder', 'Type a reply...')}
-          className="flex-1 px-4 py-2.5 bg-[var(--olu-card-bg)] border border-[var(--olu-card-border)] rounded-xl text-sm placeholder:text-[var(--olu-muted)] focus:outline-none focus:border-[var(--olu-card-border)] focus:ring-1 focus:ring-cyan-400/20 transition-colors"
-        />
-        <button
-          onClick={sendReply}
-          disabled={!input.trim() || sending}
-          className="p-2.5 rounded-xl bg-cyan-300 text-[#04111f] hover:bg-cyan-200 transition-colors disabled:opacity-50"
-        >
-          <Send size={16} />
-        </button>
-      </div>
-    </div>
+      }
+      className="h-full"
+    />
   )
 }
 

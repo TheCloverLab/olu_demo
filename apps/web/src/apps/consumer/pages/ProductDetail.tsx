@@ -9,8 +9,6 @@ import type { WorkspaceProduct, WorkspaceProductPlan, WorkspaceExperience } from
 import { getProduct, listPlans, getProductExperienceIds, purchaseProduct, getUserPurchases } from '../../../domain/product/api'
 import { listExperiences } from '../../../domain/experience/api'
 
-const IS_DEMO = import.meta.env.VITE_SUPABASE_URL?.includes('demo-placeholder')
-
 const TYPE_ICON: Record<string, typeof MessageSquare> = {
   forum: MessageSquare,
   course: BookOpen,
@@ -22,7 +20,7 @@ export default function ProductDetail() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user: authUser } = useAuth()
-  const userId = IS_DEMO ? 'demo-consumer' : authUser?.id
+  const userId = authUser?.id
 
   const [product, setProduct] = useState<WorkspaceProduct | null>(null)
   const [plans, setPlans] = useState<WorkspaceProductPlan[]>([])
@@ -49,14 +47,12 @@ export default function ProductDetail() {
         if (productPlans.length > 0) setSelectedPlanId(productPlans[0].id)
 
         // Load workspace name
-        if (!IS_DEMO) {
-          const { data: ws } = await supabase
-            .from('workspaces')
-            .select('name')
-            .eq('id', prod.workspace_id)
-            .single()
-          if (ws) setWorkspaceName(ws.name)
-        }
+        const { data: ws } = await supabase
+          .from('workspaces')
+          .select('name')
+          .eq('id', prod.workspace_id)
+          .single()
+        if (ws) setWorkspaceName(ws.name)
 
         // Load included experiences
         if (experienceIds.length > 0) {

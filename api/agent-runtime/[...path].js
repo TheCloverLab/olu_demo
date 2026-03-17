@@ -30,12 +30,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('[agent-runtime-proxy] target:', url.toString(), 'method:', req.method)
     const upstream = await fetch(url.toString(), {
       method: req.method,
       headers,
       body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
       duplex: 'half',
     })
+    console.log('[agent-runtime-proxy] upstream status:', upstream.status)
 
     // Forward status and response headers
     res.status(upstream.status)

@@ -4,6 +4,7 @@
   "installCommand": "npm install --prefer-offline && npm install @rollup/rollup-linux-x64-gnu --no-save",
   "framework": "vite",
   "rewrites": [
+    { "source": "/api/agent-runtime/:path*", "destination": "/api/agent-runtime?path=:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

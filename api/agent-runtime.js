@@ -1,6 +1,7 @@
 /**
  * Vercel Serverless Function — proxy to agent-runtime ALB
- * Adds API_SECRET auth header server-side so the frontend never sees the secret.
+ * Matches /api/agent-runtime?path=models etc.
+ * Also handles /api/agent-runtime/* via Vercel rewrites.
  */
 
 const AGENT_RUNTIME_ORIGIN = (
@@ -11,20 +12,21 @@ const AGENT_RUNTIME_ORIGIN = (
 const API_SECRET = (process.env.AGENT_RUNTIME_SECRET || '').trim()
 
 module.exports = async function handler(req, res) {
-  // Build target URL from the catch-all path segments
-  const pathSegments = req.query.path || []
-  const target = `${AGENT_RUNTIME_ORIGIN}/${Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments}`
+  // Extract the sub-path from query param (set by rewrite) or default to ''
+  const subPath = req.query.path || ''
+  const target = `${AGENT_RUNTIME_ORIGIN}/${subPath}`
   const url = new URL(target)
-  // Forward query params
+
+  // Forward query params (except our routing 'path' param)
   const incomingUrl = new URL(req.url, `https://${req.headers.host}`)
   incomingUrl.searchParams.forEach((v, k) => {
     if (k !== 'path') url.searchParams.set(k, v)
   })
 
   // Build forwarded headers (strip host, add auth)
-  const headers = { ...req.headers }
-  delete headers.host
-  delete headers['content-length'] // let fetch recalculate
+  const headers = {
+    'content-type': req.headers['content-type'] || 'application/json',
+  }
   if (API_SECRET) {
     headers['authorization'] = `Bearer ${API_SECRET}`
   }
@@ -33,17 +35,13 @@ module.exports = async function handler(req, res) {
     const upstream = await fetch(url.toString(), {
       method: req.method,
       headers,
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
-      duplex: 'half',
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
     })
 
     // Forward status and response headers
     res.status(upstream.status)
-    upstream.headers.forEach((value, key) => {
-      if (key.toLowerCase() !== 'transfer-encoding') {
-        res.setHeader(key, value)
-      }
-    })
+    const ct = upstream.headers.get('content-type')
+    if (ct) res.setHeader('content-type', ct)
 
     // Stream response body
     const body = await upstream.text()

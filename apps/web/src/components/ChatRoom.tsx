@@ -356,6 +356,13 @@ export default function ChatRoom({
             return prev.map((m, i) => (i === optIdx ? msg : m))
           }
         }
+        // If agent message arrives, replace any pending-ai placeholder
+        if (msg.sender_type === 'agent') {
+          const pendingIdx = prev.findIndex((m) => m.id.startsWith('pending-ai-'))
+          if (pendingIdx >= 0) {
+            return [...prev.slice(0, pendingIdx), ...prev.slice(pendingIdx + 1), msg]
+          }
+        }
         return [...prev, msg]
       })
     })
@@ -412,6 +419,21 @@ export default function ChatRoom({
 
       // Trigger AI reply if handler provided
       if (onAfterSend && trimmed) {
+        // Show loading dots while AI responds
+        const pendingId = `pending-ai-${Date.now()}`
+        setMessages((prev) => [...prev, {
+          id: pendingId,
+          chat_id: chatId,
+          sender_id: 'ai-assistant',
+          sender_type: 'agent',
+          sender_name: 'AI Assistant',
+          sender_avatar: null,
+          message_type: 'text',
+          content: null,
+          metadata: {},
+          created_at: new Date().toISOString(),
+        }])
+
         onAfterSend(chatId, trimmed, sent, {
           model: selectedModelOption?.id || undefined,
           reasoning: reasoningEnabled,

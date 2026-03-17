@@ -10,11 +10,7 @@ const AGENT_RUNTIME_ORIGIN = (
 
 const API_SECRET = (process.env.AGENT_RUNTIME_SECRET || '').trim()
 
-export default async function handler(req, res) {
-  // Debug: check if function is hit
-  if (req.query.path?.[0] === '_debug') {
-    return res.status(200).json({ ok: true, origin: AGENT_RUNTIME_ORIGIN, hasSecret: !!API_SECRET })
-  }
+module.exports = async function handler(req, res) {
   // Build target URL from the catch-all path segments
   const pathSegments = req.query.path || []
   const target = `${AGENT_RUNTIME_ORIGIN}/${Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments}`
@@ -34,19 +30,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('[agent-runtime-proxy] target:', url.toString(), 'method:', req.method)
     const upstream = await fetch(url.toString(), {
       method: req.method,
       headers,
       body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
       duplex: 'half',
     })
-    console.log('[agent-runtime-proxy] upstream status:', upstream.status)
 
     // Forward status and response headers
     res.status(upstream.status)
     upstream.headers.forEach((value, key) => {
-      // Skip transfer-encoding as Vercel handles it
       if (key.toLowerCase() !== 'transfer-encoding') {
         res.setHeader(key, value)
       }
